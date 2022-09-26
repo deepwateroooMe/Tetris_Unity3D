@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 752e9d917107c48d6b50dfcf81ab4bd6
+timeCreated: 1470091327
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - clearLineSound: {fileID: 8300000, guid: d6b1724767dbb4d16b47c95f2ae3dd3c, type: 3}
+  - hud_score: {instanceID: 0}
+  - hud_level: {instanceID: 0}
+  - hud_lines: {instanceID: 0}
+  - hud_canvas: {instanceID: 0}
+  - pause_canvas: {instanceID: 0}
+  - nextTeromino: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

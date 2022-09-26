@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "991463851529",
+    "firebase_url": "https://my-firebase-unity-games.firebaseio.com",
+    "project_id": "my-firebase-unity-games",
+    "storage_bucket": "my-firebase-unity-games.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:991463851529:android:86052520b897c530871ad8",
+        "android_client_info": {
+          "package_name": "com.deepwaterooo.AuthSampleTest"
+        }
+      },
+      "oauth_client": [
+          {             
+          "client_id": "991463851529-kp30c8pesef3i62jp0uruke0119ev0so.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBwpkMgi29FqatoJwIgR8EZ7nceuKeibm8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "991463851529-kp30c8pesef3i62jp0uruke0119ev0so.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

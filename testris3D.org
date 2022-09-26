@@ -1,0 +1,190 @@
+#+latex_class: cn-article
+#+title: Tetris 3D Reference
+#+author: deepwaterooo
+#+options: ^:nil
+
+* ShaderS基础知识总结
+- Unity3d中Shader的一些关于矩阵变换的基本信息
+  - https://blog.csdn.net/yutyliu/article/details/56013807
+- shader内置函数
+  - https://blog.csdn.net/qingshui37/article/details/51476404
+** 基本变换
+- 在Unity中，每个物体都有一个坐标系，就是自身坐标系，各个物体之间相互独立。
+- 所有的物体都处在一个统一的空间里，这个空间就是世界空间，也有一个世界坐标系。
+- 把一个3D物体渲染到2D的屏幕上的基本流程以及每个变换对应的矩阵
+  - 因为物体的顶点坐标是基于自身坐标系的，所以渲染时，最先的变换是 模型空间——>世界空间，对应矩阵：_Object2World
+  - 物体要渲染到相机平面上实际上，是相机的可视区域内有哪些物体，也就是物体处于相机坐标系的本地坐标（localPosition）处于哪个位置。这个变换是 世界空间——>相机空间，对应矩阵：UNITY_MATRIX_V
+  - 此刻获取到了物体处于相机空间的位置，要把相机空间的所有信息都渲染到2维图片上，此刻需要进行投影变换，透视相机投影变换的目的是为了把视锥体转换为立方体，转换后，视锥体近平面的右上角点变成立方体前平面的中心，把视锥体较小的部分放大，较大的部分缩小，形成最终的立方体。变换后的x坐标范围是[-1, 1]，y坐标范围是[-1, 1]，z坐标范围是[0, 1]（OpenGL不同，z值范围是[-1, 1]），这个变换是 相机空间——>投影空间，对应矩阵：UNITY_MATRIX_P
+  - 通过UNITY_MATRIX_MVP 这个矩阵，可以把物体的顶点位置从模型自身坐标系转换到投影空间。
+  - 对投影矩阵感兴趣的，可以自己搜索一下，整个推导过程需要一定的数学基础，理解就行。
+
+** 顶点转换函数
+*** float4 UnityObjectToClipPos(float3 pos)
+- Transforms a point from object space to the camera’s clip space in homogeneous coordinates. This is the equivalent of mul(UNITY_MATRIX_MVP, float4(pos, 1.0)), and should be used in its place.
+- homogeneous coordinates：齐次坐标
+- 等价于：mul(UNITY_MATRIX_MVP, float4(pos, 1.0)),
+*** float3 UnityObjectToViewPos(float3 pos)
+- Transforms a point from object space to view space. This is the equivalent of mul(UNITY_MATRIX_MV, float4(pos, 1.0)).xyz, and should be used in its place.
+- 等价于：mul(UNITY_MATRIX_MV, float4(pos, 1.0)).
+
+** Forwardrendering helper functions in UnityCG.cginc
+- These functions are only useful when using forward rendering(ForwardBase or ForwardAdd pass types).
+- 仅用于前向渲染
+|--------------------------------------+--------------------------------------------------------------------------------------------|
+| Function:                            | Description:                                                                               |
+|--------------------------------------+--------------------------------------------------------------------------------------------|
+| float3 WorldSpaceLightDir (float4 v) | Computes world space direction (not normalized) to light,                                  |
+|                                      | given object space vertex position.                                                        |
+|                                      | 参数是object space下的顶点坐标，取得world space下指向光源的方向                            |
+|--------------------------------------+--------------------------------------------------------------------------------------------|
+| float3 ObjSpaceLightDir (float4 v)   | Computes object space direction (not normalized) to light,                                 |
+|                                      | given object space vertex position.                                                        |
+|                                      | 参数是object space下的顶点坐标，取得object space下指向光源的方向                           |
+|--------------------------------------+--------------------------------------------------------------------------------------------|
+| float3 Shade4PointLights (...)       | Computes illumination from four point lights, with light data tightly packed into vectors. |
+|                                      | Forward rendering uses this to compute per-vertex lighting.                                |
+|                                      | 正向渲染中，最多有4个点光源会以逐顶点渲染的方式被计算。                                    |
+|--------------------------------------+--------------------------------------------------------------------------------------------|
+
+*** mul（UNITY_MATRIX_MVP,v）跟ComputeScreenPos的区别
+一个是model position->projection position 投影坐标
+一个是projection position->screen position...屏幕坐标
+投影坐标系->屏幕坐标系这是最简单的。2D坐标变换。也不多说。
+使用例子：
+  #+BEGIN_SRC csharp
+o.position = mul(UNITY_MATRIX_MVP, v.vertex);
+
+o.proj0 = ComputeScreenPos(o.position);
+
+COMPUTE_EYEDEPTH(o.proj0.z);
+  #+END_SRC
+
+
+
+
+* Reference
+** Shader
+- Shader学习：描边Outline初步
+  - https://zhuanlan.zhihu.com/p/55337247
+
+** Save Game progress 
+- How to Save and Load Your Players' Progress in Unity 2014
+  - https://gamedevelopment.tutsplus.com/tutorials/how-to-save-and-load-your-players-progress-in-unity--cms-20934
+- FireBase数据库 保存数据 游戏得分排行榜等
+  - https://firebase.google.com/docs/database/unity/save-data?hl=zh-cn
+- 轻量级 Unity3D-小规模初始化数据的存储和读取
+  - https://blog.csdn.net/wuyt2008/article/details/60955491
+- 适用于 Unity 的 AWS 移动开发工具包入门  ====》》》不知道这个是做什么用的？？？？
+  - https://docs.aws.amazon.com/zh_cn/mobile/sdkforunity/developerguide/getting-started-unity.html
+- 数据存储开发指南 · Unity 2019
+  - https://leancloud.cn/docs/unity_guide.html
+** Unity LineRender
+- Unity 几种画线方式 GL(Graphics Library) matrix etc
+  - https://blog.csdn.net/ldy597321444/article/details/78031284
+- Unity3D点击绘制二维模型线和三维模型线
+  - https://blog.csdn.net/zxy13826134783/article/details/80114727
+- Edge Detection via Shader not Image Effect
+  - https://forum.unity.com/threads/edge-detection-via-shader-not-image-effect.368922/
+- Image Effect: Edge Detect Normals Colours [rel]
+  - https://forum.unity.com/threads/image-effect-edge-detect-normals-colours-rel.310280/?_ga=2.193847467.70482378.1568958437-524766537.1568434661
+
+** FireBase数据库
+- 在 Unity 中开始使用 Firebase 身份验证
+  - https://firebase.google.com/docs/auth/unity/start?hl=zh-cn
+  - github: https://github.com/google/mechahamster
+- 将 Firebase 添加到您的 Unity 项目
+  - https://firebase.google.com/docs/unity/setup?hl=zh-cn
+- 
+  - 
+- 
+  - 
+** Admob广告
+- Admob + Firebase Get Started in Android Studio
+  - https://firebase.google.com/docs/admob/android/quick-start
+- Android Google AdMob 广告接入示例
+  - https://github.com/googleads/googleads-mobile-android-examples
+- Android Firebase接入（四）-- AdMob广告
+  - https://blog.csdn.net/AlpinistWang/article/details/87438367
+  #+BEGIN_SRC csharp
+public class MainActivity extends Activity {
+    private InterstitialAd interstitialAd;
+    @Override
+        protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        showInterstitialAd();
+    }
+    private void showInterstitialAd(){
+        interstitialAd = new InterstitialAd(this);
+        interstitialAd.setAdUnitId("你的插屏广告id"));
+    interstitialAd.loadAd(new AdRequest.Builder().build());
+    interstitialAd.setAdListener(new AdListener(){
+            @Override
+            public void onAdLoaded() {
+                super.onAdLoaded();
+                if (interstitialAd.isLoaded()) {
+                    interstitialAd.show();
+                }
+            }
+        });
+}
+  #+END_SRC
+  - 笔者推荐将showInterstitialAd放在BaseActivity中，然后在继承了BaseActivity的页面中直接调用即可展示广告。加载横幅广告和激励视频广告是类似的。
+- 
+  - 
+- 
+  - 
+
+** Edge Detection
+- Outline Shader 有资源，手把手地教 using unity 原始为2018.3.3f1 好好学习一下
+  - https://roystan.net/articles/outline-shader.html
+  - UnityOutlineShader-skeleton.zip
+  - github: https://github.com/IronWarrior/UnityOutlineShader
+- CommandBuffer与ImageEffect实践-----Outline
+  - https://www.wonderm.cc/2019/05/26/CommandBufferAndImageEffect-Outline/
+- CommandBuffer_01 标记特殊区域
+  - https://www.wonderm.cc/2019/03/04/CommandBuffer-01/
+
+- 关于Unity Shader的一些心得体会~ GitHub
+  - Sjm-Shader-Collection/Volume 09 EdgeDetection详解边缘检测/Script/
+- https://github.com/swordjoinmagic/Sjm-Shader-Collection
+  - https://github.com/swordjoinmagic/Sjm-Shader-Collection/blob/master/Volume%2009%20EdgeDetection%E8%AF%A6%E8%A7%A3%E8%BE%B9%E7%BC%98%E6%A3%80%E6%B5%8B/Script/BulletTimeStartWithEdgeDetection.cs
+  - 目标物体的边缘检测
+- Unity3D 卡通渲染 基于退化四边形的实时描边 - L-灵刃
+  - https://www.w3xue.com/exp/article/20199/53598.html
+  - GitHub: https://github.com/L-LingRen/UnitySimpleCartoonLine 下载
+- 【Unity Shaders】法线纹理（Normal Mapping）的实现细节
+  - https://blog.csdn.net/candycat1992/article/details/41605257
+- Sobel边缘检测算法
+  - https://blog.csdn.net/tianhai110/article/details/5663756
+- unity3d shader之Roberts,Sobel,Canny 三种边缘检测方法
+  - http://www.voidcn.com/article/p-mqllafvg-xt.html
+- Unity Shader-边缘检测效果（基于颜色，基于深度法线，边缘流光效果，转场效果）
+  - https://gameinstitute.qq.com/community/detail/128772
+- Unity Shader学习笔记（26）边缘检测（深度和法线纹理）
+  - https://gameinstitute.qq.com/community/detail/121022
+- 彻底理解数字图像处理中的卷积-以Sobel算子为例
+  - https://my.oschina.net/freeblues/blog/727561
+- shader实现屏幕处理效果——边缘检测
+  - https://www.jianshu.com/p/fa7cea5f6a72
+- Unity3D开发之边缘检测Sobel算子的一些个人观点
+  - https://blog.csdn.net/qq_33994566/article/details/79180058
+- 
+  - 
+- 
+  - 
+** Mesh
+- Runtime Mesh Manipulation With Unity
+  - https://www.raywenderlich.com/5128-runtime-mesh-manipulation-with-unity
+  - 
+** Unity PostProcessing
+- Unity PostProcessing Stack v2源码分析系列
+  - https://blog.csdn.net/wolf96/article/details/82796174
+- MMD联动Unity学习笔记 Vol.5.1 Post Processing Stack v2
+  - https://www.bilibili.com/read/cv2780283/
+  - 和一个小视频可以参考学习一下
+
+
+
+
+
