@@ -1,206 +1,46 @@
 #+latex_class: cn-article
-#+title: Tetris 3D Unity
-#+author: deepwaterooo
+#+title: Unity Android SDK/NDK 俄罗斯方块砖3D　小游戏
+#+author: deepwaterooo 
 
-* references
-** 摄像机跟随
-- Unity中Camera摄像头控制详解 （有视频）解释比较彻底清晰
-  - https://www.cnblogs.com/machine/p/unity.html
-** canvas 上模型旋转
-- Unity3D物体在UI界面的显示 
-  - https://www.cnblogs.com/chinarbolg/p/9601376.html
-- Unity3D】实现物体或UI的旋转显示  UIRotate.unitypackage
-  - https://blog.csdn.net/q764424567/article/details/81318030
-- 
-  - 
-- 
-  - 
+* 模块搭建
+- ILRuntime的消化理解，以及与MVVM同用时的搭配理解消化
+- 热更新模块服务器模块的理解与消化搭建：
 
-** concurrent
-- 用Semaphore实现对象池
-  - https://donald-draper.iteye.com/blog/2360817
-  #+BEGIN_SRC java
-package juc.latch;  
-import java.util.concurrent.Semaphore;  
-import java.util.concurrent.locks.Lock;  
-import java.util.concurrent.locks.ReentrantLock;  
-/** 
- * 信号量实现的对象池 
- * @author donald 
- * 2017年3月6日 
- * 下午9:43:06 
- * @param <T> 
- */
+* 把原理弄懂
+- 热更新模块的实充：以前的设计模式和实现的功能还是比较完整的；现在更成熟一点儿，需要把热更新模块补充出来；
+- ILRuntime + MVVM框架设计：两者结合，前几年的时候没能把MVVM理解透彻；
+- 上次前几年主要的难点：好像是在把MVVM双向数据绑定理解得不透彻；那么这次应该就狠没有问题了，更该寻求更好的设计与解决方案
+- 性能优化：另外是对其实高级开发的越来越熟悉，希望应用的性能表现，尤其是渲染性能与速度等、这些更为高级和深入的特性成为这次二次开发的重点。
 
-public class ObjectCache<T> {  
+- 现在是把自己几年前的写的游戏全忘记了，需要回去把自己的源码找出来，再读一读熟悉一下自己的源码，了解当时设计的估缺点，由此改进更将
 
-    // 对象工厂  
-    public interface ObjectFactory<T> {  
-        T makeObject();  
-    }  
+* 环境弄得比较好的包括：
+- 输入法的搭建：终于用到了自己之前用过的好用的输入法
+- 这两天开车疲累，最迟明天中午会去南湾找房间出租，尽快解决搬家的问题；昨天晚上回来得太晚了，一路辛苦，路上只差睡着，回到家里补觉补了好多个小时。
+- 小电脑，笔记本电脑里的游戏环境搭建，今天下午去图书馆里弄（今天下午去图书馆里把需要借助快速网络来完成的事情都搭建好；家里被恶房东故意整了个腾腾慢的网，故意阻碍别人的发展，谁还愿意再这样的环境中继续住下去呢？！！！）
 
-    // 将对象封装节点中，放到一个先进先出的队列中，即对象池  
-    class Node {  
-        T obj;  
-        Node next;  
-    }
-    
-    final int capacity; // 线程次容量  
-    final ObjectFactory<T> factory;  
-    final Lock lock = new ReentrantLock(); // 保证对象获取，释放的线程安全  
-    final Semaphore semaphore; // 信号量  
-    private Node head;  
-    private Node tail;
-    
-    public ObjectCache(int capacity, ObjectFactory<T> factory) {  
-        this.capacity = capacity;  
-        this.factory = factory;  
-        this.semaphore = new Semaphore(this.capacity);  
-        this.head = null;  
-        this.tail = null;  
-    }  
-
-    /** 
-     * 从对象池中，获取对象 
-     * @return 
-     * @throws InterruptedException 
-     */  
-    public T getObject() throws InterruptedException {  
-        semaphore.acquire();  
-        return getObjectFromPool();  
-    }
-    
-    /** 
-     * 线程安全地从对象池获取对象 
-     * @return 
-     */  
-    private T getObjectFromPool() {  
-        lock.lock();  
-        try {  
-            if (head == null) {  
-                return factory.makeObject();  
-            } else {  
-                Node ret = head;  
-                head = head.next;  
-                if (head == null)  
-                tail = null;  
-                ret.next = null;//  help GC  
-                return ret.obj;  
-            }  
-        } finally {  
-            lock.unlock();  
-        }  
-    }  
-    /** 
-     * 线程安全地，将对象放回对象池 
-     * @param t 
-     */  
-    private void putBackObjectToPool(T t) {  
-        lock.lock();  
-        try {  
-            Node node = new Node();  
-            node.obj = t;  
-            if (tail == null) {  
-                head = tail = node;  
-            } else {  
-                tail.next = node;  
-                tail = node;  
-            }  
-        } finally {  
-            lock.unlock();  
-        }  
-    }  
-    /** 
-     * 将对象放回对象池 
-     * @param t 
-     */  
-    public void putBackObject(T t) {  
-        putBackObjectToPool(t);  
-        semaphore.release();  
-    }  
-}  
-  #+END_SRC
-- Object pool pattern
-  - https://en.wikipedia.org/wiki/Object_pool_pattern
-  #+BEGIN_SRC java
-namespace DesignPattern.Objectpool  {
-
-    // The PooledObject class is the type that is expensive or slow to instantiate,
-    // or that has limited availability, so is to be held in the object pool.
-    public class PooledObject {
-        DateTime _createdAt = DateTime.Now;
-        public DateTime CreatedAt {
-            get { return _createdAt; }
-        }
-        public string TempData { get; set; }
-    }
-
-    // The Pool class is the most important class in the object pool design pattern. It controls access to the
-    // pooled objects, maintaining a list of available objects and a collection of objects that have already been
-    // requested from the pool and are still in use. The pool also ensures that objects that have been released
-    // are returned to a suitable state, ready for the next time they are requested. 
-    public static class Pool {
-        private static List<PooledObject> _available = new List<PooledObject>();
-        private static List<PooledObject> _inUse = new List<PooledObject>();
-        public static PooledObject GetObject() {
-            lock(_available) {
-                if (_available.Count != 0) {
-                    PooledObject po = _available[0];
-                    _inUse.Add(po);
-                    _available.RemoveAt(0);
-                    return po;
-                } else {
-                    PooledObject po = new PooledObject();
-                    _inUse.Add(po);
-                    return po;
-                }
-            }
-        }
-        public static void ReleaseObject(PooledObject po) {
-            CleanUp(po);
-            lock (_available) {
-                _available.Add(po);
-                _inUse.Remove(po);
-            }
-        }
-        private static void CleanUp(PooledObject po) {
-            po.TempData = null;
-        }
-    }
-}
-  #+END_SRC
-
-- Sun‘刺眼的博客: 随笔分类 - Unity3D、C#
-  - https://www.cnblogs.com/android-blogs/category/879304.html
-- Unity协程（Coroutine）原理深入剖析
-  - https://dsqiu.iteye.com/blog/2029701
-- Unity3d IEnumerator 协程的理解
-  - https://blog.csdn.net/jasonwang18/article/details/55519165
-- 关于对象池的一些分析
-  - https://droidyue.com/blog/2016/12/12/dive-into-object-pool/
-
-** Ð­³Ì Coroutine
-- http://dsqiu.iteye.com/blog/2029701
-- http://dsqiu.iteye.com/blog/2049743
-
-** tetris 3d specific
-- https://www.youtube.com/watch?v=UZSotPFf0ug with tutorial, Maya Unity
-- above 2d tutorial http://noobtuts.com/unity/2d-tetris-game
-- commands http://users.csc.calpoly.edu/~zwood/teaching/csc471/finalproj24/gzipkin/
-- 3 other resources: 
-  - http://subject.manew.com/source/index.html
-  - http://jingyan.baidu.com/article/4e5b3e195bde8991901e243a.html
-  - http://www.cnblogs.com/bitzhuwei/p/unity3d-tank-sniper.html
-** buttons
-- https://forum.unity3d.com/threads/touch-and-hold-a-button-on-new-ui.266065/
-- https://stackoverflow.com/questions/38198745/how-to-detect-left-mouse-click-but-not-when-the-click-occur-on-a-ui-button-compo
-** 3d games
-- https://www.youtube.com/watch?v=_oEUJ_sirC8 with vedio downloaded
-- 
-- 
-- 
-- 
-- 
-- 
-- 
+* ILRuntime 库的系统再深入理解
+** ILRuntime基本原理#
+- ILRuntime借助Mono.Cecil库来读取DLL的PE信息，以及当中类型的所有信息，最终得到方法的IL汇编码，然后通过内置的IL解译执行虚拟机来执行DLL中的代码。IL解释器代码在ILIntepreter.cs，通过Opcode来逐语句执行机器码，解释器的代码有四千多行。
+  
+[[./pic/readme_20220926_094936.png]]
+** ILRuntime热更流程
+   
+[[./pic/readme_20220926_095022.png]]
+** ILRuntime主要限制
+   
+[[./pic/readme_20220926_095555.png]]
+** ILRuntime启动调试#
+- ILRuntime建议全局只创建一个AppDomain，在函数入口添加代码启动调试服务
+#+BEGIN_SRC csharp
+appdomain.DebugService.StartDebugService(56000)
+#+END_SRC 
+- 运行主工程(Unity工程)
+- 在热更的VS工程中 点击 - 调试 - 附加到ILRuntime调试，注意使用一样的端口
+- 如果使用VS2015的话需要Visual Studio 2015 Update3以上版本
+** 线上项目和资料#
+- 掌趣很多项目都是使用ILRuntime开发，并上线运营，比如：真红之刃，境·界 灵压对决，全民奇迹2，龙族世界，热血足球
+- 初音未来:梦幻歌姬 使用补丁方式：https://github.com/wuxiongbin/XIL
+- 本文流程图摘自：ILRuntime的QQ群的《ILRuntime热更框架.docx》(by a 704757217)
+- Unity实现c#热更新方案探究(三): https://zhuanlan.zhihu.com/p/37375372
 

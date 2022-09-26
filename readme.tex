@@ -1,252 +1,99 @@
-% Created 2019-07-06 Sat 09:24
+% Created 2022-09-26 Mon 09:57
 \documentclass[9pt, b5paper]{article}
-\usepackage[UTF8]{ctex}
-\usepackage{fontspec}
+\usepackage{xeCJK}
+\usepackage{minted}
+\usepackage[T1]{fontenc}
+\usepackage[scaled]{beraserif}
+\usepackage[scaled]{berasans}
+\usepackage[scaled]{beramono}
 \usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage{multirow}
 \usepackage{multicol}
 \usepackage{float}
 \usepackage{textcomp}
-\usepackage{geometry}
-\geometry{left=1.2cm,right=1.2cm,top=1.5cm,bottom=1.2cm}
 \usepackage{algorithm}
 \usepackage{algorithmic}
 \usepackage{latexsym}
 \usepackage{natbib}
-\usepackage{listings}
-\usepackage{minted}
+\usepackage{geometry}
+\geometry{left=1.2cm,right=1.2cm,top=1.5cm,bottom=1.2cm}
+\newminted{common-lisp}{fontsize=\footnotesize} 
 \usepackage[xetex,colorlinks=true,CJKbookmarks=true,linkcolor=blue,urlcolor=blue,menucolor=blue]{hyperref}
 \author{deepwaterooo}
 \date{\today}
-\title{Tetris 3D Unity}
+\title{Unity Android SDK/NDK 俄罗斯方块砖3D　小游戏}
 \hypersetup{
   pdfkeywords={},
   pdfsubject={},
-  pdfcreator={Emacs 26.1 (Org mode 8.2.7c)}}
+  pdfcreator={Emacs 27.1 (Org mode 8.2.7c)}}
 \begin{document}
 
 \maketitle
 \tableofcontents
 
 
-\section{references}
+\section{模块搭建}
 \label{sec-1}
-\subsection{concurrent}
-\label{sec-1-1}
 \begin{itemize}
-\item 用Semaphore实现对象池
-\begin{itemize}
-\item \url{https://donald-draper.iteye.com/blog/2360817}
+\item ILRuntime的消化理解，以及与MVVM同用时的搭配理解消化
+\item 热更新模块服务器模块的理解与消化搭建：
 \end{itemize}
-\begin{minted}[linenos=true]{java}
-package juc.latch;  
-import java.util.concurrent.Semaphore;  
-import java.util.concurrent.locks.Lock;  
-import java.util.concurrent.locks.ReentrantLock;  
-/** 
- * 信号量实现的对象池 
- * @author donald 
- * 2017年3月6日 
- * 下午9:43:06 
- * @param <T> 
- */
 
-public class ObjectCache<T> {  
+\section{把原理弄懂}
+\label{sec-2}
+\begin{itemize}
+\item 热更新模块的实充：以前的设计模式和实现的功能还是比较完整的；现在更成熟一点儿，需要把热更新模块补充出来；
+\item ILRuntime + MVVM框架设计：两者结合，前几年的时候没能把MVVM理解透彻；
+\item 上次前几年主要的难点：好像是在把MVVM双向数据绑定理解得不透彻；那么这次应该就狠没有问题了，更该寻求更好的设计与解决方案
+\item 性能优化：另外是对其实高级开发的越来越熟悉，希望应用的性能表现，尤其是渲染性能与速度等、这些更为高级和深入的特性成为这次二次开发的重点。
 
-    // 对象工厂  
-    public interface ObjectFactory<T> {  
-        T makeObject();  
-    }  
+\item 现在是把自己几年前的写的游戏全忘记了，需要回去把自己的源码找出来，再读一读熟悉一下自己的源码，了解当时设计的估缺点，由此改进更将
+\end{itemize}
 
-    // 将对象封装节点中，放到一个先进先出的队列中，即对象池  
-    class Node {  
-        T obj;  
-        Node next;  
-    }
-    
-    final int capacity; // 线程次容量  
-    final ObjectFactory<T> factory;  
-    final Lock lock = new ReentrantLock(); // 保证对象获取，释放的线程安全  
-    final Semaphore semaphore; // 信号量  
-    private Node head;  
-    private Node tail;
-    
-    public ObjectCache(int capacity, ObjectFactory<T> factory) {  
-        this.capacity = capacity;  
-        this.factory = factory;  
-        this.semaphore = new Semaphore(this.capacity);  
-        this.head = null;  
-        this.tail = null;  
-    }  
+\section{环境弄得比较好的包括：}
+\label{sec-3}
+\begin{itemize}
+\item 输入法的搭建：终于用到了自己之前用过的好用的输入法
+\end{itemize}
 
-    /** 
-     * 从对象池中，获取对象 
-     * @return 
-     * @throws InterruptedException 
-     */  
-    public T getObject() throws InterruptedException {  
-        semaphore.acquire();  
-        return getObjectFromPool();  
-    }
-    
-    /** 
-     * 线程安全地从对象池获取对象 
-     * @return 
-     */  
-    private T getObjectFromPool() {  
-        lock.lock();  
-        try {  
-            if (head == null) {  
-                return factory.makeObject();  
-            } else {  
-                Node ret = head;  
-                head = head.next;  
-                if (head == null)  
-                tail = null;  
-                ret.next = null;//  help GC  
-                return ret.obj;  
-            }  
-        } finally {  
-            lock.unlock();  
-        }  
-    }  
-    /** 
-     * 线程安全地，将对象放回对象池 
-     * @param t 
-     */  
-    private void putBackObjectToPool(T t) {  
-        lock.lock();  
-        try {  
-            Node node = new Node();  
-            node.obj = t;  
-            if (tail == null) {  
-                head = tail = node;  
-            } else {  
-                tail.next = node;  
-                tail = node;  
-            }  
-        } finally {  
-            lock.unlock();  
-        }  
-    }  
-    /** 
-     * 将对象放回对象池 
-     * @param t 
-     */  
-    public void putBackObject(T t) {  
-        putBackObjectToPool(t);  
-        semaphore.release();  
-    }  
-}
+\section{ILRuntime 库的系统再深入理解}
+\label{sec-4}
+\subsection{ILRuntime基本原理\#}
+\label{sec-4-1}
+\begin{itemize}
+\item ILRuntime借助Mono.Cecil库来读取DLL的PE信息，以及当中类型的所有信息，最终得到方法的IL汇编码，然后通过内置的IL解译执行虚拟机来执行DLL中的代码。IL解释器代码在ILIntepreter.cs，通过Opcode来逐语句执行机器码，解释器的代码有四千多行。
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20220926_094936.png}
+\subsection{ILRuntime热更流程}
+\label{sec-4-2}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20220926_095022.png}
+\subsection{ILRuntime主要限制}
+\label{sec-4-3}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20220926_095555.png}
+\subsection{ILRuntime启动调试\#}
+\label{sec-4-4}
+\begin{itemize}
+\item ILRuntime建议全局只创建一个AppDomain，在函数入口添加代码启动调试服务
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+appdomain.DebugService.StartDebugService(56000)
 \end{minted}
-\item Object pool pattern
 \begin{itemize}
-\item \url{https://en.wikipedia.org/wiki/Object_pool_pattern}
+\item 运行主工程(Unity工程)
+\item 在热更的VS工程中 点击 - 调试 - 附加到ILRuntime调试，注意使用一样的端口
+\item 如果使用VS2015的话需要Visual Studio 2015 Update3以上版本
 \end{itemize}
-\begin{minted}[linenos=true]{java}
-namespace DesignPattern.Objectpool  {
-
-    // The PooledObject class is the type that is expensive or slow to instantiate,
-    // or that has limited availability, so is to be held in the object pool.
-    public class PooledObject {
-        DateTime _createdAt = DateTime.Now;
-        public DateTime CreatedAt {
-            get { return _createdAt; }
-        }
-        public string TempData { get; set; }
-    }
-
-    // The Pool class is the most important class in the object pool design pattern. It controls access to the
-    // pooled objects, maintaining a list of available objects and a collection of objects that have already been
-    // requested from the pool and are still in use. The pool also ensures that objects that have been released
-    // are returned to a suitable state, ready for the next time they are requested. 
-    public static class Pool {
-        private static List<PooledObject> _available = new List<PooledObject>();
-        private static List<PooledObject> _inUse = new List<PooledObject>();
-        public static PooledObject GetObject() {
-            lock(_available) {
-                if (_available.Count != 0) {
-                    PooledObject po = _available[0];
-                    _inUse.Add(po);
-                    _available.RemoveAt(0);
-                    return po;
-                } else {
-                    PooledObject po = new PooledObject();
-                    _inUse.Add(po);
-                    return po;
-                }
-            }
-        }
-        public static void ReleaseObject(PooledObject po) {
-            CleanUp(po);
-            lock (_available) {
-                _available.Add(po);
-                _inUse.Remove(po);
-            }
-        }
-        private static void CleanUp(PooledObject po) {
-            po.TempData = null;
-        }
-    }
-}
-\end{minted}
-
-\item Sun‘刺眼的博客: 随笔分类 - Unity3D、C\#
+\subsection{线上项目和资料\#}
+\label{sec-4-5}
 \begin{itemize}
-\item \url{https://www.cnblogs.com/android-blogs/category/879304.html}
+\item 掌趣很多项目都是使用ILRuntime开发，并上线运营，比如：真红之刃，境·界 灵压对决，全民奇迹2，龙族世界，热血足球
+\item 初音未来:梦幻歌姬 使用补丁方式：\url{https://github.com/wuxiongbin/XIL}
+\item 本文流程图摘自：ILRuntime的QQ群的《ILRuntime热更框架.docx》(by a 704757217)
+\item Unity实现c\#热更新方案探究(三): \url{https://zhuanlan.zhihu.com/p/37375372}
 \end{itemize}
-\item Unity协程（Coroutine）原理深入剖析
-\begin{itemize}
-\item \url{https://dsqiu.iteye.com/blog/2029701}
-\end{itemize}
-\item Unity3d IEnumerator 协程的理解
-\begin{itemize}
-\item \url{https://blog.csdn.net/jasonwang18/article/details/55519165}
-\end{itemize}
-\item 关于对象池的一些分析
-\begin{itemize}
-\item \url{https://droidyue.com/blog/2016/12/12/dive-into-object-pool/}
-\end{itemize}
-\end{itemize}
-
-\subsection{Ð­³Ì Coroutine}
-\label{sec-1-2}
-\begin{itemize}
-\item \url{http://dsqiu.iteye.com/blog/2029701}
-\item \url{http://dsqiu.iteye.com/blog/2049743}
-\end{itemize}
-
-\subsection{tetris 3d specific}
-\label{sec-1-3}
-\begin{itemize}
-\item \url{https://www.youtube.com/watch?v=UZSotPFf0ug} with tutorial, Maya Unity
-\item above 2d tutorial \url{http://noobtuts.com/unity/2d-tetris-game}
-\item commands \url{http://users.csc.calpoly.edu/~zwood/teaching/csc471/finalproj24/gzipkin/}
-\item 3 other resources: 
-\begin{itemize}
-\item \url{http://subject.manew.com/source/index.html}
-\item \url{http://jingyan.baidu.com/article/4e5b3e195bde8991901e243a.html}
-\item \url{http://www.cnblogs.com/bitzhuwei/p/unity3d-tank-sniper.html}
-\end{itemize}
-\end{itemize}
-\subsection{buttons}
-\label{sec-1-4}
-\begin{itemize}
-\item \url{https://forum.unity3d.com/threads/touch-and-hold-a-button-on-new-ui.266065/}
-\item \url{https://stackoverflow.com/questions/38198745/how-to-detect-left-mouse-click-but-not-when-the-click-occur-on-a-ui-button-compo}
-\end{itemize}
-\subsection{3d games}
-\label{sec-1-5}
-\begin{itemize}
-\item \url{https://www.youtube.com/watch?v=_oEUJ_sirC8} with vedio downloaded
-\item 
-\item 
-\item 
-\item 
-\item 
-\item 
-\item 
-\end{itemize}
-% Emacs 26.1 (Org mode 8.2.7c)
+% Emacs 27.1 (Org mode 8.2.7c)
 \end{document}
