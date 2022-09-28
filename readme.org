@@ -1,5 +1,5 @@
 #+latex_class: cn-article
-#+title: Unity Android SDK/NDK 俄罗斯方块砖3D　小游戏
+#+title: Unity Android SDK/NDK 俄罗斯方块砖3D小游戏
 #+author: deepwaterooo 
 #+OPTIONS: toc:5 
 
@@ -46,8 +46,536 @@ appdomain.DebugService.StartDebugService(56000)
 - 本文流程图摘自：ILRuntime的QQ群的《ILRuntime热更框架.docx》(by a 704757217)
 - Unity实现c#热更新方案探究(三): https://zhuanlan.zhihu.com/p/37375372
 
-* Framework.MVVM Unity中定义好的MVVM架构
-** Model
+* Framework.Core核心理解 ？
+** Adaptor
+*** 
+    #+BEGIN_SRC csharp
+    #+END_SRC 
+*** 
+    #+BEGIN_SRC csharp
+    #+END_SRC 
+*** 
+    #+BEGIN_SRC csharp
+    #+END_SRC 
+** Factory
+** Inject
+** Wrap
+** GameApplication: 游戏入口类
+    #+BEGIN_SRC csharp
+// 游戏入口类
+public class GameApplication : MonoBehaviour {
+    private const string TAG = "GameApplication";
+        
+    private static GameApplication _instance;
+    public static GameApplication Instance {
+        get {
+            return _instance;
+        }
+    }
+    public IHotFixMain HotFix {
+        get;
+        set;
+    }
+
+// 五个用户、客户端可配置变量，以及它们的根据用户配置(读取系统中用户配置文件里的相关五个配置)
+    // 是否使用PDB调试信息
+    public bool usePDB = false;
+    // 是否使用ILRuntime模式热更新
+    public bool useILRuntime = false;
+    // 是否使用本地资源
+    public bool useLocal = false;
+    // 资源服务器路径
+    public string webRoot = string.Empty;
+    // 强制登录
+    public bool forceLogin = false;
+    
+    public ScreenRaycaster ScreenRaycaster {
+        get;
+        private set;
+    }
+// 这个公用方法应该是跟游戏中时常需要接入一个或是多个游戏SDK相关，提供便利接入方法
+    public ShareSDK ShareSDK { 
+        get;
+        private set;
+    }
+    void Awake() {
+        _instance = this;
+        ScreenRaycaster = GameObject.Find("Gestures").GetComponent<ScreenRaycaster>();
+        DontDestroyOnLoad(gameObject); // <<<<<<<<<<<<<<<<<<<< 我自己的游戏中实现过这个，可是现在回想得好辛苦呀。。。爱表哥爱生活爱游戏
+        //InitializeClientConfig();
+        //InitializeSDKs();
+        CoroutineHelper.StartCoroutine(Initialize()); // 协程：
+#region TestSamples
+        //FingerEventTemp.Instance.RegisterGestureEvents();
+        //TestNTS.Instance.TestLinesAngle();
+        //GeometryManager.Instance.Test();
+#endregion
+    }
+// 客户端的配置是写在一个文件里的，需要的话直接读就可以了，安卓系统很多地方也这样
+    void InitializeClientConfig() {
+        var str = FileHelp.ReadString("ClientConfig.txt"); 
+        if (!string.IsNullOrEmpty(str)) {
+            JsonObject jsonObject = JsonSerializer.Deserialize(str) as JsonObject;
+            if (jsonObject != null) {
+                if (jsonObject.ContainsKey("usePDB")) 
+                    usePDB = (bool)jsonObject["usePDB"];
+                if (jsonObject.ContainsKey("useILRuntime")) 
+                    usePDB = (bool)jsonObject["useILRuntime"];
+                if (jsonObject.ContainsKey("useLocal")) 
+                    usePDB = (bool)jsonObject["useLocal"];
+                if (jsonObject.ContainsKey("webRoot")) 
+                    ResourceConstant.ResourceWebRoot = jsonObject["webRoot"].ToString();
+                if (jsonObject.ContainsKey("forceLogin")) 
+                    forceLogin = (bool)jsonObject["forceLogin"];
+            }
+        }
+    }
+
+    void InitializeSDKs() {
+        if (Application.platform == RuntimePlatform.IPhonePlayer || Application.platform == RuntimePlatform.Android) 
+            InitializeShareSDK();
+    }
+    void InitializeShareSDK() {
+        ShareSDK = GetComponent<ShareSDK>();
+        ShareSDK.authHandler = AuthResultHandler;
+        ShareSDK.Authorize(PlatformType.WeChat);
+    }
+    // ShareSDK执行授权回调
+    void AuthResultHandler(int reqID, ResponseState state, PlatformType type, Hashtable result) {
+        if (state == ResponseState.Success) {
+            Debug.Log("ShareSDK authorize success!");
+        } else if (state == ResponseState.Fail) {
+            Debug.Log("fail! error code = " + result["error_code"] + "; error msg = " + result["error_msg"]);
+        } else if (state == ResponseState.Cancel) {
+            Debug.Log("cancel!");
+        }
+    }
+
+// 协程是说：游戏启动时，给这个控件(gameObject)加载运行时脚本ResourceMap; 加载完毕自动触发StartHotFix()函数热更新回调
+    IEnumerator Initialize() { 
+        ResourceMap resourceMap = gameObject.AddComponent<ResourceMap>();
+        resourceMap.OnInitializeSuccess += StartHotFix;
+        ResourceConstant.Loader = resourceMap;
+        yield return new WaitForEndOfFrame();
+    }
+    public void StartHotFix() {
+        Debug.Log(TAG + ": StartHotFix()");
+        Debug.Log(TAG + " useILRuntime: " + useILRuntime); 
+        if (Application.platform == RuntimePlatform.IPhonePlayer) {
+            HotFix = HotFixILRunTime.Instance;
+        } else {
+            if (useILRuntime) { // 使用热更新程序集的实例
+                HotFix = HotFixILRunTime.Instance;
+            } else { // 这里是，还需要再理解消化一下
+                HotFix = HotFixReflector.Instance;
+            }
+        }
+    }
+}
+    #+END_SRC 
+** 
+   #+BEGIN_SRC csharp
+   #+END_SRC 
+** HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain: 我忘记了什么叫SingletonMono ?
+   #+BEGIN_SRC csharp
+public class HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain { // 我忘记了什么叫SingletonMono ?
+    public static ILRuntime.Runtime.Enviorment.AppDomain appDomain;
+
+    void Start() {
+        appDomain = new ILRuntime.Runtime.Enviorment.AppDomain();
+#if UNITY_EDITOR
+        appDomain.UnityMainThreadID = System.Threading.Thread.CurrentThread.ManagedThreadId;
+#endif
+        // 调用资源管理器加载这两个程序集：HotFix.dll + HotFix.pdb
+        TextAsset dllAsset = ResourceConstant.Loader.LoadAsset<TextAsset>("HotFix.dll", "HotFix.dll");　// 同步加载
+        var msDll = new System.IO.MemoryStream(dllAsset.bytes); // 这里涉及到内存管理吗？以前我不曾涉及，现在长大了，应该把它理解消化好
+        if (GameApplication.Instance.usePDB) {
+            ResourceConstant.Loader.LoadAssetAsyn<TextAsset>("HotFix.pdb", "HotFix.pdb", (pdbAsset) => {　// 异步加载
+                var msPdb = new System.IO.MemoryStream(pdbAsset.bytes);
+                appDomain.LoadAssembly(msDll, msPdb, new Mono.Cecil.Mdb.MdbReaderProvider());
+                StartApplication();　// <<<<<<<<<<<<<<<<<<<< 
+            }, EAssetBundleUnloadLevel.ChangeSceneOver);
+        } else {
+            appDomain.LoadAssembly(msDll, null, new Mono.Cecil.Mdb.MdbReaderProvider());
+            StartApplication();
+        }
+    }
+    void StartApplication() {
+        InitializeILRunTimeHotFixSetting();
+        DoStaticMethod("HotFix.HotFixMain", "Start");
+    }
+    void InitializeILRunTimeHotFixSetting() {
+        InitializeDelegateSetting(); // 方法被我搬到了文件的最后，太长比较简单
+        InitializeCLRBindSetting();
+        InitializeAdapterSetting();
+        InitializeValueTypeSetting();
+    }
+    unsafe void InitializeCLRBindSetting() {
+        foreach (var i in typeof(System.Activator).GetMethods()) {
+            //　找到名字为CreateInstance，并且是泛型方法的方法定义　？
+            if (i.Name == "CreateInstance" && i.IsGenericMethodDefinition) 
+                appDomain.RegisterCLRMethodRedirection(i, CreateInstance);　// 方法重定向？再理解消化一下，不太懂还
+        }
+    }
+
+    void InitializeAdapterSetting() {
+        appDomain.RegisterCrossBindingAdaptor(new ViewModelBaseAdapter());  // 这个看过了
+        appDomain.RegisterCrossBindingAdaptor(new UnityGuiViewAdapter()); 　// 这个看过了
+        appDomain.RegisterCrossBindingAdaptor(new ModuleBaseAdapter());　　　// 这个看过了
+// 下面的这几适配器还不知道是怎么回事呀
+        appDomain.RegisterCrossBindingAdaptor(new IEnumeratorObjectAdaptor());
+        appDomain.RegisterCrossBindingAdaptor(new MonoBehaviourAdapter());
+        appDomain.RegisterCrossBindingAdaptor(new InterfaceCrossBindingAdaptor());
+    }
+    void InitializeValueTypeSetting() {
+        appDomain.RegisterValueTypeBinder(typeof(Vector3), new Vector3Binder());
+        appDomain.RegisterValueTypeBinder(typeof(Vector2), new Vector2Binder());
+        appDomain.RegisterValueTypeBinder(typeof(Quaternion), new QuaternionBinder());
+    }
+
+// 定义如何调用热更新程序集里的静态入口方法
+    object DoStaticMethod(string type, string method) {　
+        var hotfixType = appDomain.GetType(type);
+        var staticMethod = hotfixType.GetMethod(method, 0);
+        return appDomain.Invoke(staticMethod, null, null);
+    }
+
+// 定义热更新的两个方法的特用实现    
+#region Override
+    public Type LoadType(string typeName) {
+        if (appDomain.LoadedTypes.ContainsKey(typeName)) {
+            return appDomain.LoadedTypes[typeName].ReflectionType;
+        }
+        return null;
+    }
+    public object CreateInstance(string typeName) {
+        ILType type = (ILType)appDomain.LoadedTypes[typeName];
+        var instance = type.Instantiate();
+        return instance;
+    }
+#endregion
+
+    // 公用静态方法的实现
+    public unsafe static StackObject* CreateInstance(ILIntepreter intp, StackObject* esp, IList<object> mStack, CLRMethod method, bool isNewObj) {
+        // 获取泛型参数<T>的实际类型
+        IType[] genericArguments = method.GenericArguments;
+        if (genericArguments != null && genericArguments.Length == 1) {
+            var t = genericArguments[0];
+            if (t is ILType)// 如果T是热更DLL里的类型 {
+                // 通过ILRuntime的接口来创建实例
+                return ILIntepreter.PushObject(esp, mStack, ((ILType)t).Instantiate());
+        } else
+            return ILIntepreter.PushObject(esp, mStack, Activator.CreateInstance(t.TypeForCLR));// 通过系统反射接口创建实例
+    } else
+          throw new EntryPointNotFoundException();
+}
+
+// 不难猜测理解：所有需要热更新的方法类型（以不同的参数类型以及返回类型作区分），都要在这里向程序集的代理管理器注册相关方法回调代理    
+    void InitializeDelegateSetting() {
+        appDomain.DelegateManager.RegisterMethodDelegate<int>();
+        appDomain.DelegateManager.RegisterFunctionDelegate<int, string>();
+        appDomain.DelegateManager.RegisterMethodDelegate<string>();
+        appDomain.DelegateManager.RegisterMethodDelegate<int, int>();
+        appDomain.DelegateManager.RegisterMethodDelegate<List<int>, List<int>>();
+        appDomain.DelegateManager.RegisterMethodDelegate<string, string>();
+        appDomain.DelegateManager.RegisterMethodDelegate<object, MessageArgs<object>>();
+        appDomain.DelegateManager.RegisterMethodDelegate<object, MessageArgs<ILTypeInstance>>();
+        appDomain.DelegateManager.RegisterMethodDelegate<GameObject>();
+        appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Networking.UnityWebRequest>();
+        appDomain.DelegateManager.RegisterMethodDelegate<TMP_FontAsset>();
+        appDomain.DelegateManager.RegisterMethodDelegate<Font>();
+        appDomain.DelegateManager.RegisterMethodDelegate<AnimationClip>();
+        appDomain.DelegateManager.RegisterMethodDelegate<AnimatorOverrideController>();
+        appDomain.DelegateManager.RegisterMethodDelegate<RuntimeAnimatorController>();
+        appDomain.DelegateManager.RegisterMethodDelegate<AudioClip>();
+        appDomain.DelegateManager.RegisterMethodDelegate<Material>();
+        appDomain.DelegateManager.RegisterMethodDelegate<TextAsset>();
+        appDomain.DelegateManager.RegisterMethodDelegate<Sprite>();
+        appDomain.DelegateManager.RegisterMethodDelegate<Texture2D>();
+        appDomain.DelegateManager.RegisterMethodDelegate<TapGesture>();
+        appDomain.DelegateManager.RegisterMethodDelegate<LongPressGesture>();
+        appDomain.DelegateManager.RegisterMethodDelegate<DragGesture>();
+        appDomain.DelegateManager.RegisterMethodDelegate<PinchGesture>();
+        appDomain.DelegateManager.RegisterMethodDelegate<Exception>();
+        appDomain.DelegateManager.RegisterFunctionDelegate<GameObject, GameObject>();
+        appDomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, ILTypeInstance, int>();
+       // 在Unity的程序集与热更新的程序集跨域之间，这里给出了方法代理转换的实现逻辑，几座小桥流水人家，爱表哥爱生活
+        appDomain.DelegateManager.RegisterDelegateConvertor<UnityAction>((action) => {
+            return new UnityAction(() => {
+                ((Action)action)();
+            });
+        });
+        appDomain.DelegateManager.RegisterDelegateConvertor<UnityAction<bool>>((action) => {
+            return new UnityAction<bool>((b) => {
+                ((Action<bool>)action)(b);
+            });
+        });
+        appDomain.DelegateManager.RegisterDelegateConvertor<UnityAction<int>>((action) => {
+            return new UnityAction<int>((b) => {
+                ((Action<int>)action)(b);
+            });
+        });
+        appDomain.DelegateManager.RegisterDelegateConvertor<UnityAction<long>>((action) => {
+            return new UnityAction<long>((b) => {
+                ((Action<long>)action)(b);
+            });
+        });
+        appDomain.DelegateManager.RegisterDelegateConvertor<UnityAction<float>>((action) => {
+            return new UnityAction<float>((b) => {
+                ((Action<float>)action)(b);
+            });
+        });
+        appDomain.DelegateManager.RegisterDelegateConvertor<UnityAction<string>>((action) => {
+            return new UnityAction<string>((b) => {
+                ((Action<string>)action)(b);
+            });
+        });
+        appDomain.DelegateManager.RegisterDelegateConvertor<UnityAction<BaseEventData>>((action) => {
+            return new UnityAction<BaseEventData>((b) => {
+                ((Action<BaseEventData>)action)(b);
+            });
+        });
+        appDomain.DelegateManager.RegisterDelegateConvertor<GestureRecognizerTS<TapGesture>.GestureEventHandler>((action) => {
+            return new GestureRecognizerTS<TapGesture>.GestureEventHandler((gesture) => {
+                ((Action<TapGesture>)action)(gesture);
+            });
+        });
+        appDomain.DelegateManager.RegisterDelegateConvertor<GestureRecognizerTS<LongPressGesture>.GestureEventHandler>((action) => {
+            return new GestureRecognizerTS<LongPressGesture>.GestureEventHandler((gesture) => {
+                ((Action<LongPressGesture>)action)(gesture);
+            });
+        });
+        appDomain.DelegateManager.RegisterDelegateConvertor<GestureRecognizerTS<DragGesture>.GestureEventHandler>((action) => {
+            return new GestureRecognizerTS<DragGesture>.GestureEventHandler((gesture) => {
+                ((Action<DragGesture>)action)(gesture);
+            });
+        });
+        appDomain.DelegateManager.RegisterDelegateConvertor<GestureRecognizerTS<PinchGesture>.GestureEventHandler>((action) => {
+            return new GestureRecognizerTS<PinchGesture>.GestureEventHandler((gesture) => {
+                ((Action<PinchGesture>)action)(gesture);
+            });
+        });
+        #if UNITY_IPHONE
+                appDomain.DelegateManager.RegisterDelegateConvertor<com.mob.FinishedRecordEvent>((action) => {
+            return new com.mob.FinishedRecordEvent((ex) => {
+                ((Action<Exception>)action)(ex);
+            });
+        });
+        #endif
+        appDomain.DelegateManager.RegisterDelegateConvertor<Comparison<ILTypeInstance>>((action) => {
+            return new Comparison<ILTypeInstance>((x, y) => {
+                return ((Func<ILTypeInstance, ILTypeInstance, System.Int32>)action)(x, y);
+            });
+        });
+    }
+}
+   #+END_SRC 
+** IHotFixMain interface
+   #+BEGIN_SRC csharp
+public interface IHotFixMain {
+    Type LoadType(string typeName);
+    object CreateInstance(string typeName);
+}
+   #+END_SRC 
+
+* Framework.MVVM: Unity中定义好的MVVM架构；使用ILRuntime定义实现了必要的跨域跨程序集适配，以及数据观察回调等
+** DataBinding: MVVM具备双向数据绑定功能；这里这个框架里通过代理观察者模式来实现数据的改变通知与回调
+*** BindableProperty<T> ： 泛型基类，可绑定的属性
+    #+BEGIN_SRC csharp
+public class BindableProperty<T> { // 泛型基类
+    private T _value;
+
+    public Action<T, T> OnValueChanged; // 代理模式，观察者模式？
+    public T Value {
+        get {
+            return _value;
+        }
+        set {
+            if (!Equals(_value, value)) {
+                T old = _value;
+                _value = value;
+                ValueChanged(old, _value);
+            }
+        }
+    }
+    void ValueChanged(T oldValue, T newValue) {
+        if (OnValueChanged != null) 
+            OnValueChanged(oldValue, newValue);
+    }
+
+    public override string ToString() {
+        return (Value != null ? Value.ToString() : "null");
+    }
+}
+    #+END_SRC 
+*** ObservableList<T> : IList<T> ：可被观察的链表，同样包装成泛型基类
+    #+BEGIN_SRC csharp
+public class ObservableList<T> : IList<T> { // 可被观察的链表：同样包装成泛型基类
+
+    public Action<List<T>, List<T>> OnValueChanged;
+    public Action<T> OnAdd;
+    public Action<int, T> OnInsert;
+    public Action<T> OnRemove;
+    private List<T> _value = new List<T>(); // <<<<<<<<<< 
+
+    public List<T> Value {
+        get {
+            return _value;
+        }
+        set {
+            if (!Equals(_value, value)) {
+                var old = _value;
+                _value = value;
+                ValueChanged(old, _value);
+            }
+        }
+    }
+    void ValueChanged(List<T> oldValue, List<T> newValue) {
+        if (OnValueChanged != null) 
+            OnValueChanged(oldValue, newValue);
+    }
+
+    public IEnumerator<T> GetEnumerator() {
+        return _value.GetEnumerator();
+    }
+    IEnumerator IEnumerable.GetEnumerator() {
+        return GetEnumerator();
+    }
+
+// 覆写和定义链表的相关必要方法
+    public void Add(T item) {
+        _value.Add(item);
+        if (OnAdd != null) 
+            OnAdd(item);
+    }
+    public void Clear() {
+        _value.Clear();
+    }
+    public bool Contains(T item) {
+        return _value.Contains(item);
+    }
+    public void CopyTo(T[] array, int arrayIndex) {
+        _value.CopyTo(array, arrayIndex);
+    }
+    public bool Remove(T item) {
+        if (_value.Remove(item)) {
+            if (OnRemove != null) 
+                OnRemove(item);
+            return true;
+        }
+        return false;
+    }
+    public int Count {
+        get {
+            return _value.Count;
+        }
+    }
+    public bool IsReadOnly {
+        get;
+        private set;
+    }
+    public int IndexOf(T item) {
+        return _value.IndexOf(item);
+    }
+    public void Insert(int index, T item) {
+        _value.Insert(index, item);
+        if (OnInsert != null) {
+            OnInsert(index, item);
+        }
+    }
+    public void RemoveAt(int index) {
+        _value.RemoveAt(index);
+    }
+    public T this[int index] {
+        get {
+            return _value[index];
+        }
+        set {
+            _value[index] = value;
+        }
+    }
+}
+    #+END_SRC 
+*** PropertyBinder<ViewModelBase>： ViewModel(的基类以及继承类)的绑定辅助相关方法定义类
+    #+BEGIN_SRC csharp
+// ViewModel(的基类以及继承类)的绑定辅助相关方法定义类
+public class PropertyBinder<ViewModelBase> { 
+
+    private delegate void BindHandler(ViewModelBase viewModel); // 这里才真正意义上的代理模式吧
+    private delegate void UnBindHandler(ViewModelBase viewModel);
+
+    private readonly List<BindHandler> binders = new List<BindHandler>();
+    private readonly List<UnBindHandler> unBinders = new List<UnBindHandler>();
+
+    public void Add<TProperty>(string name, string realTypeName, Action<TProperty, TProperty> valueChangedHandler) {
+        var fieldInfo = GameApplication.Instance.HotFix.LoadType(realTypeName).GetField(name, BindingFlags.Instance | BindingFlags.Public);
+        if (fieldInfo == null) 
+            throw new Exception(string.Format("Unable to find bindableproperty field '{0}.{1}'", realTypeName, name));
+        binders.Add(viewModel => {
+            GetPropertyValue<TProperty>(name, viewModel, realTypeName, fieldInfo).OnValueChanged += valueChangedHandler;
+        });
+        unBinders.Add(viewModel => {
+            GetPropertyValue<TProperty>(name, viewModel, realTypeName, fieldInfo).OnValueChanged -= valueChangedHandler;
+        });
+    }
+    private BindableProperty<TProperty> GetPropertyValue<TProperty>(string name, ViewModelBase viewModel,
+                                                                    string realTypeName, FieldInfo fieldInfo) {
+        var value = fieldInfo.GetValue(viewModel);
+        BindableProperty<TProperty> bindableProperty = value as BindableProperty<TProperty>;
+        if (bindableProperty == null) 
+            throw new Exception(string.Format("Illegal bindableproperty field '{0}.{1}' ", realTypeName, name));
+        return bindableProperty;
+    }
+
+// 这里告诉一个常识说：任何一个ViewModel，不管是蕨类还是继承后的子类，它们都有可能有好几个视图与其绑定
+    public void Bind(ViewModelBase viewModel) {
+        if (viewModel != null) 
+            for (int i = 0; i < binders.Count; i++) 
+                binders[i](viewModel);
+    }
+// 这里告诉一个常识说：任何一个ViewModel，不管是蕨类还是继承后的子类，它们都有可能有好几个视图，需要与其解绑定
+    public void UnBind(ViewModelBase viewModel) {
+        if (viewModel != null) 
+            for (int i = 0; i < unBinders.Count; i++) 
+                unBinders[i](viewModel);
+    }
+}
+    #+END_SRC 
+** Message: 自定义的消息机制吗？这里还没能联系上下文，完全不知道这里是在做什么？
+*** MessageArgs<T>： 跨域跨程序集的消息参数泛型类 ？
+    #+BEGIN_SRC csharp
+public class MessageArgs<T> {
+    public T Item {
+        get;
+        private set;
+    }
+    public MessageArgs(T item) {
+        Item = item;
+    }
+}
+    #+END_SRC 
+*** MessageAggregator<T> : Singleton<MessageAggregator<T>>： 单例模式的泛型管理类？用一个字典来管理消息？
+    #+BEGIN_SRC csharp
+// 单例模式的泛型管理类？用一个字典来管理消息(可观察的属性、链表、ViewModel等， 以及它们各自对应的回调) ？ 这里要再看不遍，还没有真正看懂
+public class MessageAggregator<T> : Singleton<MessageAggregator<T>> {
+
+    private readonly Dictionary<string, Action<object, MessageArgs<T>>> messages =
+        new Dictionary<string, Action<object, MessageArgs<T>>>();
+
+    public void Subscribe(string name, Action<object, MessageArgs<T>> handler) {
+        if (!messages.ContainsKey(name)) 
+            messages.Add(name, handler);
+        else 
+            messages[name] += handler;
+    }
+    public void Publish(string name, object sender, MessageArgs<T> args) {
+        if (messages.ContainsKey(name) && messages[name] != null) 
+            messages[name](sender, args);
+    }
+}
+    #+END_SRC 
+** Module: 这里是模块级别的定义；在模块层面级别上；在ViewModel层面级别上等不面层面上的跨域适配定义与实现
+- 不能像最开始一样把这里误当作Model；这是一个framework,数据是定义在各个不同的具体应用里
 *** ModuleBase.cs
      #+BEGIN_SRC csharp
 public abstract class ModuleBase {
@@ -55,9 +583,11 @@ public abstract class ModuleBase {
     public abstract void Excute();
 }
      #+END_SRC 
-*** ModuleBaseAdapter : CrossBindingAdaptor：继承了CrossBindingAdaptor这个抽象基类
+*** ModuleBaseAdapter : CrossBindingAdaptor：在模块层面上自定义实现了：模块层面级别的跨域跨程序集适配器
      #+BEGIN_SRC csharp
 public class ModuleBaseAdapter : CrossBindingAdaptor { // 继承了CrossBindingAdaptor抽象基类
+
+//　抽象蕨类里的三个抽象方法：需要实现　
     public override Type BaseCLRType { // 继承了CrossBindingAdaptor 抽象基类，就应该需要覆写里面定义过的相关方法，改造成自己需要的样子
         get {
             return typeof(ModuleBase);
@@ -68,17 +598,6 @@ public class ModuleBaseAdapter : CrossBindingAdaptor { // 继承了CrossBindingA
             return typeof(ModuleBaseAdaptor);
         }
     }
-   // 抽象基类 CrossBindingAdaptor里两个方法的定义:
-        public abstract Type BaseCLRType { get; }
-        // If this Adaptor is capable to impelement multuple interfaces, use this Property, AND BaseCLRType should return null
-        public virtual Type[] BaseCLRTypes {
-            get {
-                return null;
-            }
-        }
-        public abstract Type AdaptorType { get; }
-
-    //　抽象蕨类里的抽象方法：需要实现　
     public override object CreateCLRInstance(ILRuntime.Runtime.Enviorment.AppDomain appdomain, ILTypeInstance instance) {
         return new ModuleBaseAdaptor(appdomain, instance);
     }
@@ -101,7 +620,7 @@ public class ModuleBaseAdapter : CrossBindingAdaptor { // 继承了CrossBindingA
             this.instance = instance;
         }
         
-        public ILTypeInstance ILInstance { get { return instance; } }
+        public ILTypeInstance ILInstance { get { return instance; } } // 返回类型的实体类
 
 // 覆写ModuleBase里的两个抽象方法
         public override void OnInitialize() {
@@ -124,59 +643,6 @@ public class ModuleBaseAdapter : CrossBindingAdaptor { // 继承了CrossBindingA
         }
     }
 }
-     #+END_SRC 
-** ViewModel
-*** ViewModelBase.cs
-     #+BEGIN_SRC csharp
-public class ViewModelBase {
-    
-    private bool _isInitialize;
-
-    public bool IsRevealInProgress {
-        get;
-        private set;
-    }
-    public bool IsRevealed {
-        get;
-        private set;
-    }
-    public bool IsHideInProgress {
-        get;
-        private set;
-    }
-    public ViewModelBase ParentViewModel {
-        get;
-        set;
-    }
-
-    public virtual void OnStartReveal() {
-        IsRevealInProgress = true;
-        if (!_isInitialize) {
-            OnInitialize();
-            _isInitialize = true;
-        }
-    }
-    public virtual void OnFinishReveal() {
-        IsRevealInProgress = false;
-        IsRevealed = true;
-    }
-    public virtual void OnStartHide() {
-        IsHideInProgress = true;
-    }
-    public virtual void OnFinishHide() {
-        IsHideInProgress = false;
-        IsRevealed = false;
-    }
-    
-    public virtual void OnDestory() {}
-    protected virtual void OnInitialize() {}
-}
-     #+END_SRC 
-*** 
-     #+BEGIN_SRC csharp
-     #+END_SRC 
-*** 
-     #+BEGIN_SRC csharp
      #+END_SRC 
 ** View
 *** IView<ViewModelBase>
@@ -375,7 +841,7 @@ private bool _isInitialized; // ViewModelBase 里同共有的
         }
     }
 }
-     #+END_SRC 
+     #+END_SRC
 *** UnityGuiViewAdapter : CrossBindingAdapto: 最鼻祖的实体基类
     #+BEGIN_SRC csharp
 public class UnityGuiViewAdapter : CrossBindingAdaptor { // 最鼻祖的实体基类
@@ -677,4 +1143,394 @@ public class UnityGuiViewAdapter : CrossBindingAdaptor { // 最鼻祖的实体�
     bool isOnBindingContextChangedInvoking = false;
 }
     #+END_SRC 
+** ViewModel
+*** ViewModelBase.cs
+     #+BEGIN_SRC csharp
+public class ViewModelBase {
+    private bool _isInitialize;
+    public bool IsRevealInProgress {
+        get;
+        private set;
+    }
+    public bool IsRevealed {
+        get;
+        private set;
+    }
+    public bool IsHideInProgress {
+        get;
+        private set;
+    }
+    public ViewModelBase ParentViewModel {
+        get;
+        set;
+    }
+    public virtual void OnStartReveal() {
+        IsRevealInProgress = true;
+        if (!_isInitialize) {
+            OnInitialize();
+            _isInitialize = true;
+        }
+    }
+    public virtual void OnFinishReveal() {
+        IsRevealInProgress = false;
+        IsRevealed = true;
+    }
+    public virtual void OnStartHide() {
+        IsHideInProgress = true;
+    }
+    public virtual void OnFinishHide() {
+        IsHideInProgress = false;
+        IsRevealed = false;
+    }
+    
+    public virtual void OnDestory() {}
+    protected virtual void OnInitialize() {}
+}
+     #+END_SRC 
+*** ViewModelBaseAdapter : CrossBindingAdaptor：自定义实现了ViewModel的跨域跨程序集适配
+     #+BEGIN_SRC csharp
+// 作为两个不同程序集中的ViewModel的桥梁适配器：
+public class ViewModelBaseAdapter : CrossBindingAdaptor { // 这里需要再想一想：为什么外面大类，里面小类，继承的基类不一样，公用与私有？
+
+// 实现了基类 CrossBindingAdapter里的其中三个抽象方法
+    public override Type BaseCLRType {
+        get {
+            return typeof(ViewModelBase);
+        }
+    }
+    public override Type AdaptorType {
+        get {
+            return typeof(ViewModelBaseAdaptor);
+        }
+    }
+    public override object CreateCLRInstance(ILRuntime.Runtime.Enviorment.AppDomain appdomain, ILTypeInstance instance) {
+        return new ViewModelBaseAdaptor(appdomain, instance);
+    }
+
+// 作为两个不同程序集中的ViewModel的桥梁适配器：继承自ViewModelBase,需要实现里而定义过的甩有6个抽象方法
+    class ViewModelBaseAdaptor : ViewModelBase, CrossBindingAdaptorType { // <<<<<<<<<<<<<<<<<<<< 
+        ILTypeInstance instance; // 来自于 CrossBindingAdapterType ?
+        ILRuntime.Runtime.Enviorment.AppDomain appdomain;
+
+        public ViewModelBaseAdaptor() { }
+        public ViewModelBaseAdaptor(ILRuntime.Runtime.Enviorment.AppDomain appdomain, ILTypeInstance instance) {
+            this.appdomain = appdomain;
+            this.instance = instance;
+        }
+        
+// 来自于 CrossBindingAdapterType接口的实体实现
+        public ILTypeInstance ILInstance { get { return instance; } } 
+        
+// 作为两个不同程序集中的ViewModel的桥梁适配器：继承自ViewModelBase,需要实现里而定义过的甩有6个抽象方法
+        public override void OnStartReveal() {
+            if (!_onStartRevealGot) {
+                _onStartReveal = instance.Type.GetMethod("OnStartReveal");
+                _onStartRevealGot = true;
+            }
+            if (_onStartReveal != null && !_isOnStartRevealInvoking) {
+                _isOnStartRevealInvoking = true;
+                appdomain.Invoke(_onStartReveal, instance);
+                _isOnStartRevealInvoking = false;
+            } else 
+                base.OnStartReveal();
+        }
+        public override void OnFinishReveal() {
+            if (!_onFinishRevealGot) {
+                _onFinishReveal = instance.Type.GetMethod("OnFinishReveal");
+                _onFinishRevealGot = true;
+            }
+            if (_onFinishReveal != null && !_isOnFinishRevealInvoking) {
+                _isOnFinishRevealInvoking = true;
+                appdomain.Invoke(_onFinishReveal, instance);
+                _isOnFinishRevealInvoking = false;
+            } else 
+                base.OnFinishReveal();
+        }
+        public override void OnStartHide() {
+            if (!_onStartHideGot) {
+                _onStartHide = instance.Type.GetMethod("OnStartHide");
+                _onStartHideGot = true;
+            }
+            if (_onStartHide != null && !_isOnStartHideInvoking) {
+                _isOnStartHideInvoking = true;
+                appdomain.Invoke(_onStartHide, instance);
+                _isOnStartHideInvoking = false;
+            } else 
+                base.OnStartHide();
+        }
+        public override void OnFinishHide() {
+            if (!_onFinishHideGot) {
+                _onFinishHide = instance.Type.GetMethod("OnFinishHide");
+                _onFinishHideGot = true;
+            }
+            if (_onFinishHide != null && !_isOnFinishHideInvoking) {
+                _isOnFinishHideInvoking = true;
+                appdomain.Invoke(_onFinishHide, instance);
+                _isOnFinishHideInvoking = false;
+            } else 
+                base.OnFinishHide();
+        }
+        public override void OnDestory() {
+            if (!_onDestoryGot) {
+                _onDestory = instance.Type.GetMethod("OnDestory");
+                _onDestoryGot = true;
+            }
+            if (_onDestory != null && !_isOnDestoryInvoking) {
+                _isOnDestoryInvoking = true;
+                appdomain.Invoke(_onDestory, instance);
+                _isOnDestoryInvoking = false;
+            } else 
+                base.OnDestory();
+        }
+        protected override void OnInitialize() {
+            if (!_onInitializeGot) {
+                _onInitialize = instance.Type.GetMethod("OnInitialize");
+                _onInitializeGot = true;
+            }
+            if (_onInitialize != null && !_isOnInitializeInvoking) {
+                _isOnInitializeInvoking = true;
+                appdomain.Invoke(_onInitialize, instance);
+                _isOnInitializeInvoking = false;
+            } else 
+                base.OnInitialize();
+        }       
+    // _onStart/_onFinish: Reveal + Hide;
+        IMethod _onStartReveal;
+        bool _onStartRevealGot;
+        bool _isOnStartRevealInvoking = false;
+        IMethod _onFinishReveal;
+        bool _onFinishRevealGot;
+        bool _isOnFinishRevealInvoking = false;
+        IMethod _onStartHide;
+        bool _onStartHideGot;
+        bool _isOnStartHideInvoking = false;
+        IMethod _onFinishHide;
+        bool _onFinishHideGot;
+        bool _isOnFinishHideInvoking = false;
+    // _onInitialize + _onDestroy
+        IMethod _onInitialize;
+        bool _onInitializeGot;
+        bool _isOnInitializeInvoking = false;
+        IMethod _onDestory;
+        bool _onDestoryGot;
+        bool _isOnDestoryInvoking = false;
+    }
+}
+     #+END_SRC 
+
 * HotFix中使用MVVM架构实现热更新的搭配与相关的链接
+
+
+* ILRuntime 类库里源码的基本理解，最重要的涉及到的相关的类与方法摘要
+** CrossBindingAdaptor : IType 跨域(程序集)绑定适配器 + CrossBindingAdaptorType interface 公用接口类(为什么要这个公用接口？)
+    #+BEGIN_SRC csharp
+public interface CrossBindingAdaptorType {　// 公用接口类
+    ILTypeInstance ILInstance { get; }
+}
+
+// This interface is used for inheritance and implementation of CLR Types or interfaces
+public abstract class CrossBindingAdaptor : IType {
+    IType type;
+
+// 下面是定义的几个公用的抽象方法，供子类实现    
+    // This returns the CLR type to be inherited or CLR interface to be implemented
+    public abstract Type BaseCLRType { get; }
+    // If this Adaptor is capable to impelement multuple interfaces, use this Property, AND BaseCLRType should return null
+    public virtual Type[] BaseCLRTypes {
+        get {
+            return null;
+        }
+    }
+    public abstract Type AdaptorType { get; }
+    public abstract object CreateCLRInstance(Enviorment.AppDomain appdomain, ILTypeInstance instance);
+
+    internal IType RuntimeType { get { return type; } set { type = value; } }
+
+// 反射机制的所有可能涉及的相关的方法定义；getters/setters
+#region IType Members
+    public IMethod GetMethod(string name, int paramCount, bool declaredOnly = false) {
+        return type.GetMethod(name, paramCount, declaredOnly);
+    }
+    public IMethod GetMethod(string name, List<IType> param, IType[] genericArguments, IType returnType = null, bool declaredOnly = false) {
+        return type.GetMethod(name, param, genericArguments, returnType, declaredOnly);
+    }
+    public List<IMethod> GetMethods() {
+        return type.GetMethods();
+    }
+    public int GetFieldIndex(object token) {
+        return type.GetFieldIndex(token);
+    }
+    public IMethod GetConstructor(List<IType> param) {
+        return type.GetConstructor(param);
+    }
+    public bool CanAssignTo(IType type) {
+        bool res = false;
+        if (BaseType != null)
+            res = BaseType.CanAssignTo(type);
+        var interfaces = Implements;
+        if (!res && interfaces != null) {
+            for (int i = 0; i < interfaces.Length; i++) {
+                var im = interfaces[i];
+                res = im.CanAssignTo(type);
+                if (res)
+                    return true;
+            }
+        }
+        return res;
+    }
+    public IType MakeGenericInstance(KeyValuePair<string, IType>[] genericArguments) {
+        return type.MakeGenericInstance(genericArguments);
+    }
+    public IType MakeByRefType() {
+        return type.MakeByRefType();
+    }
+    public IType MakeArrayType(int rank) {
+        return type.MakeArrayType(rank);
+    }
+    public IType FindGenericArgument(string key) {
+        return type.FindGenericArgument(key);
+    }
+    public IType ResolveGenericType(IType contextType) {
+        return type.ResolveGenericType(contextType);
+    }
+    public IMethod GetVirtualMethod(IMethod method) {
+        return type.GetVirtualMethod(method);
+    }
+    public void GetValueTypeSize(out int fieldCout, out int managedCount) {
+        type.GetValueTypeSize(out fieldCout, out managedCount);
+    }
+// Getter / Setter s 
+    public bool IsGenericInstance {
+        get {
+            return type.IsGenericInstance;
+        }
+    }
+    public KeyValuePair<string, IType>[] GenericArguments {
+        get {
+            return type.GenericArguments;
+        }
+    }
+    public Type TypeForCLR {
+        get {
+            return type.TypeForCLR;
+        }
+    }
+    public IType ByRefType {
+        get {
+            return type.ByRefType;
+        }
+    }
+    public IType ArrayType {
+        get {
+            return type.ArrayType;
+        }
+    }
+    public string FullName {
+        get {
+            return type.FullName;
+        }
+    }
+    public string Name {
+        get {
+            return type.Name;
+        }
+    }
+    public bool IsValueType {
+        get {
+            return type.IsValueType;
+        }
+    }
+    public bool IsPrimitive {
+        get {
+            return type.IsPrimitive;
+        }
+    }
+    public bool IsEnum {
+        get {
+            return type.IsEnum;
+        }
+    }
+    public bool IsDelegate {
+        get {
+            return type.IsDelegate;
+        }
+    }
+    public AppDomain AppDomain {
+        get {
+            return type.AppDomain;
+        }
+    }
+    public Type ReflectionType {
+        get {
+            return type.ReflectionType;
+        }
+    }
+    public IType BaseType {
+        get {
+            return type.BaseType;
+        }
+    }
+    public IType[] Implements {
+        get {
+            return type.Implements;
+        }
+    }
+    public bool HasGenericParameter {
+        get {
+            return type.HasGenericParameter;
+        }
+    }
+    public bool IsGenericParameter {
+        get {
+            return type.IsGenericParameter;
+        }
+    }
+    public bool IsArray {
+        get { return false; }
+    }
+    public bool IsByRef {
+        get {
+            return type.IsByRef;
+        }
+    }
+    public bool IsInterface {
+        get { return type.IsInterface; }
+    }
+    public IType ElementType {
+        get {
+            return type.ElementType;
+        }
+    }
+    public int ArrayRank {
+        get { return type.ArrayRank; }
+    }
+    public int TotalFieldCount {
+        get {
+            return type.TotalFieldCount;
+        }
+    }
+    public StackObject DefaultObject {
+        get {
+            return default(StackObject);
+        }
+    }
+    public int TypeIndex {
+        get {
+            return -1;
+        }
+    }
+#endregion
+}
+    #+END_SRC 
+** 
+    #+BEGIN_SRC csharp
+    #+END_SRC 
+** 
+    #+BEGIN_SRC csharp
+    #+END_SRC 
+** 
+    #+BEGIN_SRC csharp
+    #+END_SRC 
+** 
+    #+BEGIN_SRC csharp
+    #+END_SRC 
