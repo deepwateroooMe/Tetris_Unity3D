@@ -46,16 +46,212 @@ appdomain.DebugService.StartDebugService(56000)
 - 本文流程图摘自：ILRuntime的QQ群的《ILRuntime热更框架.docx》(by a 704757217)
 - Unity实现c#热更新方案探究(三): https://zhuanlan.zhihu.com/p/37375372
 
-* Framework.Core核心理解 ？
+* Framework.Core核心理解: 现在有足足的干劲把ILRuntime + MVVM热更新框架里的方方面面都理解消化透彻！爱表哥爱生活
 ** Adaptor
-*** 
+*** IDisposableAdaptor : CrossBindingAdaptor 
     #+BEGIN_SRC csharp
+public class IDisposableAdaptor : CrossBindingAdaptor {
+// 实现基类里所定义的三个方法    
+    public override Type BaseCLRType {
+        get {
+            return typeof(IDisposable);
+        }
+    }
+    public override Type AdaptorType {
+        get {
+            return typeof(Adaptor);
+        }
+    }
+    public override object CreateCLRInstance(ILRuntime.Runtime.Enviorment.AppDomain appdomain, ILTypeInstance instance) {
+        return new Adaptor(appdomain, instance);
+    }
+
+    internal class Adaptor : IDisposable, CrossBindingAdaptorType {
+        ILTypeInstance instance;　// 基类CrossBindingAdaptorType　里所必须有的一个实例
+        ILRuntime.Runtime.Enviorment.AppDomain appdomain;
+
+        public Adaptor() {　}
+        public Adaptor(ILRuntime.Runtime.Enviorment.AppDomain appdomain, ILTypeInstance instance) {
+            this.appdomain = appdomain;
+            this.instance = instance;
+        }
+        public ILTypeInstance ILInstance { get { return instance; } } // getter
+
+        IMethod _Dispose;
+        public void Dispose() {
+            if (_Dispose == null) 
+                _Dispose = instance.Type.GetMethod("Dispose", 0);
+            if (_Dispose != null)
+                appdomain.Invoke(_Dispose, instance);
+        }
+    }
+}
     #+END_SRC 
-*** 
+*** IEnumeratorObjectAdaptor : CrossBindingAdaptor { // 叠代器适配器
     #+BEGIN_SRC csharp
+public class IEnumeratorObjectAdaptor : CrossBindingAdaptor { // 叠代器适配器
+// 基类里的三个方法的实现
+    public override Type BaseCLRType {
+        get {
+            return typeof(IEnumerator<object>);
+        }
+    }
+    public override Type AdaptorType {
+        get {
+            return typeof(Adaptor);
+        }
+    }
+    public override object CreateCLRInstance(ILRuntime.Runtime.Enviorment.AppDomain appdomain, ILTypeInstance instance) {
+        return new Adaptor(appdomain, instance);
+    }
+
+// 搞不明白：这些个IXxxxx IEnumerator<T>　之类的，是在哪里定义的，还是说是C＃语言里本来就有的呢？
+// 弄不明白的这些个以I打头的：都定义在plugins里的ILRuntime的包裹里，改天可以捡起来看一下
+    internal class Adaptor : IEnumerator<object>, CrossBindingAdaptorType {
+        ILTypeInstance instance;
+        ILRuntime.Runtime.Enviorment.AppDomain appdomain;
+
+        public Adaptor() {　}
+        public Adaptor(ILRuntime.Runtime.Enviorment.AppDomain appdomain, ILTypeInstance instance) {
+            this.appdomain = appdomain;
+            this.instance = instance;
+            _get_Current = instance.Type.GetMethod(".get_Current", 0);
+        }
+
+        public ILTypeInstance ILInstance { get { return instance; } }　// getter
+
+        public object Current { // 叠代器适配器所特有的方法，当前元素
+            get {
+                var obj = appdomain.Invoke(_get_Current, null);
+                return obj;
+            }
+        }
+// 这里的几个方法，是因为叠代器需要用到，所以不得不定义的吗？还有什么基类之类的吗？
+        IMethod _MoveNext;
+        IMethod _get_Current;
+        IMethod _Reset;
+        IMethod _Dispose;
+        public bool MoveNext() {
+            if (_MoveNext == null) 
+                _MoveNext = instance.Type.GetMethod("MoveNext", 0);
+            if (_MoveNext != null)
+                return (bool)appdomain.Invoke(_MoveNext, instance);
+            return false;
+        }
+        public void Reset() {
+            if (_Reset == null) 
+                _Reset = instance.Type.GetMethod("MoveNext", 0);
+            if (_Reset != null)
+                appdomain.Invoke(_Reset, instance);
+        }
+        public void Dispose() {
+            if (_Dispose == null) 
+                _Dispose = instance.Type.GetMethod("Dispose", 0);
+            if (_Dispose != null)
+                appdomain.Invoke(_Dispose, instance);
+        }
+    }
+}
     #+END_SRC 
-*** 
+*** InterfaceCrossBindingAdaptor : CrossBindingAdaptor：就是实现基类里的三个方法呀
     #+BEGIN_SRC csharp
+public class InterfaceCrossBindingAdaptor : CrossBindingAdaptor { // 就是实现基类里的三个方法呀
+    public override Type BaseCLRType {
+        get {
+            return typeof(IEnumerator);
+        }
+    }
+    public override Type AdaptorType {
+        get {
+            return typeof(IEnumeratorObjectAdaptor.Adaptor);
+        }
+    }
+    public override object CreateCLRInstance(ILRuntime.Runtime.Enviorment.AppDomain appdomain, ILTypeInstance instance) {
+        return new IEnumeratorObjectAdaptor.Adaptor(appdomain, instance);
+    }
+}
+    #+END_SRC 
+*** MonoBehaviourAdapter : CrossBindingAdaptor: ./Plugins/ILRuntime/Adapters包裹里的
+    #+BEGIN_SRC csharp
+// ./Plugins/ILRuntime/Adapters/MonoBehaviourAdapter.cs: 注意这个程序所在的包裹
+public class MonoBehaviourAdapter : CrossBindingAdaptor {
+// 实现基类里的三个抽象方法
+    public override Type BaseCLRType {
+        get {
+            return typeof(MonoBehaviour);
+        }
+    }
+    public override Type AdaptorType {
+        get {
+            return typeof(Adaptor);
+        }
+    }
+    public override object CreateCLRInstance(ILRuntime.Runtime.Enviorment.AppDomain appdomain, ILTypeInstance instance) {
+        return new Adaptor(appdomain, instance);
+    }
+
+// 为了完整实现MonoBehaviour的所有特性，这个Adapter还得扩展，这里只抛砖引玉，只实现了最常用的Awake, Start和Update
+// 像我狠熟悉的安卓Activity/Fragment的生命周期有很多回调方法一样，MonoBehavior也有好几个生命周期回调方法可供实现扩展
+    public class Adaptor : MonoBehaviour, CrossBindingAdaptorType {
+        ILTypeInstance instance;
+        ILRuntime.Runtime.Enviorment.AppDomain appdomain;
+
+        public Adaptor() { }
+        public Adaptor(ILRuntime.Runtime.Enviorment.AppDomain appdomain, ILTypeInstance instance) {
+            this.appdomain = appdomain;
+            this.instance = instance;
+        }
+        public ILTypeInstance ILInstance { get { return instance; } set { instance = value; } }
+        public ILRuntime.Runtime.Enviorment.AppDomain AppDomain { get { return appdomain; } set { appdomain = value; } }
+
+// Awake() Start() Update() 三个生命周期架设方法的跨域适配
+        IMethod mAwakeMethod;
+        bool mAwakeMethodGot;
+        public void Awake() {
+            // Unity会在ILRuntime准备好这个实例前调用Awake，所以这里暂时先不掉用
+            if (instance != null) {
+                if (!mAwakeMethodGot) {
+                    mAwakeMethod = instance.Type.GetMethod("Awake", 0);
+                    mAwakeMethodGot = true;
+                }
+                if (mAwakeMethod != null) {
+                    appdomain.Invoke(mAwakeMethod, instance, null);
+                }
+            }
+        }
+        IMethod mStartMethod;
+        bool mStartMethodGot;
+        void Start() {
+            if (!mStartMethodGot) {
+                mStartMethod = instance.Type.GetMethod("Start", 0);
+                mStartMethodGot = true;
+            }
+            if (mStartMethod != null) {
+                appdomain.Invoke(mStartMethod, instance, null);
+            }
+        }
+        IMethod mUpdateMethod;
+        bool mUpdateMethodGot;
+        void Update() {
+            if (!mUpdateMethodGot) {
+                mUpdateMethod = instance.Type.GetMethod("Update", 0);
+                mUpdateMethodGot = true;
+            }
+            if (mStartMethod != null) {
+                appdomain.Invoke(mUpdateMethod, instance, null);
+            }
+        }
+        
+        public override string ToString() {
+            IMethod m = appdomain.ObjectType.GetMethod("ToString", 0);
+            m = instance.Type.GetVirtualMethod(m);
+            if (m == null || m is ILMethod) {
+                return instance.ToString();
+            } else
+                return instance.Type.FullName;
+        }
+    }
+}
     #+END_SRC 
 ** Factory
 ** Inject
@@ -151,7 +347,7 @@ public class GameApplication : MonoBehaviour {
         }
     }
 
-// 协程是说：游戏启动时，给这个控件(gameObject)加载运行时脚本ResourceMap; 加载完毕自动触发StartHotFix()函数热更新回调
+// 协程是说：游戏启动时，给这个控件(gameObject)加载运行时元件ResourceMap（本质上是个脚本程序）; 加载完毕自动触发StartHotFix()函数热更新回调
     IEnumerator Initialize() { 
         ResourceMap resourceMap = gameObject.AddComponent<ResourceMap>();
         resourceMap.OnInitializeSuccess += StartHotFix;
@@ -173,12 +369,9 @@ public class GameApplication : MonoBehaviour {
     }
 }
     #+END_SRC 
-** 
+** HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain: 因为跨域交互，所以即使是热更新包，也继承自unity MonoBehaviour
    #+BEGIN_SRC csharp
-   #+END_SRC 
-** HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain: 我忘记了什么叫SingletonMono ?
-   #+BEGIN_SRC csharp
-public class HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain { // 我忘记了什么叫SingletonMono ?
+public class HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain { // SingletonMono<T> where T : MonoBehaviour帮助类里有定义
     public static ILRuntime.Runtime.Enviorment.AppDomain appDomain;
 
     void Start() {
@@ -219,12 +412,11 @@ public class HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain { // 
     }
 
     void InitializeAdapterSetting() {
-        appDomain.RegisterCrossBindingAdaptor(new ViewModelBaseAdapter());  // 这个看过了
-        appDomain.RegisterCrossBindingAdaptor(new UnityGuiViewAdapter()); 　// 这个看过了
-        appDomain.RegisterCrossBindingAdaptor(new ModuleBaseAdapter());　　　// 这个看过了
-// 下面的这几适配器还不知道是怎么回事呀
+        appDomain.RegisterCrossBindingAdaptor(new ViewModelBaseAdapter());  
+        appDomain.RegisterCrossBindingAdaptor(new UnityGuiViewAdapter());   
+        appDomain.RegisterCrossBindingAdaptor(new ModuleBaseAdapter());     
         appDomain.RegisterCrossBindingAdaptor(new IEnumeratorObjectAdaptor());
-        appDomain.RegisterCrossBindingAdaptor(new MonoBehaviourAdapter());
+        appDomain.RegisterCrossBindingAdaptor(new MonoBehaviourAdapter()); // <<<<<<<<<<<<<<<<<<<< 临时补了一下，也有了
         appDomain.RegisterCrossBindingAdaptor(new InterfaceCrossBindingAdaptor());
     }
     void InitializeValueTypeSetting() {
@@ -368,6 +560,60 @@ public class HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain { // 
             });
         });
     }
+}
+   #+END_SRC 
+** HotFixReflector : SingletonMono<HotFixReflector>, IHotFixMain 
+   #+BEGIN_SRC csharp
+public class HotFixReflector : SingletonMono<HotFixReflector>, IHotFixMain {
+    public static Assembly assembly;
+
+    void Start() {
+        ResourceConstant.Loader.LoadAssetAsyn<TextAsset>( // 这里说是异步加载
+            "HotFix.dll", "HotFix.dll",
+            LoadHotFixDllSuccess,
+            EAssetBundleUnloadLevel.ChangeSceneOver);
+    }
+
+    void LoadHotFixDllSuccess(TextAsset dllAsset) {
+        if (GameApplication.Instance.usePDB) {
+            ResourceConstant.Loader.LoadAssetAsyn<TextAsset>( // 同样是异步加载
+                "HotFix.pdb",
+                "HotFix.pdb", (pdbAsset) => {
+                    assembly = Assembly.Load(dllAsset.bytes, pdbAsset.bytes);
+                    StartApplication(); // <<<<<<<<<< 
+                }, EAssetBundleUnloadLevel.ChangeSceneOver);
+        } else {
+            assembly = AppDomain.CurrentDomain.Load(dllAsset.bytes);
+            StartApplication();
+        }
+    }
+    
+    void StartApplication() {
+        try {
+            Type hotfixMainType = assembly.GetType("HotFix.HotFixMain");
+            MethodInfo startMethod = hotfixMainType.GetMethod("Start");
+            startMethod.Invoke(null, null);
+        } catch (Exception e) {
+            string errorMessage = string.Empty;
+            if (e.InnerException != null) 
+                errorMessage = e.InnerException.Message + e.InnerException.StackTrace;
+            else errorMessage = e.Message + e.StackTrace;
+            DebugHelper.LogError(errorMessage, true);
+        }
+    }
+#region Override
+    public Type LoadType(string typeName) {
+        Type type = assembly.GetTypes().FirstOrDefault(t => t.FullName == typeName);
+        if (type == null) {
+            DebugHelper.LogError(string.Format("Cant't find Class by class name:'{0}'", typeName), true);
+            throw new Exception(string.Format("Cant't find Class by class name:'{0}'", typeName));
+        }
+        return type;
+    }
+    public object CreateInstance(string typeName) {
+        return Activator.CreateInstance(LoadType(typeName));
+    }
+#endregion
 }
    #+END_SRC 
 ** IHotFixMain interface
@@ -1318,11 +1564,65 @@ public class ViewModelBaseAdapter : CrossBindingAdaptor { // 这里需要再想�
 }
      #+END_SRC 
 
+* Framework.Util各种帮助类
+** 
+   #+BEGIN_SRC csharp
+   #+END_SRC 
+** 
+   #+BEGIN_SRC csharp
+   #+END_SRC 
+
+** 
+   #+BEGIN_SRC csharp
+   #+END_SRC 
+** 
+   #+BEGIN_SRC csharp
+   #+END_SRC 
+** Singleton<T> + SingletonMono<T> : MonoBehaviour 
+   #+BEGIN_SRC csharp
+public class Singleton<T> where T : class, new() {
+    protected static T _instance;
+    public static T Instance {
+        get {
+            if (_instance == null) 
+                _instance = new T();
+            return _instance;
+        }
+    }
+    public static T GetInstance() {
+        return Instance;
+    }
+}
+
+public class SingletonMono<T> : MonoBehaviour where T : MonoBehaviour {　// MonoBehaviour类型的泛型基类
+    protected static T _instance;
+    public static T Instance {
+        get {
+            if (_instance == null) {　// 实例化一个游戏控件（GameObject），再将泛型类型以元件的形式挂上去，更将控件的名字
+                GameObject obj = new GameObject();
+                _instance = obj.AddComponent<T>();
+                obj.name = _instance.GetType().Name;
+            }
+            return _instance; // 返回实例
+        }
+    }
+    public static T GetInstance() {
+        return Instance;
+    }
+    public static void DestoryInstance() {
+        if (_instance == null)
+            return;
+        GameObject obj = _instance.gameObject;
+// 想一下：下面这一行，这里为什么会被亚掉？应该是正常运行这行才对呀，还是说控件池相关呢
+        //ResourceMgr.Instance.DestroyObject(obj);　
+    }
+}
+   #+END_SRC 
+
 * HotFix中使用MVVM架构实现热更新的搭配与相关的链接
 
-
 * ILRuntime 类库里源码的基本理解，最重要的涉及到的相关的类与方法摘要
-** CrossBindingAdaptor : IType 跨域(程序集)绑定适配器 + CrossBindingAdaptorType interface 公用接口类(为什么要这个公用接口？)
+** CrossBindingAdaptor : IType 跨域(程序集)绑定适配器 + CrossBindingAdaptorType interface 公用接口类(为什么要这个公用接口类？)
     #+BEGIN_SRC csharp
 public interface CrossBindingAdaptorType {　// 公用接口类
     ILTypeInstance ILInstance { get; }
