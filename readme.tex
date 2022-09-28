@@ -1,4 +1,4 @@
-% Created 2022-09-28 Wed 09:51
+% Created 2022-09-28 Wed 12:18
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -55,6 +55,7 @@
 \section{环境弄得比较好的包括：}
 \label{sec-3}
 \begin{itemize}
+\item 小笔记本电脑太慢了，会回家再读其它模块的源码，理解透彻。爱表哥，爱生活！！
 \item 输入法的搭建：终于用到了自己之前用过的好用的输入法
 \item 这两天开车疲累，最迟明天中午会去南湾找房间出租，尽快解决搬家的问题；昨天晚上回来得太晚了，一路辛苦，路上只差睡着，回到家里补觉补了好多个小时。
 \item 小电脑，笔记本电脑里的游戏环境搭建，今天下午去图书馆里弄（今天下午去图书馆里把需要借助快速网络来完成的事情都搭建好；家里被恶房东故意整了个腾腾慢的网，故意阻碍别人的发展，谁还愿意再这样的环境中继续住下去呢？！！！）
@@ -657,6 +658,47 @@ public class ServiceLocator {
 \end{minted}
 \subsection{Wrap}
 \label{sec-5-4}
+\subsubsection{BehaviourWrap : MonoBehaviour}
+\label{sec-5-4-1}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// 需要包装的原因是：Unity程序集下的这些子类也需要能够被热更新程序集认得，
+// 所以对必要的回调函数进行包装改写
+public class BehaviourWrap : MonoBehaviour {
+    public string Description {
+        get;
+        set;
+    }
+    public object Data {
+        get;
+        set;
+    }
+// 三个生命周期回调函数
+    public Action OnStart;
+    public Action OnUpdate;
+    public Action OnLateUpdate;
+    public Action DrawGizmos;
+    public Action DrawGUI;
+    void Start() {
+        if (OnStart != null) 
+            OnStart();
+    }
+    void Update() {
+        if (OnUpdate != null) 
+            OnUpdate();
+    }
+    void LateUpdate() {
+        if (OnUpdate != null) 
+            OnUpdate();
+    }
+    void OnDrawGizmos() {
+        if (DrawGizmos != null) 
+            DrawGizmos();
+    }
+    public void Dispose() {
+        Destroy(this);
+    }
+}
+\end{minted}
 \subsection{GameApplication: 游戏入口类}
 \label{sec-5-5}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
@@ -1994,19 +2036,1548 @@ public class ViewModelBaseAdapter : CrossBindingAdaptor { // 这里需要再想�
 }
 \end{minted}
 
-\section{Framework.Util各种帮助类}
+
+\section{ResourceManager包裹  ResMgr}
 \label{sec-7}
-\subsection{}
+\subsection{AssetLoader:  资源加载器}
 \label{sec-7-1}
-\subsection{}
+\subsubsection{abstract class AssetLoader: Asset加载封装抽象类}
+\label{sec-7-1-1}
+\begin{itemize}
+\item 这里定义的是一个公用接口类，供实现
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// Asset加载封装抽象类：  
+public abstract class AssetLoader {
+
+    public GameObject root;
+    public string bundleName;
+    public string assetName;
+
+    public EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.Never;
+    public AssetBundleSpec Spec {
+        get;
+        set;
+    }
+    public string FinalBundleName {
+        get {
+            if (!bundleName.EndsWith(ResourceConstant.bundleExtension))
+                return bundleName + ResourceConstant.bundleExtension;
+            return bundleName;
+        }
+    }
+    public Action<AssetLoader> onAssetLoadEnd;
+    public Action<string> onAssetLoadError;
+    public abstract void LoadAssetFromBundle(AssetBundle assetBundle);
+    public abstract void LoadError();
+}
+public class AssetLoader<T> : AssetLoader where T : UnityEngine.Object {
+    AssetBundleRequest currentRequest;
+    public Action<T> onLoadOver;
+    public override void LoadAssetFromBundle(AssetBundle assetBundle) {
+        CoroutineHelper.StartCoroutine(LoadAssetFromBundleAsync(assetBundle));
+    }
+    IEnumerator LoadAssetFromBundleAsync(AssetBundle assetBundle) {
+        DateTime regTime = DateTime.Now;
+        string name = string.IsNullOrEmpty(assetName) ? bundleName : assetName;
+        var n = name.Split('/');
+        try {
+            string finalName = n[n.Length - 1];
+            currentRequest = assetBundle.LoadAssetAsync<T>(finalName);
+        }
+        catch (Exception e) {
+            DebugHelper.LogError(string.Format("LoadAssetAsync [{0}][{1}]Error,[{2}][{3}]", bundleName, assetName, e.Message, e.StackTrace), true);
+        }
+        yield return currentRequest;
+        var costTime = (DateTime.Now - regTime).TotalMilliseconds;
+        //DebugHelper.Log(bundleName + " LoadAssetAsync cost " + costTime, true);
+        if (currentRequest != null) {
+            LoadOver((T)currentRequest.asset);
+        }
+    }
+    protected void LoadOver(T asset) {
+        if (onLoadOver != null) {
+            try {
+                onLoadOver(asset);
+                if (unloadLevel == EAssetBundleUnloadLevel.LoadOver) {
+                    ResourceConstant.Loader.Unload(FinalBundleName, false);
+                }
+            }
+            catch (Exception e) {
+                DebugHelper.LogError(string.Format("Load [{0}][{1}]Error,[{2}][{3}]", bundleName, assetName, e.Message, e.StackTrace), true);
+            }
+        }
+        if (onAssetLoadEnd != null) {
+            onAssetLoadEnd(this);
+        }
+    }
+    public override void LoadError() {
+        try {
+            LoadOver(null);
+        }
+        catch (Exception e) {
+            DebugHelper.LogError(FinalBundleName + " loadError " + e.Message + e.StackTrace, true);
+        }
+        if (onAssetLoadEnd != null) {
+            onAssetLoadEnd(this);
+        }
+    }
+}
+\end{minted}
+\end{itemize}
+\subsubsection{GameObjectLoader : AssetLoader：GameObjectAsset加载类}
+\label{sec-7-1-2}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// GameObjectAsset加载类
+public class GameObjectLoader : AssetLoader {
+    
+    AssetBundleRequest currentRequest;
+    public Action<GameObject> onCloneOver;
+    
+    public override void LoadAssetFromBundle(AssetBundle assetBundle) {
+        CoroutineHelper.StartCoroutine(LoadAssetFromBundleAsync(assetBundle));
+    }
+
+    IEnumerator LoadAssetFromBundleAsync(AssetBundle assetBundle) {
+        var name = string.IsNullOrEmpty(assetName) ? bundleName : assetName;
+        var n = name.Split('/');
+        try { // 异步调用、跨域调用，需要捕获异常？
+            string finalName = n[n.Length - 1];
+            currentRequest = assetBundle.LoadAssetAsync<GameObject>(finalName);
+        } catch (Exception e) {
+            DebugHelper.LogError(string.Format("LoadAssetAsync [{0}][{1}]Error,[{2}][{3}]",
+                                               bundleName, assetName, e.Message, e.StackTrace), true);
+        }
+        yield return currentRequest;
+        if (currentRequest != null) 
+            LoadGameObject(assetBundle, currentRequest.asset, name);
+    }
+    void LoadGameObject(AssetBundle ab, UnityEngine.Object asset, string aname) {
+        var b = asset;
+        if (b != null) {
+            var clone = GameObject.Instantiate(b) as GameObject;
+            CloneOver(clone);
+        } else {
+            DebugHelper.LogError((aname == null ? "aname==null" : aname)
+                                 + " not find,use default" + (b == null ? " 返回空" : (b.GetType() + "--" + b.name)), true);
+        }
+    }
+    protected void CloneOver(GameObject go) {
+        if (!go) {
+            return;
+        }
+        if (root) 
+            go.transform.parent = root.transform;
+        //go.transform.localPosition = Vector3.zero;
+        //go.transform.localScale = Vector3.one;
+        //go.transform.localRotation = new Quaternion();
+        try {
+            if (onCloneOver != null) {
+                onCloneOver(go);
+                if (unloadLevel == EAssetBundleUnloadLevel.LoadOver) 
+                    ResourceConstant.Loader.Unload(FinalBundleName, false);
+            }
+        } catch (Exception e) {
+            DebugHelper.LogError(string.Format("CloneOver [{0}][{1}]Error,[{2}][{3}]", bundleName, assetName, e.Message, e.StackTrace), true);
+        }
+        if (onAssetLoadEnd != null) 
+            onAssetLoadEnd(this);
+    }
+    public override void LoadError() {
+        try {
+            if (onCloneOver != null) 
+                onCloneOver(null);
+        } catch (Exception e) {
+            DebugHelper.LogError(FinalBundleName + " loadError " + e.Message + e.StackTrace, true);
+        }
+        if (onAssetLoadEnd != null) 
+            onAssetLoadEnd(this);
+    }
+}
+\end{minted}
+\subsubsection{SceneLoader : AssetLoader：场景Asset加载类}
+\label{sec-7-1-3}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// 场景Asset加载类
+public class SceneLoader : AssetLoader {
+    public bool isAdditive;
+    public Action onLoadOver;
+
+    public override void LoadAssetFromBundle(AssetBundle assetBundle) {
+        CoroutineHelper.StartCoroutine(LoadAssetFromBundleAsync(assetBundle));
+    }
+    IEnumerator LoadAssetFromBundleAsync(AssetBundle assetBundle) { // 使用协程异步加载
+        if (isAdditive) {
+            yield return SceneManager.LoadSceneAsync(assetName, LoadSceneMode.Additive);
+        } else {
+            yield return SceneManager.LoadSceneAsync(assetName);
+        }
+        LoadOver();
+    }
+    protected void LoadOver() {
+        if (onLoadOver != null) {
+            try {
+                onLoadOver();
+                if (unloadLevel == EAssetBundleUnloadLevel.LoadOver) 
+                    ResourceConstant.Loader.Unload(FinalBundleName, false);
+            }　catch (Exception e) {
+                DebugHelper.LogError(string.Format("Load [{0}][{1}]Error,[{2}][{3}]", bundleName, assetName, e.Message, e.StackTrace), true);
+            }
+        }
+        if (onAssetLoadEnd != null) 
+            onAssetLoadEnd(this);
+    }
+
+    public override void LoadError() {
+        try {
+            LoadOver();
+        }　catch (Exception e) {
+            DebugHelper.LogError(FinalBundleName + " loadError " + e.Message + e.StackTrace, true);
+        }
+        if (onAssetLoadEnd != null) 
+            onAssetLoadEnd(this);
+    }
+}
+\end{minted}
+\subsection{AssetBundleSpec: 热更新资源包的相关参数配置与读取，资源包的加载等}
 \label{sec-7-2}
+\begin{itemize}
+\item 资源包的相关处理。热更新分代码热更新和资源热更新，一个应用中可以只有某一类或是两者兼有。这里就是处理资源热更新中资源包相关的逻辑 。
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// 资源包数据结构类（相关参数说明类）
+public class AssetBundleSpec {
+    // 资源名, get, private set, 下面8个属性都是如此
+    public string Name {
+        get;
+        private set;
+    }
+    // // 资源文件MD5
+    // public string MD5 {}
+    // // 文件长度
+    // public int Length {}
+    // // 资源来源分类
+    // public EAssetBunbleSourceType AssetBundleSourceType {}
+    // // 是否被缓存
+    // public bool IsCached {}
+    // // 是否强行中断加载
+    // public bool IsForceInterruptLoad {}
+    // public EAssetBundleUnloadLevel UnloadLevel {}
+    // public AssetBundle AssetBundle {}
+    // public byte[] Data {}
+
+    bool isLoading = false;
+    bool isDownloading = false;
+    bool IsFileExist {
+        get {
+            return FileHelp.IsFileExists(Name);
+        }
+    }
+    List<AssetLoader> assetLoaders = new List<AssetLoader>();
+
+    public Action<AssetBundleSpec> onDownloadSuccess; // 委托设计模式: 这里自己明明是写过但是忘记了，要补
+    public Action<AssetBundleSpec> onDownloadFail;
+
+    public AssetBundleSpec(string name, string md5, int length, EAssetBunbleSourceType sourceType) {
+        Name = name;
+        MD5 = md5;
+        Length = length;
+        AssetBundleSourceType = sourceType;
+    }
+    public void Check(string md5, int length, EAssetBunbleSourceType sourceType) {
+        if (sourceType == EAssetBunbleSourceType.Server) {
+            if (md5 == MD5) {
+                //Debug.Log("Name: " + Name + " md5: " + md5 + " MD5: " + MD5);
+                IsCached = true;
+            }
+        } else {
+            AssetBundleSourceType = sourceType;
+            MD5 = md5;
+            Length = length;
+        }
+    }
+#region Unload
+    // 卸载
+    public void Unload(bool unloadAllLoadedObjects) {
+        if (AssetBundle != null) {
+            AssetBundle.Unload(unloadAllLoadedObjects);
+            AssetBundle = null;
+        }
+        if (assetLoaders != null && IsForceInterruptLoad) 
+            assetLoaders.Clear();
+    }
+#endregion
+#region Download
+    // 开始从网上下载
+    public void TryDownloadAsset() {
+        string url = Path.Combine(ResourceConstant.RemoteAssetBundleUrl, Name);
+        url = url + "?timestamp=" + DateTime.Now.ToString();
+        isDownloading = true;
+        DateTime regTime = DateTime.Now;
+        HttpHelper.Instance.Get(url, (request) => {
+            var costTime = (DateTime.Now - regTime).TotalMilliseconds;
+            DebugHelper.Log(Name + " TryDownloadAsset cost " + costTime + " " + url, true);
+            DownloadSuccess(request, Name);
+        }, (UnityWebRequest request) => {
+            DownloadFail(request, TryDownloadAsset);
+        }, 3);
+    }
+    public UnityWebRequest request;
+    public void DownloadAsset() {
+        DateTime regTime = DateTime.Now;
+        if (request == null) {
+            string path = Path.Combine(ResourceConstant.RemoteAssetBundleUrl, Name);
+            path = path + "?timestamp=" + DateTime.Now.ToString();
+            isDownloading = true;
+            request = HttpHelper.Instance.Get(path);
+            request.timeout = 30;
+        }
+        request.SendWebRequest();
+        while (!request.isDone) {
+            continue;
+        }
+        var costTime = (DateTime.Now - regTime).TotalMilliseconds;
+        DebugHelper.Log(Name + " DownloadAsset cost " + costTime, true);
+        if (request.error == null && request.responseCode == 200) {
+            DownloadSuccess(request, Name);
+        } else {
+            DownloadFail(request, DownloadAsset);
+        }
+    }
+    // 下载成功
+    void DownloadSuccess(UnityWebRequest request, string name) {
+        isDownloading = false;
+        string cachedAssetBundlePath = Path.Combine(ResourceConstant.AssetBundleCacheRoot, name);
+        string dir = Path.GetDirectoryName(cachedAssetBundlePath);
+        if (!Directory.Exists(dir)) {
+            Directory.CreateDirectory(dir);
+        }
+        byte[] bytes = request.downloadHandler.data;
+        MD5 = CryptoHelp.MD5(bytes, 0, bytes.Length);
+        Length = bytes.Length;
+        if (ResourceConstant.CacheAssetBundle) {
+            FileStream fs = new FileStream(cachedAssetBundlePath, FileMode.Create);
+            fs.Write(bytes, 0, bytes.Length);
+            fs.Close();
+            fs.Dispose();
+        }
+        DebugHelper.Log("CacheAsset: " + cachedAssetBundlePath, true);
+        IsCached = true;
+        AssetBundleSourceType = EAssetBunbleSourceType.Hotfix;
+        if (Name.EndsWith(ResourceConstant.bundleExtension)) {
+            if (AssetBundle == null) {
+                DateTime regTime = DateTime.Now;
+                AssetBundle = AssetBundle.LoadFromMemory(bytes);
+                var costTime = (DateTime.Now - regTime).TotalMilliseconds;
+                DebugHelper.Log(Name + " LoadFromMemory cost " + costTime, true);
+            }
+        } else {
+            Data = bytes;
+        }
+        ResourceMap.Instance.OnCachedAssetBundleSpec(this);
+        AssetBundleDownLoadReady();
+        if (onDownloadSuccess != null) // 自动触发相关事件的回调
+            onDownloadSuccess(this);
+    }
+    // 下载失败
+    void DownloadFail(UnityWebRequest request, Action retryAction) {
+        isDownloading = false;
+        DebugHelper.LogError("DownloadFail " + request.error + " uri: " + request.url, true);
+        if (onDownloadFail != null) {
+            onDownloadFail(this);
+        }
+        //retryAction();
+    }
+    void AssetBundleDownLoadReady() {
+        foreach (var assetLoader in assetLoaders) 
+            assetLoader.LoadAssetFromBundle(AssetBundle);
+        assetLoaders.Clear();
+    }
+#endregion
+#region Load
+    // 同步加载Asset
+    public T LoadAsset<T>(string assetName, EAssetBundleUnloadLevel
+                          unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) where T : UnityEngine.Object {
+        TryReadyAssetBundle(unloadLevel);
+        if (AssetBundle == null) {
+            DebugHelper.LogError("LoadAsset " + typeof(T).Name + " " + Name + " " + assetName + " return null", true);
+            return null;
+        }
+        var name = string.IsNullOrEmpty(assetName) ? Name : assetName;
+        var n = name.Split('/');
+        var asset = AssetBundle.LoadAsset<T>(n[n.Length - 1]);
+        return asset;
+    }
+    public TMP_FontAsset LoadTMP_FontAsset(string assetName, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {
+        TryReadyAssetBundle(unloadLevel);
+        if (AssetBundle == null) {
+            DebugHelper.LogError("LoadAsset " + typeof(TMP_FontAsset).Name + " " + Name + " " + assetName + " return null", true);
+            return null;
+        }
+        var name = string.IsNullOrEmpty(assetName) ? Name : assetName;
+        var n = name.Split('/');
+        var asset = AssetBundle.LoadAsset<TMP_FontAsset>(n[n.Length - 1]);
+        return asset;
+    }
+    public Font LoadFont(string assetName, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {
+        TryReadyAssetBundle(unloadLevel);
+        if (AssetBundle == null) {
+            DebugHelper.LogError("LoadAsset " + typeof(Font).Name + " " + Name + " " + assetName + " return null", true);
+            return null;
+        }
+        var name = string.IsNullOrEmpty(assetName) ? Name : assetName;
+        var n = name.Split('/');
+        var asset = AssetBundle.LoadAsset<Font>(n[n.Length - 1]);
+        return asset;
+    }
+    public AnimationClip LoadAnimationClip(string assetName, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {
+        TryReadyAssetBundle(unloadLevel);
+        if (AssetBundle == null) {
+            DebugHelper.LogError("LoadAsset " + typeof(AnimationClip).Name + " " + Name + " " + assetName + " return null", true);
+            return null;
+        }
+        var name = string.IsNullOrEmpty(assetName) ? Name : assetName;
+        var n = name.Split('/');
+        var asset = AssetBundle.LoadAsset<AnimationClip>(n[n.Length - 1]);
+        return asset;
+    }
+    public AnimatorOverrideController LoadAnimatorOverrideController(string assetName, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {
+        TryReadyAssetBundle(unloadLevel);
+        if (AssetBundle == null) {
+            DebugHelper.LogError("LoadAsset " + typeof(AnimatorOverrideController).Name + " " + Name + " " + assetName + " return null", true);
+            return null;
+        }
+        var name = string.IsNullOrEmpty(assetName) ? Name : assetName;
+        var n = name.Split('/');
+        var asset = AssetBundle.LoadAsset<AnimatorOverrideController>(n[n.Length - 1]);
+        return asset;
+    }
+    public RuntimeAnimatorController LoadRuntimeAnimatorController(string assetName, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {
+        TryReadyAssetBundle(unloadLevel);
+        if (AssetBundle == null) {
+            DebugHelper.LogError("LoadAsset " + typeof(RuntimeAnimatorController).Name + " " + Name + " " + assetName + " return null", true);
+            return null;
+        }
+        var name = string.IsNullOrEmpty(assetName) ? Name : assetName;
+        var n = name.Split('/');
+        var asset = AssetBundle.LoadAsset<RuntimeAnimatorController>(n[n.Length - 1]);
+        return asset;
+    }
+    public AudioClip LoadAudioClip(string assetName, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {
+        TryReadyAssetBundle(unloadLevel);
+        if (AssetBundle == null) {
+            DebugHelper.LogError("LoadAsset " + typeof(AudioClip).Name + " " + Name + " " + assetName + " return null", true);
+            return null;
+        }
+        var name = string.IsNullOrEmpty(assetName) ? Name : assetName;
+        var n = name.Split('/');
+        var asset = AssetBundle.LoadAsset<AudioClip>(n[n.Length - 1]);
+        return asset;
+    }
+    public Material LoadMaterial(string assetName, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {
+        TryReadyAssetBundle(unloadLevel);
+        if (AssetBundle == null) {
+            DebugHelper.LogError("LoadAsset " + typeof(Material).Name + " " + Name + " " + assetName + " return null", true);
+            return null;
+        }
+        var name = string.IsNullOrEmpty(assetName) ? Name : assetName;
+        var n = name.Split('/');
+        var asset = AssetBundle.LoadAsset<Material>(n[n.Length - 1]);
+        return asset;
+    }
+    public TextAsset LoadTextAsset(string assetName, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {
+        TryReadyAssetBundle(unloadLevel);
+        if (AssetBundle == null) {
+            DebugHelper.LogError("LoadAsset " + typeof(TextAsset).Name + " " + Name + " " + assetName + " return null", true);
+            return null;
+        }
+        var name = string.IsNullOrEmpty(assetName) ? Name : assetName;
+        var n = name.Split('/');
+        var asset = AssetBundle.LoadAsset<TextAsset>(n[n.Length - 1]);
+        return asset;
+    }
+    public Sprite LoadSprite(string assetName, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {
+        TryReadyAssetBundle(unloadLevel);
+        if (AssetBundle == null) {
+            DebugHelper.LogError("LoadAsset " + typeof(Sprite).Name + " " + Name + " " + assetName + " return null", true);
+            return null;
+        }
+        var name = string.IsNullOrEmpty(assetName) ? Name : assetName;
+        var n = name.Split('/');
+        var asset = AssetBundle.LoadAsset<Sprite>(n[n.Length - 1]);
+        return asset;
+    }
+    public Texture2D LoadTexture2D(string assetName, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {
+        TryReadyAssetBundle(unloadLevel);
+        if (AssetBundle == null) {
+            DebugHelper.LogError("LoadAsset " + typeof(Texture2D).Name + " " + Name + " " + assetName + " return null", true);
+            return null;
+        }
+        var name = string.IsNullOrEmpty(assetName) ? Name : assetName;
+        var n = name.Split('/');
+        var asset = AssetBundle.LoadAsset<Texture2D>(n[n.Length - 1]);
+        return asset;
+    }
+    // 同步加载场景
+    public void LoadScene(string assetName, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {
+        TryReadyAssetBundle(unloadLevel);
+        var name = string.IsNullOrEmpty(assetName) ? Name : assetName;
+        var n = name.Split('/');
+        if (AssetBundle == null) {
+            DebugHelper.LogError("LoadScene " + Name + " " + assetName + " return null", true);
+            return;
+        }
+        SceneManager.LoadScene(assetName);
+    }
+    // 同步加载GameObject
+    public GameObject LoadClone(string assetName, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {
+        TryReadyAssetBundle(unloadLevel);
+        var name = string.IsNullOrEmpty(assetName) ? Name : assetName;
+        var n = name.Split('/');
+        GameObject obj = null;
+        obj = AssetBundle.LoadAsset<GameObject>(n[n.Length - 1]);
+        UnityEngine.Object tempObject = null;
+        if (obj == null) {
+            tempObject = AssetBundle.mainAsset;
+            if (tempObject == null) {
+                var allAssets = AssetBundle.LoadAllAssets();
+                foreach (var asset in allAssets) {
+                    DebugHelper.LogError(asset.name + asset.GetType(), true);
+                }
+            }
+            DebugHelper.LogError((name == null ? "aname==null" : name) + " not find,use default" + (tempObject == null ? " 返回空" : (tempObject.GetType() + "--" + tempObject.name)), true);
+            return null;
+        } else {
+            var cloneObj = GameObject.Instantiate(obj);
+            return cloneObj;
+        }
+    }
+    public void TryReadyAssetBundle(EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {
+        //Debug.Log("AssetBundleName: " + Name + " IsCached: " + IsCached + " IsFileExist: " + IsFileExist);
+        if (!IsCached || !IsFileExist) {
+            //Debug.Log("AssetBundleName:" + Name + "DownloadAsset");
+            DownloadAsset();
+            //TryDownloadAsset();
+            if (UnloadLevel != EAssetBundleUnloadLevel.Never) {
+                UnloadLevel = unloadLevel;
+            }
+        } else if (AssetBundle == null) {
+            //Debug.Log("AssetBundleName:" + Name + "LoadFromFile");
+            AssetBundle = LoadAssetBundleFromFile(unloadLevel);
+        }
+    }
+    AssetBundle LoadAssetBundleFromFile(EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {
+        try {
+            byte[] datas = FileHelp.Read(Name);
+            if (datas == null) {
+                return null;
+            }
+            var assetBundle = AssetBundle.LoadFromMemory(datas);
+            if (assetBundle != null) {
+                return assetBundle;
+            } else {
+                DebugHelper.LogError("LoadAssetBundleFromFile return null " + Name, true);
+                return null;
+            }
+        }
+        catch (Exception e) {
+            DebugHelper.LogError("LoadAssetBundleFromFile AESDecrypt Error finalBundleName: " + Name + " " + e, true);
+            return null;
+        }
+    }
+#endregion
+#region LoadAsyn
+    public void TryLoadAsyn(AssetLoader assetLoader, EAssetBundleUnloadLevel unloadLevel, bool isForceInterruptLoad = false) {
+        IsForceInterruptLoad = isForceInterruptLoad;
+        if (AssetBundle != null) {
+            assetLoader.LoadAssetFromBundle(AssetBundle);
+        } else {
+            if (UnloadLevel != EAssetBundleUnloadLevel.Never) {
+                UnloadLevel = unloadLevel;
+            }
+            //DebugHelper.Log(Name + "TryLoadAsyn ", true);
+            if (isDownloading || isLoading) {
+                assetLoaders.Add(assetLoader);
+            } else if (!IsCached || !IsFileExist) {
+                assetLoaders.Add(assetLoader);
+                TryDownloadAsset();
+            } else {
+                ReadyLoadAsyn(assetLoader);
+            }
+        }
+    }
+    Coroutine asynLoadCoroutine;
+    WWW thisWWW;
+    // 开始异步加载
+    void ReadyLoadAsyn(AssetLoader assetLoader) {
+        bool isInCacheFile = false;
+        string url = ResourceConstant.GetFileUrl(Name, out isInCacheFile);
+        if (asynLoadCoroutine != null) {
+            CoroutineHelper.StopCoroutine(asynLoadCoroutine);
+        }
+        if (string.IsNullOrEmpty(url)) {
+            DebugHelper.LogError("LoadAssetBundleAsyn url IsNullOrEmpty " + Name, true);
+            LoadError();
+            return;
+        }
+        isLoading = true;
+        asynLoadCoroutine = CoroutineHelper.StartCoroutine(LoadAsyn(url, assetLoader));
+    }
+    IEnumerator LoadAsyn(string url, AssetLoader assetLoader) {
+        try {
+            thisWWW = new WWW(url);
+        }
+        catch (Exception e) {
+            DebugHelper.LogError("DownloadAsyn " + url + " error" + e.Message + e.StackTrace, true);
+        }
+        yield return thisWWW;
+        if (thisWWW == null) {
+            DebugHelper.LogError("DownloadAsyn " + url + " thisWWW==null", true);
+            LoadError();
+        } else if (!string.IsNullOrEmpty(thisWWW.error)) {
+            DebugHelper.LogError("DownloadAsyn " + thisWWW.error + "URL: " + url, true);
+            yield return new WaitForEndOfFrame();
+            if (thisWWW != null) {
+                thisWWW.Dispose();
+                thisWWW = null;
+            }
+            LoadError();
+        } else {
+            LoadAsynSuccess(url, assetLoader);
+        }
+    }
+    void LoadAsynSuccess(string url, AssetLoader assetLoader) {
+        if (AssetBundle == null) {
+            AssetBundle = thisWWW.assetBundle;
+        }
+        isLoading = false;
+        if (AssetBundle != null) {
+            assetLoader.LoadAssetFromBundle(AssetBundle);
+            AssetBundleDownLoadReady();
+        } else {
+            DebugHelper.LogError("DownloadAsynSuccess thisWWW.assetBundle==null " + url, true);
+            assetLoader.LoadError();
+        }
+    }
+    public void LoadError() {
+        isLoading = false;
+    }
+#endregion
+}
+\end{minted}
+\end{itemize}
+\subsection{interface IResourceLoader: 不同类型的资源加载公用接口类：定义的是对于不同类型的资源的加载调用公用API接口}
+\label{sec-7-3}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// 公用接口类：定义的是对于不同类型的资源的加载调用公用API接口
+public interface IResourceLoader {
+#region Load
+    T LoadAsset<T>(string bundleName, string assetName,
+                   EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) 
+        where T : UnityEngine.Object;
+    TMP_FontAsset LoadTMP_FontAsset(string bundleName, string assetName, 
+                                    EAssetBundleUnloadLevel unloadLevel = 
+                                    EAssetBundleUnloadLevel.ChangeSceneOver);
+    Font LoadFont(string bundleName, string assetName, 
+                  EAssetBundleUnloadLevel unloadLevel = 
+                  EAssetBundleUnloadLevel.ChangeSceneOver);
+    AnimationClip LoadAnimationClip(string bundleName, string assetName, 
+                                    EAssetBundleUnloadLevel unloadLevel = 
+                                    EAssetBundleUnloadLevel.ChangeSceneOver);
+    AnimatorOverrideController LoadAnimatorOverrideController(string bundleName, string assetName, 
+                                                              EAssetBundleUnloadLevel unloadLevel = 
+                                                              EAssetBundleUnloadLevel.ChangeSceneOver);
+    RuntimeAnimatorController LoadRuntimeAnimatorController(string bundleName, string assetName, 
+                                                            EAssetBundleUnloadLevel unloadLevel = 
+                                                            EAssetBundleUnloadLevel.ChangeSceneOver);
+    AudioClip LoadAudioClip(string bundleName, string assetName, 
+                            EAssetBundleUnloadLevel unloadLevel = 
+                            EAssetBundleUnloadLevel.ChangeSceneOver);
+    Material LoadMaterial(string bundleName, string assetName, 
+                          EAssetBundleUnloadLevel unloadLevel = 
+                          EAssetBundleUnloadLevel.ChangeSceneOver);
+    TextAsset LoadTextAsset(string bundleName, string assetName, 
+                            EAssetBundleUnloadLevel unloadLevel = 
+                            EAssetBundleUnloadLevel.ChangeSceneOver);
+    Sprite LoadSprite(string bundleName, string assetName, 
+                      EAssetBundleUnloadLevel unloadLevel = 
+                      EAssetBundleUnloadLevel.ChangeSceneOver);
+    Texture2D LoadTexture2D(string bundleName, string assetName, 
+                            EAssetBundleUnloadLevel unloadLevel = 
+                            EAssetBundleUnloadLevel.ChangeSceneOver);
+    void LoadScene(string bundleName, string assetName, 
+                   EAssetBundleUnloadLevel unloadLevel = 
+                   EAssetBundleUnloadLevel.ChangeSceneOver, bool isAddtive = false);
+    GameObject LoadClone(string bundleName, string assetName, 
+                         EAssetBundleUnloadLevel unloadLevel = 
+                         EAssetBundleUnloadLevel.ChangeSceneOver);
+#endregion
+#region LoadAsyn
+    void LoadAssetAsyn<T>(string bundleName, string assetName, Action<T> onSuccess, 
+                          EAssetBundleUnloadLevel unloadLevel = 
+                          EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) 
+        where T : UnityEngine.Object;
+    void LoadTMP_FontAssetAsyn(string bundleName, string assetName, Action<TMP_FontAsset> onSuccess, 
+                               EAssetBundleUnloadLevel unloadLevel = 
+                               EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+    void LoadFontAsyn(string bundleName, string assetName, Action<Font> onSuccess, 
+                      EAssetBundleUnloadLevel unloadLevel = 
+                      EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+    void LoadAnimationClipAsyn(string bundleName, string assetName, Action<AnimationClip> onSuccess, 
+                               EAssetBundleUnloadLevel unloadLevel = 
+                               EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+    void LoadAnimatorOverrideControllerAsyn(string bundleName, string assetName, Action<AnimatorOverrideController> onSuccess, 
+                                            EAssetBundleUnloadLevel unloadLevel = 
+                                            EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+    void LoadRuntimeAnimatorControllerAsyn(string bundleName, string assetName, Action<RuntimeAnimatorController> onSuccess, 
+                                           EAssetBundleUnloadLevel unloadLevel = 
+                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+    void LoadAudioClipAsyn(string bundleName, string assetName, Action<AudioClip> onSuccess, 
+                           EAssetBundleUnloadLevel unloadLevel = 
+                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+    void LoadMaterialAsyn(string bundleName, string assetName, Action<Material> onSuccess, 
+                          EAssetBundleUnloadLevel unloadLevel = 
+                          EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+    void LoadTextAssetAsyn(string bundleName, string assetName, Action<TextAsset> onSuccess, 
+                           EAssetBundleUnloadLevel unloadLevel = 
+                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+    void LoadSpriteAsyn(string bundleName, string assetName, Action<Sprite> onSuccess, 
+                        EAssetBundleUnloadLevel unloadLevel = 
+                        EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+    void LoadTexture2DAsyn(string bundleName, string assetName, Action<Texture2D> onSuccess, 
+                           EAssetBundleUnloadLevel unloadLevel = 
+                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+    void LoadSceneAsyn(string bundleName, string assetName, Action onSuccess, 
+                       EAssetBundleUnloadLevel unloadLevel = 
+                       EAssetBundleUnloadLevel.ChangeSceneOver, bool isAddtive = false);
+    void LoadCloneAsyn(string bundleName, string assetName, Action<GameObject> onSuccess, 
+                       EAssetBundleUnloadLevel unloadLevel = 
+                       EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+#endregion
+    
+#region Unload
+    void Unload(string keyName, bool allObjects);
+    void UnloadAll();
+#endregion
+
+    void LoadTexture2DAsyn(string name, Action<Texture2D> onSuccess, Action onFail, bool needCache);
+}
+\end{minted}
+\subsection{ResourceConstant；静态常量类，分几个不同平台来处理平台相关的资源获取存储等相关操作}
+\label{sec-7-4}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// AssetBundle来源枚举:  将其分为三类
+public enum EAssetBunbleSourceType {
+    Primary = 0,
+    Hotfix = 1,
+    Server = 2
+}
+// AssetBundle包卸载层级
+public enum EAssetBundleUnloadLevel {
+    None = -1,
+    Never = 0,
+    LoadOver = 1,
+    ChangeSceneOver = 2
+}
+
+namespace Framework.ResMgr {
+public static class ResourceConstant {
+    public static IResourceLoader Loader {
+        get;
+        set;
+    }
+    public static readonly string bundleExtension = ".ab"; // assetBundle
+
+    // static string _resourceWebRoot = "https://hotfix.server.address/"; 
+    static string _resourceWebRoot = "http://localhost/"; // 先尝试建一个本地的服务器运行起来再说
+    // 资源服务器路径: setter/getter
+    public static string ResourceWebRoot {
+        get { return _resourceWebRoot; }
+        set { _resourceWebRoot = value; }
+    }
+
+    // 是否缓存AssetBundle
+    public static bool CacheAssetBundle = true;
+    // 只读目录
+    public static string AssetBundleReadOnlyRoot {
+        get {
+            string path = string.Empty;
+#if UNITY_EDITOR
+            path = GetEditorAssetPath();
+#elif UNITY_STANDALONE_WIN
+            path = Application.dataPath + "/StreamingAssets/";
+#elif UNITY_ANDROID
+            path = Application.dataPath + "!/assets/";
+#elif UNITY_IPHONE
+            path = Application.dataPath + "/Raw/";
+#endif
+            return path;
+        }
+    }
+    // 可写更新目录
+    public static string AssetBundleCacheRoot {
+        get {
+            string path = string.Empty;
+#if UNITY_EDITOR
+            path = GetEditorAssetPath();
+#elif UNITY_STANDALONE_WIN
+            path = Application.dataPath + "/StreamingAssets/";
+#elif UNITY_ANDROID
+            path = Application.persistentDataPath;
+#elif UNITY_IPHONE
+            path = Application.persistentDataPath;
+#endif
+            return path;
+        }
+    }
+
+    public static string AssetBundleUrl {
+        get {
+            string path = string.Empty;
+#if UNITY_EDITOR
+            path = GetEditorAssetBundleUrl();
+#elif UNITY_STANDALONE_WIN
+            path = "file://" + Application.dataPath + "/TempStreamingAssets/";
+#elif UNITY_ANDROID
+            path = Application.streamingAssetsPath;
+#elif UNITY_IPHONE
+            path = "file://" + Application.dataPath + "/Raw/";
+#endif
+            return path;
+        }
+    }
+    public static string AssetBundleCacheUrl {
+        get {
+            string path = string.Empty;
+#if UNITY_EDITOR
+            path = GetEditorAssetBundleUrl();
+#elif UNITY_STANDALONE_WIN
+            path = "file://" + Application.dataPath + "/StreamingAssets/";
+#elif UNITY_ANDROID
+            path = "file://" + Application.persistentDataPath + "/";
+#elif UNITY_IPHONE
+            path = "file://" + Application.persistentDataPath + "/";
+#endif
+            return path;
+        }
+    }
+    // 资源服务器路径
+    public static string RemoteAssetBundleUrl {
+        get {
+            string path = ResourceWebRoot;
+#if UNITY_EDITOR
+            if (!GameApplication.Instance.useLocal) {
+                if (UnityEditor.EditorUserBuildSettings.activeBuildTarget == UnityEditor.BuildTarget.Android) {
+                    path += "Android/";
+                } else if (UnityEditor.EditorUserBuildSettings.activeBuildTarget == UnityEditor.BuildTarget.iOS) {
+                    path += "IOS/";
+                } else if (UnityEditor.EditorUserBuildSettings.activeBuildTarget == UnityEditor.BuildTarget.StandaloneWindows || UnityEditor.EditorUserBuildSettings.activeBuildTarget == UnityEditor.BuildTarget.StandaloneWindows64) {
+                    path += "Windows/";
+                }
+            } else {
+                path = GetEditorAssetPath();
+            }
+#elif UNITY_STANDALONE_WIN
+            path += "Windows/";
+#elif UNITY_ANDROID
+            path += "Android/";
+#elif UNITY_IPHONE
+            path += "IOS/";
+#endif
+            return path;
+        }
+    }
+    // 获取文件路径
+    public static string GetFileUrl(string name, out bool isInCacheFile) {
+        var cachePath = Path.Combine(AssetBundleCacheRoot, name);
+        if (File.Exists(cachePath)) {
+            isInCacheFile = true;
+            return Path.Combine(AssetBundleCacheUrl, name);
+        }
+        if (Application.platform == RuntimePlatform.Android) {
+            string filePath = Path.Combine(AssetBundleUrl, name);
+            var www = new WWW(filePath);
+            if (string.IsNullOrEmpty(www.error)) {
+                isInCacheFile = false;
+                return Path.Combine(AssetBundleUrl, name);
+            }
+        } else if (Application.platform == RuntimePlatform.IPhonePlayer) {
+            var filePath = Path.Combine(AssetBundleReadOnlyRoot, name);
+            if (File.Exists(filePath)) {
+                isInCacheFile = true;
+                return Path.Combine(AssetBundleUrl, name);
+            }
+        } else {
+            var filePath = Path.Combine(AssetBundleReadOnlyRoot, name);
+            if (File.Exists(filePath)) {
+                isInCacheFile = false;
+                return Path.Combine(AssetBundleUrl, name);
+            }
+        }
+        isInCacheFile = false;
+        return string.Empty;
+    }
+#region EditorCode
+#if UNITY_EDITOR
+    static string GetEditorAssetBundleUrl() {
+        string path = "file://" + GetEditorAssetPath();
+        return path;
+    }
+    // 获取编辑器运行时资源路径
+    static string GetEditorAssetPath() {
+        string path = Path.Combine(Application.dataPath, "../TempStreamingAssets/" + GetPlatformFolderName());
+        return path;
+    }
+    // 获取平台文件夹路径
+    static string GetPlatformFolderName() {
+        if (UnityEditor.EditorUserBuildSettings.activeBuildTarget == UnityEditor.BuildTarget.Android) {
+            return "Android";
+        } else if (UnityEditor.EditorUserBuildSettings.activeBuildTarget == UnityEditor.BuildTarget.iOS) {
+            return "IOS";
+        } else {
+            return "Windows";
+        }
+    }
+#endif
+#endregion
+}
+}
+\end{minted}
+\subsection{ResourceMap : MonoBehaviour, IResourceLoader: : 是对前IResourceLoader公用接口类的实现}
+\label{sec-7-5}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// 按需加载: 是对前IResourceLoader公用接口类的实现
+public class ResourceMap : MonoBehaviour, IResourceLoader {
+    private const string TAG = "ResourceMap";
+        
+    static ResourceMap _instance;
+    public static ResourceMap Instance {
+        get {
+            return _instance;
+        }
+    }
+
+    // ResourceList初始化成功
+    public Action OnInitializeSuccess;
+    // Assetbundle资源包集合: 管理字典
+    // Key: AssetBundleName
+    public Dictionary<string, AssetBundleSpec> assetBundleSpecs = new Dictionary<string, AssetBundleSpec>();
+    // 正在下载的AssetBundle
+    public AssetBundleSpec downloadingAssetBundleSpec;
+    // AssetBundle下载队列
+    public Queue<AssetLoader> downloadingAssets = new Queue<AssetLoader>();
+    // AssetBundle下载信息缓存集合：是说，当热更新服务器繁忙的时候，是可以实现本地字典缓存的吗？
+    public Dictionary<string, AssetBundleDownloadReference> downloadingAssetBundleSpecs
+        = new Dictionary<string, AssetBundleDownloadReference>();
+    // 封装AssetBundle引用计数(引用计数用得还比较多，从C＋＋指针引用计数开始，后来还有狠多)
+    public class AssetBundleDownloadReference {
+        public AssetBundleSpec spec;
+        public int referenceCount;
+    }
+    public Action<AssetLoader> onNextAssetLoader;
+    float checkSaveTimes = 0;
+    bool haveCachedChanged = false;
+
+#region Initialize
+    void Awake() {
+        _instance = this;
+        IOSSetting();
+        Initialize();
+        InitializeLoadingPanel();
+    }
+    // 初始化
+    void Initialize() {
+        CheckResourcePathExist();
+        if (ResourceConstant.CacheAssetBundle) {
+            FillResourceList();
+            FillHotFixList();
+        }
+        DownLoadServerResourceList();
+    }
+    // 校验
+    void CheckResourcePathExist() {
+        if (!Directory.Exists(ResourceConstant.AssetBundleCacheRoot)) {
+            Directory.CreateDirectory(ResourceConstant.AssetBundleCacheRoot);
+        }
+        if (!File.Exists(ResourceConstant.AssetBundleCacheRoot + "/HotFixList.txt")) 
+            File.Create(ResourceConstant.AssetBundleCacheRoot + "/HotFixList.txt").Close();
+    }
+    // 分析只读路径bundleList
+    void FillResourceList() {
+        //Debug.Log("FillResourceList");
+        string text = FileHelp.ReadString("AssetBundleList.txt");
+        Debug.Log("ResourceList:  " + text);
+        if (!string.IsNullOrEmpty(text)) 
+            AnalysisResourceList(text, EAssetBunbleSourceType.Primary);
+    }
+    // 分析可读写路径bundleList
+    void FillHotFixList() {
+        //Debug.Log("FillHotFixList");
+        //string text = File.ReadAllText(ResourceConstant.AssetBundleCacheRoot + "/HotFixList.txt");
+        string text = FileHelp.ReadString("HotFixList.txt");
+        Debug.Log("HotFixList:  " + text);
+        if (!string.IsNullOrEmpty(text)) 
+            AnalysisResourceList(text, EAssetBunbleSourceType.Hotfix);
+    }
+    // 从资源服务器下载bundleList
+    void DownLoadServerResourceList() {
+        Debug.Log(TAG + ": DownLoadServerResourceList()"); 
+        if (!GameApplication.Instance.useLocal) {
+            // Debug.Log("DownLoadServerResourceList");
+            string url = Path.Combine(ResourceConstant.RemoteAssetBundleUrl, "AssetBundleList.txt");
+            url = url + "?timestamp=" + DateTime.Now.ToString();
+            // Debug.Log("Server AssetBundleURL: " + url);
+            DateTime currentTime = DateTime.Now;
+            HttpHelper.Instance.Get(url, (request) => {
+                Debug.Log("ServerResourceList:  " + request.downloadHandler.text);
+                AnalysisResourceList(request.downloadHandler.text, EAssetBunbleSourceType.Server);
+                if (OnInitializeSuccess != null) {
+                    Debug.Log(TAG + ": onInitializeSuccess() publish"); 
+                    OnInitializeSuccess();
+                }
+            }, (request) => {
+                DebugHelper.LogError("DownLoadServerResourceList Fail", true);
+            }, 3);
+        } else {
+            string text = FileHelp.ReadString("AssetBundleList.txt");
+            if (!string.IsNullOrEmpty(text)) 
+                AnalysisResourceList(text, EAssetBunbleSourceType.Server);
+            GameApplication.Instance.StartHotFix(); // <<<<<<<<<<<<<<<<<<<< 
+        }
+    }
+    // 显示加载进度条
+    void InitializeLoadingPanel() {}
+    // 分析资源文件
+    void AnalysisResourceList(string text, EAssetBunbleSourceType type) {
+        string[] fileInfos = text.Split('\n');
+        int fileInfosLength = fileInfos.Length;
+        for (int i = 0; i < fileInfosLength - 1; i++) {
+            string[] fileInfoParams = fileInfos[i].Split(',');
+            if (fileInfoParams.Length >= 2) {
+                if (!assetBundleSpecs.ContainsKey(fileInfoParams[0])) {
+                    AssetBundleSpec asset = new AssetBundleSpec(fileInfoParams[0],
+                                                                fileInfoParams[1], int.Parse(fileInfoParams[2]), type);
+                    assetBundleSpecs.Add(fileInfoParams[0], asset);
+                } else 
+                    assetBundleSpecs[fileInfoParams[0]].Check(fileInfoParams[1], int.Parse(fileInfoParams[2]), type);
+            } else 
+                DebugHelper.LogError("fileInfo error! fileInfo: " + fileInfos[i]);
+        }
+    }
+#endregion
+#region Util
+    // 获得处理过的正确Bundle名
+    string GetFinalBundleName(string bundleName) {
+        string finalBundleName = bundleName.ToLower();
+        if (!bundleName.EndsWith(ResourceConstant.bundleExtension)) 
+            finalBundleName = bundleName.ToLower() + ResourceConstant.bundleExtension;
+        return finalBundleName;
+    }
+#endregion
+
+#region Load
+    // 同步加载资源
+    public T LoadAsset<T>(string bundleName, string assetName, 
+                          EAssetBundleUnloadLevel unloadLevel = 
+                          EAssetBundleUnloadLevel.ChangeSceneOver) where T : UnityEngine.Object {
+        string finalBundleName = GetFinalBundleName(bundleName);
+        if (assetBundleSpecs.ContainsKey(finalBundleName)) {
+            return assetBundleSpecs[finalBundleName].LoadAsset<T>(assetName, unloadLevel);
+        } else {
+            DebugHelper.LogError("ResourceMap not contains " + finalBundleName, true);
+            return null;
+        }
+    }
+    public TMP_FontAsset LoadTMP_FontAsset(string bundleName, string assetName, 
+                                           EAssetBundleUnloadLevel unloadLevel = 
+                                           EAssetBundleUnloadLevel.ChangeSceneOver) {
+        string finalBundleName = GetFinalBundleName(bundleName);
+        if (assetBundleSpecs.ContainsKey(finalBundleName)) {
+            return assetBundleSpecs[finalBundleName].LoadTMP_FontAsset(assetName, unloadLevel);
+        } else {
+            DebugHelper.LogError("ResourceMap not contains " + finalBundleName, true);
+            return null;
+        }
+    }
+    public Font LoadFont(string bundleName, string assetName, 
+                         EAssetBundleUnloadLevel unloadLevel = 
+                         EAssetBundleUnloadLevel.ChangeSceneOver) {
+        string finalBundleName = GetFinalBundleName(bundleName);
+        if (assetBundleSpecs.ContainsKey(finalBundleName)) {
+            return assetBundleSpecs[finalBundleName].LoadFont(assetName, unloadLevel);
+        } else {
+            DebugHelper.LogError("ResourceMap not contains " + finalBundleName, true);
+            return null;
+        }
+    }
+    public AnimationClip LoadAnimationClip(string bundleName, string assetName, 
+                                           EAssetBundleUnloadLevel unloadLevel = 
+                                           EAssetBundleUnloadLevel.ChangeSceneOver) {
+        string finalBundleName = GetFinalBundleName(bundleName);
+        if (assetBundleSpecs.ContainsKey(finalBundleName)) {
+            return assetBundleSpecs[finalBundleName].LoadAnimationClip(assetName, unloadLevel);
+        } else {
+            DebugHelper.LogError("ResourceMap not contains " + finalBundleName, true);
+            return null;
+        }
+    }
+    public AnimatorOverrideController LoadAnimatorOverrideController(string bundleName, string assetName, 
+                                                                     EAssetBundleUnloadLevel unloadLevel = 
+                                                                     EAssetBundleUnloadLevel.ChangeSceneOver) {
+        string finalBundleName = GetFinalBundleName(bundleName);
+        if (assetBundleSpecs.ContainsKey(finalBundleName)) {
+            return assetBundleSpecs[finalBundleName].LoadAnimatorOverrideController(assetName, unloadLevel);
+        } else {
+            DebugHelper.LogError("ResourceMap not contains " + finalBundleName, true);
+            return null;
+        }
+    }
+    public RuntimeAnimatorController LoadRuntimeAnimatorController(string bundleName, string assetName, 
+                                                                   EAssetBundleUnloadLevel unloadLevel = 
+                                                                   EAssetBundleUnloadLevel.ChangeSceneOver) {
+        string finalBundleName = GetFinalBundleName(bundleName);
+        if (assetBundleSpecs.ContainsKey(finalBundleName)) {
+            return assetBundleSpecs[finalBundleName].LoadRuntimeAnimatorController(assetName, unloadLevel);
+        } else {
+            DebugHelper.LogError("ResourceMap not contains " + finalBundleName, true);
+            return null;
+        }
+    }
+    public AudioClip LoadAudioClip(string bundleName, string assetName, 
+                                   EAssetBundleUnloadLevel unloadLevel = 
+                                   EAssetBundleUnloadLevel.ChangeSceneOver) {
+        string finalBundleName = GetFinalBundleName(bundleName);
+        if (assetBundleSpecs.ContainsKey(finalBundleName)) {
+            return assetBundleSpecs[finalBundleName].LoadAudioClip(assetName, unloadLevel);
+        } else {
+            DebugHelper.LogError("ResourceMap not contains " + finalBundleName, true);
+            return null;
+        }
+    }
+    public Material LoadMaterial(string bundleName, string assetName, 
+                                 EAssetBundleUnloadLevel unloadLevel = 
+                                 EAssetBundleUnloadLevel.ChangeSceneOver) {
+        string finalBundleName = GetFinalBundleName(bundleName);
+        if (assetBundleSpecs.ContainsKey(finalBundleName)) {
+            return assetBundleSpecs[finalBundleName].LoadMaterial(assetName, unloadLevel);
+        } else {
+            DebugHelper.LogError("ResourceMap not contains " + finalBundleName, true);
+            return null;
+        }
+    }
+    public TextAsset LoadTextAsset(string bundleName, string assetName, 
+                                   EAssetBundleUnloadLevel unloadLevel = 
+                                   EAssetBundleUnloadLevel.ChangeSceneOver) {
+        string finalBundleName = GetFinalBundleName(bundleName);
+        if (assetBundleSpecs.ContainsKey(finalBundleName)) {
+            return assetBundleSpecs[finalBundleName].LoadTextAsset(assetName, unloadLevel);
+        } else {
+            DebugHelper.LogError("ResourceMap not contains " + finalBundleName, true);
+            return null;
+        }
+    }
+    public Sprite LoadSprite(string bundleName, string assetName, 
+                             EAssetBundleUnloadLevel unloadLevel = 
+                             EAssetBundleUnloadLevel.ChangeSceneOver) {
+        string finalBundleName = GetFinalBundleName(bundleName);
+        if (assetBundleSpecs.ContainsKey(finalBundleName)) {
+            return assetBundleSpecs[finalBundleName].LoadSprite(assetName, unloadLevel);
+        } else {
+            DebugHelper.LogError("ResourceMap not contains " + finalBundleName, true);
+            return null;
+        }
+    }
+    public Texture2D LoadTexture2D(string bundleName, string assetName, 
+                                   EAssetBundleUnloadLevel unloadLevel = 
+                                   EAssetBundleUnloadLevel.ChangeSceneOver) {
+        string finalBundleName = GetFinalBundleName(bundleName);
+        if (assetBundleSpecs.ContainsKey(finalBundleName)) {
+            return assetBundleSpecs[finalBundleName].LoadTexture2D(assetName, unloadLevel);
+        } else {
+            DebugHelper.LogError("ResourceMap not contains " + finalBundleName, true);
+            return null;
+        }
+    }
+    // 同步加载场景
+    public void LoadScene(string bundleName, string assetName, 
+                          EAssetBundleUnloadLevel unloadLevel = 
+                          EAssetBundleUnloadLevel.ChangeSceneOver, bool isAdditive = false) {
+        string finalBundleName = GetFinalBundleName(bundleName);
+        if (assetBundleSpecs.ContainsKey(finalBundleName)) {
+            assetBundleSpecs[finalBundleName].LoadScene(assetName, unloadLevel);
+        } else {
+            DebugHelper.LogError("ResourceMap not contains " + finalBundleName, true);
+        }
+    }
+    // 同步加载GameObject
+    public GameObject LoadClone(string bundleName, string assetName, 
+                                EAssetBundleUnloadLevel unloadLevel = 
+                                EAssetBundleUnloadLevel.ChangeSceneOver) {
+        string finalBundleName = GetFinalBundleName(bundleName);
+        if (assetBundleSpecs.ContainsKey(finalBundleName)) {
+            return assetBundleSpecs[finalBundleName].LoadClone(assetName, unloadLevel);
+        } else {
+            DebugHelper.LogError("ResourceMap not contains " + finalBundleName
+                                 + " " + StackTraceUtility.ExtractStackTrace(), true);
+            return null;
+        }
+    }
+#endregion
+
+#region LoadAsyn
+    // 异步加载资源
+    public void LoadAssetAsyn<T>(string bundleName, string assetName, Action<T> loadOver, 
+                                 EAssetBundleUnloadLevel unloadLevel,
+                                 bool isForceInterrupLoad = false) where T : UnityEngine.Object {
+        AssetLoader<T> assetLoader = new AssetLoader<T>();
+        assetLoader.bundleName = bundleName.ToLower();
+        assetLoader.assetName = assetName;
+        assetLoader.onLoadOver = loadOver;
+        assetLoader.unloadLevel = unloadLevel;
+        AddAssetLoaderToLoadQueue(assetLoader, unloadLevel, isForceInterrupLoad);
+    }
+    public void LoadTMP_FontAssetAsyn(string bundleName, string assetName, Action<TMP_FontAsset> loadOver, 
+                                      EAssetBundleUnloadLevel unloadLevel, bool isForceInterrupLoad = false) {
+        AssetLoader<TMP_FontAsset> assetLoader = new AssetLoader<TMP_FontAsset>();
+        assetLoader.bundleName = bundleName.ToLower();
+        assetLoader.assetName = assetName;
+        assetLoader.onLoadOver = loadOver;
+        assetLoader.unloadLevel = unloadLevel;
+        AddAssetLoaderToLoadQueue(assetLoader, unloadLevel, isForceInterrupLoad);
+    }
+    public void LoadFontAsyn(string bundleName, string assetName, Action<Font> loadOver, 
+                             EAssetBundleUnloadLevel unloadLevel, bool isForceInterrupLoad = false) {
+        AssetLoader<Font> assetLoader = new AssetLoader<Font>();
+        assetLoader.bundleName = bundleName.ToLower();
+        assetLoader.assetName = assetName;
+        assetLoader.onLoadOver = loadOver;
+        assetLoader.unloadLevel = unloadLevel;
+        AddAssetLoaderToLoadQueue(assetLoader, unloadLevel, isForceInterrupLoad);
+    }
+    public void LoadAnimationClipAsyn(string bundleName, string assetName, Action<AnimationClip> loadOver, 
+                                      EAssetBundleUnloadLevel unloadLevel, bool isForceInterrupLoad = false) {
+        AssetLoader<AnimationClip> assetLoader = new AssetLoader<AnimationClip>();
+        assetLoader.bundleName = bundleName.ToLower();
+        assetLoader.assetName = assetName;
+        assetLoader.onLoadOver = loadOver;
+        assetLoader.unloadLevel = unloadLevel;
+        AddAssetLoaderToLoadQueue(assetLoader, unloadLevel, isForceInterrupLoad);
+    }
+    public void LoadAnimatorOverrideControllerAsyn(string bundleName, string assetName,
+                                                   Action<AnimatorOverrideController> loadOver, 
+                                                   EAssetBundleUnloadLevel unloadLevel,
+                                                   bool isForceInterrupLoad = false) {
+        AssetLoader<AnimatorOverrideController> assetLoader = new AssetLoader<AnimatorOverrideController>();
+        assetLoader.bundleName = bundleName.ToLower();
+        assetLoader.assetName = assetName;
+        assetLoader.onLoadOver = loadOver;
+        assetLoader.unloadLevel = unloadLevel;
+        AddAssetLoaderToLoadQueue(assetLoader, unloadLevel, isForceInterrupLoad);
+    }
+    public void LoadRuntimeAnimatorControllerAsyn(string bundleName, string assetName,
+                                                  Action<RuntimeAnimatorController> loadOver, 
+                                                  EAssetBundleUnloadLevel unloadLevel,
+                                                  bool isForceInterrupLoad = false) {
+        AssetLoader<RuntimeAnimatorController> assetLoader = new AssetLoader<RuntimeAnimatorController>();
+        assetLoader.bundleName = bundleName.ToLower();
+        assetLoader.assetName = assetName;
+        assetLoader.onLoadOver = loadOver;
+        assetLoader.unloadLevel = unloadLevel;
+        AddAssetLoaderToLoadQueue(assetLoader, unloadLevel, isForceInterrupLoad);
+    }
+    public void LoadAudioClipAsyn(string bundleName, string assetName, Action<AudioClip> loadOver, 
+                                  EAssetBundleUnloadLevel unloadLevel, bool isForceInterrupLoad = false) {
+        AssetLoader<AudioClip> assetLoader = new AssetLoader<AudioClip>();
+        assetLoader.bundleName = bundleName.ToLower();
+        assetLoader.assetName = assetName;
+        assetLoader.onLoadOver = loadOver;
+        assetLoader.unloadLevel = unloadLevel;
+        AddAssetLoaderToLoadQueue(assetLoader, unloadLevel, isForceInterrupLoad);
+    }
+    public void LoadMaterialAsyn(string bundleName, string assetName, Action<Material> loadOver, 
+                                 EAssetBundleUnloadLevel unloadLevel, bool isForceInterrupLoad = false) {
+        AssetLoader<Material> assetLoader = new AssetLoader<Material>();
+        assetLoader.bundleName = bundleName.ToLower();
+        assetLoader.assetName = assetName;
+        assetLoader.onLoadOver = loadOver;
+        assetLoader.unloadLevel = unloadLevel;
+        AddAssetLoaderToLoadQueue(assetLoader, unloadLevel, isForceInterrupLoad);
+    }
+    public void LoadTextAssetAsyn(string bundleName, string assetName, Action<TextAsset> loadOver, 
+                                  EAssetBundleUnloadLevel unloadLevel, bool isForceInterrupLoad = false) {
+        AssetLoader<TextAsset> assetLoader = new AssetLoader<TextAsset>();
+        assetLoader.bundleName = bundleName.ToLower();
+        assetLoader.assetName = assetName;
+        assetLoader.onLoadOver = loadOver;
+        assetLoader.unloadLevel = unloadLevel;
+        AddAssetLoaderToLoadQueue(assetLoader, unloadLevel, isForceInterrupLoad);
+    }
+    public void LoadSpriteAsyn(string bundleName, string assetName, Action<Sprite> loadOver, 
+                               EAssetBundleUnloadLevel unloadLevel, bool isForceInterrupLoad = false) {
+        AssetLoader<Sprite> assetLoader = new AssetLoader<Sprite>();
+        assetLoader.bundleName = bundleName.ToLower();
+        assetLoader.assetName = assetName;
+        assetLoader.onLoadOver = loadOver;
+        assetLoader.unloadLevel = unloadLevel;
+        AddAssetLoaderToLoadQueue(assetLoader, unloadLevel, isForceInterrupLoad);
+    }
+    public void LoadTexture2DAsyn(string bundleName, string assetName, Action<Texture2D> loadOver, 
+                                  EAssetBundleUnloadLevel unloadLevel, bool isForceInterrupLoad = false) {
+        AssetLoader<Texture2D> assetLoader = new AssetLoader<Texture2D>();
+        assetLoader.bundleName = bundleName.ToLower();
+        assetLoader.assetName = assetName;
+        assetLoader.onLoadOver = loadOver;
+        assetLoader.unloadLevel = unloadLevel;
+        AddAssetLoaderToLoadQueue(assetLoader, unloadLevel, isForceInterrupLoad);
+    }
+    // 异步加载场景
+    public void LoadSceneAsyn(string bundleName, string assetName, Action success, 
+                              EAssetBundleUnloadLevel unloadLevel, bool isAdditive = false) {
+        Debug.Log(TAG + ": LoadSceneAsyn()"); 
+        SceneLoader sceneLoader = new SceneLoader();
+        sceneLoader.bundleName = bundleName.ToLower();
+        sceneLoader.assetName = assetName;
+        sceneLoader.onLoadOver = success;
+        sceneLoader.unloadLevel = unloadLevel;
+        sceneLoader.isAdditive = isAdditive;
+        AddAssetLoaderToLoadQueue(sceneLoader, unloadLevel, false);
+    }
+    // 异步加载GameObject
+    public void LoadCloneAsyn(string bundleName, string assetName, Action<GameObject> success, 
+                              EAssetBundleUnloadLevel unloadLevel, bool isForceInterrupLoad = false) {
+        GameObjectLoader gameObjectLoader = new GameObjectLoader();
+        gameObjectLoader.bundleName = bundleName.ToLower();
+        gameObjectLoader.assetName = assetName;
+        gameObjectLoader.unloadLevel = unloadLevel;
+        gameObjectLoader.onCloneOver = success;
+        AddAssetLoaderToLoadQueue(gameObjectLoader, unloadLevel, isForceInterrupLoad);
+    }
+    // 添加AssetLoader到加载队列中
+    void AddAssetLoaderToLoadQueue(AssetLoader assetLoader, 
+                                   EAssetBundleUnloadLevel unloadLevel, bool isForceInterruptLoad) {
+        Debug.Log(TAG + ": AddAssetLoaderToLoadQueue()");
+        Debug.Log(TAG + " isForceInterruptLoad: " + isForceInterruptLoad); 
+        Debug.Log(TAG + " assetLoader.FinalBundleName: " + assetLoader.FinalBundleName);
+        Debug.Log(TAG + " (assetBundleSpecs.ContainsKey(assetLoader.FinalBundleName)): "
+                  + (assetBundleSpecs.ContainsKey(assetLoader.FinalBundleName)));
+        if (assetBundleSpecs.ContainsKey(assetLoader.FinalBundleName)) {
+            assetLoader.onAssetLoadEnd = LoadNextAsset;
+            var assetLoaderSpec = assetBundleSpecs[assetLoader.FinalBundleName];
+            assetLoader.Spec = assetLoaderSpec;
+            if (downloadingAssetBundleSpec == null) {
+                downloadingAssetBundleSpec = assetLoaderSpec;
+                downloadingAssetBundleSpec.TryLoadAsyn(assetLoader, unloadLevel);
+            } else 
+                downloadingAssets.Enqueue(assetLoader);
+            if (!downloadingAssetBundleSpecs.ContainsKey(assetLoaderSpec.Name)) {
+                downloadingAssetBundleSpecs[assetLoaderSpec.Name]
+                    = new AssetBundleDownloadReference() { spec = assetLoaderSpec, referenceCount = 1 };
+            } else {
+                downloadingAssetBundleSpecs[assetLoaderSpec.Name].referenceCount++;
+            }
+        } else {
+            DebugHelper.LogError("ResourceMap not contains " + assetLoader.FinalBundleName, true);
+        }
+    }
+    // 加载下一个AssetLoader
+    void LoadNextAsset(AssetLoader al) {
+        if (downloadingAssetBundleSpec != null && downloadingAssetBundleSpecs.ContainsKey(downloadingAssetBundleSpec.Name)) {
+            AssetBundleDownloadReference r = downloadingAssetBundleSpecs[downloadingAssetBundleSpec.Name];
+            r.referenceCount--;
+            if (r.referenceCount <= 0) 
+                downloadingAssetBundleSpecs.Remove(downloadingAssetBundleSpec.Name);
+        }
+        if (downloadingAssets.Count > 0) {
+            AssetLoader assetLoader = downloadingAssets.Dequeue();
+            downloadingAssetBundleSpec = assetLoader.Spec;
+            downloadingAssetBundleSpec.TryLoadAsyn(assetLoader,
+                                                   downloadingAssetBundleSpec.UnloadLevel,
+                                                   downloadingAssetBundleSpec.IsForceInterruptLoad);
+            if (onNextAssetLoader != null) 
+                onNextAssetLoader(assetLoader);
+        } else 
+            downloadingAssetBundleSpec = null;
+    }
+#endregion
+#region  GetVideoClipURL
+    public void GetFileURLAsyn(string name, Action<string> onSuccess, Action onFail, bool needCache = true) {
+        if (!FileHelp.IsFileExists("VideoClip/" + name)) {
+            string url = Path.Combine(ResourceConstant.RemoteAssetBundleUrl + "VideoClip", name);
+            Debug.Log("url: " + url);
+            HttpHelper.Instance.Get(url, (request) => {
+                if (needCache) {
+                    if (!Directory.Exists(ResourceConstant.AssetBundleCacheRoot + "/VideoClip")) {
+                        Directory.CreateDirectory(ResourceConstant.AssetBundleCacheRoot + "/VideoClip");
+                    }
+                    FileStream fileStream = File.Create(Path.Combine(ResourceConstant.AssetBundleCacheRoot + "/VideoClip", name));
+                    byte[] data = request.downloadHandler.data;
+                    fileStream.Write(data, 0, data.Length);
+                    fileStream.Close();
+                    fileStream.Dispose();
+                    if (onSuccess != null) 
+                        onSuccess("VideoClip/" + name);
+                }
+            }, (request) => {
+                if (onFail != null) 
+                    onFail();
+            });
+        } else {
+            if (onSuccess != null) 
+                onSuccess("VideoClip/" + name);
+        }
+    }
+#endregion
+
+#region LoadTexture
+    // 异步从网上加载图片
+    public void LoadTexture2DAsyn(string name, Action<Texture2D> onSuccess, Action onFail, bool needCache = true) {
+        if (FileHelp.IsFileExists("DownloadTexture/" + name)) {
+            CoroutineHelper.StartCoroutine(LoadTexture2DFromCacahe(name, onSuccess, onFail));
+        } else {
+            string url = Path.Combine(ResourceConstant.RemoteAssetBundleUrl, name);
+            HttpHelper.Instance.GetTexture(url, (texture, request) => {
+                if (needCache) {
+                    if (!Directory.Exists(ResourceConstant.AssetBundleCacheRoot + "/DownloadTexture")) {
+                        Directory.CreateDirectory(ResourceConstant.AssetBundleCacheRoot + "/DownloadTexture");
+                    }
+                    FileStream fileStream = File.Create(Path.Combine(ResourceConstant.AssetBundleCacheRoot + "/DownloadTexture", name));
+                    byte[] data = request.downloadHandler.data;
+                    fileStream.Write(data, 0, data.Length);
+                    fileStream.Close();
+                    fileStream.Dispose();
+                }
+                if (onSuccess != null) 
+                    onSuccess(texture);
+            }, (request) => {
+                if (onFail != null) 
+                    onFail();
+            });
+        }
+    }
+    WWW thisWWW;
+    IEnumerator LoadTexture2DFromCacahe(string name, Action<Texture2D> onSuccess, Action onFail) {
+        string url = Path.Combine(ResourceConstant.AssetBundleCacheUrl + "/DownloadTexture", name);
+        thisWWW = new WWW(url);
+        yield return thisWWW;
+        if (thisWWW == null) {
+            DebugHelper.LogError("Download Texture2D " + url + " thisWWW == null", true);
+            if (onFail != null) {
+                onFail();
+            }
+        } else if (!string.IsNullOrEmpty(thisWWW.error)) {
+            DebugHelper.LogError("Download Texture2D " + thisWWW.error + " url: " + url, true);
+            yield return new WaitForEndOfFrame();
+            if (thisWWW != null) {
+                thisWWW.Dispose();
+                thisWWW = null;
+                if (onFail != null) 
+                    onFail();
+            }
+        } else {
+            if (onSuccess != null) 
+                onSuccess(thisWWW.texture);
+        }
+    }
+#endregion
+#region Unload
+    // 卸载
+    public void Unload(string keyName, bool allObjects) {
+        string finalBundleName = GetFinalBundleName(keyName);
+        if (assetBundleSpecs.ContainsKey(finalBundleName)) 
+            assetBundleSpecs[finalBundleName].Unload(allObjects);
+    }
+    // 全部卸载
+    public void UnloadAll() {
+        var tempData = downloadingAssets.Where(p => p.Spec.UnloadLevel == 
+                                               EAssetBundleUnloadLevel.Never);
+        downloadingAssets = new Queue<AssetLoader>(tempData);
+        downloadingAssetBundleSpecs.Clear();
+        foreach (var assetBundle in assetBundleSpecs) {
+            if (assetBundle.Value.UnloadLevel == 
+                EAssetBundleUnloadLevel.ChangeSceneOver) {
+                assetBundle.Value.Unload(false);
+            }
+        }
+        if (downloadingAssetBundleSpecs == null) 
+            LoadNextAsset(null);
+    }
+#endregion
+
+    void Update() {
+        checkSaveTimes += Time.deltaTime;
+        if (checkSaveTimes > 5) {
+            checkSaveTimes = 0;
+            if (haveCachedChanged) {
+                haveCachedChanged = false;
+                SaveHotFixResourceList();
+            }
+        }
+    }
+    public void SaveHotFixResourceList() {
+        if (ResourceConstant.CacheAssetBundle) {
+            DateTime regTime = DateTime.Now;
+            StringBuilder stringBuilder = new StringBuilder();
+            string hotFixListPath = ResourceConstant.AssetBundleCacheRoot + "/HotFixList.txt";
+            FileStream fileStream;
+            if (!File.Exists(hotFixListPath)) {
+                fileStream = File.Create(hotFixListPath);
+            } else {
+                fileStream = new FileStream(hotFixListPath, FileMode.Truncate);
+            }
+            string ts = string.Empty;
+            var ec = new UTF8Encoding();
+            foreach (var assetBundleSpec in assetBundleSpecs) {
+                if (assetBundleSpec.Value.IsCached && assetBundleSpec.Value.AssetBundleSourceType == EAssetBunbleSourceType.Hotfix) {
+                    ts = assetBundleSpec.Value.Name + "," + assetBundleSpec.Value.MD5 + "," + assetBundleSpec.Value.Length + '\n';
+                    var bytes = ec.GetBytes(ts);
+                    fileStream.Write(bytes, 0, bytes.Length);
+                }
+            }
+            fileStream.Close();
+            fileStream.Dispose();
+            DebugHelper.LogError("Save HotFixList.txt cost " + (DateTime.Now - regTime).TotalMilliseconds, true);
+        }
+    }
+    public void OnCachedAssetBundleSpec(AssetBundleSpec spec) {
+        haveCachedChanged = true;
+    }
+    // IOS平台设置
+    void IOSSetting() {
+#if UNITY_IOS
+        UnityEngine.iOS.Device.SetNoBackupFlag(Application.persistentDataPath);
+#endif
+    }
+}
+\end{minted}
+\section{SDK: 第三方库的接入，比如想要使用微信登录，或是使用了google账户登录等}
+\label{sec-8}
+\subsubsection{NativeHelper： 原生交互类}
+\label{sec-8-0-1}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// 原生交互类
+public class NativeHelper {
+    // 微信登录. google/facebook/linkedin登录方式一致吗？需要分别接入他们各方提供的SDK
+    public static void WeChatLogin() {
+        if (Application.platform == RuntimePlatform.WindowsPlayer) {
+        } else if (Application.platform == RuntimePlatform.Android) {
+        } else if (Application.platform == RuntimePlatform.IPhonePlayer) {
+            //IOSNativeInterface.WeChatLogin();
+        }
+    }
+}
+\end{minted}
+
+\section{Framework.Util各种帮助类}
+\label{sec-9}
+\subsection{}
+\label{sec-9-1}
+\subsection{}
+\label{sec-9-2}
 
 \subsection{}
-\label{sec-7-3}
+\label{sec-9-3}
 \subsection{}
-\label{sec-7-4}
+\label{sec-9-4}
 \subsection{Singleton<T> + SingletonMono<T> : MonoBehaviour}
-\label{sec-7-5}
+\label{sec-9-5}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 public class Singleton<T> where T : class, new() {
     protected static T _instance;
@@ -2050,12 +3621,12 @@ public class SingletonMono<T> : MonoBehaviour where T : MonoBehaviour {　// Mon
 \end{minted}
 
 \section{HotFix中使用MVVM架构实现热更新的搭配与相关的链接}
-\label{sec-8}
+\label{sec-10}
 
 \section{ILRuntime 类库里源码的基本理解，最重要的涉及到的相关的类与方法摘要}
-\label{sec-9}
+\label{sec-11}
 \subsection{CrossBindingAdaptor : IType 跨域(程序集)绑定适配器 + CrossBindingAdaptorType interface 公用接口类(为什么要这个公用接口类？)}
-\label{sec-9-1}
+\label{sec-11-1}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 public interface CrossBindingAdaptorType {　// 公用接口类
     ILTypeInstance ILInstance { get; }
@@ -2256,12 +3827,12 @@ public abstract class CrossBindingAdaptor : IType {
 }
 \end{minted}
 \subsection{}
-\label{sec-9-2}
+\label{sec-11-2}
 \subsection{}
-\label{sec-9-3}
+\label{sec-11-3}
 \subsection{}
-\label{sec-9-4}
+\label{sec-11-4}
 \subsection{}
-\label{sec-9-5}
+\label{sec-11-5}
 % Emacs 27.1 (Org mode 8.2.7c)
 \end{document}
