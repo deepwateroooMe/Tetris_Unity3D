@@ -1,7 +1,6 @@
 #+latex_class: cn-article
 #+title: Unity Android SDK/NDK 俄罗斯方块砖3D小游戏
 #+author: deepwaterooo 
-#+OPTIONS: toc:5 
 
 * 模块搭建
 - # only inlcude two levels in TOC 
@@ -20,7 +19,7 @@
 - 输入法的搭建：终于用到了自己之前用过的好用的输入法
 - 这两天开车疲累，最迟明天中午会去南湾找房间出租，尽快解决搬家的问题；昨天晚上回来得太晚了，一路辛苦，路上只差睡着，回到家里补觉补了好多个小时。
 - 小电脑，笔记本电脑里的游戏环境搭建，今天下午去图书馆里弄（今天下午去图书馆里把需要借助快速网络来完成的事情都搭建好；家里被恶房东故意整了个腾腾慢的网，故意阻碍别人的发展，谁还愿意再这样的环境中继续住下去呢？！！！）
-
+-　能够把程序源码读得比较懂，也并不代表把所有相关的原理就全部弄懂了；不是说还有多在的挑战，而是说要不断寻找更为有效的学习方法，快速掌握所有涉及到的相关原理；在理解得更为深入掌握了基本原理的基础上再去读源码，会不会更为有效事半功倍呢？这是一颗永远不屈服的心，爱表哥，爱生活！！！
 * ILRuntime 库的系统再深入理解
 ** ILRuntime基本原理
 - ILRuntime借助Mono.Cecil库来读取DLL的PE信息，以及当中类型的所有信息，最终得到方法的IL汇编码，然后通过内置的IL解译执行虚拟机来执行DLL中的代码。IL解释器代码在ILIntepreter.cs，通过Opcode来逐语句执行机器码，解释器的代码有四千多行。
@@ -32,6 +31,110 @@
 ** ILRuntime主要限制
    
 [[./pic/readme_20220926_095555.png]]
+- *委托适配器（DelegateAdapter）* ：将委托实例传出给ILRuntime外部使用，将其转换成CLR委托实例。
+由于IL2CPP之类的AOT编译技术无法在运行时生成新的类型，所以在创建委托实例的时候ILRuntime选择了显式注册的方式，以保证问题不被隐藏到上线后才发现。
+#+BEGIN_SRC csharp
+//同一参数组合只需要注册一次
+delegate void SomeDelegate(int a, float b);
+Action<int, float> act;
+//注册，不带返回值，最多支持五个参数传入
+appDomain.DelegateManager.RegisterMethodDelegate<int, float>();
+
+//注册，带参数返回值，最后一个参数为返回值，最多支持四个参数传入
+delegate bool SomeFunction(int a, float b);
+Func<int, float, bool> act;
+#+END_SRC 
+- *委托转换器RegisterDelegateConvertor* ：需要将一个不是Action或者Func类型的委托实例传到ILRuntime外部使用，需要写委托适配器和委托转换器。委托转换器将Action和Func转换成你真正需要的那个委托类型
+#+BEGIN_SRC csharp
+app.DelegateManager.RegisterDelegateConvertor<SomeFunction>((action) =>
+{
+    return new SomeFunction((a, b) =>
+    {
+       return ((Func<int, float, bool>)action)(a, b);
+    });
+});
+#+END_SRC 
+- 为了避免不必要的麻烦，以及后期热更出现问题，建议： 1、尽量避免不必要的跨域委托调用 2、尽量使用Action以及Func委托类型
+- *CLR重定向:* ILRuntime为了解决外部调用内部接口的问题，引入了CLR重定向机制。 原理就是当IL解译器发现需要调用某个指定CLR方法时，将实际调用重定向到另外一个方法进行挟持，再在这个方法中对ILRuntime的反射的用法进行处理
+- 从代码中可以看出重定向的工作是把方法挟持下来后装到ILIntepreter的解释器里面实例化
+- 不带返回值的重定向：
+#+BEGIN_SRC csharp
+public static StackObject* CreateInstance(ILIntepreter intp, StackObject* esp,
+                                          List<object> mStack, CLRMethod method, bool isNewObj) {
+    // 获取泛型参数<T>的实际类型
+    IType[] genericArguments = method.GenericArguments;
+    if (genericArguments != null && genericArguments.Length == 1) {
+        var t = genericArguments[0];
+        if (t is ILType) { // 如果T是热更DLL里的类型 
+            // 通过ILRuntime的接口来创建实例
+            return ILIntepreter.PushObject(esp, mStack, ((ILType)t).Instantiate());
+        } else // 通过系统反射接口创建实例
+            return ILIntepreter.PushObject(esp, mStack, Activator.CreateInstance(t.TypeForCLR));
+    } else
+        throw new EntryPointNotFoundException();
+}
+// 注册
+foreach (var i in typeof(System.Activator).GetMethods()) {
+    // 找到名字为CreateInstance，并且是泛型方法的方法定义
+    if (i.Name == "CreateInstance" && i.IsGenericMethodDefinition) {
+        // RegisterCLRMethodRedirection：通过redirectMap存储键值对MethodBase-CLRRedirectionDelegate，如果i不为空且redirectMap中没有传入的MethodBase（即下方的i)则存储redirectMap[i] = CreateInstance。所以如此看来注册行为就是把键值对存储到redirectMap的过程
+        appdomain.RegisterCLRMethodRedirection(i, CreateInstance);
+    }
+}
+#+END_SRC 
+- 带返回值方法的重定向
+#+BEGIN_SRC csharp
+public unsafe static StackObject* DLog(ILIntepreter __intp, StackObject* __esp,
+                                       List<object> __mStack, CLRMethod __method, bool isNewObj)  {
+    ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
+    StackObject* ptr_of_this_method;
+    // 只有一个参数，所以返回指针就是当前栈指针ESP - 1
+    StackObject* __ret = ILIntepreter.Minus(__esp, 1);
+    // 第一个参数为ESP -1， 第二个参数为ESP - 2，以此类推
+    ptr_of_this_method = ILIntepreter.Minus(__esp, 1);
+    // 获取参数message的值
+    object message = StackObject.ToObject(ptr_of_this_method, __domain, __mStack);
+    // 需要清理堆栈
+    __intp.Free(ptr_of_this_method);
+    // 如果参数类型是基础类型，例如int，可以直接通过int param = ptr_of_this_method->Value获取值，
+    // 关于具体原理和其他基础类型如何获取，请参考ILRuntime实现原理的文档。
+            
+    // 通过ILRuntime的Debug接口获取调用热更DLL的堆栈
+    string stackTrace = __domain.DebugService.GetStackTrance(__intp);
+    Debug.Log(string.Format("{0}\n{1}", format, stackTrace));
+    return __ret;
+}
+#+END_SRC 
+- *LitJson集成*: Json序列化是开发中非常经常需要用到的功能，考虑到其通用性，因此ILRuntime对LitJson这个序列化库进行了集成
+#+BEGIN_SRC csharp
+//对LitJson进行注册，需要在注册CLR绑定之前
+LitJson.JsonMapper.RegisterILRuntimeCLRRedirection(appdomain);
+//LitJson使用
+//将一个对象转换成json字符串
+string json = JsonMapper.ToJson(obj);
+//json字符串反序列化成对象
+JsonTestClass obj = JsonMapper.ToObject<JsonTestClass>(json);
+#+END_SRC 
+- *ILRuntime的性能优化*
+  - 值类型优化：使用ILRuntime外部定义的值类型（例如UnityEngine.Vector3）在默认情况下会造成额外的装箱拆箱开销。ILRuntime在1.3.0版中增加了值类型绑定（ValueTypeBinding）机制，通过对这些值类型添加绑定器，可以大幅增加值类型的执行效率，以及避免GC Alloc内存分配。
+  - 大规模数值计算：如果在热更内需要进行大规模数值计算，则可以开启ILRuntime在2.0版中加入的寄存器模式来进行优化
+  - 避免使用foreach：尽量避免使用foreach，会不可避免地产生GC。而for循环不会。
+  - 加载dll并在逻辑后处理进行简单调用
+  - 整个文件流程：创建IEnumerator并运行->用文件流判断并读入dll和pdb->尝试加载程序集dll->（如果加载成功)初始化脚本引擎（InitializeILRuntime()）->执行脚本引擎加载后的逻辑处理（OnHotFixLoaded()）->程序销毁（在OnDestoy中关闭dll和pdb的文件流）
+  - MemoryStream:为系统提供流式读写。MemoryStream类封装一个字节数组，在构造实例时可以使用一个字节数组作为参数，但是数组的长度无法调整。使用默认无参数构造函数创建实例，可以使用Write方法写入，随着字节数据的写入，数组的大小自动调整。 参考博客：传送门
+  - appdomain.LoadAssembly：将需要热更的dll加载到解释器中。第一个填入dll以及pdb，这里的pdb应该是dll对应的一些标志符号。 后面的ILRuntime.Mono.Cecil.Pdb.PdbReaderProvider()是动态修改程序集，它的作用是给ILRuntime.Mono.Cecil.Pdb.PdbReaderProvider()里的GetSymbolReader)(传入两个参数,一个是通过转化后的ModuleDefinition.ReadModule(stream（即dll）)模块定义，以及原来的symbol（即pdb） GetSymbolReader主要的作用是检测其中的一些符号和标志是否为空，不为空的话就进行读取操作。 （这些内容都是ILRuntime中的文件来完成）
+- Unity MonoBehaviour lifecycle methods callback execute orders:
+- 还有一个看起来不怎么清楚的，将就凑合着看一下：这几个图因为文件地址错误丢了，改天再补一下
+- IL热更优点：
+  - 1、无缝访问C#工程的现成代码，无需额外抽象脚本API
+  - 2、直接使用VS2015进行开发，ILRuntime的解译引擎支持.Net 4.6编译的DLL
+  - 3、执行效率是L#的10-20倍
+  - 4、 *选择性的CLR绑定使跨域调用更快速，绑定后跨域调用的性能能达到slua的2倍左右（从脚本调用GameObject之类的接口）*
+  - 5、支持跨域继承(代码里的完美学演示)
+  - 6、完整的泛型支持(代码里的完美学演示)
+  - 7、拥有Visual Studio的调试插件，可以实现真机源码级调试。支持Visual Studio 2015 Update3 以及Visual Studio 2017和Visual Studio 2019
+  - 8、最新的2.0版引入的寄存器模式将数学运算性能进行了大幅优化
+
 ** ILRuntime启动调试
 - ILRuntime建议全局只创建一个AppDomain，在函数入口添加代码启动调试服务
 #+BEGIN_SRC csharp
@@ -87,9 +190,9 @@ public class IDisposableAdaptor : CrossBindingAdaptor {
     }
 }
     #+END_SRC 
-*** IEnumeratorObjectAdaptor : CrossBindingAdaptor { // 叠代器适配器
+*** IEnumeratorObjectAdaptor : CrossBindingAdaptor { // 叠代器适配器? 不是集合元素里轮询的叠代器，而是协程
     #+BEGIN_SRC csharp
-public class IEnumeratorObjectAdaptor : CrossBindingAdaptor { // 叠代器适配器
+public class IEnumeratorObjectAdaptor : CrossBindingAdaptor { 
 // 基类里的三个方法的实现
     public override Type BaseCLRType {
         get {
@@ -105,8 +208,8 @@ public class IEnumeratorObjectAdaptor : CrossBindingAdaptor { // 叠代器适配
         return new Adaptor(appdomain, instance);
     }
 
-// 搞不明白：这些个IXxxxx IEnumerator<T>　之类的，是在哪里定义的，还是说是C＃语言里本来就有的呢？
-// 弄不明白的这些个以I打头的：都定义在plugins里的ILRuntime的包裹里，改天可以捡起来看一下
+// 这些个IXxxxx IEnumerator<T>　之类的，是在哪里定义的，还是说是C＃语言里本来就有的呢？
+// 弄不明白的这些个以I打头的：都定义在plugins里的ILRuntime的包裹里，改天可以一一再看一下
     internal class Adaptor : IEnumerator<object>, CrossBindingAdaptorType {
         ILTypeInstance instance;
         ILRuntime.Runtime.Enviorment.AppDomain appdomain;
@@ -126,7 +229,7 @@ public class IEnumeratorObjectAdaptor : CrossBindingAdaptor { // 叠代器适配
                 return obj;
             }
         }
-// 这里的几个方法，是因为叠代器需要用到，所以不得不定义的吗？还有什么基类之类的吗？
+// 这里的几个方法，是因为协程需要用到，所以不得不定义的吗？还有什么基类之类的吗？
         IMethod _MoveNext;
         IMethod _get_Current;
         IMethod _Reset;
@@ -253,8 +356,218 @@ public class MonoBehaviourAdapter : CrossBindingAdaptor {
     }
 }
     #+END_SRC 
-** Factory
-** Inject
+** Factory: 顾名思义，就是工厂模式，负责生产各种不同类型的实例（生产人质）
+*** enum FactoryType 
+    #+BEGIN_SRC csharp
+public enum FactoryType {
+    Singleton,
+    Transient,
+    Pool
+}
+    #+END_SRC 
+*** interface IObjectFactory
+    #+BEGIN_SRC csharp
+public interface IObjectFactory {
+    object AcquireObject(string classFullName);
+    void ReleaseObject(object obj);
+}
+    #+END_SRC 
+*** PoolObjectFactory : Singleton<PoolObjectFactory>, IObjectFactory：单例对象池：结合工厂模式使用
+    #+BEGIN_SRC csharp
+// 单例对象池：结合工厂模式使用；现接触过的对象池包括 ThreadPool, ObjectPool, 
+public class PoolObjectFactory : Singleton<PoolObjectFactory>, IObjectFactory {
+
+    public class ObjectPool {
+        public readonly List<PoolData> _pool; // readonly
+        public int Max {　// 该对象池储存数据上限
+            get;
+            set;
+        }
+        public bool Limit { // 该对象池设限了吗？
+            get;
+            set;
+        }
+        public ObjectPool() {
+            Limit = false;
+            _pool = new List<PoolData>();
+        }
+    }
+    public class PoolData {
+        public bool InUse {
+            get;
+            set;
+        }
+        public object Obj {
+            get;
+            set;
+        }
+    }
+// 这里，每种类型对应一个对象池（因为每种类型根据游戏需要可能初始化数量等不同有不同的要求），用一个字典管理不同类型的对象池
+    private readonly Dictionary<Type, ObjectPool> pool;
+    public PoolObjectFactory() {
+        pool = new Dictionary<Type, ObjectPool>();
+    }
+
+    public object AcquireObject(string classFullName) {
+        Type type = GameApplication.Instance.HotFix.LoadType(classFullName);
+        lock (pool) { // 这里需要上锁
+            if (pool.ContainsKey(type)) {
+                if (pool[type]._pool.Count > 0) {
+                    for (int i = 0; i < pool[type]._pool.Count; i++) {
+                        var p = pool[type]._pool[i];
+                        if (!p.InUse) {　// 从该类型对象池里的现有对象链表中遍历出第一个没被使用的对象拿来用
+                            p.InUse = true;
+                            return p.Obj;
+                        }
+                    }
+                }
+                // 该类型对象池数量已经达到了上限
+                if (pool[type].Limit && pool[type]._pool.Count >= pool[type].Max) 
+                    throw new Exception("max limit is arrived.");
+            }
+            object obj = GameApplication.Instance.HotFix.CreateInstance(classFullName);
+            var poolData = new PoolData {
+                InUse = true,
+                Obj = obj
+            };
+            if (!pool.ContainsKey(type)) {
+                ObjectPool objPool = new ObjectPool();
+                pool.Add(type, objPool);
+            }
+            pool[type]._pool.Add(poolData);
+            return obj;
+        }
+    }
+    public void ReleaseObject(object obj) { }
+}
+    #+END_SRC 
+*** SingletonObjectFactory : IObjectFactory: 单例对象工厂
+    #+BEGIN_SRC csharp
+// 单例对象工厂
+public class SingletonObjectFactory : IObjectFactory {
+
+    private static Dictionary<Type, object> cachedObjects = null;
+    private static readonly object _lock = new object();
+
+    private Dictionary<Type, object> CachedObjects {
+        get {
+            lock (_lock) {
+                if (cachedObjects == null) 
+                    cachedObjects = new Dictionary<Type, object>();
+                return cachedObjects;
+            }
+        }
+    }
+    public object AcquireObject(string classFullName) {
+        Type type = GameApplication.Instance.HotFix.LoadType(classFullName);
+        if (CachedObjects.ContainsKey(type)) 
+            return CachedObjects[type];
+        lock (_lock) {
+            var instance = GameApplication.Instance.HotFix.CreateInstance(classFullName);
+            CachedObjects.Add(type, instance);
+            return instance;
+        }
+    }
+    public void ReleaseObject(object obj) { }
+}
+    #+END_SRC 
+*** TransientObjectFactory : IObjectFactory 
+    #+BEGIN_SRC csharp
+public class TransientObjectFactory : IObjectFactory {
+
+    public object AcquireObject(string classFullName) {
+        var instance = GameApplication.Instance.HotFix.CreateInstance(classFullName);
+        return instance;
+    }
+    public void ReleaseObject(object obj) { }
+}
+    #+END_SRC 
+** Inject: 美其名曰（自动）注入的背后，都是强大优化过的逻辑在支撑！爱表哥，爱生活
+*** ServiceLocatorContain
+   #+BEGIN_SRC csharp
+public class ServiceLocatorContain {
+    public string TypeName {
+        get;
+        private set;
+    }
+    public Func<object> Function {
+        get;
+        set;
+    }
+    public ServiceLocatorContain(string name, Func<object> func) {
+        TypeName = name;
+        Function = func;
+    }
+}
+// 对象定位（创建）工厂：要么去对象池里抓一下；（当没有或是所有对象均在用且达上限）要么创建一个新的
+public class ServiceLocator {
+    private static readonly Dictionary<Type, ServiceLocatorContain> Container = new Dictionary<Type, ServiceLocatorContain>();
+
+    // 两种不同类型的工厂以及对象的定位方法（每种类型提供两种不同参数的定位方法）
+    private SingletonObjectFactory _singletonObjectFactory = new SingletonObjectFactory();
+    private TransientObjectFactory _transientObjectFactory = new TransientObjectFactory();
+
+    // 两种不同类型的工厂以及对象的定位方法（每种类型提供两种不同参数的定位方法）
+    public void RegisterSingleton(string interfaceName, string typeName) {
+        ServiceLocatorContain contain = new ServiceLocatorContain(typeName, Lazy(FactoryType.Singleton, typeName));
+        Type type = GameApplication.Instance.HotFix.LoadType(interfaceName);
+        if (!Container.ContainsKey(type)) {
+            Container.Add(type, contain);
+        } else {
+            throw new Exception("Container contains key: " + type);
+        }
+    }
+    public void RegisterSingleton(string typeName) {
+        ServiceLocatorContain contain = new ServiceLocatorContain(typeName, Lazy(FactoryType.Singleton, typeName));
+        Type type = GameApplication.Instance.HotFix.LoadType(typeName);
+        if (!Container.ContainsKey(type)) {
+            Container.Add(type, contain);
+        } else {
+            throw new Exception("Container contains key: " + type);
+        }
+    }
+    public void RegisterTransient(string interfaceName, string typeName) {
+        ServiceLocatorContain contain = new ServiceLocatorContain(typeName, Lazy(FactoryType.Transient, typeName));
+        Type type = GameApplication.Instance.HotFix.LoadType(interfaceName);
+        if (!Container.ContainsKey(type)) {
+            Container.Add(type, contain);
+        } else {
+            throw new Exception("Container contains key: " + type);
+        }
+    }
+    public void RegisterTransient(string typeName) {
+        ServiceLocatorContain contain = new ServiceLocatorContain(typeName, Lazy(FactoryType.Transient, typeName));
+        Type type = GameApplication.Instance.HotFix.LoadType(typeName);
+        if (!Container.ContainsKey(type)) {
+            Container.Add(type, contain);
+        } else {
+            throw new Exception("Container contains key: " + type);
+        }
+    }
+
+    public void Clear() {
+        Container.Clear();
+    }
+    public TInterface Resolve<TInterface>(string keyName) where TInterface : class {
+        return Resolve(GameApplication.Instance.HotFix.LoadType(keyName)) as TInterface;
+    }
+    private static object Resolve(Type type) {
+        if (!Container.ContainsKey(type)) 
+            return null;
+        return Container[type].Function();
+    }
+    private Func<object> Lazy(FactoryType factoryType, string typeFullName) {
+        return () => {
+            switch (factoryType) {
+            case FactoryType.Singleton:
+                return _singletonObjectFactory.AcquireObject(typeFullName);
+            default:
+                return _transientObjectFactory.AcquireObject(typeFullName);
+            }
+        };
+    }
+}
+   #+END_SRC
 ** Wrap
 ** GameApplication: 游戏入口类
     #+BEGIN_SRC csharp
@@ -369,6 +682,7 @@ public class GameApplication : MonoBehaviour {
     }
 }
     #+END_SRC 
+
 ** HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain: 因为跨域交互，所以即使是热更新包，也继承自unity MonoBehaviour
    #+BEGIN_SRC csharp
 public class HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain { // SingletonMono<T> where T : MonoBehaviour帮助类里有定义
@@ -415,7 +729,7 @@ public class HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain { // 
         appDomain.RegisterCrossBindingAdaptor(new ViewModelBaseAdapter());  
         appDomain.RegisterCrossBindingAdaptor(new UnityGuiViewAdapter());   
         appDomain.RegisterCrossBindingAdaptor(new ModuleBaseAdapter());     
-        appDomain.RegisterCrossBindingAdaptor(new IEnumeratorObjectAdaptor());
+        appDomain.RegisterCrossBindingAdaptor(new IEnumeratorObjectAdaptor()); // 协程适配
         appDomain.RegisterCrossBindingAdaptor(new MonoBehaviourAdapter()); // <<<<<<<<<<<<<<<<<<<< 临时补了一下，也有了
         appDomain.RegisterCrossBindingAdaptor(new InterfaceCrossBindingAdaptor());
     }
@@ -463,7 +777,8 @@ public class HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain { // 
 }
 
 // 不难猜测理解：所有需要热更新的方法类型（以不同的参数类型以及返回类型作区分），都要在这里向程序集的代理管理器注册相关方法回调代理    
-    void InitializeDelegateSetting() {
+// 同一参数组合只需要注册一次
+    void InitializeDelegateSetting() { // 注册，不带返回值，最多支持五个参数传入; 注册，带参数返回值，最后一个参数为返回值，最多支持四个参数传入 ?
         appDomain.DelegateManager.RegisterMethodDelegate<int>();
         appDomain.DelegateManager.RegisterFunctionDelegate<int, string>();
         appDomain.DelegateManager.RegisterMethodDelegate<string>();
@@ -491,7 +806,10 @@ public class HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain { // 
         appDomain.DelegateManager.RegisterMethodDelegate<Exception>();
         appDomain.DelegateManager.RegisterFunctionDelegate<GameObject, GameObject>();
         appDomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, ILTypeInstance, int>();
-       // 在Unity的程序集与热更新的程序集跨域之间，这里给出了方法代理转换的实现逻辑，几座小桥流水人家，爱表哥爱生活
+// 在Unity的程序集与热更新的程序集跨域之间，这里给出了方法代理转换的实现逻辑，几座小桥流水人家，爱表哥爱生活
+// 委托转换器：需要将一个不是Action或者Func类型的委托实例传到ILRuntime外部使用，需要写委托适配器和委托转换器。
+// 委托转换器将Action和Func转换成你真正需要的那个委托类型
+// 为了避免不必要的麻烦，以及后期热更出现问题，建议： 1、尽量避免不必要的跨域委托调用 2、尽量使用Action以及Func委托类型
         appDomain.DelegateManager.RegisterDelegateConvertor<UnityAction>((action) => {
             return new UnityAction(() => {
                 ((Action)action)();
@@ -1598,7 +1916,9 @@ public class SingletonMono<T> : MonoBehaviour where T : MonoBehaviour {　// Mon
     protected static T _instance;
     public static T Instance {
         get {
-            if (_instance == null) {　// 实例化一个游戏控件（GameObject），再将泛型类型以元件的形式挂上去，更将控件的名字
+// 实例化一个游戏控件（GameObject），再将泛型类型以元件的形式挂上去，更新控件的名字
+// 是因为控件具备生命周期，所以实例就是MonoBehaviour的继承类了吗？好像是这样
+            if (_instance == null) {　
                 GameObject obj = new GameObject();
                 _instance = obj.AddComponent<T>();
                 obj.name = _instance.GetType().Name;
