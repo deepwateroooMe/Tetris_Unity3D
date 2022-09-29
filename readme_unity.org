@@ -210,8 +210,9 @@ public class IEnumeratorObjectAdaptor : CrossBindingAdaptor {
         return new Adaptor(appdomain, instance);
     }
 
-// 这些个IXxxxx IEnumerator<T>　之类的，是在哪里定义的，还是说是C＃语言里本来就有的呢？
-// 弄不明白的这些个以I打头的：都定义在plugins里的ILRuntime的包裹里，改天可以一一再看一下
+// 这些个IXxxxx IEnumerator<T>　之类的，是在哪里定义的，是ILRuntime自己定义出来方便使用的，在下面的包裹里：　
+// using ILRuntime.CLR.TypeSystem;
+// using ILRuntime.CLR.Method;
     internal class Adaptor : IEnumerator<object>, CrossBindingAdaptorType {
         ILTypeInstance instance;
         ILRuntime.Runtime.Enviorment.AppDomain appdomain;
@@ -231,7 +232,7 @@ public class IEnumeratorObjectAdaptor : CrossBindingAdaptor {
                 return obj;
             }
         }
-// 这里的几个方法，是因为协程需要用到，所以不得不定义的吗？还有什么基类之类的吗？
+
         IMethod _MoveNext;
         IMethod _get_Current;
         IMethod _Reset;
@@ -826,6 +827,10 @@ public class HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain { // 
 
 // 不难猜测理解：所有需要热更新的方法类型（以不同的参数类型以及返回类型作区分），都要在这里向程序集的代理管理器注册相关方法回调代理    
 // 同一参数组合只需要注册一次
+
+// 如果只在热更新的DLL项目中使用的委托，是不需要任何额外操作的，就跟在通常的C#里那样使用即可;
+// 如果你需要将委托实例传给ILRuntime外部使用，那则根据情况，你需要额外添加适配器或者转换器,目的是为了适应外部的环境。
+// 如果在运行时发现缺少注册某个指定类型的委托适配器或者转换器时，ILRuntime会抛出相应的异常，根据提示添加注册即可。
     void InitializeDelegateSetting() { // 注册，不带返回值，最多支持五个参数传入; 注册，带参数返回值，最后一个参数为返回值，最多支持四个参数传入 ?
         appDomain.DelegateManager.RegisterMethodDelegate<int>();
         appDomain.DelegateManager.RegisterFunctionDelegate<int, string>();
@@ -854,10 +859,15 @@ public class HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain { // 
         appDomain.DelegateManager.RegisterMethodDelegate<Exception>();
         appDomain.DelegateManager.RegisterFunctionDelegate<GameObject, GameObject>();
         appDomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, ILTypeInstance, int>();
+
 // 在Unity的程序集与热更新的程序集跨域之间，这里给出了方法代理转换的实现逻辑，几座小桥流水人家，爱表哥爱生活
 // 委托转换器：需要将一个不是Action或者Func类型的委托实例传到ILRuntime外部使用，需要写委托适配器和委托转换器。
 // 委托转换器将Action和Func转换成你真正需要的那个委托类型
 // 为了避免不必要的麻烦，以及后期热更出现问题，建议： 1、尽量避免不必要的跨域委托调用 2、尽量使用Action以及Func委托类型
+
+// ILRuntime内部是使用Action,以及Func这两个系统自带委托类型来生成的委托实例，
+// 所以如果你需要将一个不是Action或者Func类型的委托实例传到ILRuntime外部使用的话，
+// 除了委托适配器，还需要额外写一个转换器，将Action和Func转换成你真正需要的那个委托类型。
         appDomain.DelegateManager.RegisterDelegateConvertor<UnityAction>((action) => {
             return new UnityAction(() => {
                 ((Action)action)();
