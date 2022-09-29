@@ -1,4 +1,4 @@
-% Created 2022-09-28 Wed 09:51
+% Created 2022-09-28 Wed 16:29
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -218,6 +218,7 @@ appdomain.DebugService.StartDebugService(56000)
 \item 本文流程图摘自：ILRuntime的QQ群的《ILRuntime热更框架.docx》(by a 704757217)
 \item Unity实现c\#热更新方案探究(三): \url{https://zhuanlan.zhihu.com/p/37375372}
 \end{itemize}
+
 
 \section{Framework.Core核心理解: 现在有足足的干劲把ILRuntime + MVVM热更新框架里的方方面面都理解消化透彻！爱表哥爱生活}
 \label{sec-5}
@@ -1033,6 +1034,7 @@ public interface IHotFixMain {
     object CreateInstance(string typeName);
 }
 \end{minted}
+
 
 \section{Framework.MVVM: Unity中定义好的MVVM架构；使用ILRuntime定义实现了必要的跨域跨程序集适配，以及数据观察回调等}
 \label{sec-6}
@@ -1996,17 +1998,8 @@ public class ViewModelBaseAdapter : CrossBindingAdaptor { // 这里需要再想�
 
 \section{Framework.Util各种帮助类}
 \label{sec-7}
-\subsection{}
-\label{sec-7-1}
-\subsection{}
-\label{sec-7-2}
-
-\subsection{}
-\label{sec-7-3}
-\subsection{}
-\label{sec-7-4}
 \subsection{Singleton<T> + SingletonMono<T> : MonoBehaviour}
-\label{sec-7-5}
+\label{sec-7-1}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 public class Singleton<T> where T : class, new() {
     protected static T _instance;
@@ -2049,13 +2042,833 @@ public class SingletonMono<T> : MonoBehaviour where T : MonoBehaviour {　// Mon
 }
 \end{minted}
 
-\section{HotFix中使用MVVM架构实现热更新的搭配与相关的链接}
+\subsection{static class JsonSerializer: 静态帮助类，帮助将网络下载的资源包解析为相应的封装类型}
+\label{sec-7-2}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+public static class JsonSerializer {
+    public static JsonValue Deserialize(string jsonString) {
+        try {
+            if (string.IsNullOrEmpty(jsonString)) 
+                return new JsonObject();
+            var re = JsonValue.Parse(jsonString);
+            return re;
+        } catch (Exception ex) {
+            DebugHelper.LogError(string.Format("{0}{1}", jsonString, ex), true);
+            return null;
+        }
+    }
+}
+\end{minted}
+\section{HotFix中使用MVVM架构实现热更新的搭配与相关的链接()}
 \label{sec-8}
 
-\section{ILRuntime 类库里源码的基本理解，最重要的涉及到的相关的类与方法摘要}
+\section{Control: 当写Control 的时候感觉好像是MVC,但实际上仍然是MVVM，后面会有热更新视图模块}
 \label{sec-9}
-\subsection{CrossBindingAdaptor : IType 跨域(程序集)绑定适配器 + CrossBindingAdaptorType interface 公用接口类(为什么要这个公用接口类？)}
+\subsection{Resource: 热更新里的资源处理桥接（这里需要再理解消化得透彻一点儿）}
 \label{sec-9-1}
+\subsubsection{abstract class ResourceHandleBase：服务器热更新资源包程序包处理：抽象基类}
+\label{sec-9-1-1}
+\begin{itemize}
+\item 看见没有：Unity的正常程序集里有一套，热更新程序集里也有一套；两套不同的程序集跨域交互需要使用各个不同层面的适配器来适配相认，但是某些必要的逻辑即便两套程序集都用到，却没有办法再抽象提供或是封装？再想想吧，这套游戏框架还是狠值得自己深入学习的！
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// 服务器热更新资源包程序包处理：抽象基类
+public abstract class ResourceHandleBase {
+
+// 同步加载    
+#region Load
+    public abstract T LoadAsset<T>(string bundleName, string assetName, 
+                                   EAssetBundleUnloadLevel unloadLevel = 
+                                   EAssetBundleUnloadLevel.ChangeSceneOver) where T : UnityEngine.Object;
+    public abstract TMP_FontAsset LoadTMP_FontAsset(string bundleName, string assetName, 
+                                                    EAssetBundleUnloadLevel unloadLevel = 
+                                                    EAssetBundleUnloadLevel.ChangeSceneOver);
+    public abstract Font LoadFont(string bundleName, string assetName, 
+                                  EAssetBundleUnloadLevel unloadLevel = 
+                                  EAssetBundleUnloadLevel.ChangeSceneOver);
+    public abstract AnimationClip LoadAnimationClip(string bundleName, string assetName, 
+                                                    EAssetBundleUnloadLevel unloadLevel = 
+                                                    EAssetBundleUnloadLevel.ChangeSceneOver);
+    public abstract AnimatorOverrideController LoadAnimatorOverrideController(string bundleName, string assetName, 
+                                                                              EAssetBundleUnloadLevel unloadLevel = 
+                                                                              EAssetBundleUnloadLevel.ChangeSceneOver);
+    public abstract RuntimeAnimatorController LoadRuntimeAnimatorController(string bundleName, string assetName, 
+                                                                            EAssetBundleUnloadLevel unloadLevel = 
+                                                                            EAssetBundleUnloadLevel.ChangeSceneOver);
+    public abstract AudioClip LoadAudioClip(string bundleName, string assetName, 
+                                            EAssetBundleUnloadLevel unloadLevel = 
+                                            EAssetBundleUnloadLevel.ChangeSceneOver);
+    public abstract Material LoadMaterial(string bundleName, string assetName, 
+                                          EAssetBundleUnloadLevel unloadLevel = 
+                                          EAssetBundleUnloadLevel.ChangeSceneOver);
+    public abstract TextAsset LoadTextAsset(string bundleName, string assetName, 
+                                            EAssetBundleUnloadLevel unloadLevel = 
+                                            EAssetBundleUnloadLevel.ChangeSceneOver);
+    public abstract Sprite LoadSprite(string bundleName, string assetName, 
+                                      EAssetBundleUnloadLevel unloadLevel = 
+                                      EAssetBundleUnloadLevel.ChangeSceneOver);
+    public abstract Texture2D LoadTexture2D(string bundleName, string assetName, 
+                                            EAssetBundleUnloadLevel unloadLevel = 
+                                            EAssetBundleUnloadLevel.ChangeSceneOver);
+    public abstract void LoadScene(string bundleName, string assetName, 
+                                   EAssetBundleUnloadLevel unloadLevel = 
+                                   EAssetBundleUnloadLevel.ChangeSceneOver, bool isAddtive = false);
+    public abstract GameObject LoadClone(string bundleName, string assetName, 
+                                         EAssetBundleUnloadLevel unloadLevel = 
+                                         EAssetBundleUnloadLevel.ChangeSceneOver);
+#endregion
+
+// 异步加载
+#region LoadAsyn
+    public abstract void LoadAssetAsyn<T>(string bundleName, string assetName, Action<T> onSuccess, 
+                                          EAssetBundleUnloadLevel unloadLevel = 
+                                          EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) where T : UnityEngine.Object;
+    public abstract void LoadTMP_FontAssetAsyn(string bundleName, string assetName, Action<TMP_FontAsset> onSuccess, 
+                                               EAssetBundleUnloadLevel unloadLevel = 
+                                               EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+    public abstract void LoadFontAsyn(string bundleName, string assetName, Action<Font> onSuccess, 
+                                      EAssetBundleUnloadLevel unloadLevel = 
+                                      EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+    public abstract void LoadAnimationClipAsyn(string bundleName, string assetName, Action<AnimationClip> onSuccess, 
+                                               EAssetBundleUnloadLevel unloadLevel = 
+                                               EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+    public abstract void LoadAnimatorOverrideControllerAsyn(string bundleName, string assetName, Action<AnimatorOverrideController> onSuccess, 
+                                                            EAssetBundleUnloadLevel unloadLevel = 
+                                                            EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+    public abstract void LoadRuntimeAnimatorControllerAsyn(string bundleName, string assetName, Action<RuntimeAnimatorController> onSuccess, 
+                                                           EAssetBundleUnloadLevel unloadLevel = 
+                                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+    public abstract void LoadAudioClipAsyn(string bundleName, string assetName, Action<AudioClip> onSuccess, 
+                                           EAssetBundleUnloadLevel unloadLevel = 
+                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+    public abstract void LoadMaterialAsyn(string bundleName, string assetName, Action<Material> onSuccess, 
+                                          EAssetBundleUnloadLevel unloadLevel = 
+                                          EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+    public abstract void LoadTextAssetAsyn(string bundleName, string assetName, Action<TextAsset> onSuccess, 
+                                           EAssetBundleUnloadLevel unloadLevel = 
+                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+    public abstract void LoadSpriteAsyn(string bundleName, string assetName, Action<Sprite> onSuccess, 
+                                        EAssetBundleUnloadLevel unloadLevel = 
+                                        EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+    public abstract void LoadTexture2DAsyn(string bundleName, string assetName, Action<Texture2D> onSuccess, 
+                                           EAssetBundleUnloadLevel unloadLevel = 
+                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+    public abstract void LoadSceneAsyn(string bundleName, string assetName, Action onSuccess, 
+                                       EAssetBundleUnloadLevel unloadLevel = 
+                                       EAssetBundleUnloadLevel.ChangeSceneOver, bool isAddtive = false);
+    public abstract void LoadCloneAsyn(string bundleName, string assetName, Action<GameObject> onSuccess, 
+                                       EAssetBundleUnloadLevel unloadLevel = 
+                                       EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+#endregion
+#region Unload
+    public abstract void Unload(string keyName, bool allObjects);
+    public abstract void UnloadAll();
+#endregion
+    public abstract void LoadTexture2DAsyn(string name, Action<Texture2D> onSuccess, Action onFail, bool needCache);
+}
+\end{minted}
+\end{itemize}
+\subsubsection{ResourceHelper}
+\label{sec-9-1-2}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// 资源加载接口类: 什么叫桥接？
+public class ResourceHelper {
+    static ResourceHandleBase _handle;
+    static ResourceHandleBase Handle {
+        get {
+            if (_handle == null) {
+                _handle = new ResourceMapHandle();
+            }
+            return _handle;
+        }
+    }
+#region Load
+    public static T LoadAsset<T>(string bundleName, string assetName, 
+                                 EAssetBundleUnloadLevel unloadLevel = 
+                                 EAssetBundleUnloadLevel.ChangeSceneOver) where T : UnityEngine.Object {
+        return Handle.LoadAsset<T>(bundleName, assetName, unloadLevel);
+    }
+    public static TMP_FontAsset LoadTMP_FontAsset(string bundleName, string assetName, 
+                                                  EAssetBundleUnloadLevel unloadLevel = 
+                                                  EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Handle.LoadTMP_FontAsset(bundleName, assetName, unloadLevel);
+    }
+    public static Font LoadFont(string bundleName, string assetName, 
+                                EAssetBundleUnloadLevel unloadLevel = 
+                                EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Handle.LoadFont(bundleName, assetName, unloadLevel);
+    }
+    public static AnimationClip LoadAnimationClip(string bundleName, string assetName, 
+                                                  EAssetBundleUnloadLevel unloadLevel = 
+                                                  EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Handle.LoadAnimationClip(bundleName, assetName, unloadLevel);
+    }
+    public static AnimatorOverrideController LoadAnimatorOverrideController(string bundleName, string assetName, 
+                                                                            EAssetBundleUnloadLevel unloadLevel = 
+                                                                            EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Handle.LoadAnimatorOverrideController(bundleName, assetName, unloadLevel);
+    }
+    public static RuntimeAnimatorController LoadRuntimeAnimatorController(string bundleName, string assetName, 
+                                                                          EAssetBundleUnloadLevel unloadLevel = 
+                                                                          EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Handle.LoadRuntimeAnimatorController(bundleName, assetName, unloadLevel);
+    }
+    public static AudioClip LoadAudioClip(string bundleName, string assetName, 
+                                          EAssetBundleUnloadLevel unloadLevel = 
+                                          EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Handle.LoadAudioClip(bundleName, assetName, unloadLevel);
+    }
+    public static Material LoadMaterial(string bundleName, string assetName, 
+                                        EAssetBundleUnloadLevel unloadLevel = 
+                                        EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Handle.LoadMaterial(bundleName, assetName, unloadLevel);
+    }
+    public static TextAsset LoadTextAsset(string bundleName, string assetName, 
+                                          EAssetBundleUnloadLevel unloadLevel = 
+                                          EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Handle.LoadTextAsset(bundleName, assetName, unloadLevel);
+    }
+    public static Sprite LoadSprite(string bundleName, string assetName, 
+                                    EAssetBundleUnloadLevel unloadLevel = 
+                                    EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Handle.LoadSprite(bundleName, assetName, unloadLevel);
+    }
+    public static Texture2D LoadTexture2D(string bundleName, string assetName, 
+                                          EAssetBundleUnloadLevel unloadLevel = 
+                                          EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Handle.LoadTexture2D(bundleName, assetName, unloadLevel);
+    }
+    public static void LoadScene(string bundleName, string assetName, 
+                                 EAssetBundleUnloadLevel unloadLevel = 
+                                 EAssetBundleUnloadLevel.ChangeSceneOver, bool isAdditive = false) {
+        Handle.LoadScene(bundleName, assetName, unloadLevel, isAdditive);
+    }
+    public static GameObject LoadClone(string bundleName, string assetName, 
+                                       EAssetBundleUnloadLevel unloadLevel = 
+                                       EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Handle.LoadClone(bundleName, assetName, unloadLevel);
+    }
+#endregion
+#region LoadAsyn
+    public static void LoadAssetAsyn<T>(string bundleName, string assetName, Action<T> onSuccess, 
+                                        EAssetBundleUnloadLevel unloadLevel = 
+                                        EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) where T : UnityEngine.Object {
+        Handle.LoadAssetAsyn<T>(bundleName, assetName, onSuccess, unloadLevel);
+    }
+    public static void LoadTMP_FontAssetAsyn(string bundleName, string assetName, Action<TMP_FontAsset> onSuccess, 
+                                             EAssetBundleUnloadLevel unloadLevel = 
+                                             EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Handle.LoadTMP_FontAssetAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+    public static void LoadFontAsyn(string bundleName, string assetName, Action<Font> onSuccess, 
+                                    EAssetBundleUnloadLevel unloadLevel = 
+                                    EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Handle.LoadFontAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+    public static void LoadAnimationClipAsyn(string bundleName, string assetName, Action<AnimationClip> onSuccess, 
+                                             EAssetBundleUnloadLevel unloadLevel = 
+                                             EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Handle.LoadAnimationClipAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+    public static void LoadAnimatorOverrideControllerAsyn(string bundleName, string assetName, Action<AnimatorOverrideController> onSuccess, 
+                                                          EAssetBundleUnloadLevel unloadLevel = 
+                                                          EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Handle.LoadAnimatorOverrideControllerAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+    public static void LoadRuntimeAnimatorControllerAsyn(string bundleName, string assetName, Action<RuntimeAnimatorController> onSuccess, 
+                                                         EAssetBundleUnloadLevel unloadLevel = 
+                                                         EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Handle.LoadRuntimeAnimatorControllerAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+    public static void LoadAudioClipAsyn(string bundleName, string assetName, Action<AudioClip> onSuccess, 
+                                         EAssetBundleUnloadLevel unloadLevel = 
+                                         EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Handle.LoadAudioClipAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+    public static void LoadMaterialAsyn(string bundleName, string assetName, Action<Material> onSuccess, 
+                                        EAssetBundleUnloadLevel unloadLevel = 
+                                        EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Handle.LoadMaterialAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+    public static void LoadTextAssetAsyn(string bundleName, string assetName, Action<TextAsset> onSuccess, 
+                                         EAssetBundleUnloadLevel unloadLevel = 
+                                         EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Handle.LoadTextAssetAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+    public static void LoadSpriteAsyn(string bundleName, string assetName, Action<Sprite> onSuccess, 
+                                      EAssetBundleUnloadLevel unloadLevel = 
+                                      EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Handle.LoadSpriteAsyn(bundleName, assetName, onSuccess, unloadLevel);
+    }
+    public static void LoadTexture2DAsyn(string bundleName, string assetName, Action<Texture2D> onSuccess, 
+                                         EAssetBundleUnloadLevel unloadLevel = 
+                                         EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Handle.LoadTexture2DAsyn(bundleName, assetName, onSuccess, unloadLevel);
+    }
+    public static void LoadSceneAsyn(string bundleName, string assetName, Action onSuccess, 
+                                     EAssetBundleUnloadLevel unloadLevel = 
+                                     EAssetBundleUnloadLevel.ChangeSceneOver, bool isAdditive = false) {
+        Handle.LoadSceneAsyn(bundleName, assetName, onSuccess, unloadLevel, isAdditive);
+    }
+    public static void LoadCloneAsyn(string bundleName, string assetName, Action<GameObject> onSuccess, 
+                                     EAssetBundleUnloadLevel unloadLevel = 
+                                     EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Handle.LoadCloneAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+#endregion
+#region Unload
+#endregion
+    public static void LoadTexture2DAsyn(string name, Action<Texture2D> onSuccess, Action onFail, bool needCache = true) {
+        Handle.LoadTexture2DAsyn(name, onSuccess, onFail, needCache);
+    }
+}
+\end{minted}
+\subsubsection{ResourceMapHandle : ResourceHandleBase: 感觉这里两套程序集能够交接起来，这里需要好好想想理解清楚}
+\label{sec-9-1-3}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+public class ResourceMapHandle : ResourceHandleBase {
+    IResourceLoader Loader {
+        get {
+            return ResourceConstant.Loader;
+        }
+    }
+#region Load
+    public override T LoadAsset<T>(string bundleName, string assetName, 
+                                   EAssetBundleUnloadLevel unloadLevel = 
+                                   EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Loader.LoadAsset<T>(bundleName, assetName, unloadLevel);
+    }
+    public override TMP_FontAsset LoadTMP_FontAsset(string bundleName, string assetName, 
+                                                    EAssetBundleUnloadLevel unloadLevel = 
+                                                    EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Loader.LoadTMP_FontAsset(bundleName, assetName, unloadLevel);
+    }
+    public override Font LoadFont(string bundleName, string assetName, 
+                                  EAssetBundleUnloadLevel unloadLevel = 
+                                  EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Loader.LoadFont(bundleName, assetName, unloadLevel);
+    }
+    public override AnimationClip LoadAnimationClip(string bundleName, string assetName, 
+                                                    EAssetBundleUnloadLevel unloadLevel = 
+                                                    EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Loader.LoadAnimationClip(bundleName, assetName, unloadLevel);
+    }
+    public override AnimatorOverrideController LoadAnimatorOverrideController(string bundleName, string assetName, 
+                                                                              EAssetBundleUnloadLevel unloadLevel = 
+                                                                              EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Loader.LoadAnimatorOverrideController(bundleName, assetName, unloadLevel);
+    }
+    public override RuntimeAnimatorController LoadRuntimeAnimatorController(string bundleName, string assetName, 
+                                                                            EAssetBundleUnloadLevel unloadLevel = 
+                                                                            EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Loader.LoadRuntimeAnimatorController(bundleName, assetName, unloadLevel);
+    }
+    public override AudioClip LoadAudioClip(string bundleName, string assetName, 
+                                            EAssetBundleUnloadLevel unloadLevel = 
+                                            EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Loader.LoadAudioClip(bundleName, assetName, unloadLevel);
+    }
+    public override Material LoadMaterial(string bundleName, string assetName, 
+                                          EAssetBundleUnloadLevel unloadLevel = 
+                                          EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Loader.LoadMaterial(bundleName, assetName, unloadLevel);
+    }
+    public override TextAsset LoadTextAsset(string bundleName, string assetName, 
+                                            EAssetBundleUnloadLevel unloadLevel = 
+                                            EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Loader.LoadTextAsset(bundleName, assetName, unloadLevel);
+    }
+    public override Sprite LoadSprite(string bundleName, string assetName, 
+                                      EAssetBundleUnloadLevel unloadLevel = 
+                                      EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Loader.LoadSprite(bundleName, assetName, unloadLevel);
+    }
+    public override Texture2D LoadTexture2D(string bundleName, string assetName, 
+                                            EAssetBundleUnloadLevel unloadLevel = 
+                                            EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Loader.LoadTexture2D(bundleName, assetName, unloadLevel);
+    }
+    public override void LoadScene(string bundleName, string assetName, 
+                                   EAssetBundleUnloadLevel unloadLevel = 
+                                   EAssetBundleUnloadLevel.ChangeSceneOver, bool isAddtive = false) {
+        Loader.LoadScene(bundleName, assetName, unloadLevel);
+    }
+    public override GameObject LoadClone(string bundleName, string assetName, 
+                                         EAssetBundleUnloadLevel unloadLevel = 
+                                         EAssetBundleUnloadLevel.ChangeSceneOver) {
+        return Loader.LoadClone(bundleName, assetName, unloadLevel);
+    }
+#endregion
+#region LoadAsyn
+    public override void LoadAssetAsyn<T>(string bundleName, string assetName, Action<T> onSuccess, 
+                                          EAssetBundleUnloadLevel unloadLevel = 
+                                          EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Loader.LoadAssetAsyn<T>(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+    public override void LoadTMP_FontAssetAsyn(string bundleName, string assetName, Action<TMP_FontAsset> onSuccess, 
+                                               EAssetBundleUnloadLevel unloadLevel = 
+                                               EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Loader.LoadTMP_FontAssetAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+    public override void LoadFontAsyn(string bundleName, string assetName, Action<Font> onSuccess, 
+                                      EAssetBundleUnloadLevel unloadLevel = 
+                                      EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Loader.LoadFontAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+    public override void LoadAnimationClipAsyn(string bundleName, string assetName, Action<AnimationClip> onSuccess, 
+                                               EAssetBundleUnloadLevel unloadLevel = 
+                                               EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Loader.LoadAnimationClipAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+    public override void LoadAnimatorOverrideControllerAsyn(string bundleName, string assetName, Action<AnimatorOverrideController> onSuccess, 
+                                                            EAssetBundleUnloadLevel unloadLevel = 
+                                                            EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Loader.LoadAnimatorOverrideControllerAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+    public override void LoadRuntimeAnimatorControllerAsyn(string bundleName, string assetName, Action<RuntimeAnimatorController> onSuccess, 
+                                                           EAssetBundleUnloadLevel unloadLevel = 
+                                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Loader.LoadRuntimeAnimatorControllerAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+    public override void LoadAudioClipAsyn(string bundleName, string assetName, Action<AudioClip> onSuccess, 
+                                           EAssetBundleUnloadLevel unloadLevel = 
+                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Loader.LoadAudioClipAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+    public override void LoadMaterialAsyn(string bundleName, string assetName, Action<Material> onSuccess, 
+                                          EAssetBundleUnloadLevel unloadLevel = 
+                                          EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Loader.LoadMaterialAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+    public override void LoadTextAssetAsyn(string bundleName, string assetName, Action<TextAsset> onSuccess, 
+                                           EAssetBundleUnloadLevel unloadLevel = 
+                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Loader.LoadTextAssetAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+    public override void LoadSpriteAsyn(string bundleName, string assetName, Action<Sprite> onSuccess, 
+                                        EAssetBundleUnloadLevel unloadLevel = 
+                                        EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Loader.LoadSpriteAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+    public override void LoadTexture2DAsyn(string bundleName, string assetName, Action<Texture2D> onSuccess, 
+                                           EAssetBundleUnloadLevel unloadLevel = 
+                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Loader.LoadTexture2DAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+    public override void LoadSceneAsyn(string bundleName, string assetName, Action onSuccess, 
+                                       EAssetBundleUnloadLevel unloadLevel = 
+                                       EAssetBundleUnloadLevel.ChangeSceneOver, bool isAddtive = false) {
+        Loader.LoadSceneAsyn(bundleName, assetName, onSuccess, unloadLevel, isAddtive);
+    }
+    public override void LoadCloneAsyn(string bundleName, string assetName, Action<GameObject> onSuccess, 
+                                       EAssetBundleUnloadLevel unloadLevel = 
+                                       EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+        Loader.LoadCloneAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+    }
+#endregion
+#region Unload
+    public override void Unload(string keyName, bool allObjects) {
+        Loader.Unload(keyName, allObjects);
+    }
+    public override void UnloadAll() {
+        Loader.UnloadAll();
+    }
+#endregion
+    public override void LoadTexture2DAsyn(string name, Action<Texture2D> onSuccess, Action onFail, bool needCache) {
+        Loader.LoadTexture2DAsyn(name, onSuccess, onFail, needCache);
+    }
+}
+\end{minted}
+
+\subsection{Scene: 场景热更新反序列化为unity游戏引擎所能识别和可执行场景控件程序等}
+\label{sec-9-2}
+\begin{itemize}
+\item 回想一下热更新的过程：从网络服务器上下载出需要的资源包或是程序包，它是序列化后的数据；要把它还原成unity认得认识的场景等，还需要一个反序化的过程
+\item 那么这个包裹里，就专职负责：如何从下载的资源包里游戏引擎场景相关的序列化数据还原为unity游戏引擎中认识并且可执行的游戏引擎程序集里的场景控件等，这个过程，所有场景相关的
+\item 那么这里可以封装和包含的几个类就包括了：如果可以封装成为的（抽象）基类；根据各个不同应用实际需要而可以实例化成了几个不同的场景类型的反序列化定义类；如果可以，如果有好几个不同的场景，如有必要，还可以有一个必要的管理多个不同场景的场景管理者类
+\end{itemize}
+\subsubsection{abstract class SceneBase：热更新场景抽象基类}
+\label{sec-9-2-1}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// 热更新场景基类：
+public abstract class SceneBase {
+    public SceneData Data {
+        get;
+        set;
+    }
+    public SceneTypeData TypeData {
+        get;
+        set;
+    }
+    public GameObject GameObject {
+        get;
+        set;
+    }
+    // 家具的集合
+    public Dictionary<int, FurnitureBase> furnitures = new Dictionary<int, FurnitureBase>();
+    public SceneBase(int type) {
+        Data = new SceneData();
+        Data.type = type;
+        Data.materialDatas = new Dictionary<string, MaterialData>();
+        Data.furnitureDatas = new Dictionary<int, FurnitureData>();
+        TypeData = TypeDataManager.GetSceneTypeData(Data.type);
+    }
+    public SceneBase(SceneData data) {
+        Data = data;
+        TypeData = TypeDataManager.GetSceneTypeData(Data.type);
+    }
+    public void LoadSceneGameObject() {
+        ResourceConstant.Loader.LoadCloneAsyn(TypeData.bundleName, TypeData.assetName, (go) => {
+            GameObject = go;
+            SetGameObjectName();
+            SceneManager.Instance.CurrentScene = this;
+            Initialize();
+        }, EAssetBundleUnloadLevel.ChangeSceneOver);
+    }
+    protected abstract void SetGameObjectName();
+    protected abstract void Initialize();
+    public virtual void Dispose() {
+        ResourceConstant.Loader.Unload(TypeData.bundleName, true);
+    }
+}
+\end{minted}
+\subsubsection{程序中热更新用到三种不同场景，这里给个样例，最简单最特殊的ShowScene}
+\label{sec-9-2-2}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// 空间秀场景: 吃货天空的鬼窝秀
+public class ShowScene : SceneBase {
+    // 这些这里可以有unity认得的至少一部分控件（因为热更新程序持有UnityEngine.dll的程序集引用？想一想）
+    public Transform OneGameObjectRoot { // Transform Transform ..... 某个游戏控件的位置信息
+        get;
+        set;
+    }
+    public ShowScene(int type) : base(type) {}
+    public ShowScene(SceneData data) : base(data) {}
+
+    protected override void SetGameObjectName() {
+        GameObject.name = "Show_" + TypeData.id;
+    }
+    protected override void Initialize() {
+        OneGameObjectRoot = GameObject.FindChildByName("OneGameObjectRoot").transform;
+        InitializeTypetwos();
+    }
+    void InitializeTypetwos() { // 初始化某种类型Typetwo类型的元件（控件或集）
+        foreach (var typetwoData in Data.typetwoDatas.Values) {
+            TypetwoTypeData typetwoTypeData = TypeDataManager.GetTypetwoTypeData(typetwoData.type);
+            TypetwoBase typetwoBase;
+            // 再然后，可以根据Typetwo类型是单个数据还是集合类再作进一步的初始化到最小元件单位（？就是层层折解，反序列化实例化成真正的游戏场景）
+            // 这里的部分逻辑略去
+        }
+    }
+    public override void Dispose() {
+        base.Dispose();
+        foreach (var typetwo in typetwos.Values) {
+            typetwo.Dispose();
+        }
+    }
+}
+\end{minted}
+\subsubsection{SceneManager: 场景管理器, 对于有需要必要时需要进行热更新的场景的相关逻辑（加载，创建，渐近切换等）的封装定义管理}
+\label{sec-9-2-3}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// 场景管理器: 我的游戏里也写过好几个不同的管理类，热更新里的管理类与unity里的普通管理类有什么不同呢？
+public class SceneManager { // unity里不同场景的编号不同,　这里以int 值不同来区分不同的游戏场景
+
+    private static SceneManager instance;　// 希望是单例模式，不涉及多线程安全
+    public static SceneManager Instance {
+        get {
+            if (instance == null) 
+                instance = new SceneManager();
+            return instance;
+        }
+    }
+
+    // 当前场景
+    public SceneBase CurrentScene {
+        get;
+        set;
+    }
+    public int currentSelectGameObjectInstanceID;
+
+    // 创建一个新场景：根据传进来的参数值，来轮询实例化对象的场景（这个包裹里不是也定义了各个不同场景的继承于抽象基类的继承类的反序列化方法了吗？）
+    public void CreateNewScene(int type) { // unity里不同场景的编号不同,　这里以int 值不同来区分不同的游戏场景
+        ClearLastSceneGameObject();
+        currentSelectGameObjectInstanceID = 100000001;
+        SceneTypeData typeData = TypeDataManager.GetSceneTypeData(type);
+        if (typeData.type == (int)ESceneType.Edit) {
+            CurrentScene = new EditScene(type);
+            CurrentScene.LoadSceneGameObject();
+        } else if (typeData.type == (int)ESceneType.Show) {
+            CurrentScene = new ShowScene(type);
+            CurrentScene.LoadSceneGameObject();
+        } else if (typeData.type == (int)ESceneType.Camera) {
+            CurrentScene = new CameraScene(type);
+            CurrentScene.LoadSceneGameObject();
+        }
+    }
+
+    // 加载一个场景
+    public void LoadScene(SceneData data) {
+        ClearLastSceneGameObject();
+        currentSelectGameObjectInstanceID = data.GetMaxFurnitureInstanceID();
+        SceneTypeData typeData = TypeDataManager.GetSceneTypeData(data.type);
+        if (typeData.type == (int)ESceneType.Edit) {
+            CurrentScene = new EditScene(data);
+            CurrentScene.LoadSceneGameObject();
+        } else if (typeData.type == (int)ESceneType.Show) {
+            CurrentScene = new ShowScene(data);
+            CurrentScene.LoadSceneGameObject();
+        } else if (typeData.type == (int)ESceneType.Camera) {
+            CurrentScene = new CameraScene(data);
+            CurrentScene.LoadSceneGameObject();
+        }
+    }
+    void ClearLastSceneGameObject() {
+        if (CurrentScene != null && CurrentScene.GameObject != null) 
+            Object.DestroyImmediate(CurrentScene.GameObject);
+    }
+    public void CleanCurrentScene() {
+        if (CurrentScene != null && CurrentScene.GameObject != null) {
+            Object.DestroyImmediate(CurrentScene.GameObject);
+            CurrentScene.Dispose();
+            CurrentScene = null;
+            Resources.UnloadUnusedAssets();
+            System.GC.Collect();
+        }
+    }
+    // 加载某个特殊的场景：那么就是说对于某类过于特殊的场景，可以将其单独打包成一个资源包上传服务器和从服务器下载下来加载
+    // 这里这个特殊的场景，好像不涉及任何其它数据（除了一个应用里的SceneData）？所以过程极为简单，可以跳过狠多步
+    // 再想一下：这个特殊的场景到底特殊在哪里，可以独立有条短路的加载方法？
+    public void LoadShowScene(string bundleName, string assetName) {
+        string json = ResourceConstant.Loader.LoadTextAsset(bundleName, assetName, EAssetBundleUnloadLevel.LoadOver).text;
+        //Debug.Log("json: " + json);
+        SceneData sceneData = SceneData.JsonToObject(json);
+        LoadScene(sceneData);
+    }
+}
+\end{minted}
+
+\section{Data: 数据驱动}
+\label{sec-10}
+\begin{itemize}
+\item \textbf{这里的问题} ：同样是为了打包和折包场景，为什么一个场景数据要定义成两种不同的场景类，相当于普通数据类型的装箱与折箱操作么，为了自适应两个不同的程序集？序列化与反序列化？要好好想一想
+\item 前面有对ViewModel的适配包装，这里更多的是frameworks层如同SquarePanda里有专用的公司开发的SDK来对这同一家公司里的10款游戏进行通用模块包装一样，这个游戏热更新框架可以理解为是对同一家或是几家相同架构设计的多款游戏的架构封装，那么各个游戏独特的数据类型model仍然该是封装在各自游戏应用的内部；framework热更新框架只提取各个游戏通用的逻辑进行封装。
+\end{itemize}
+也提到说数据类型是
+\begin{itemize}
+\item 热更新所有的一切（资源包和程序包）都打包成数据上传热更新服务器，所以是数据驱动，一切都是数据！！
+\item 在把不同的所有需要热更新的东西全部打包上传服务器的过程中，背后本质是不同类型打包基类元件（资源包，场景等）的序列化（上传服务器）与反序列化（下载资源包后的加载过程？）
+\item 那么如何把不同的热更新类型打包封装成不同的数据呢（不同数据类型的自定义）　
+\end{itemize}
+\subsection{Data: 必要的序列化过程中自己封装成的自定义类型仍然可以或是需要定义在这里}
+\label{sec-10-1}
+\begin{itemize}
+\item 我自己的游戏里写过俄罗斯广场砖的序列化与反序列化，可是我还不曾真正去读自己几年前写过的源码，忘得差不多了，该是时候把它们捡起来再深入发展一下了（爱表哥，爱生活！！！）
+\item 可以养成一个编程习惯就是说：凡是带Data作为后缀的，都当作定义为序列化数据的方法逻辑？
+\end{itemize}
+\subsubsection{SceneData：场景实例数据}
+\label{sec-10-1-1}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// 场景实例数据
+public class SceneData { //　再去多想一想，为什么要用SceneData 与SceneTypeData相区分？
+    // 实例ID
+    public int instanceID;
+    // 场景类型
+    public int type;
+
+// 这是同一家公司或是相同架构公司多个不同游戏的framework游戏框架通用管理
+    //　接下来：需要对各自游戏应用各不同场景下的Model数据进行集装，封装到自定义的场景热更自定义类型里去
+    // 可是用集合类对同一场景下的同一数据类型进行集装；
+    // 同一场景下不同数据类型间，可以生成多个不同字典等集合数据结构进行集装
+    // 单个数据
+    public SingleData singleData;
+    //  某数据类型的集合
+    public Dictionary<string, TypeoneData> typeoneDatas;
+    // 另一数据类型的集合
+    public Dictionary<int, TypetwoData> typetwoDatas;
+
+    // 反序列化
+    public static SceneData JsonToObject(string json) {
+        SceneData data = new SceneData();
+        JsonObject jsonObject = JsonSerializer.Deserialize(json) as JsonObject;
+        if (jsonObject != null) {
+            if (jsonObject.ContainsKey("instanceID")) {
+                data.instanceID = jsonObject["instanceID"];
+            }
+            data.type = jsonObject["type"];
+            if (jsonObject.ContainsKey("singleData")) {
+                JsonValue singleJonValue = jsonObject["singleData"];
+                data.singleData = SingleData.JsonToObject(singleJonValue.ToString());
+            }
+            data.typeoneDatas = new Dictionary<string, TypeoneData>();
+            JsonValue jsonValue = jsonObject["typeoneDatas"];
+            JsonArray jsonArray = JsonSerializer.Deserialize(jsonValue.ToString()) as JsonArray;
+            foreach (var value in jsonArray) {
+                TypeoneData typeoneData = TypeoneData.JsonToObject(value.ToString());
+                data.typeoneDatas.Add(typeoneData.gameObjectName, typeoneData);
+            }
+            data.typetwoDatas = new Dictionary<int, TypetwoData>();
+            JsonValue jsonValue2 = jsonObject["typetwoDatas"];
+            JsonArray jsonArray2 = JsonSerializer.Deserialize(jsonValue2.ToString()) as JsonArray;
+            foreach (var value in jsonArray2) {
+                TypetwoData typetwoData = TypetwoData.JsonToObject(value.ToString());
+                data.typetwoDatas.Add(typetwoData.instanceID, typetwoData);
+            }
+        }
+        return data;
+    }
+    public override string ToString() {
+        return ObjectToJson().ToString();
+    }
+    // 序列化
+    public JsonObject ObjectToJson() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.Add("instanceID", instanceID);
+        jsonObject.Add("type", type);
+        JsonObject singleJsonObject = singleData.ObjectToJson();
+        jsonObject.Add("singleData", singleJsonObject);
+        JsonArray jsonArray = new JsonArray();
+        foreach (var data in typeoneDatas.Values) {
+            JsonObject dataJsonObject = data.ObjectToJson();
+            jsonArray.Add(dataJsonObject);
+        }
+        jsonObject.Add("typeoneDatas", jsonArray.ToString());
+        JsonArray jsonArray2 = new JsonArray();
+        foreach (var data in typetwoDatas.Values) {
+            JsonObject dataJsonObject = data.ObjectToJson();
+            jsonArray2.Add(dataJsonObject);
+        }
+        jsonObject.Add("typetwoDatas", jsonArray2.ToString());
+        return jsonObject;
+    }
+    public int GetMaxTypetwoInstanceID() {
+        int maxID = 100000001;
+        foreach (var key in typetwoDatas.Keys) {
+            if (key > maxID) {
+                maxID = key;
+            }
+        }
+        return maxID;
+    }
+}
+\end{minted}
+\subsection{TypeData}
+\label{sec-10-2}
+\subsubsection{SceneTypeData: 场景类型数据}
+\label{sec-10-2-1}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// 这里可以自定义几个不同的场景类型，方便程序区分
+public enum ESceneType {
+    None = 0,
+    Edit = 1,
+    Show = 2,
+    Camera = 3
+}
+// 场景类型数据
+public class SceneTypeData {
+    public long id;
+    public string gameObjectName;
+    public string name;
+    public string description;
+
+    public int type;
+    public string bundleName;
+    public string assetName;
+    public string iconBundleName;
+    public string iconAssetName;
+
+    // 把序列化数据重新反序列化成unity场景数据
+    public static SceneTypeData JsonToObject(string json) {
+        SceneTypeData typeData = new SceneTypeData();
+        JsonObject jsonObject = JsonSerializer.Deserialize(json) as JsonObject;
+        if (jsonObject != null) {
+            typeData.id = jsonObject["id"];
+            typeData.gameObjectName = jsonObject["gameObjectName"].ToString();
+            typeData.name = jsonObject["name"].ToString();
+            typeData.description = jsonObject["description"].ToString();
+            typeData.type = jsonObject["type"];
+            typeData.bundleName = jsonObject["bundleName"].ToString();
+            typeData.assetName = jsonObject["assetName"].ToString();
+            typeData.iconBundleName = jsonObject["iconBundleName"].ToString();
+            typeData.iconAssetName = jsonObject["iconAssetName"].ToString();
+        }
+        return typeData;
+    }
+    public override string ToString() {
+        return "id: " + id + " gameObjectName: " + gameObjectName + " name: " + name + " description: " + description
+            + " type: " + type + " bundleName: " + bundleName + " assetName: " + assetName
+            + " iconBundleName: " + iconBundleName + " iconAssetName: " + iconAssetName;
+    }
+}
+\end{minted}
+\subsection{static class TypeDataManager：文件比较大，仅以场景数据一种自定义数据类型来作分析}
+\label{sec-10-3}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// TypeData管理器: 静态管理类
+public static class TypeDataManager { // 文件比较大，仅以场景数据一种类型来作分析
+
+#region TypeDatas
+    // 对于每种自定义自封装的类型，启用一个字典来进行管理;同自定义类型的数据，用一个长量型的long作为key来进行区分实例
+    static Dictionary<long, SceneTypeData> sceneTypeDatas;
+
+    public static Dictionary<long, SceneTypeData> GetSceneTypeDatas() {
+        return sceneTypeDatas;
+    }
+    public static SceneTypeData GetSceneTypeData(long id) {
+        if (sceneTypeDatas.ContainsKey(id)) {
+            return sceneTypeDatas[id];
+        } else {
+            return null;
+        }
+    }
+#endregion
+    // 对不同自定义类型的数据初始化
+    public static void InitializeTypeDatas() {
+        string sceneJson = ResourceHelper.LoadTextAsset("scene/config/scene", "scene", EAssetBundleUnloadLevel.LoadOver).text;
+        if (!string.IsNullOrEmpty(sceneJson)) {
+            InitializeSceneTypeData(sceneJson);
+        }
+    }
+    static void InitializeSceneTypeData(string jsonStr) {
+        if (jsonStr != null) {
+            sceneTypeDatas = new Dictionary<long, SceneTypeData>();
+            JsonArray jsonArray = JsonSerializer.Deserialize(jsonStr) as JsonArray;
+            if (jsonArray != null) {
+                foreach (JsonValue jsonValue in jsonArray) {
+                    SceneTypeData typeData = SceneTypeData.JsonToObject(jsonValue.ToString());
+                    if (!sceneTypeDatas.ContainsKey(typeData.id)) {
+                        sceneTypeDatas.Add(typeData.id, typeData);
+                    } else 
+                        Debug.LogError("sceneTypeDatas contains key: " + typeData.id);
+                }
+            } else 
+                Debug.LogError("sceneTypeData jsonArray is null");
+        }
+    }
+}
+\end{minted}
+
+\section{View}
+\label{sec-11}
+
+\section{HotFixMain静态类：热更新程序的入口}
+\label{sec-12}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// 热更工程入口
+public static class HotFixMain {
+    public static void Start() {
+        Debug.Log("InitializeTypeDatas");
+        TypeDataManager.InitializeTypeDatas();
+        ViewManager.InitializeItemDatas();
+        Debug.Log("HotFixMain.Start()");
+        ViewManager.InitializeStartUI();
+    }
+}
+\end{minted}
+
+\section{ILRuntime 类库里源码的基本理解，最重要的涉及到的相关的类与方法摘要}
+\label{sec-13}
+\subsection{CrossBindingAdaptor : IType 跨域(程序集)绑定适配器 + CrossBindingAdaptorType interface 公用接口类(为什么要这个公用接口类？)}
+\label{sec-13-1}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 public interface CrossBindingAdaptorType {　// 公用接口类
     ILTypeInstance ILInstance { get; }
@@ -2256,12 +3069,12 @@ public abstract class CrossBindingAdaptor : IType {
 }
 \end{minted}
 \subsection{}
-\label{sec-9-2}
+\label{sec-13-2}
 \subsection{}
-\label{sec-9-3}
+\label{sec-13-3}
 \subsection{}
-\label{sec-9-4}
+\label{sec-13-4}
 \subsection{}
-\label{sec-9-5}
+\label{sec-13-5}
 % Emacs 27.1 (Org mode 8.2.7c)
 \end{document}
