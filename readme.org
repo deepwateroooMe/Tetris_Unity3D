@@ -22,7 +22,7 @@
 * 几种不同热更新模式的探讨
 ** HybridCLR——划时代的Unity原生C#热更新技术: IL2CPP与热更新
    
-[[./pic/readme_20220930_082533.png]]
+[[./pic/readme_20220930_082537.png]]
 很不幸，不像Mono有Hybrid mode execUtion，可支持动态加载DLL。IL2CPP是一个纯静态的AOT运行时，不支持运行时加载DLL，因此不支持热更新。
 目前unity平台的主流热更新方案xLUa、ILRUntime之类都是引入一个第三方VM（VirtUal Machine），在VM中解释执行代码，来实现热更新。这里我们只分析使用C#为开发语言的热更新方案。这些热更新方案的VM与IL2CPP是独立的，意味着它们的元数据系统是不相通的，在热更新里新增一个类型是无法被IL2CPP所识别的（例如，通过System.Activator.CreateInstance是不可能创建出这个热更新类型的实例），这种看起来像，但实际上又不是的伪CLR虚拟机，在与IL2CPP这种复杂的CLR运行时交互时，会产生极大量的兼容性问题，另外还有严重的性能问题。
 一个大胆的想法是，是否有可能对IL2CPP运行时进行扩充，添加Interpreter模块，进而实现Mono hybrid mode execUtion这样机制？这样一来就能彻底支持热更新，并且兼容性极佳。对开发者来说，除了解释模式运行的部分执行得比较慢，其他方面跟标准的运行时没有区别。
