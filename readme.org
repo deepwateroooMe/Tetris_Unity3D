@@ -1,1337 +1,154 @@
 #+latex_class: cn-article
-#+title: Unity ILRuntime + MVVM架框热更新模块逻辑理解与整理
+#+title: Unity Android SDK/NDK 俄罗斯方块砖3D小游戏
 #+author: deepwaterooo 
 
-* Control: 当写Control 的时候感觉好像是MVC,但实际上仍然是MVVM，后面会有热更新视图模块
-** Resource: 热更新里的资源处理桥接
-*** abstract class ResourceHandleBase：服务器热更新资源包程序包处理：抽象基类
-- 看见没有：Unity的正常程序集里有一套，热更新程序集里也有一套；
-- Unity里是在公用接口类IResourceLoader里申请这些个公用方法；热更新里将所有相关方法申明在这个抽象基类里
-- Unity里ResourceMap是这个接口的唯一一个实现; Unity里静态常量管理类ResourceConstant持有一个静态ResourceMap实例引用，取名叫Loader
-- 热更新里当前抽象基类ResourceHandleBase的继承子类ResourceMapHandle持有一个IResourceLoader公用接口的实例引用.
-- 在游戏初始化的时候第一步做的事件是借助这个公用接口类，架起热更新程序集可以调用Unity里资源的通道桥梁，Unity里的入口程序GameApplication里的初始化程序源码如下：
-  #+BEGIN_SRC csharp
-// 协程是说：游戏启动时，给这个控件(gameObject)加载运行时元件ResourceMap（本质上是个程序脚本的实例化）; 加载完毕自动触发StartHotFix()函数热更新回调
-    IEnumerator Initialize() { 
+* 模块搭建
+- # only inlcude two levels in TOC 
+- ILRuntime的消化理解，以及与MVVM同用时的搭配理解消化
+- 热更新模块服务器模块的理解与消化搭建：
 
-// 游戏初始时，实例化获取一个单例资源（管理类），架起两个不同程序集之间沟通的桥梁
-        ResourceMap resourceMap = gameObject.AddComponent<ResourceMap>(); // 整个游戏应用，全局唯一
-        resourceMap.OnInitializeSuccess += StartHotFix;　// 必备资源管理初始化好，自动触发游戏热更新程序模块集
+* 把原理弄懂
+- 热更新模块的实充：以前的设计模式和实现的功能还是比较完整的；现在更成熟一点儿，需要把热更新模块补充出来；
+- ILRuntime + MVVM框架设计：两者结合，前几年的时候没能把MVVM理解透彻；
+- 上次前几年主要的难点：好像是在把MVVM双向数据绑定理解得不透彻；那么这次应该就狠没有问题了，更该寻求更好的设计与解决方案
+- 性能优化：另外是对其实高级开发的越来越熟悉，希望应用的性能表现，尤其是渲染性能与速度等、这些更为高级和深入的特性成为这次二次开发的重点。
 
-// 将Unity程序集中初始化好的实例（通过公用接口）桥接refer给热更新程序集引用，从而实现热更新程序集可以调用unity中的资源（场景，panel, prefab）等
-        ResourceConstant.Loader = resourceMap; // 可以重点看一下两个不同模块之间的资源管理的关系
+- 现在是把自己几年前的写的游戏全忘记了，需要回去把自己的源码找出来，再读一读熟悉一下自己的源码，了解当时设计的估缺点，由此改进更将
 
-        yield return new WaitForEndOfFrame();
-    }
-  #+END_SRC 
-- 当前抽象基类类的源码如下：
-    #+BEGIN_SRC csharp
-// 服务器热更新资源包程序包处理：抽象基类
-public abstract class ResourceHandleBase {
-
-// 同步加载    
-#region Load
-    public abstract T LoadAsset<T>(string bundleName, string assetName, 
-                                   EAssetBundleUnloadLevel unloadLevel = 
-                                   EAssetBundleUnloadLevel.ChangeSceneOver) where T : UnityEngine.Object;
-    public abstract TMP_FontAsset LoadTMP_FontAsset(string bundleName, string assetName, 
-                                                    EAssetBundleUnloadLevel unloadLevel = 
-                                                    EAssetBundleUnloadLevel.ChangeSceneOver);
-    public abstract Font LoadFont(string bundleName, string assetName, 
-                                  EAssetBundleUnloadLevel unloadLevel = 
-                                  EAssetBundleUnloadLevel.ChangeSceneOver);
-    public abstract AnimationClip LoadAnimationClip(string bundleName, string assetName, 
-                                                    EAssetBundleUnloadLevel unloadLevel = 
-                                                    EAssetBundleUnloadLevel.ChangeSceneOver);
-    public abstract AnimatorOverrideController LoadAnimatorOverrideController(string bundleName, string assetName, 
-                                                                              EAssetBundleUnloadLevel unloadLevel = 
-                                                                              EAssetBundleUnloadLevel.ChangeSceneOver);
-    public abstract RuntimeAnimatorController LoadRuntimeAnimatorController(string bundleName, string assetName, 
-                                                                            EAssetBundleUnloadLevel unloadLevel = 
-                                                                            EAssetBundleUnloadLevel.ChangeSceneOver);
-    public abstract AudioClip LoadAudioClip(string bundleName, string assetName, 
-                                            EAssetBundleUnloadLevel unloadLevel = 
-                                            EAssetBundleUnloadLevel.ChangeSceneOver);
-    public abstract Material LoadMaterial(string bundleName, string assetName, 
-                                          EAssetBundleUnloadLevel unloadLevel = 
-                                          EAssetBundleUnloadLevel.ChangeSceneOver);
-    public abstract TextAsset LoadTextAsset(string bundleName, string assetName, 
-                                            EAssetBundleUnloadLevel unloadLevel = 
-                                            EAssetBundleUnloadLevel.ChangeSceneOver);
-    public abstract Sprite LoadSprite(string bundleName, string assetName, 
-                                      EAssetBundleUnloadLevel unloadLevel = 
-                                      EAssetBundleUnloadLevel.ChangeSceneOver);
-    public abstract Texture2D LoadTexture2D(string bundleName, string assetName, 
-                                            EAssetBundleUnloadLevel unloadLevel = 
-                                            EAssetBundleUnloadLevel.ChangeSceneOver);
-    public abstract void LoadScene(string bundleName, string assetName, 
-                                   EAssetBundleUnloadLevel unloadLevel = 
-                                   EAssetBundleUnloadLevel.ChangeSceneOver, bool isAddtive = false);
-    public abstract GameObject LoadClone(string bundleName, string assetName, 
-                                         EAssetBundleUnloadLevel unloadLevel = 
-                                         EAssetBundleUnloadLevel.ChangeSceneOver);
-#endregion
-
-// 异步加载
-#region LoadAsyn
-    public abstract void LoadAssetAsyn<T>(string bundleName, string assetName, Action<T> onSuccess, 
-                                          EAssetBundleUnloadLevel unloadLevel = 
-                                          EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) where T : UnityEngine.Object;
-    public abstract void LoadTMP_FontAssetAsyn(string bundleName, string assetName, Action<TMP_FontAsset> onSuccess, 
-                                               EAssetBundleUnloadLevel unloadLevel = 
-                                               EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
-    public abstract void LoadFontAsyn(string bundleName, string assetName, Action<Font> onSuccess, 
-                                      EAssetBundleUnloadLevel unloadLevel = 
-                                      EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
-    public abstract void LoadAnimationClipAsyn(string bundleName, string assetName, Action<AnimationClip> onSuccess, 
-                                               EAssetBundleUnloadLevel unloadLevel = 
-                                               EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
-    public abstract void LoadAnimatorOverrideControllerAsyn(string bundleName, string assetName, Action<AnimatorOverrideController> onSuccess, 
-                                                            EAssetBundleUnloadLevel unloadLevel = 
-                                                            EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
-    public abstract void LoadRuntimeAnimatorControllerAsyn(string bundleName, string assetName, Action<RuntimeAnimatorController> onSuccess, 
-                                                           EAssetBundleUnloadLevel unloadLevel = 
-                                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
-    public abstract void LoadAudioClipAsyn(string bundleName, string assetName, Action<AudioClip> onSuccess, 
-                                           EAssetBundleUnloadLevel unloadLevel = 
-                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
-    public abstract void LoadMaterialAsyn(string bundleName, string assetName, Action<Material> onSuccess, 
-                                          EAssetBundleUnloadLevel unloadLevel = 
-                                          EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
-    public abstract void LoadTextAssetAsyn(string bundleName, string assetName, Action<TextAsset> onSuccess, 
-                                           EAssetBundleUnloadLevel unloadLevel = 
-                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
-    public abstract void LoadSpriteAsyn(string bundleName, string assetName, Action<Sprite> onSuccess, 
-                                        EAssetBundleUnloadLevel unloadLevel = 
-                                        EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
-    public abstract void LoadTexture2DAsyn(string bundleName, string assetName, Action<Texture2D> onSuccess, 
-                                           EAssetBundleUnloadLevel unloadLevel = 
-                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
-    public abstract void LoadSceneAsyn(string bundleName, string assetName, Action onSuccess, 
-                                       EAssetBundleUnloadLevel unloadLevel = 
-                                       EAssetBundleUnloadLevel.ChangeSceneOver, bool isAddtive = false);
-    public abstract void LoadCloneAsyn(string bundleName, string assetName, Action<GameObject> onSuccess, 
-                                       EAssetBundleUnloadLevel unloadLevel = 
-                                       EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
-#endregion
-#region Unload
-    public abstract void Unload(string keyName, bool allObjects);
-    public abstract void UnloadAll();
-#endregion
-    public abstract void LoadTexture2DAsyn(string name, Action<Texture2D> onSuccess, Action onFail, bool needCache);
-}
-    #+END_SRC 
-*** ResourceHelper
-    #+BEGIN_SRC csharp
-// 资源加载接口类: 什么叫桥接？
-public class ResourceHelper {
-    static ResourceHandleBase _handle;
-    static ResourceHandleBase Handle {
-        get {
-            if (_handle == null) {
-                _handle = new ResourceMapHandle();
-            }
-            return _handle;
-        }
-    }
-#region Load
-    public static T LoadAsset<T>(string bundleName, string assetName, 
-                                 EAssetBundleUnloadLevel unloadLevel = 
-                                 EAssetBundleUnloadLevel.ChangeSceneOver) where T : UnityEngine.Object {
-        return Handle.LoadAsset<T>(bundleName, assetName, unloadLevel);
-    }
-    public static TMP_FontAsset LoadTMP_FontAsset(string bundleName, string assetName, 
-                                                  EAssetBundleUnloadLevel unloadLevel = 
-                                                  EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Handle.LoadTMP_FontAsset(bundleName, assetName, unloadLevel);
-    }
-    public static Font LoadFont(string bundleName, string assetName, 
-                                EAssetBundleUnloadLevel unloadLevel = 
-                                EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Handle.LoadFont(bundleName, assetName, unloadLevel);
-    }
-    public static AnimationClip LoadAnimationClip(string bundleName, string assetName, 
-                                                  EAssetBundleUnloadLevel unloadLevel = 
-                                                  EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Handle.LoadAnimationClip(bundleName, assetName, unloadLevel);
-    }
-    public static AnimatorOverrideController LoadAnimatorOverrideController(string bundleName, string assetName, 
-                                                                            EAssetBundleUnloadLevel unloadLevel = 
-                                                                            EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Handle.LoadAnimatorOverrideController(bundleName, assetName, unloadLevel);
-    }
-    public static RuntimeAnimatorController LoadRuntimeAnimatorController(string bundleName, string assetName, 
-                                                                          EAssetBundleUnloadLevel unloadLevel = 
-                                                                          EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Handle.LoadRuntimeAnimatorController(bundleName, assetName, unloadLevel);
-    }
-    public static AudioClip LoadAudioClip(string bundleName, string assetName, 
-                                          EAssetBundleUnloadLevel unloadLevel = 
-                                          EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Handle.LoadAudioClip(bundleName, assetName, unloadLevel);
-    }
-    public static Material LoadMaterial(string bundleName, string assetName, 
-                                        EAssetBundleUnloadLevel unloadLevel = 
-                                        EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Handle.LoadMaterial(bundleName, assetName, unloadLevel);
-    }
-    public static TextAsset LoadTextAsset(string bundleName, string assetName, 
-                                          EAssetBundleUnloadLevel unloadLevel = 
-                                          EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Handle.LoadTextAsset(bundleName, assetName, unloadLevel);
-    }
-    public static Sprite LoadSprite(string bundleName, string assetName, 
-                                    EAssetBundleUnloadLevel unloadLevel = 
-                                    EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Handle.LoadSprite(bundleName, assetName, unloadLevel);
-    }
-    public static Texture2D LoadTexture2D(string bundleName, string assetName, 
-                                          EAssetBundleUnloadLevel unloadLevel = 
-                                          EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Handle.LoadTexture2D(bundleName, assetName, unloadLevel);
-    }
-    public static void LoadScene(string bundleName, string assetName, 
-                                 EAssetBundleUnloadLevel unloadLevel = 
-                                 EAssetBundleUnloadLevel.ChangeSceneOver, bool isAdditive = false) {
-        Handle.LoadScene(bundleName, assetName, unloadLevel, isAdditive);
-    }
-    public static GameObject LoadClone(string bundleName, string assetName, 
-                                       EAssetBundleUnloadLevel unloadLevel = 
-                                       EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Handle.LoadClone(bundleName, assetName, unloadLevel);
-    }
-#endregion
-#region LoadAsyn
-    public static void LoadAssetAsyn<T>(string bundleName, string assetName, Action<T> onSuccess, 
-                                        EAssetBundleUnloadLevel unloadLevel = 
-                                        EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) where T : UnityEngine.Object {
-        Handle.LoadAssetAsyn<T>(bundleName, assetName, onSuccess, unloadLevel);
-    }
-    public static void LoadTMP_FontAssetAsyn(string bundleName, string assetName, Action<TMP_FontAsset> onSuccess, 
-                                             EAssetBundleUnloadLevel unloadLevel = 
-                                             EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Handle.LoadTMP_FontAssetAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-    public static void LoadFontAsyn(string bundleName, string assetName, Action<Font> onSuccess, 
-                                    EAssetBundleUnloadLevel unloadLevel = 
-                                    EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Handle.LoadFontAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-    public static void LoadAnimationClipAsyn(string bundleName, string assetName, Action<AnimationClip> onSuccess, 
-                                             EAssetBundleUnloadLevel unloadLevel = 
-                                             EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Handle.LoadAnimationClipAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-    public static void LoadAnimatorOverrideControllerAsyn(string bundleName, string assetName, Action<AnimatorOverrideController> onSuccess, 
-                                                          EAssetBundleUnloadLevel unloadLevel = 
-                                                          EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Handle.LoadAnimatorOverrideControllerAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-    public static void LoadRuntimeAnimatorControllerAsyn(string bundleName, string assetName, Action<RuntimeAnimatorController> onSuccess, 
-                                                         EAssetBundleUnloadLevel unloadLevel = 
-                                                         EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Handle.LoadRuntimeAnimatorControllerAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-    public static void LoadAudioClipAsyn(string bundleName, string assetName, Action<AudioClip> onSuccess, 
-                                         EAssetBundleUnloadLevel unloadLevel = 
-                                         EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Handle.LoadAudioClipAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-    public static void LoadMaterialAsyn(string bundleName, string assetName, Action<Material> onSuccess, 
-                                        EAssetBundleUnloadLevel unloadLevel = 
-                                        EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Handle.LoadMaterialAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-    public static void LoadTextAssetAsyn(string bundleName, string assetName, Action<TextAsset> onSuccess, 
-                                         EAssetBundleUnloadLevel unloadLevel = 
-                                         EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Handle.LoadTextAssetAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-    public static void LoadSpriteAsyn(string bundleName, string assetName, Action<Sprite> onSuccess, 
-                                      EAssetBundleUnloadLevel unloadLevel = 
-                                      EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Handle.LoadSpriteAsyn(bundleName, assetName, onSuccess, unloadLevel);
-    }
-    public static void LoadTexture2DAsyn(string bundleName, string assetName, Action<Texture2D> onSuccess, 
-                                         EAssetBundleUnloadLevel unloadLevel = 
-                                         EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Handle.LoadTexture2DAsyn(bundleName, assetName, onSuccess, unloadLevel);
-    }
-    public static void LoadSceneAsyn(string bundleName, string assetName, Action onSuccess, 
-                                     EAssetBundleUnloadLevel unloadLevel = 
-                                     EAssetBundleUnloadLevel.ChangeSceneOver, bool isAdditive = false) {
-        Handle.LoadSceneAsyn(bundleName, assetName, onSuccess, unloadLevel, isAdditive);
-    }
-    public static void LoadCloneAsyn(string bundleName, string assetName, Action<GameObject> onSuccess, 
-                                     EAssetBundleUnloadLevel unloadLevel = 
-                                     EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Handle.LoadCloneAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-#endregion
-#region Unload
-#endregion
-    public static void LoadTexture2DAsyn(string name, Action<Texture2D> onSuccess, Action onFail, bool needCache = true) {
-        Handle.LoadTexture2DAsyn(name, onSuccess, onFail, needCache);
-    }
-}
-    #+END_SRC 
-*** ResourceMapHandle : ResourceHandleBase: 感觉这里两套程序集能够交接起来，这里需要好好想想理解清楚
-    #+BEGIN_SRC csharp
-public class ResourceMapHandle : ResourceHandleBase {
-    IResourceLoader Loader {
-        get {
-            return ResourceConstant.Loader;
-        }
-    }
-#region Load
-    public override T LoadAsset<T>(string bundleName, string assetName, 
-                                   EAssetBundleUnloadLevel unloadLevel = 
-                                   EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Loader.LoadAsset<T>(bundleName, assetName, unloadLevel);
-    }
-    public override TMP_FontAsset LoadTMP_FontAsset(string bundleName, string assetName, 
-                                                    EAssetBundleUnloadLevel unloadLevel = 
-                                                    EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Loader.LoadTMP_FontAsset(bundleName, assetName, unloadLevel);
-    }
-    public override Font LoadFont(string bundleName, string assetName, 
-                                  EAssetBundleUnloadLevel unloadLevel = 
-                                  EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Loader.LoadFont(bundleName, assetName, unloadLevel);
-    }
-    public override AnimationClip LoadAnimationClip(string bundleName, string assetName, 
-                                                    EAssetBundleUnloadLevel unloadLevel = 
-                                                    EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Loader.LoadAnimationClip(bundleName, assetName, unloadLevel);
-    }
-    public override AnimatorOverrideController LoadAnimatorOverrideController(string bundleName, string assetName, 
-                                                                              EAssetBundleUnloadLevel unloadLevel = 
-                                                                              EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Loader.LoadAnimatorOverrideController(bundleName, assetName, unloadLevel);
-    }
-    public override RuntimeAnimatorController LoadRuntimeAnimatorController(string bundleName, string assetName, 
-                                                                            EAssetBundleUnloadLevel unloadLevel = 
-                                                                            EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Loader.LoadRuntimeAnimatorController(bundleName, assetName, unloadLevel);
-    }
-    public override AudioClip LoadAudioClip(string bundleName, string assetName, 
-                                            EAssetBundleUnloadLevel unloadLevel = 
-                                            EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Loader.LoadAudioClip(bundleName, assetName, unloadLevel);
-    }
-    public override Material LoadMaterial(string bundleName, string assetName, 
-                                          EAssetBundleUnloadLevel unloadLevel = 
-                                          EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Loader.LoadMaterial(bundleName, assetName, unloadLevel);
-    }
-    public override TextAsset LoadTextAsset(string bundleName, string assetName, 
-                                            EAssetBundleUnloadLevel unloadLevel = 
-                                            EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Loader.LoadTextAsset(bundleName, assetName, unloadLevel);
-    }
-    public override Sprite LoadSprite(string bundleName, string assetName, 
-                                      EAssetBundleUnloadLevel unloadLevel = 
-                                      EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Loader.LoadSprite(bundleName, assetName, unloadLevel);
-    }
-    public override Texture2D LoadTexture2D(string bundleName, string assetName, 
-                                            EAssetBundleUnloadLevel unloadLevel = 
-                                            EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Loader.LoadTexture2D(bundleName, assetName, unloadLevel);
-    }
-    public override void LoadScene(string bundleName, string assetName, 
-                                   EAssetBundleUnloadLevel unloadLevel = 
-                                   EAssetBundleUnloadLevel.ChangeSceneOver, bool isAddtive = false) {
-        Loader.LoadScene(bundleName, assetName, unloadLevel);
-    }
-    public override GameObject LoadClone(string bundleName, string assetName, 
-                                         EAssetBundleUnloadLevel unloadLevel = 
-                                         EAssetBundleUnloadLevel.ChangeSceneOver) {
-        return Loader.LoadClone(bundleName, assetName, unloadLevel);
-    }
-#endregion
-#region LoadAsyn
-    public override void LoadAssetAsyn<T>(string bundleName, string assetName, Action<T> onSuccess, 
-                                          EAssetBundleUnloadLevel unloadLevel = 
-                                          EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Loader.LoadAssetAsyn<T>(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-    public override void LoadTMP_FontAssetAsyn(string bundleName, string assetName, Action<TMP_FontAsset> onSuccess, 
-                                               EAssetBundleUnloadLevel unloadLevel = 
-                                               EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Loader.LoadTMP_FontAssetAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-    public override void LoadFontAsyn(string bundleName, string assetName, Action<Font> onSuccess, 
-                                      EAssetBundleUnloadLevel unloadLevel = 
-                                      EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Loader.LoadFontAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-    public override void LoadAnimationClipAsyn(string bundleName, string assetName, Action<AnimationClip> onSuccess, 
-                                               EAssetBundleUnloadLevel unloadLevel = 
-                                               EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Loader.LoadAnimationClipAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-    public override void LoadAnimatorOverrideControllerAsyn(string bundleName, string assetName, Action<AnimatorOverrideController> onSuccess, 
-                                                            EAssetBundleUnloadLevel unloadLevel = 
-                                                            EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Loader.LoadAnimatorOverrideControllerAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-    public override void LoadRuntimeAnimatorControllerAsyn(string bundleName, string assetName, Action<RuntimeAnimatorController> onSuccess, 
-                                                           EAssetBundleUnloadLevel unloadLevel = 
-                                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Loader.LoadRuntimeAnimatorControllerAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-    public override void LoadAudioClipAsyn(string bundleName, string assetName, Action<AudioClip> onSuccess, 
-                                           EAssetBundleUnloadLevel unloadLevel = 
-                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Loader.LoadAudioClipAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-    public override void LoadMaterialAsyn(string bundleName, string assetName, Action<Material> onSuccess, 
-                                          EAssetBundleUnloadLevel unloadLevel = 
-                                          EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Loader.LoadMaterialAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-    public override void LoadTextAssetAsyn(string bundleName, string assetName, Action<TextAsset> onSuccess, 
-                                           EAssetBundleUnloadLevel unloadLevel = 
-                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Loader.LoadTextAssetAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-    public override void LoadSpriteAsyn(string bundleName, string assetName, Action<Sprite> onSuccess, 
-                                        EAssetBundleUnloadLevel unloadLevel = 
-                                        EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Loader.LoadSpriteAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-    public override void LoadTexture2DAsyn(string bundleName, string assetName, Action<Texture2D> onSuccess, 
-                                           EAssetBundleUnloadLevel unloadLevel = 
-                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Loader.LoadTexture2DAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-    public override void LoadSceneAsyn(string bundleName, string assetName, Action onSuccess, 
-                                       EAssetBundleUnloadLevel unloadLevel = 
-                                       EAssetBundleUnloadLevel.ChangeSceneOver, bool isAddtive = false) {
-        Loader.LoadSceneAsyn(bundleName, assetName, onSuccess, unloadLevel, isAddtive);
-    }
-    public override void LoadCloneAsyn(string bundleName, string assetName, Action<GameObject> onSuccess, 
-                                       EAssetBundleUnloadLevel unloadLevel = 
-                                       EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        Loader.LoadCloneAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-    }
-#endregion
-#region Unload
-    public override void Unload(string keyName, bool allObjects) {
-        Loader.Unload(keyName, allObjects);
-    }
-    public override void UnloadAll() {
-        Loader.UnloadAll();
-    }
-#endregion
-    public override void LoadTexture2DAsyn(string name, Action<Texture2D> onSuccess, Action onFail, bool needCache) {
-        Loader.LoadTexture2DAsyn(name, onSuccess, onFail, needCache);
-    }
-}
-    #+END_SRC 
-
-** Scene: 场景热更新反序列化为unity游戏引擎所能识别和可执行场景控件程序等
-- 回想一下热更新的过程：从网络服务器上下载出需要的资源包或是程序包，它是序列化后的数据；要把它还原成unity认得认识的场景等，还需要一个反序化的过程
-- 那么这个包裹里，就专职负责：如何从下载的资源包里游戏引擎场景相关的序列化数据还原为unity游戏引擎中认识并且可执行的游戏引擎程序集里的场景控件等，这个过程，所有场景相关的
-- 那么这里可以封装和包含的几个类就包括了：如果可以封装成为的（抽象）基类；根据各个不同应用实际需要而可以实例化成了几个不同的场景类型的反序列化定义类；如果可以，如果有好几个不同的场景，如有必要，还可以有一个必要的管理多个不同场景的场景管理者类
-*** abstract class SceneBase：热更新场景抽象基类
-    #+BEGIN_SRC csharp
-// 热更新场景基类：
-public abstract class SceneBase {
-    public SceneData Data {
-        get;
-        set;
-    }
-    public SceneTypeData TypeData {
-        get;
-        set;
-    }
-    public GameObject GameObject {
-        get;
-        set;
-    }
-    // 家具的集合
-    public Dictionary<int, FurnitureBase> furnitures = new Dictionary<int, FurnitureBase>();
-    public SceneBase(int type) {
-        Data = new SceneData();
-        Data.type = type;
-        Data.materialDatas = new Dictionary<string, MaterialData>();
-        Data.furnitureDatas = new Dictionary<int, FurnitureData>();
-        TypeData = TypeDataManager.GetSceneTypeData(Data.type);
-    }
-    public SceneBase(SceneData data) {
-        Data = data;
-        TypeData = TypeDataManager.GetSceneTypeData(Data.type);
-    }
-    public void LoadSceneGameObject() {
-        ResourceConstant.Loader.LoadCloneAsyn(TypeData.bundleName, TypeData.assetName, (go) => {
-            GameObject = go;
-            SetGameObjectName();
-            SceneManager.Instance.CurrentScene = this;
-            Initialize();
-        }, EAssetBundleUnloadLevel.ChangeSceneOver);
-    }
-    protected abstract void SetGameObjectName();
-    protected abstract void Initialize();
-    public virtual void Dispose() {
-        ResourceConstant.Loader.Unload(TypeData.bundleName, true);
-    }
-}
-    #+END_SRC 
-*** 热更新用到三种不同场景中的一个样例，最简单最特殊的ShowScene
-    #+BEGIN_SRC csharp
-// 空间秀场景: 吃货天空的鬼窝秀
-public class ShowScene : SceneBase {
-    // 这些这里可以有unity认得的至少一部分控件（因为热更新程序持有UnityEngine.dll的程序集引用？想一想）
-    public Transform OneGameObjectRoot { // Transform Transform ..... 某个游戏控件的位置信息
-        get;
-        set;
-    }
-    public ShowScene(int type) : base(type) {}
-    public ShowScene(SceneData data) : base(data) {}
-
-    protected override void SetGameObjectName() {
-        GameObject.name = "Show_" + TypeData.id;
-    }
-    protected override void Initialize() {
-        OneGameObjectRoot = GameObject.FindChildByName("OneGameObjectRoot").transform;
-        InitializeTypetwos();
-    }
-    void InitializeTypetwos() { // 初始化某种类型Typetwo类型的元件（控件或集）
-        foreach (var typetwoData in Data.typetwoDatas.Values) {
-            TypetwoTypeData typetwoTypeData = TypeDataManager.GetTypetwoTypeData(typetwoData.type);
-            TypetwoBase typetwoBase;
-            // 再然后，可以根据Typetwo类型是单个数据还是集合类再作进一步的初始化到最小元件单位（？就是层层折解，反序列化实例化成真正的游戏场景）
-            // 这里的部分逻辑略去
-        }
-    }
-    public override void Dispose() {
-        base.Dispose();
-        foreach (var typetwo in typetwos.Values) {
-            typetwo.Dispose();
-        }
-    }
-}
-    #+END_SRC 
-*** SceneManager: 场景管理器, 对于有需要必要时需要进行热更新的场景的相关逻辑（加载，创建，渐近切换等）的封装定义管理
-    #+BEGIN_SRC csharp
-// 场景管理器: 我的游戏里也写过好几个不同的管理类，热更新里的管理类与unity里的普通管理类有什么不同呢？
-public class SceneManager { // unity里不同场景的编号不同,　这里以int 值不同来区分不同的游戏场景
-
-    private static SceneManager instance;　// 希望是单例模式，不涉及多线程安全
-    public static SceneManager Instance {
-        get {
-            if (instance == null) 
-                instance = new SceneManager();
-            return instance;
-        }
-    }
-
-    // 当前场景
-    public SceneBase CurrentScene {
-        get;
-        set;
-    }
-    public int currentSelectGameObjectInstanceID;
-
-    // 创建一个新场景：根据传进来的参数值，来轮询实例化对象的场景（这个包裹里不是也定义了各个不同场景的继承于抽象基类的继承类的反序列化方法了吗？）
-    public void CreateNewScene(int type) { // unity里不同场景的编号不同,　这里以int 值不同来区分不同的游戏场景
-        ClearLastSceneGameObject();
-        currentSelectGameObjectInstanceID = 100000001;
-        SceneTypeData typeData = TypeDataManager.GetSceneTypeData(type);
-        if (typeData.type == (int)ESceneType.Edit) {
-            CurrentScene = new EditScene(type);
-            CurrentScene.LoadSceneGameObject();
-        } else if (typeData.type == (int)ESceneType.Show) {
-            CurrentScene = new ShowScene(type);
-            CurrentScene.LoadSceneGameObject();
-        } else if (typeData.type == (int)ESceneType.Camera) {
-            CurrentScene = new CameraScene(type);
-            CurrentScene.LoadSceneGameObject();
-        }
-    }
-
-    // 加载一个场景
-    public void LoadScene(SceneData data) {
-        ClearLastSceneGameObject();
-        currentSelectGameObjectInstanceID = data.GetMaxFurnitureInstanceID();
-        SceneTypeData typeData = TypeDataManager.GetSceneTypeData(data.type);
-        if (typeData.type == (int)ESceneType.Edit) {
-            CurrentScene = new EditScene(data);
-            CurrentScene.LoadSceneGameObject();
-        } else if (typeData.type == (int)ESceneType.Show) {
-            CurrentScene = new ShowScene(data);
-            CurrentScene.LoadSceneGameObject();
-        } else if (typeData.type == (int)ESceneType.Camera) {
-            CurrentScene = new CameraScene(data);
-            CurrentScene.LoadSceneGameObject();
-        }
-    }
-    void ClearLastSceneGameObject() {
-        if (CurrentScene != null && CurrentScene.GameObject != null) 
-            Object.DestroyImmediate(CurrentScene.GameObject);
-    }
-    public void CleanCurrentScene() {
-        if (CurrentScene != null && CurrentScene.GameObject != null) {
-            Object.DestroyImmediate(CurrentScene.GameObject);
-            CurrentScene.Dispose();
-            CurrentScene = null;
-            Resources.UnloadUnusedAssets();
-            System.GC.Collect();
-        }
-    }
-    // 加载某个特殊的场景：那么就是说对于某类过于特殊的场景，可以将其单独打包成一个资源包上传服务器和从服务器下载下来加载
-    // 这里这个特殊的场景，好像不涉及任何其它数据（除了一个应用里的SceneData）？所以过程极为简单，可以跳过狠多步
-    // 再想一下：这个特殊的场景到底特殊在哪里，可以独立有条短路的加载方法？
-    public void LoadShowScene(string bundleName, string assetName) {
-        string json = ResourceConstant.Loader.LoadTextAsset(bundleName, assetName, EAssetBundleUnloadLevel.LoadOver).text;
-        //Debug.Log("json: " + json);
-        SceneData sceneData = SceneData.JsonToObject(json);
-        LoadScene(sceneData);
-    }
-}
-    #+END_SRC 
-
-* Data: 数据驱动
-- *这里的问题* ：同样是为了打包和折包场景，为什么一个场景数据要定义成两种不同的场景类，相当于普通数据类型的装箱与折箱操作么，为了自适应两个不同的程序集？序列化与反序列化？要好好想一想
-- 前面有对ViewModel的适配包装，这里更多的是frameworks层如同SquarePanda里有专用的公司开发的SDK来对这同一家公司里的10款游戏进行通用模块包装一样，这个游戏热更新框架可以理解为是对同一家或是几家相同架构设计的多款游戏的架构封装，那么各个游戏独特的数据类型model仍然该是封装在各自游戏应用的内部；framework热更新框架只提取各个游戏通用的逻辑进行封装。
-也提到说数据类型是
-- 热更新所有的一切（资源包和程序包）都打包成数据上传热更新服务器，所以是数据驱动，一切都是数据！！
-- 在把不同的所有需要热更新的东西全部打包上传服务器的过程中，背后本质是不同类型打包基类元件（资源包，场景等）的序列化（上传服务器）与反序列化（下载资源包后的加载过程？）
-- 那么如何把不同的热更新类型打包封装成不同的数据呢（不同数据类型的自定义）　
-** Data: 必要的序列化过程中自己封装成的自定义类型仍然可以或是需要定义在这里
-- 我自己的游戏里写过俄罗斯广场砖的序列化与反序列化，可是我还不曾真正去读自己几年前写过的源码，忘得差不多了，该是时候把它们捡起来再深入发展一下了（爱表哥，爱生活！！！）
-- 可以养成一个编程习惯就是说：凡是带Data作为后缀的，都当作定义为序列化数据的方法逻辑？
-*** SceneData：场景实例数据
-    #+BEGIN_SRC csharp
-// 场景实例数据
-public class SceneData { //　再去多想一想，为什么要用SceneData 与SceneTypeData相区分？
-    // 实例ID
-    public int instanceID;
-    // 场景类型
-    public int type;
-
-// 这是同一家公司或是相同架构公司多个不同游戏的framework游戏框架通用管理
-    //　接下来：需要对各自游戏应用各不同场景下的Model数据进行集装，封装到自定义的场景热更自定义类型里去
-    // 可是用集合类对同一场景下的同一数据类型进行集装；
-    // 同一场景下不同数据类型间，可以生成多个不同字典等集合数据结构进行集装
-    // 单个数据
-    public SingleData singleData;
-    //  某数据类型的集合
-    public Dictionary<string, TypeoneData> typeoneDatas;
-    // 另一数据类型的集合
-    public Dictionary<int, TypetwoData> typetwoDatas;
-
-    // 反序列化
-    public static SceneData JsonToObject(string json) {
-        SceneData data = new SceneData();
-        JsonObject jsonObject = JsonSerializer.Deserialize(json) as JsonObject;
-        if (jsonObject != null) {
-            if (jsonObject.ContainsKey("instanceID")) {
-                data.instanceID = jsonObject["instanceID"];
-            }
-            data.type = jsonObject["type"];
-            if (jsonObject.ContainsKey("singleData")) {
-                JsonValue singleJonValue = jsonObject["singleData"];
-                data.singleData = SingleData.JsonToObject(singleJonValue.ToString());
-            }
-            data.typeoneDatas = new Dictionary<string, TypeoneData>();
-            JsonValue jsonValue = jsonObject["typeoneDatas"];
-            JsonArray jsonArray = JsonSerializer.Deserialize(jsonValue.ToString()) as JsonArray;
-            foreach (var value in jsonArray) {
-                TypeoneData typeoneData = TypeoneData.JsonToObject(value.ToString());
-                data.typeoneDatas.Add(typeoneData.gameObjectName, typeoneData);
-            }
-            data.typetwoDatas = new Dictionary<int, TypetwoData>();
-            JsonValue jsonValue2 = jsonObject["typetwoDatas"];
-            JsonArray jsonArray2 = JsonSerializer.Deserialize(jsonValue2.ToString()) as JsonArray;
-            foreach (var value in jsonArray2) {
-                TypetwoData typetwoData = TypetwoData.JsonToObject(value.ToString());
-                data.typetwoDatas.Add(typetwoData.instanceID, typetwoData);
-            }
-        }
-        return data;
-    }
-    public override string ToString() {
-        return ObjectToJson().ToString();
-    }
-    // 序列化
-    public JsonObject ObjectToJson() {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.Add("instanceID", instanceID);
-        jsonObject.Add("type", type);
-        JsonObject singleJsonObject = singleData.ObjectToJson();
-        jsonObject.Add("singleData", singleJsonObject);
-        JsonArray jsonArray = new JsonArray();
-        foreach (var data in typeoneDatas.Values) {
-            JsonObject dataJsonObject = data.ObjectToJson();
-            jsonArray.Add(dataJsonObject);
-        }
-        jsonObject.Add("typeoneDatas", jsonArray.ToString());
-        JsonArray jsonArray2 = new JsonArray();
-        foreach (var data in typetwoDatas.Values) {
-            JsonObject dataJsonObject = data.ObjectToJson();
-            jsonArray2.Add(dataJsonObject);
-        }
-        jsonObject.Add("typetwoDatas", jsonArray2.ToString());
-        return jsonObject;
-    }
-    public int GetMaxTypetwoInstanceID() {
-        int maxID = 100000001;
-        foreach (var key in typetwoDatas.Keys) {
-            if (key > maxID) {
-                maxID = key;
-            }
-        }
-        return maxID;
-    }
-}
-    #+END_SRC 
-** TypeData
-*** SceneTypeData: 场景类型数据
-    #+BEGIN_SRC csharp
-// 这里可以自定义几个不同的场景类型，方便程序区分
-public enum ESceneType {
-    None = 0,
-    Edit = 1,
-    Show = 2,
-    Camera = 3
-}
-// 场景类型数据
-public class SceneTypeData {
-    public long id;
-    public string gameObjectName;
-    public string name;
-    public string description;
-
-    public int type;
-    public string bundleName;
-    public string assetName;
-    public string iconBundleName;
-    public string iconAssetName;
-
-    // 把序列化数据重新反序列化成unity场景数据
-    public static SceneTypeData JsonToObject(string json) {
-        SceneTypeData typeData = new SceneTypeData();
-        JsonObject jsonObject = JsonSerializer.Deserialize(json) as JsonObject;
-        if (jsonObject != null) {
-            typeData.id = jsonObject["id"];
-            typeData.gameObjectName = jsonObject["gameObjectName"].ToString();
-            typeData.name = jsonObject["name"].ToString();
-            typeData.description = jsonObject["description"].ToString();
-            typeData.type = jsonObject["type"];
-            typeData.bundleName = jsonObject["bundleName"].ToString();
-            typeData.assetName = jsonObject["assetName"].ToString();
-            typeData.iconBundleName = jsonObject["iconBundleName"].ToString();
-            typeData.iconAssetName = jsonObject["iconAssetName"].ToString();
-        }
-        return typeData;
-    }
-    public override string ToString() {
-        return "id: " + id + " gameObjectName: " + gameObjectName + " name: " + name + " description: " + description
-            + " type: " + type + " bundleName: " + bundleName + " assetName: " + assetName
-            + " iconBundleName: " + iconBundleName + " iconAssetName: " + iconAssetName;
-    }
-}
-    #+END_SRC 
-** static 静态管理类TypeDataManager：文件比较大，仅以场景数据一种自定义数据类型来作分析
+* 环境弄得比较好的包括：
+- 电脑的配置有限，文件稍微大一点儿的时候已经不太好处理了；所以不得不分割成多个小文件
+- 几年过去了，ILRuntime已经不是最新最前沿的热更新技术，成为别人更新技术的一个子模块，所以还是自己再搜索找一下有没有更方便的热更新实现方法（若是不得，我就在自己游戏里实现　ILRuntime + MVVM实现视图等的更新）
+-　这一两天作必要的文献研究，确定哪个大的模块版块需要实现或是修改优化，列个大致计划，把它们一一完成；希望截止这个周末周六周日能够把这个部分确定得相对精确
+- 小笔记本电脑太慢了，会回家再读其它模块的源码，理解透彻。爱表哥，爱生活！！
+- 输入法的搭建：终于用到了自己之前用过的好用的输入法
+- 这两天开车疲累，最迟明天中午会去南湾找房间出租，尽快解决搬家的问题；昨天晚上回来得太晚了，一路辛苦，路上只差睡着，回到家里补觉补了好多个小时。
+- 小电脑，笔记本电脑里的游戏环境搭建，今天下午去图书馆里弄（今天下午去图书馆里把需要借助快速网络来完成的事情都搭建好；家里被恶房东故意整了个腾腾慢的网，故意阻碍别人的发展，谁还愿意再这样的环境中继续住下去呢？！！！）
+-　能够把程序源码读得比较懂，也并不代表把所有相关的原理就全部弄懂了；不是说还有多在的挑战，而是说要不断寻找更为有效的学习方法，快速掌握所有涉及到的相关原理；在理解得更为深入掌握了基本原理的基础上再去读源码，会不会更为有效事半功倍呢？这是一颗永远不屈服的心，爱表哥，爱生活！！！
+* ILRuntime 库的系统再深入理解
+** ILRuntime基本原理
+- ILRuntime借助Mono.Cecil库来读取DLL的PE信息，以及当中类型的所有信息，最终得到方法的IL汇编码，然后通过内置的IL解译执行虚拟机来执行DLL中的代码。IL解释器代码在ILIntepreter.cs，通过Opcode来逐语句执行机器码，解释器的代码有四千多行。
+  
+[[./pic/readme_20220926_094936.png]]
+** ILRuntime热更流程
+   
+[[./pic/readme_20220926_095022.png]]
+** ILRuntime主要限制
+   
+[[./pic/readme_20220926_095555.png]]
+- *委托适配器（DelegateAdapter）* ：将委托实例传出给ILRuntime外部使用，将其转换成CLR委托实例。
+由于IL2CPP之类的AOT编译技术无法在运行时生成新的类型，所以在创建委托实例的时候ILRuntime选择了显式注册的方式，以保证问题不被隐藏到上线后才发现。
 #+BEGIN_SRC csharp
-// TypeData管理器: 静态管理类
-public static class TypeDataManager { // 文件比较大，仅以场景数据一种类型来作分析
+//同一参数组合只需要注册一次
+delegate void SomeDelegate(int a, float b);
+Action<int, float> act;
+//注册，不带返回值，最多支持五个参数传入
+appDomain.DelegateManager.RegisterMethodDelegate<int, float>();
 
-#region TypeDatas
-    // 对于每种自定义自封装的类型，启用一个字典来进行管理;同自定义类型的数据，用一个长量型的long作为key来进行区分实例
-    static Dictionary<long, SceneTypeData> sceneTypeDatas;
-
-    public static Dictionary<long, SceneTypeData> GetSceneTypeDatas() {
-        return sceneTypeDatas;
-    }
-    public static SceneTypeData GetSceneTypeData(long id) {
-        if (sceneTypeDatas.ContainsKey(id)) {
-            return sceneTypeDatas[id];
-        } else {
-            return null;
-        }
-    }
-#endregion
-    // 热更新起始时，资源包里：对于不同场景的初始化
-    public static void InitializeTypeDatas() { // 那么加载的是场景（场景专用资源包吗？是的；不是资源包里关于场景的那一小部分）场景分场景新技术包；小控件分小控件打包
-        string sceneJson = ResourceHelper.LoadTextAsset("scene/config/scene", "scene", EAssetBundleUnloadLevel.LoadOver).text;
-        if (!string.IsNullOrEmpty(sceneJson)) // 只要从场景资源包里的读出的字符串非空，就反序列化成特定类型备用
-            InitializeSceneTypeData(sceneJson);
-    }
-    static void InitializeSceneTypeData(string jsonStr) { // 反序列化，将序列化数据反转成通用场景数据
-        if (jsonStr != null) {
-            sceneTypeDatas = new Dictionary<long, SceneTypeData>();
-            JsonArray jsonArray = JsonSerializer.Deserialize(jsonStr) as JsonArray;
-            if (jsonArray != null) {
-                foreach (JsonValue jsonValue in jsonArray) {
-                    SceneTypeData typeData = SceneTypeData.JsonToObject(jsonValue.ToString());
-                    if (!sceneTypeDatas.ContainsKey(typeData.id)) // 当前资源管理器还没有这种类型（int id）的场景呢，就添加上，否则抛出异常
-                        sceneTypeDatas.Add(typeData.id, typeData);
-                    else 
-                        Debug.LogError("sceneTypeDatas contains key: " + typeData.id);
-                }
-            } else 
-                Debug.LogError("sceneTypeData jsonArray is null");
-        }
-    }
-}
+//注册，带参数返回值，最后一个参数为返回值，最多支持四个参数传入
+delegate bool SomeFunction(int a, float b);
+Func<int, float, bool> act;
 #+END_SRC 
-- 这里面源码里面关于资源包里如何加载场景还弄得不清不楚，那么按照这里代码的提示，找出一个资源包，还看看它是怎么序列化场景数据的
-- 关于当前资源包里场景的部分，是存在一个名叫scene.txt的文件里
-#+BEGIN_SRC text
-[
-  {
-    "id": 10001.0,
-    "gameObjectName": "show_10001",
-    "name": "me的小房间",
-    "description": "这是me的小房间10001",
-    "type": 2.0,
-    "bundleName": "scene/scene/show/show_10001",
-    "assetName": "show_10001",
-    "iconBundleName": "scene/sceneicon/show/show_10001",
-    "iconAssetName": "show_10001"
-  },
-  {
-    "id": 10002.0,
-    "gameObjectName": "edit_10002",
-    "name": "表哥房",
-    "description": "这是表哥现房10002",
-    "type": 1.0,
-    "bundleName": "scene/scene/edit/edit_10002",
-    "assetName": "edit_10002",
-    "iconBundleName": "scene/sceneicon/edit/edit_10002",
-    "iconAssetName": "edit_10002"
-  }
-]
-#+END_SRC 
-* UI: 热更新视图的相关逻辑
-- 这里首先搞清楚一个常识概念就是：对于游戏里的不同场景，不知道是否可以实现同一个应用里的不同场景切换，但至少是可以保证一个应用里至少可以顺利加载一个场景的吧
-- 上面说的是游戏里的场景；但是这里用的是UI，是指游戏某一个场景里的游戏引擎场景（Scene）不变的情况下，只切换变化某一个或是几个Panel，而把这一个又一个不同的panel当作是我先前写安卓MVVM设计里的不同screen屏幕；每个Panel(View)在这种框架设计里也会自动绑定跨域继承的ViewModelBase的继承实体类（从而实现视图与视图模型的自动绑定），从而实现在Panel级别的MVVM数据绑定设计模式。
-** TODO: (删减一下！！！)某个热更新视图(这里是抽个例子出来参考一下)
-   #+BEGIN_SRC csharp
-// 热更新里拿取一个样例热更新的视图: 这种视图热更新在网上应该能够成堆地找到
-public class TestView : UnityGuiView {
-    Button buttonOne;
-    Button buttonTwo;
-    Button buttonThree;
-    GameObject pullDownRefresh;
-    TextMeshProUGUI refreshText;
-    DelayLoadGrid findItemGridRoot;
-    ScrollViewEvent scrollViewEvent;
-    List<GridItem> findGridItems = new List<GridItem>();
-    List<FindData> findDatas;
-
-    protected override void OnInitialize() {
-        base.OnInitialize();　//　对基类抽象方法的继承实现　
-        buttonOne = GameObject.FindChildByName("ButtonOne").GetComponent<Button>();
-        buttonOne.onClick.AddListener(OnClickButtonOne);
-        buttonTwo = GameObject.FindChildByName("ButtonTwo").GetComponent<Button>();
-        buttonTwo.onClick.AddListener(OnClickButtonTwo);
-        buttonThree = GameObject.FindChildByName("ButtonThree").GetComponent<Button>();
-        buttonThree.onClick.AddListener(OnClickButtonThree);
-        findItemGridRoot = GameObject.FindChildByName("FindItemGridRoot").GetComponent<DelayLoadGrid>();
-        scrollViewEvent = GameObject.FindChildByName("FindItemGridScrollView").GetComponent<ScrollViewEvent>();
-        scrollViewEvent.onBeginDrag = OnBeginDrag;
-        scrollViewEvent.onDraging = OnDraging;
-        scrollViewEvent.onEndDrag = OnEndDrag;
-        pullDownRefresh = GameObject.FindChildByName("PulldownRefresh");
-        refreshText = pullDownRefresh.FindChildByName("Text").GetComponent<TextMeshProUGUI>();
-        pullDownRefresh.SetActive(false);
-        InitializeDatas(); // <<<<<<<<<<<<<<<<<<<< 
-    }
-    public override void OnAppear() {
-        base.OnAppear();
-        CloseOtherRootView = CloseOtherRootViews;
-    }
-    void CloseOtherRootViews() {
-        ViewManager.CloseOtherRootViews(ViewName);
-    }
-    void InitializeDatas() {
-        findDatas = new List<FindData>();
-        for (int i = 0; i < 10000; i++) {
-            FindData findData;
-            if (i % 7 == 0) {
-                findData = new FindData(i, i.ToString(), 250);
-            } else if (i % 7 == 1) {
-                findData = new FindData(i, i.ToString(), 300);
-            } else if (i % 7 == 2) {
-                findData = new FindData(i, i.ToString(), 220);
-            } else if (i % 7 == 3) {
-                findData = new FindData(i, i.ToString(), 180);
-            } else if (i % 7 == 4) {
-                findData = new FindData(i, i.ToString(), 280);
-            } else if (i % 7 == 5) {
-                findData = new FindData(i, i.ToString(), 320);
-            } else {
-                findData = new FindData(i, i.ToString());
-            }
-            findDatas.Add(findData);
-        }
-    }
-    // Enter2D
-    void OnClickButtonOne() {
-        TestCreateCustomEditScene.Instance.CreateCustomEditScene();
-    }
-    void OnClickButtonTwo() {
-        SceneManager.Instance.LoadSpaceShowScene("scene/config/spaceshowscenedata/spaceshow_10001", "SpaceShow_10001");
-    }
-    void OnClickButtonThree() {
-        findItemGridRoot.gameObject.DestoryImmediateAllChildren();
-        findGridItems.Clear();
-        if (findDatas != null && findDatas.Count > 0) {
-            foreach (var findData in findDatas) {
-                GridItem gridItem = new GridItem();
-                gridItem.Name = "FindItemPrefab_" + findData.id;
-                findGridItems.Add(gridItem);
-                FindItemTemp findItem = new FindItemTemp(gridItem, findData);
-            }
-        }
-        findItemGridRoot.InitializeItems(findGridItems);
-    }
-    void OnBeginDrag() {
-        Debug.Log("OnBeginDrag");
-    }
-    void OnDraging() {
-        if (findItemGridRoot.GetComponent<RectTransform>().anchoredPosition.y < 0f) {
-            pullDownRefresh.SetActive(true);
-            refreshText.text = "刷新...";
-        } else {
-            pullDownRefresh.SetActive(false);
-        }
-    }
-    void OnEndDrag() {
-        if (findItemGridRoot.GetComponent<RectTransform>().anchoredPosition.y < 0f) {
-            refreshText.text = "刷新完";
-        }
-    }
-
-// 某些属性，对抽象基类的抽象方法的实现与覆写    
-    public override string BundleName {
-        get {
-            return "ui/view/testview";
-        }
-    }
-    public override string AssetName {
-        get {
-            return "TestView";
-        }
-    }
-    public override string ViewName {
-        get {
-            return "TestView";
-        }
-    }
-    public override string ViewModelTypeName {
-        get {
-            return typeof(TestViewModel).FullName;
-        }
-    }
-    public TestViewModel ViewModel {
-        get {
-            return (TestViewModel)BindingContext;
-        }
-    }
-    public override bool IsRoot {
-        get {
-            return true;
-        }
-    }
-}
-   #+END_SRC    
-** 热更新视图的相关联的ViewModel 实例一个：
-   #+BEGIN_SRC csharp
-public class GuideViewModel : ViewModelBase { // 把这些个不同类的继承关系串起来，怎么串起来呢？
-
-    protected override void OnInitialize() {
-        base.OnInitialize(); // <<<<<<<<<<<<<<<<<<<< 这里还是有点儿不懂
-        Initialization();
-        DelegateSubscribe();
-    }
-    void Initialization() {}
-    void DelegateSubscribe() {}
-}
-   #+END_SRC 
-** static ViewManager：热更新里的视图管理类，持有所有需要热更新的视图的静态引用
+- *委托转换器RegisterDelegateConvertor* ：需要将一个不是Action或者Func类型的委托实例传到ILRuntime外部使用，需要写委托适配器和委托转换器。委托转换器将Action和Func转换成你真正需要的那个委托类型
 #+BEGIN_SRC csharp
-using Framework.MVVM;
-using Framework.Util;
-// 它说，我是一个静态管理类，我要把每个需要热更新的视图都持有一个静态引用;
-// 当需要实例化的时候，要么返回现持非空的视图，要么就新实例化一个该类型的视图
-// 同样，与每个视图相绑定的是，MVVM设计模式的ViewModel，通过UnityGuiView : IView<ViewModelBase>抽象基类的继承实体类
-// 热更新包里，看得是平淡无奇的ViewModel，但是因为继承自CrossBindingAdapter的子类的ViewModelAdapter，使用View　怎么样呢？跨域识别，相互认得即可
-// 面板管理器:  看上面，是完全可以用framework里定义的适配什么的呀
-public static class ViewManager {
-    // 这里固化适配为两维三维都可以
-    public static Canvas UI2DRoot;
-    public static Canvas UI3DRoot;
-    public static RectTransform transfom;
-    public static Dictionary<string, UnityGuiView> views = new Dictionary<string, UnityGuiView>();
-    // public static TMP_FontAsset pingfangregularFont; // 把字体的部分都先简单地略过
-    // public static TMP_FontAsset pingfangmediumFont;
-    public static Font regularFont;
-    public static Font mediumFont;
-
-    public static void InitializeStartUI() {
-        // LoadBaseAsset(); // 它说先加载场景以及视图里可能会用到的必要的字体，先。。。
-        CreateBaseUI();
+app.DelegateManager.RegisterDelegateConvertor<SomeFunction>((action) =>
+{
+    return new SomeFunction((a, b) =>
+    {
+       return ((Func<int, float, bool>)action)(a, b);
+    });
+});
+#+END_SRC 
+- 为了避免不必要的麻烦，以及后期热更出现问题，建议： 1、尽量避免不必要的跨域委托调用 2、尽量使用Action以及Func委托类型
+- *CLR重定向:* ILRuntime为了解决外部调用内部接口的问题，引入了CLR重定向机制。 原理就是当IL解译器发现需要调用某个指定CLR方法时，将实际调用重定向到另外一个方法进行挟持，再在这个方法中对ILRuntime的反射的用法进行处理
+- 从代码中可以看出重定向的工作是把方法挟持下来后装到ILIntepreter的解释器里面实例化
+- 不带返回值的重定向：
+#+BEGIN_SRC csharp
+public static StackObject* CreateInstance(ILIntepreter intp, StackObject* esp,
+                                          List<object> mStack, CLRMethod method, bool isNewObj) {
+    // 获取泛型参数<T>的实际类型
+    IType[] genericArguments = method.GenericArguments;
+    if (genericArguments != null && genericArguments.Length == 1) {
+        var t = genericArguments[0];
+        if (t is ILType) { // 如果T是热更DLL里的类型 
+            // 通过ILRuntime的接口来创建实例
+            return ILIntepreter.PushObject(esp, mStack, ((ILType)t).Instantiate());
+        } else // 通过系统反射接口创建实例
+            return ILIntepreter.PushObject(esp, mStack, Activator.CreateInstance(t.TypeForCLR));
+    } else
+        throw new EntryPointNotFoundException();
+}
+// 注册
+foreach (var i in typeof(System.Activator).GetMethods()) {
+    // 找到名字为CreateInstance，并且是泛型方法的方法定义
+    if (i.Name == "CreateInstance" && i.IsGenericMethodDefinition) {
+        // RegisterCLRMethodRedirection：通过redirectMap存储键值对MethodBase-CLRRedirectionDelegate，如果i不为空且redirectMap中没有传入的MethodBase（即下方的i)则存储redirectMap[i] = CreateInstance。所以如此看来注册行为就是把键值对存储到redirectMap的过程
+        appdomain.RegisterCLRMethodRedirection(i, CreateInstance);
     }
-    // static void LoadBaseAsset() {
-    //     LoadFont(); // 这里说，就先加载一些字体
-    // }
-    // static void LoadFont() {　// 他们很喜欢苹果平方体
-    //     pingfangregularFont = ResourceHelper.LoadTMP_FontAsset("ui/font/pingfangregular", "pingfangregular", EAssetBundleUnloadLevel.Never);
-    //     pingfangregularFont.material.shader = Shader.Find("TextMeshPro/Mobile/Distance Field");
-    //     pingfangmediumFont = ResourceHelper.LoadTMP_FontAsset("ui/font/pingfangmedium", "pingfangmedium", EAssetBundleUnloadLevel.Never);
-    //     pingfangmediumFont.material.shader = Shader.Find("TextMeshPro/Mobile/Distance Field");
-    //     regularFont = ResourceHelper.LoadFont("ui/font/regular", "regular", EAssetBundleUnloadLevel.Never);
-    //     mediumFont = ResourceHelper.LoadFont("ui/font/medium", "medium", EAssetBundleUnloadLevel.Never);
-    // }
-// 仔细看这个方法：不是从热更新程序集里加载出unity里运行所需要的东西了吗？    
-    static void CreateBaseUI() {
-        ResourceHelper.LoadCloneAsyn("ui/ui2droot", "UI2DRoot", // 明天上午去仔细追踪查看一下这个异步方法的细节
-                                     (go) => {
-            go.name = "UI2DRoot";
-            GameObject.DontDestroyOnLoad(go);
-            UI2DRoot = go.GetComponent<Canvas>();
-            var viewRoot = new GameObject("ViewRoot"); // 实例化一个新空控件当作是视图层的根节点
-            viewRoot.layer = LayerMask.NameToLayer("UI");　
-            var viewRect = viewRoot.AddComponent<RectTransform>();
-            viewRect.SetParent(UI2DRoot.transform, false);
-            viewRect.sizeDelta = new Vector2(0, 0);
-            viewRect.anchorMin = Vector2.zero;
-            viewRect.anchorMax = Vector2.one;
-            viewRect.pivot = new Vector2(0.5f, 0.5f);
-            poolRoot = new GameObject("PoolRoot").transform;
-            poolRoot.SetParent(UI2DRoot.transform, false);
-            poolRoot.gameObject.SetActive(false);
-            ShowStartPanel();
-        }, EAssetBundleUnloadLevel.Never);
-    }
-// 遍历当前视图管理器里所管理的所有的视图，凡是不是所指定特定视图的，一律隐藏起来（应该只是不让用户看见，它还在那里，在幕后的某个角落乘凉）
-    public static void CloseOtherRootViews(string viewName) {
-        foreach (var view in views.Values) 
-            if (view.ViewName != viewName && view.IsRoot) 
-                view.Hide();
-    }
-    
-// 这里应该是一个导航视图吧，猜测（不是视图，是panel　？）昨天晚上少眠，今天状态相对较差，期待明天会比较好
-// 明天这些部分，今天所有有疑问的部分都再仔细地看一下    
-    static void ShowStartPanel() {
-        GuideView.Reveal();
-    }
-#region Util
-#endregion
-
-#region GridItemPool
-    public static Transform poolRoot;
-// 这里所彩的数据结构栈：应该是与特定的应用特性相关的，能够保证后进先出和保证效率的
-    public static Dictionary<string, Stack<GameObject>> gridItemPool = new Dictionary<string, Stack<GameObject>>();
-    public static GameObject GetGridItemFromPool(string name) {
-        if (gridItemPool.ContainsKey(name) && gridItemPool[name].Count > 0) {
-            var gridItem = gridItemPool[name].Pop();
-            return gridItem;
-        }
-        return null;
-    }
-    public static void CacheGridItemToPool(string name, GameObject go) {
-        if (!gridItemPool.ContainsKey(name)) 
-            gridItemPool[name] = new Stack<GameObject>();
-        Stack<GameObject> goList = gridItemPool[name];
-        go.transform.SetParent(poolRoot, false);
-        goList.Push(go);
-    }
-#endregion
-    
-// 视图里的小物件管理，是热更新起始时重要的三个步骤之二:　可是仍然感觉他们只是很不起眼的一两个小物件，根本不值一提呀
-// 这部分的细节暂时跳过，等改天实现自己游戏热更新需要参考的时候还可以修补上    
-
-#region Other
-    static bool isOverUI = false;
-    static bool isCheckedOverUI = false;
-    static List<RaycastResult> raycastResults = new List<RaycastResult>();
-    // 是否触摸到UI控件
-    public static bool IsPointerOverUI() {
-        if (isCheckedOverUI) {
-            return isOverUI;
-        }
-        isCheckedOverUI = true;
-        isOverUI = false;
-        if (EventSystem.current.IsPointerOverGameObject()) {
-            isOverUI = true;
-        }
-        PointerEventData pointer = new PointerEventData(EventSystem.current);
-        pointer.position = Input.mousePosition;
-        EventSystem.current.RaycastAll(pointer, raycastResults);
-        if (raycastResults.Count > 0) {
-            isOverUI = true;
-        }
-        TryStopTapEvent();
-        return isOverUI;
-    }
-    public static void TryStopTapEvent() {
-        CoroutineHelper.StartCoroutine(StopTapEvent());
-    }
-    static IEnumerator StopTapEvent() {
-        yield return new WaitForEndOfFrame();
-        isOverUI = false;
-        isCheckedOverUI = false;
-    }
-#endregion
-
-// 热更新的视图，远远不止这两个，但是留这两个已经够参考了，其它删除了
-#region Views
-    static TestView _testView;
-    public static TestView TestView {
-        get {
-            if (_testView == null) {
-                _testView = new TestView();
-                _testView.BindingContext = new TestViewModel();
-                views.Add(_testView.ViewName, _testView);
-            }
-            return _testView;
-        }
-    }
-    static GuideView _guideView;
-    public static GuideView GuideView {
-        get {
-            if (_guideView == null) {
-                _guideView = new GuideView();
-                _guideView.BindingContext = new GuideViewModel();
-                views.Add(_guideView.ViewName, _guideView);
-            }
-            return _guideView;
-        }
-    }
-#endregion
 }
 #+END_SRC 
-* HotFixMain静态类：热更新程序的入口
-   #+BEGIN_SRC csharp
-// 热更工程入口
-public static class HotFixMain {
-    public static void Start() {
-        Debug.Log("InitializeTypeDatas");
-
-// 反序列化场景专用资源包里的数据为SceneTypeData自定义类型，缓存在管理器宝典里，及时准备好以便实例化
-        TypeDataManager.InitializeTypeDatas(); 
-// 资源包里的小物件管理：反序列化为自定义的TypeData以便必要的时候可以第一时间顺利实例化（这部分逻辑被我跳过了，改天若是需要参考再补）
-        ViewManager.InitializeItemDatas();
-        Debug.Log("HotFixMain.Start()");
-// 前面场景反序列化，小物件反序列化考都转为TypeData，那么现在应该是可以初始化用户启动应用可以看见的第一屏屏幕了
-        ViewManager.InitializeStartUI(); // 本质上也就是说，要热更新程序集里的视图管理类帮显示当前这个起始视图
-    }
+- 带返回值方法的重定向
+#+BEGIN_SRC csharp
+public unsafe static StackObject* DLog(ILIntepreter __intp, StackObject* __esp,
+                                       List<object> __mStack, CLRMethod __method, bool isNewObj)  {
+    ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
+    StackObject* ptr_of_this_method;
+    // 只有一个参数，所以返回指针就是当前栈指针ESP - 1
+    StackObject* __ret = ILIntepreter.Minus(__esp, 1);
+    // 第一个参数为ESP -1， 第二个参数为ESP - 2，以此类推
+    ptr_of_this_method = ILIntepreter.Minus(__esp, 1);
+    // 获取参数message的值
+    object message = StackObject.ToObject(ptr_of_this_method, __domain, __mStack);
+    // 需要清理堆栈
+    __intp.Free(ptr_of_this_method);
+    // 如果参数类型是基础类型，例如int，可以直接通过int param = ptr_of_this_method->Value获取值，
+    // 关于具体原理和其他基础类型如何获取，请参考ILRuntime实现原理的文档。
+            
+    // 通过ILRuntime的Debug接口获取调用热更DLL的堆栈
+    string stackTrace = __domain.DebugService.GetStackTrance(__intp);
+    Debug.Log(string.Format("{0}\n{1}", format, stackTrace));
+    return __ret;
 }
-   #+END_SRC 
+#+END_SRC 
+- *LitJson集成*: Json序列化是开发中非常经常需要用到的功能，考虑到其通用性，因此ILRuntime对LitJson这个序列化库进行了集成
+#+BEGIN_SRC csharp
+//对LitJson进行注册，需要在注册CLR绑定之前
+LitJson.JsonMapper.RegisterILRuntimeCLRRedirection(appdomain);
+//LitJson使用
+//将一个对象转换成json字符串
+string json = JsonMapper.ToJson(obj);
+//json字符串反序列化成对象
+JsonTestClass obj = JsonMapper.ToObject<JsonTestClass>(json);
+#+END_SRC 
+- *ILRuntime的性能优化*
+  - 值类型优化：使用ILRuntime外部定义的值类型（例如UnityEngine.Vector3）在默认情况下会造成额外的装箱拆箱开销。ILRuntime在1.3.0版中增加了值类型绑定（ValueTypeBinding）机制，通过对这些值类型添加绑定器，可以大幅增加值类型的执行效率，以及避免GC Alloc内存分配。
+  - 大规模数值计算：如果在热更内需要进行大规模数值计算，则可以开启ILRuntime在2.0版中加入的寄存器模式来进行优化
+  - 避免使用foreach：尽量避免使用foreach，会不可避免地产生GC。而for循环不会。
+  - 加载dll并在逻辑后处理进行简单调用
+  - 整个文件流程：创建IEnumerator并运行->用文件流判断并读入dll和pdb->尝试加载程序集dll->（如果加载成功)初始化脚本引擎（InitializeILRuntime()）->执行脚本引擎加载后的逻辑处理（OnHotFixLoaded()）->程序销毁（在OnDestoy中关闭dll和pdb的文件流）
+  - MemoryStream:为系统提供流式读写。MemoryStream类封装一个字节数组，在构造实例时可以使用一个字节数组作为参数，但是数组的长度无法调整。使用默认无参数构造函数创建实例，可以使用Write方法写入，随着字节数据的写入，数组的大小自动调整。 参考博客：传送门
+  - appdomain.LoadAssembly：将需要热更的dll加载到解释器中。第一个填入dll以及pdb，这里的pdb应该是dll对应的一些标志符号。 后面的ILRuntime.Mono.Cecil.Pdb.PdbReaderProvider()是动态修改程序集，它的作用是给ILRuntime.Mono.Cecil.Pdb.PdbReaderProvider()里的GetSymbolReader)(传入两个参数,一个是通过转化后的ModuleDefinition.ReadModule(stream（即dll）)模块定义，以及原来的symbol（即pdb） GetSymbolReader主要的作用是检测其中的一些符号和标志是否为空，不为空的话就进行读取操作。 （这些内容都是ILRuntime中的文件来完成）
+- Unity MonoBehaviour lifecycle methods callback execute orders:
+- 还有一个看起来不怎么清楚的，将就凑合着看一下：这几个图因为文件地址错误丢了，改天再补一下
+- IL热更优点：
+  - 1、无缝访问C#工程的现成代码，无需额外抽象脚本API
+  - 2、直接使用VS2015进行开发，ILRuntime的解译引擎支持.Net 4.6编译的DLL
+  - 3、执行效率是L#的10-20倍
+  - 4、 *选择性的CLR绑定使跨域调用更快速，绑定后跨域调用的性能能达到slua的2倍左右（从脚本调用GameObject之类的接口）*
+  - 5、支持跨域继承(代码里的完美学演示)
+  - 6、完整的泛型支持(代码里的完美学演示)
+  - 7、拥有Visual Studio的调试插件，可以实现真机源码级调试。支持Visual Studio 2015 Update3 以及Visual Studio 2017和Visual Studio 2019
+  - 8、最新的2.0版引入的寄存器模式将数学运算性能进行了大幅优化
 
-* ILRuntime 类库里源码的基本理解，最重要的涉及到的相关的类与方法摘要
-** CrossBindingAdaptor : IType 跨域(程序集)绑定适配器 + CrossBindingAdaptorType interface 公用接口类(为什么要这个公用接口类？)
-    #+BEGIN_SRC csharp
-public interface CrossBindingAdaptorType {　// 公用接口类
-    ILTypeInstance ILInstance { get; }
-}
-
-// This interface is used for inheritance and implementation of CLR Types or interfaces
-public abstract class CrossBindingAdaptor : IType {
-    IType type;
-
-// 下面是定义的几个公用的抽象方法，供子类实现    
-    // This returns the CLR type to be inherited or CLR interface to be implemented
-    public abstract Type BaseCLRType { get; }
-    // If this Adaptor is capable to impelement multuple interfaces, use this Property, AND BaseCLRType should return null
-    public virtual Type[] BaseCLRTypes {
-        get {
-            return null;
-        }
-    }
-    public abstract Type AdaptorType { get; }
-    public abstract object CreateCLRInstance(Enviorment.AppDomain appdomain, ILTypeInstance instance);
-
-    internal IType RuntimeType { get { return type; } set { type = value; } }
-
-// 反射机制的所有可能涉及的相关的方法定义；getters/setters
-#region IType Members
-    public IMethod GetMethod(string name, int paramCount, bool declaredOnly = false) {
-        return type.GetMethod(name, paramCount, declaredOnly);
-    }
-    public IMethod GetMethod(string name, List<IType> param, IType[] genericArguments, IType returnType = null, bool declaredOnly = false) {
-        return type.GetMethod(name, param, genericArguments, returnType, declaredOnly);
-    }
-    public List<IMethod> GetMethods() {
-        return type.GetMethods();
-    }
-    public int GetFieldIndex(object token) {
-        return type.GetFieldIndex(token);
-    }
-    public IMethod GetConstructor(List<IType> param) {
-        return type.GetConstructor(param);
-    }
-    public bool CanAssignTo(IType type) {
-        bool res = false;
-        if (BaseType != null)
-            res = BaseType.CanAssignTo(type);
-        var interfaces = Implements;
-        if (!res && interfaces != null) {
-            for (int i = 0; i < interfaces.Length; i++) {
-                var im = interfaces[i];
-                res = im.CanAssignTo(type);
-                if (res)
-                    return true;
-            }
-        }
-        return res;
-    }
-    public IType MakeGenericInstance(KeyValuePair<string, IType>[] genericArguments) {
-        return type.MakeGenericInstance(genericArguments);
-    }
-    public IType MakeByRefType() {
-        return type.MakeByRefType();
-    }
-    public IType MakeArrayType(int rank) {
-        return type.MakeArrayType(rank);
-    }
-    public IType FindGenericArgument(string key) {
-        return type.FindGenericArgument(key);
-    }
-    public IType ResolveGenericType(IType contextType) {
-        return type.ResolveGenericType(contextType);
-    }
-    public IMethod GetVirtualMethod(IMethod method) {
-        return type.GetVirtualMethod(method);
-    }
-    public void GetValueTypeSize(out int fieldCout, out int managedCount) {
-        type.GetValueTypeSize(out fieldCout, out managedCount);
-    }
-// Getter / Setter s 
-    public bool IsGenericInstance {
-        get {
-            return type.IsGenericInstance;
-        }
-    }
-    public KeyValuePair<string, IType>[] GenericArguments {
-        get {
-            return type.GenericArguments;
-        }
-    }
-    public Type TypeForCLR {
-        get {
-            return type.TypeForCLR;
-        }
-    }
-    public IType ByRefType {
-        get {
-            return type.ByRefType;
-        }
-    }
-    public IType ArrayType {
-        get {
-            return type.ArrayType;
-        }
-    }
-    public string FullName {
-        get {
-            return type.FullName;
-        }
-    }
-    public string Name {
-        get {
-            return type.Name;
-        }
-    }
-    public bool IsValueType {
-        get {
-            return type.IsValueType;
-        }
-    }
-    public bool IsPrimitive {
-        get {
-            return type.IsPrimitive;
-        }
-    }
-    public bool IsEnum {
-        get {
-            return type.IsEnum;
-        }
-    }
-    public bool IsDelegate {
-        get {
-            return type.IsDelegate;
-        }
-    }
-    public AppDomain AppDomain {
-        get {
-            return type.AppDomain;
-        }
-    }
-    public Type ReflectionType {
-        get {
-            return type.ReflectionType;
-        }
-    }
-    public IType BaseType {
-        get {
-            return type.BaseType;
-        }
-    }
-    public IType[] Implements {
-        get {
-            return type.Implements;
-        }
-    }
-    public bool HasGenericParameter {
-        get {
-            return type.HasGenericParameter;
-        }
-    }
-    public bool IsGenericParameter {
-        get {
-            return type.IsGenericParameter;
-        }
-    }
-    public bool IsArray {
-        get { return false; }
-    }
-    public bool IsByRef {
-        get {
-            return type.IsByRef;
-        }
-    }
-    public bool IsInterface {
-        get { return type.IsInterface; }
-    }
-    public IType ElementType {
-        get {
-            return type.ElementType;
-        }
-    }
-    public int ArrayRank {
-        get { return type.ArrayRank; }
-    }
-    public int TotalFieldCount {
-        get {
-            return type.TotalFieldCount;
-        }
-    }
-    public StackObject DefaultObject {
-        get {
-            return default(StackObject);
-        }
-    }
-    public int TypeIndex {
-        get {
-            return -1;
-        }
-    }
-#endregion
-}
-    #+END_SRC 
-
-* 热更新模块总结
-- 感觉源码相关的部分已经看得差不多了，感觉大部分懂了，
-- 可是还是有不少部分似懂非懂，需要在自己小游戏的实现里自己写和实现的过程中再回来一再参考加深理解
-- 明天会把这个热更新模块项目或是整个游戏框架疑难部分再多看一遍，
-- 然后打算着写开始熟悉自己游戏的源码和进行改造
-- 自己写和实现的过程中，应用会有狠多的知识点来考验自己
-- 可是也只有自己真正写过一遍，才能真正理解得透彻呀。爱表哥，爱生活！！！
+** ILRuntime启动调试
+- ILRuntime建议全局只创建一个AppDomain，在函数入口添加代码启动调试服务
+#+BEGIN_SRC csharp
+appdomain.DebugService.StartDebugService(56000)
+#+END_SRC 
+- 运行主工程(Unity工程)
+- 在热更的VS工程中 点击 - 调试 - 附加到ILRuntime调试，注意使用一样的端口
+- 如果使用VS2015的话需要Visual Studio 2015 Update3以上版本
+** 线上项目和资料
+- 掌趣很多项目都是使用ILRuntime开发，并上线运营，比如：真红之刃，境·界 灵压对决，全民奇迹2，龙族世界，热血足球
+- 初音未来:梦幻歌姬 使用补丁方式：https://github.com/wuxiongbin/XIL
+- 本文流程图摘自：ILRuntime的QQ群的《ILRuntime热更框架.docx》(by a 704757217)
+- Unity实现c#热更新方案探究(三): https://zhuanlan.zhihu.com/p/37375372
