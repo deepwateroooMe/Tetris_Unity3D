@@ -1,4 +1,4 @@
-% Created 2022-09-29 Thu 10:48
+% Created 2022-09-29 Thu 15:26
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -958,6 +958,7 @@ public class HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain { // 
 // ILRuntime内部是使用Action,以及Func这两个系统自带委托类型来生成的委托实例，
 // 所以如果你需要将一个不是Action或者Func类型的委托实例传到ILRuntime外部使用的话，
 // 除了委托适配器，还需要额外写一个转换器，将Action和Func转换成你真正需要的那个委托类型。
+// 在热更新的所有视图里，可能都会涉及到不同类型的比如控件的点击回调事件等。要在热更新程序包之外可以使用，以及使用得便利，就把所有不同类型需要用到的转换器统一定义在这里了
         appDomain.DelegateManager.RegisterDelegateConvertor<UnityAction>((action) => {
             return new UnityAction(() => {
                 ((Action)action)();
@@ -1263,7 +1264,18 @@ public class PropertyBinder<ViewModelBase> {
 \end{minted}
 \subsection{Message: 自定义的消息机制吗？这里还没能联系上下文，完全不知道这里是在做什么？}
 \label{sec-6-2}
-\subsubsection{MessageArgs<T>： 跨域跨程序集的消息参数泛型类 ？}
+\begin{itemize}
+\item 因为对这个框架里的这个模块不够理解，先抓一个网上的图，再把这一块儿补起来，最主要的作用猜测应该还是跨域过程中对于不同回调　等的传递封装管理
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_unity_20220929_135756.png}
+\begin{itemize}
+\item 那么上面的图是说，可以在不同的ViewModel之间传递消息？
+\item MVVM可以双方数据绑定；这里应该是借用了MVVM的外套，但是里面基本所有必要的相关逻辑都是在这个框架中自己封装的。数据（不管是什么数据类型吧）的订阅与发布是被封装成一个一个的消息发送出去的。
+\item 这里消息桶的全局单例模式就像Handler里的MessageQueue 一样是用来全权负责数据更改的变化通知，消息的订阅与发布等相关逻辑。
+\item 再具体的应用里的应用可以再找真正用到的地方具体理解消化一下。　
+\end{itemize}
+\subsubsection{MessageArgs<T>： (跨域跨程序集的)消息参数泛型类 ？是泛型类，做的事情就是对泛型基类逻辑的必要封装}
 \label{sec-6-2-1}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 public class MessageArgs<T> {
@@ -1276,7 +1288,7 @@ public class MessageArgs<T> {
     }
 }
 \end{minted}
-\subsubsection{MessageAggregator<T> : Singleton<MessageAggregator<T>>： 单例模式的泛型管理类？用一个字典来管理消息？}
+\subsubsection{MessageAggregator<T> : Singleton<MessageAggregator<T>>： 单例模式的泛型集合管理类，用一个字典来管理消息}
 \label{sec-6-2-2}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 // 单例模式的泛型管理类？用一个字典来管理消息(可观察的属性、链表、ViewModel等， 以及它们各自对应的回调) ？ 这里要再看不遍，还没有真正看懂
@@ -1301,6 +1313,11 @@ public class MessageAggregator<T> : Singleton<MessageAggregator<T>> {
 \label{sec-6-3}
 \begin{itemize}
 \item 不能像最开始一样把这里误当作Model；这是一个framework,数据是定义在各个不同的具体应用里
+\item 这是一个架构设计，定义在framework里，但是仍然可以提供给热更新程序包使用
+\item 如果是全部在热更工程中的继承，用法跟普通继承是一样的。如果你想在热更DLL项目当中继承一个Unity主工程里的类，或者实现一个主工程里的接口，这就是跨域继承，你需要在Unity主工程中实现一个继承适配器。
+\item 在ILRuntime中，存在两种继承，一种就是普通的继承，和平时的继承的用法一样，这里我们着重的介绍下第二种继承，跨域继承，
+\item 为unity工程和热更工程处于两个不同的程序域，是无法直接进行代码互通的。所以需要去跨域继承。
+\item 这里留个将来还可供参考的链接
 \end{itemize}
 \subsubsection{ModuleBase.cs}
 \label{sec-6-3-1}
