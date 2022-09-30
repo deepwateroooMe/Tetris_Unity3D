@@ -1,4 +1,4 @@
-% Created 2022-09-29 Thu 17:01
+% Created 2022-09-29 Thu 22:07
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -33,14 +33,20 @@
 \tableofcontents
 
 
-\section{模块搭建}
+\section{游戏基础框架的快速链接}
 \label{sec-1}
 \begin{itemize}
-\item \# only inlcude two levels in TOC
-\item ILRuntime的消化理解，以及与MVVM同用时的搭配理解消化
-\item 热更新模块服务器模块的理解与消化搭建：
+\item 将游戏的绝大部分逻辑放到热更新程序包下执行，以便实现随时热更；
+\item 暂时不考虑服务器，所以先弄个本地服务器试运行着
+\item 把基本的unity游戏逻辑与ILRuntime + MVVM的唯一一个（如果我需要多个场景，那么我需要添加很多场景切换的逻辑，所以最简单的办法就是游戏自始自终只使用一个场景，其它所有变更的都只是Panel View　UI。）场景试着尽快运行起来
+\item 打包第一个场景: 好像是两个前后相差几个的游戏引擎不太兼容，打包的预设不识别，会再看一看（先粗糙地封了一整个场景，会把可能热更新的折下来折小一点儿，晚些时候）
 \end{itemize}
 
+\includegraphics[width=.9\linewidth]{./pic/readme_20220929_220207.png}
+\begin{itemize}
+\item 
+\item 
+\end{itemize}
 \section{把原理弄懂}
 \label{sec-2}
 \begin{itemize}
@@ -75,6 +81,7 @@
 \end{itemize}
 
 \includegraphics[width=.9\linewidth]{./pic/readme_20220926_094936.png}
+
 \subsection{ILRuntime热更流程}
 \label{sec-4-2}
 
