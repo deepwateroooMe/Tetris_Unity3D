@@ -1,4 +1,4 @@
-% Created 2022-09-29 Thu 15:26
+% Created 2022-09-30 Fri 09:45
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -3645,7 +3645,6 @@ public class SingletonMono<T> : MonoBehaviour where T : MonoBehaviour {　// Mon
     }
 }
 \end{minted}
-
 \subsection{static class JsonSerializer: 静态帮助类，帮助将网络下载的资源包解析为相应的封装类型}
 \label{sec-9-2}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
@@ -3660,6 +3659,188 @@ public static class JsonSerializer {
             DebugHelper.LogError(string.Format("{0}{1}", jsonString, ex), true);
             return null;
         }
+    }
+}
+\end{minted}
+\subsection{Camera: 相机操作相关的逻辑包装}
+\label{sec-9-3}
+\subsubsection{CameraWrapBase : MonoBehaviour: 具备unity控件生命周期感知能力的抽象基类}
+\label{sec-9-3-1}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+public abstract class CameraWrapBase : MonoBehaviour {
+
+    public KeyCode leftKey = KeyCode.LeftArrow;
+    public KeyCode rightKey = KeyCode.RightArrow;
+    public KeyCode upKey = KeyCode.UpArrow;
+    public KeyCode downKey = KeyCode.DownArrow;
+    public KeyCode zoomInKey = KeyCode.Q;
+    public KeyCode zoomOutKey = KeyCode.E;
+
+    public float focusOffsetY = 1f;
+    public float defaultDistance = 5f;
+    public bool acceptInput = true;
+    public bool isZoomSpeedUp = true;
+    public float speedX = 180f;
+    public float speedY = 80f;
+    public float speedZoom = 30f;
+    protected float moveX = 0f;
+    protected float moveY = 0f;
+    public float curX = 0f;
+    public float curY = 0f;
+    public float curDistance;
+    public float desiredDistance;
+    public float correctedDistance;
+    public float maxDistance = 40f;
+    public float minDistance = 3f;
+    public float minLimitX = 0f;
+    public float maxLimitX = 90f;
+    public float zoomDampening = 10f;
+
+    public virtual Transform Target {
+        get;
+        protected set;
+    }
+
+    public GameObject GameObject {
+        get {
+            return gameObject;
+        }
+    }
+    public Transform Transform {
+        get {
+            return transform;
+        }
+    }
+// 需要覆写的生活周期函数    
+    protected virtual void Awake() { }
+    public virtual void Update() { }
+    public abstract void LateUpdate();
+
+    public void GetInput() {
+        moveX = 0f;
+        moveY = 0f;
+        if (!acceptInput) 
+            return;
+        if (Input.GetKey(downKey)) 
+            moveY = -speedY * Time.deltaTime;
+        if (Input.GetKey(leftKey)) 
+            moveX = speedX * Time.deltaTime;
+        if (Input.GetKey(rightKey)) 
+            moveX = -speedX * Time.deltaTime;
+        if (Input.GetKey(upKey)) 
+            moveY = speedY * Time.deltaTime;
+        if (Input.GetKey(zoomInKey)) {
+            Zoom(1);
+        } else if (Input.GetKey(zoomOutKey)) 
+            Zoom(-1);
+    }
+    protected void Zoom(float input) {
+        input = Mathf.Clamp(input, -1, 1);
+        float final = input * Time.deltaTime * speedZoom;
+        if (isZoomSpeedUp) 
+            final += Mathf.Abs(desiredDistance) * 0.1f;
+        desiredDistance = Mathf.Clamp(desiredDistance + final, minDistance, maxDistance);
+    }
+    protected float ClampAngle(float angle, float min, float max) {
+        if (angle < -360) 
+            angle += 360;
+        if (angle > 360) 
+            angle -= 360;
+        return Mathf.Clamp(angle, min, max);
+    }
+    
+    public virtual void OnTouchDrag(DragGesture gesture) { }
+    public virtual void OnPinch(PinchGesture gesture) {
+        float delta = gesture.Delta;
+        if (delta != 0) 
+            Zoom(-delta);
+    }
+    protected virtual void Initialize() { }
+}
+\end{minted}
+\subsubsection{Camera3DWrap : CameraWrapBase: 实体类,对抽象基类的实现与扩展}
+\label{sec-9-3-2}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+public class Camera3DWrap : CameraWrapBase {
+
+    protected override void Initialize() {
+        Transform.LookAt(Target);
+        Vector3 angles = Transform.eulerAngles;
+        curX = angles.x;
+        curY = angles.y;
+        curDistance = defaultDistance;
+        desiredDistance = defaultDistance;
+        correctedDistance = defaultDistance;
+        if (Transform.GetComponent<Rigidbody>()) {
+            Transform.GetComponent<Rigidbody>().freezeRotation = true;
+        }
+        Transform.LookAt(Target);
+    }
+
+    // 拖拽
+    public override void OnTouchDrag(DragGesture gesture) {
+        if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor) {
+            if (Input.GetMouseButton(0)) {
+                RotateCamera(gesture.DeltaMove);
+            } else if (Input.GetMouseButton(1) && FingerGestures.Touches.Count == 1) {
+                TranslationCamera();
+            }
+        } else {
+            if (FingerGestures.Touches.Count == 1) {
+                RotateCamera(gesture.DeltaMove);
+            } else {
+                if (Mathf.Abs(gesture.TotalMove.x) > 80 || Mathf.Abs(gesture.TotalMove.y) > 80) {
+                    TranslationCamera();
+                }
+            }
+        }
+    }
+
+// 添加相机的平移主旋转功能
+    Vector2 curMove = Vector2.zero;
+    // 旋转相机
+    public void RotateCamera(Vector2 vec) {
+        curMove = new Vector2(-vec.y * speedY, -vec.x * speedX) * Time.deltaTime;
+    }
+    // 平移相机
+    public void TranslationCamera() {
+        Vector3 mf = Vector3.zero;
+        var dx = Input.GetAxis("Horizontal") * 0.015f;
+        var dz = Input.GetAxis("Vertical") * 0.015f;
+        dx = Mathf.Clamp(dx, -15, 15);
+        dz = Mathf.Clamp(dz, -15, 15);
+        if (dx != 0 || dz != 0) {
+            var f = GameObject.transform.forward;
+            var ff = new Vector3(-dx, 0, -dz);
+            var d = new Vector3(-dx, 0, -dz);
+            mf = Quaternion.LookRotation(d) * ff * d.magnitude * desiredDistance * 0.01f;
+            if (Target != null) {
+                Target.position += mf;
+            }
+        }
+    }
+
+    public override void LateUpdate() {
+        if (Target == null) 
+            return;
+        GetInput();
+        if (moveX != 0 || moveY != 0) 
+            curMove = new Vector2(moveX, moveY);
+        CheckMove();
+    }
+    Vector3 position;
+    void CheckMove() {
+        if (curMove != Vector2.zero) {
+            curX += curMove.x;
+            curY -= curMove.y;
+        }
+        curX = ClampAngle(curX, minLimitX, maxDistance);
+        Quaternion rotation = Quaternion.Euler(curX, curY, 0);
+        correctedDistance = desiredDistance;
+        bool isCorrected = false;
+        curDistance = !isCorrected ||
+            correctedDistance > curDistance ? Mathf.Lerp(curDistance, correctedDistance,
+                                                         Time.deltaTime * zoomDampening) : correctedDistance;
     }
 }
 \end{minted}

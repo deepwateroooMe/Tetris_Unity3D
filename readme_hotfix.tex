@@ -1,11 +1,45 @@
-#+latex_class: cn-article
-#+title: Unity ILRuntime + MVVM架框热更新模块逻辑理解与整理
-#+author: deepwaterooo 
+% Created 2022-09-30 Fri 09:33
+\documentclass[9pt, b5paper]{article}
+\usepackage{xeCJK}
+\usepackage{minted}
+\usepackage[T1]{fontenc}
+\usepackage[scaled]{beraserif}
+\usepackage[scaled]{berasans}
+\usepackage[scaled]{beramono}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{float}
+\usepackage{textcomp}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{latexsym}
+\usepackage{natbib}
+\usepackage{geometry}
+\geometry{left=1.2cm,right=1.2cm,top=1.5cm,bottom=1.2cm}
+\newminted{common-lisp}{fontsize=\footnotesize} 
+\usepackage[xetex,colorlinks=true,CJKbookmarks=true,linkcolor=blue,urlcolor=blue,menucolor=blue]{hyperref}
+\author{deepwaterooo}
+\date{\today}
+\title{Unity ILRuntime + MVVM架框热更新模块逻辑理解与整理}
+\hypersetup{
+  pdfkeywords={},
+  pdfsubject={},
+  pdfcreator={Emacs 27.1 (Org mode 8.2.7c)}}
+\begin{document}
 
-* Control: 当写Control 的时候感觉好像是MVC,但实际上仍然是MVVM，后面会有热更新视图模块
-** Camera 
-*** CameraBase：相机抽象基类
-#+BEGIN_SRC csharp
+\maketitle
+\tableofcontents
+
+
+\section{Control: 当写Control 的时候感觉好像是MVC,但实际上仍然是MVVM，后面会有热更新视图模块}
+\label{sec-1}
+\subsection{Camera}
+\label{sec-1-1}
+\subsubsection{CameraBase：相机抽象基类}
+\label{sec-1-1-1}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 // 相机抽象基类：　爱表哥，爱生活！！！
 public abstract class CameraBase {
 
@@ -53,9 +87,10 @@ public abstract class CameraBase {
     }
     protected virtual void Initialize() { }
 }
-#+END_SRC 
-*** Camera3D : CameraBase: 实体子类
-#+BEGIN_SRC csharp
+\end{minted}
+\subsubsection{Camera3D : CameraBase: 实体子类}
+\label{sec-1-1-2}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 // 3D场景相机
 public class Camera3D : CameraBase {
     public Camera3DWrap Camera3DWrap {
@@ -74,15 +109,18 @@ public class Camera3D : CameraBase {
         // if (ViewManager.IsPo)
     }
 }
-#+END_SRC 
-** Resource: 热更新里的资源处理桥接
-*** abstract class ResourceHandleBase：服务器热更新资源包程序包处理：抽象基类
-- 看见没有：Unity的正常程序集里有一套，热更新程序集里也有一套；
-- Unity里是在公用接口类IResourceLoader里申请这些个公用方法；热更新里将所有相关方法申明在这个抽象基类里
-- Unity里ResourceMap是这个接口的唯一一个实现; Unity里静态常量管理类ResourceConstant持有一个静态ResourceMap实例引用，取名叫Loader
-- 热更新里当前抽象基类ResourceHandleBase的继承子类ResourceMapHandle持有一个IResourceLoader公用接口的实例引用.
-- 在游戏初始化的时候第一步做的事件是借助这个公用接口类，架起热更新程序集可以调用Unity里资源的通道桥梁，Unity里的入口程序GameApplication里的初始化程序源码如下：
-  #+BEGIN_SRC csharp
+\end{minted}
+\subsection{Resource: 热更新里的资源处理桥接}
+\label{sec-1-2}
+\subsubsection{abstract class ResourceHandleBase：服务器热更新资源包程序包处理：抽象基类}
+\label{sec-1-2-1}
+\begin{itemize}
+\item 看见没有：Unity的正常程序集里有一套，热更新程序集里也有一套；
+\item Unity里是在公用接口类IResourceLoader里申请这些个公用方法；热更新里将所有相关方法申明在这个抽象基类里
+\item Unity里ResourceMap是这个接口的唯一一个实现; Unity里静态常量管理类ResourceConstant持有一个静态ResourceMap实例引用，取名叫Loader
+\item 热更新里当前抽象基类ResourceHandleBase的继承子类ResourceMapHandle持有一个IResourceLoader公用接口的实例引用.
+\item 在游戏初始化的时候第一步做的事件是借助这个公用接口类，架起热更新程序集可以调用Unity里资源的通道桥梁，Unity里的入口程序GameApplication里的初始化程序源码如下：
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 // 协程是说：游戏启动时，给这个控件(gameObject)加载运行时元件ResourceMap（本质上是个程序脚本的实例化）; 加载完毕自动触发StartHotFix()函数热更新回调
     IEnumerator Initialize() { 
 
@@ -95,9 +133,9 @@ public class Camera3D : CameraBase {
 
         yield return new WaitForEndOfFrame();
     }
-  #+END_SRC 
-- 当前抽象基类类的源码如下：
-    #+BEGIN_SRC csharp
+\end{minted}
+\item 当前抽象基类类的源码如下：
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 // 服务器热更新资源包程序包处理：抽象基类
 public abstract class ResourceHandleBase {
 
@@ -192,9 +230,11 @@ public abstract class ResourceHandleBase {
 #endregion
     public abstract void LoadTexture2DAsyn(string name, Action<Texture2D> onSuccess, Action onFail, bool needCache);
 }
-    #+END_SRC 
-*** ResourceHelper
-    #+BEGIN_SRC csharp
+\end{minted}
+\end{itemize}
+\subsubsection{ResourceHelper}
+\label{sec-1-2-2}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 // 资源加载接口类: 什么叫桥接？
 public class ResourceHelper {
     static ResourceHandleBase _handle;
@@ -346,9 +386,10 @@ public class ResourceHelper {
         Handle.LoadTexture2DAsyn(name, onSuccess, onFail, needCache);
     }
 }
-    #+END_SRC 
-*** ResourceMapHandle : ResourceHandleBase: 感觉这里两套程序集能够交接起来，这里需要好好想想理解清楚
-    #+BEGIN_SRC csharp
+\end{minted}
+\subsubsection{ResourceMapHandle : ResourceHandleBase: 感觉这里两套程序集能够交接起来，这里需要好好想想理解清楚}
+\label{sec-1-2-3}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 public class ResourceMapHandle : ResourceHandleBase {
     IResourceLoader Loader {
         get {
@@ -501,14 +542,18 @@ public class ResourceMapHandle : ResourceHandleBase {
         Loader.LoadTexture2DAsyn(name, onSuccess, onFail, needCache);
     }
 }
-    #+END_SRC 
+\end{minted}
 
-** Scene: 场景热更新反序列化为unity游戏引擎所能识别和可执行场景控件程序等
-- 回想一下热更新的过程：从网络服务器上下载出需要的资源包或是程序包，它是序列化后的数据；要把它还原成unity认得认识的场景等，还需要一个反序化的过程
-- 那么这个包裹里，就专职负责：如何从下载的资源包里游戏引擎场景相关的序列化数据还原为unity游戏引擎中认识并且可执行的游戏引擎程序集里的场景控件等，这个过程，所有场景相关的
-- 那么这里可以封装和包含的几个类就包括了：如果可以封装成为的（抽象）基类；根据各个不同应用实际需要而可以实例化成了几个不同的场景类型的反序列化定义类；如果可以，如果有好几个不同的场景，如有必要，还可以有一个必要的管理多个不同场景的场景管理者类
-*** abstract class SceneBase：热更新场景抽象基类
-    #+BEGIN_SRC csharp
+\subsection{Scene: 场景热更新反序列化为unity游戏引擎所能识别和可执行场景控件程序等}
+\label{sec-1-3}
+\begin{itemize}
+\item 回想一下热更新的过程：从网络服务器上下载出需要的资源包或是程序包，它是序列化后的数据；要把它还原成unity认得认识的场景等，还需要一个反序化的过程
+\item 那么这个包裹里，就专职负责：如何从下载的资源包里游戏引擎场景相关的序列化数据还原为unity游戏引擎中认识并且可执行的游戏引擎程序集里的场景控件等，这个过程，所有场景相关的
+\item 那么这里可以封装和包含的几个类就包括了：如果可以封装成为的（抽象）基类；根据各个不同应用实际需要而可以实例化成了几个不同的场景类型的反序列化定义类；如果可以，如果有好几个不同的场景，如有必要，还可以有一个必要的管理多个不同场景的场景管理者类
+\end{itemize}
+\subsubsection{abstract class SceneBase：热更新场景抽象基类}
+\label{sec-1-3-1}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 // 热更新场景基类：
 public abstract class SceneBase {
     public SceneData Data {
@@ -550,9 +595,10 @@ public abstract class SceneBase {
         ResourceConstant.Loader.Unload(TypeData.bundleName, true);
     }
 }
-    #+END_SRC 
-*** 热更新用到三种不同场景中的一个样例，最简单最特殊的ShowScene
-    #+BEGIN_SRC csharp
+\end{minted}
+\subsubsection{热更新用到三种不同场景中的一个样例，最简单最特殊的ShowScene}
+\label{sec-1-3-2}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 // 空间秀场景: 吃货天空的鬼窝秀
 public class ShowScene : SceneBase {
     // 这些这里可以有unity认得的至少一部分控件（因为热更新程序持有UnityEngine.dll的程序集引用？想一想）
@@ -585,9 +631,10 @@ public class ShowScene : SceneBase {
         }
     }
 }
-    #+END_SRC 
-*** SceneManager: 场景管理器, 对于有需要必要时需要进行热更新的场景的相关逻辑（加载，创建，渐近切换等）的封装定义管理
-    #+BEGIN_SRC csharp
+\end{minted}
+\subsubsection{SceneManager: 场景管理器, 对于有需要必要时需要进行热更新的场景的相关逻辑（加载，创建，渐近切换等）的封装定义管理}
+\label{sec-1-3-3}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 // 场景管理器: 我的游戏里也写过好几个不同的管理类，热更新里的管理类与unity里的普通管理类有什么不同呢？
 public class SceneManager { // unity里不同场景的编号不同,　这里以int 值不同来区分不同的游戏场景
 
@@ -663,20 +710,29 @@ public class SceneManager { // unity里不同场景的编号不同,　这里以i
         LoadScene(sceneData);
     }
 }
-    #+END_SRC 
+\end{minted}
 
-* Data: 数据驱动
-- *这里的问题* ：同样是为了打包和折包场景，为什么一个场景数据要定义成两种不同的场景类，相当于普通数据类型的装箱与折箱操作么，为了自适应两个不同的程序集？序列化与反序列化？要好好想一想
-- 前面有对ViewModel的适配包装，这里更多的是frameworks层如同SquarePanda里有专用的公司开发的SDK来对这同一家公司里的10款游戏进行通用模块包装一样，这个游戏热更新框架可以理解为是对同一家或是几家相同架构设计的多款游戏的架构封装，那么各个游戏独特的数据类型model仍然该是封装在各自游戏应用的内部；framework热更新框架只提取各个游戏通用的逻辑进行封装。
+\section{Data: 数据驱动}
+\label{sec-2}
+\begin{itemize}
+\item \textbf{这里的问题} ：同样是为了打包和折包场景，为什么一个场景数据要定义成两种不同的场景类，相当于普通数据类型的装箱与折箱操作么，为了自适应两个不同的程序集？序列化与反序列化？要好好想一想
+\item 前面有对ViewModel的适配包装，这里更多的是frameworks层如同SquarePanda里有专用的公司开发的SDK来对这同一家公司里的10款游戏进行通用模块包装一样，这个游戏热更新框架可以理解为是对同一家或是几家相同架构设计的多款游戏的架构封装，那么各个游戏独特的数据类型model仍然该是封装在各自游戏应用的内部；framework热更新框架只提取各个游戏通用的逻辑进行封装。
+\end{itemize}
 也提到说数据类型是
-- 热更新所有的一切（资源包和程序包）都打包成数据上传热更新服务器，所以是数据驱动，一切都是数据！！
-- 在把不同的所有需要热更新的东西全部打包上传服务器的过程中，背后本质是不同类型打包基类元件（资源包，场景等）的序列化（上传服务器）与反序列化（下载资源包后的加载过程？）
-- 那么如何把不同的热更新类型打包封装成不同的数据呢（不同数据类型的自定义）　
-** Data: 必要的序列化过程中自己封装成的自定义类型仍然可以或是需要定义在这里
-- 我自己的游戏里写过俄罗斯广场砖的序列化与反序列化，可是我还不曾真正去读自己几年前写过的源码，忘得差不多了，该是时候把它们捡起来再深入发展一下了（爱表哥，爱生活！！！）
-- 可以养成一个编程习惯就是说：凡是带Data作为后缀的，都当作定义为序列化数据的方法逻辑？
-*** SceneData：场景实例数据
-    #+BEGIN_SRC csharp
+\begin{itemize}
+\item 热更新所有的一切（资源包和程序包）都打包成数据上传热更新服务器，所以是数据驱动，一切都是数据！！
+\item 在把不同的所有需要热更新的东西全部打包上传服务器的过程中，背后本质是不同类型打包基类元件（资源包，场景等）的序列化（上传服务器）与反序列化（下载资源包后的加载过程？）
+\item 那么如何把不同的热更新类型打包封装成不同的数据呢（不同数据类型的自定义）　
+\end{itemize}
+\subsection{Data: 必要的序列化过程中自己封装成的自定义类型仍然可以或是需要定义在这里}
+\label{sec-2-1}
+\begin{itemize}
+\item 我自己的游戏里写过俄罗斯广场砖的序列化与反序列化，可是我还不曾真正去读自己几年前写过的源码，忘得差不多了，该是时候把它们捡起来再深入发展一下了（爱表哥，爱生活！！！）
+\item 可以养成一个编程习惯就是说：凡是带Data作为后缀的，都当作定义为序列化数据的方法逻辑？
+\end{itemize}
+\subsubsection{SceneData：场景实例数据}
+\label{sec-2-1-1}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 // 场景实例数据
 public class SceneData { //　再去多想一想，为什么要用SceneData 与SceneTypeData相区分？
     // 实例ID
@@ -759,10 +815,12 @@ public class SceneData { //　再去多想一想，为什么要用SceneData 与S
         return maxID;
     }
 }
-    #+END_SRC 
-** TypeData
-*** SceneTypeData: 场景类型数据
-    #+BEGIN_SRC csharp
+\end{minted}
+\subsection{TypeData}
+\label{sec-2-2}
+\subsubsection{SceneTypeData: 场景类型数据}
+\label{sec-2-2-1}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 // 这里可以自定义几个不同的场景类型，方便程序区分
 public enum ESceneType {
     None = 0,
@@ -806,9 +864,10 @@ public class SceneTypeData {
             + " iconBundleName: " + iconBundleName + " iconAssetName: " + iconAssetName;
     }
 }
-    #+END_SRC 
-** static 静态管理类TypeDataManager：文件比较大，仅以场景数据一种自定义数据类型来作分析
-#+BEGIN_SRC csharp
+\end{minted}
+\subsection{static 静态管理类TypeDataManager：文件比较大，仅以场景数据一种自定义数据类型来作分析}
+\label{sec-2-3}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 // TypeData管理器: 静态管理类
 public static class TypeDataManager { // 文件比较大，仅以场景数据一种类型来作分析
 
@@ -850,10 +909,12 @@ public static class TypeDataManager { // 文件比较大，仅以场景数据一
         }
     }
 }
-#+END_SRC 
-- 这里面源码里面关于资源包里如何加载场景还弄得不清不楚，那么按照这里代码的提示，找出一个资源包，还看看它是怎么序列化场景数据的
-- 关于当前资源包里场景的部分，是存在一个名叫scene.txt的文件里
-#+BEGIN_SRC text
+\end{minted}
+\begin{itemize}
+\item 这里面源码里面关于资源包里如何加载场景还弄得不清不楚，那么按照这里代码的提示，找出一个资源包，还看看它是怎么序列化场景数据的
+\item 关于当前资源包里场景的部分，是存在一个名叫scene.txt的文件里
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{text}
 [
   {
     "id": 10001.0,
@@ -878,12 +939,16 @@ public static class TypeDataManager { // 文件比较大，仅以场景数据一
     "iconAssetName": "edit_10002"
   }
 ]
-#+END_SRC 
-* UI: 热更新视图的相关逻辑
-- 这里首先搞清楚一个常识概念就是：对于游戏里的不同场景，不知道是否可以实现同一个应用里的不同场景切换，但至少是可以保证一个应用里至少可以顺利加载一个场景的吧
-- 上面说的是游戏里的场景；但是这里用的是UI，是指游戏某一个场景里的游戏引擎场景（Scene）不变的情况下，只切换变化某一个或是几个Panel，而把这一个又一个不同的panel当作是我先前写安卓MVVM设计里的不同screen屏幕；每个Panel(View)在这种框架设计里也会自动绑定跨域继承的ViewModelBase的继承实体类（从而实现视图与视图模型的自动绑定），从而实现在Panel级别的MVVM数据绑定设计模式。
-** TODO: (删减一下！！！)某个热更新视图(这里是抽个例子出来参考一下)
-   #+BEGIN_SRC csharp
+\end{minted}
+\section{UI: 热更新视图的相关逻辑}
+\label{sec-3}
+\begin{itemize}
+\item 这里首先搞清楚一个常识概念就是：对于游戏里的不同场景，不知道是否可以实现同一个应用里的不同场景切换，但至少是可以保证一个应用里至少可以顺利加载一个场景的吧
+\item 上面说的是游戏里的场景；但是这里用的是UI，是指游戏某一个场景里的游戏引擎场景（Scene）不变的情况下，只切换变化某一个或是几个Panel，而把这一个又一个不同的panel当作是我先前写安卓MVVM设计里的不同screen屏幕；每个Panel(View)在这种框架设计里也会自动绑定跨域继承的ViewModelBase的继承实体类（从而实现视图与视图模型的自动绑定），从而实现在Panel级别的MVVM数据绑定设计模式。
+\end{itemize}
+\subsection{TODO: (删减一下！！！)某个热更新视图(这里是抽个例子出来参考一下)}
+\label{sec-3-1}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 // 热更新里拿取一个样例热更新的视图: 这种视图热更新在网上应该能够成堆地找到
 public class TestView : UnityGuiView {
     Button buttonOne;
@@ -1012,9 +1077,10 @@ public class TestView : UnityGuiView {
         }
     }
 }
-   #+END_SRC    
-** 热更新视图的相关联的ViewModel 实例一个：
-   #+BEGIN_SRC csharp
+\end{minted}
+\subsection{热更新视图的相关联的ViewModel 实例一个：}
+\label{sec-3-2}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 public class GuideViewModel : ViewModelBase { // 把这些个不同类的继承关系串起来，怎么串起来呢？
 
     protected override void OnInitialize() {
@@ -1025,9 +1091,10 @@ public class GuideViewModel : ViewModelBase { // 把这些个不同类的继承�
     void Initialization() {}
     void DelegateSubscribe() {}
 }
-   #+END_SRC 
-** static ViewManager：热更新里的视图管理类，持有所有需要热更新的视图的静态引用
-#+BEGIN_SRC csharp
+\end{minted}
+\subsection{static ViewManager：热更新里的视图管理类，持有所有需要热更新的视图的静态引用}
+\label{sec-3-3}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 using Framework.MVVM;
 using Framework.Util;
 // 它说，我是一个静态管理类，我要把每个需要热更新的视图都持有一个静态引用;
@@ -1179,9 +1246,10 @@ public static class ViewManager {
     }
 #endregion
 }
-#+END_SRC 
-* HotFixMain静态类：热更新程序的入口
-   #+BEGIN_SRC csharp
+\end{minted}
+\section{HotFixMain静态类：热更新程序的入口}
+\label{sec-4}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 // 热更工程入口
 public static class HotFixMain {
     public static void Start() {
@@ -1196,11 +1264,13 @@ public static class HotFixMain {
         ViewManager.InitializeStartUI(); // 本质上也就是说，要热更新程序集里的视图管理类帮显示当前这个起始视图
     }
 }
-   #+END_SRC 
+\end{minted}
 
-* ILRuntime 类库里源码的基本理解，最重要的涉及到的相关的类与方法摘要
-** CrossBindingAdaptor : IType 跨域(程序集)绑定适配器 + CrossBindingAdaptorType interface 公用接口类(为什么要这个公用接口类？)
-    #+BEGIN_SRC csharp
+\section{ILRuntime 类库里源码的基本理解，最重要的涉及到的相关的类与方法摘要}
+\label{sec-5}
+\subsection{CrossBindingAdaptor : IType 跨域(程序集)绑定适配器 + CrossBindingAdaptorType interface 公用接口类(为什么要这个公用接口类？)}
+\label{sec-5-1}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 public interface CrossBindingAdaptorType {　// 公用接口类
     ILTypeInstance ILInstance { get; }
 }
@@ -1398,24 +1468,35 @@ public abstract class CrossBindingAdaptor : IType {
     }
 #endregion
 }
-    #+END_SRC 
+\end{minted}
 
-** 委托适配器（DelegateAdapter）和委托转换器（DelegateConvertor）
-- 如果只在热更新的DLL项目中使用的委托，是不需要任何额外操作的，就跟在通常的C#里那样使用即可
-- 如果你需要将委托实例传给ILRuntime外部使用，那则根据情况，你需要额外添加适配器或者转换器。
-- 如果在运行时发现缺少注册某个指定类型的委托适配器或者转换器时，ILRuntime会抛出相应的异常，根据提示添加注册即可。
-- 1. *委托适配器（DelegateAdapter）*
-  - 如果将委托实例传出给ILRuntime外部使用，那就意味着需要将委托实例转换成真正的CLR（C#运行时）委托实例，这个过程需要动态创建CLR的委托实例。由于IL2CPP之类的AOT编译技术无法在运行时生成新的类型，所以在创建委托实例的时候ILRuntime选择了显式注册的方式，以保证问题不被隐藏到上线后才发现。委托适配器的具体用法会在下面的例子里面看到。
-- 2. *委托转换器（DelegateConvertor）*
-  - ILRuntime内部是使用Action,以及Func这两个系统自带委托类型来生成的委托实例，所以如果你需要将一个不是Action或者Func类型的委托实例传到ILRuntime外部使用的话，除了委托适配器，还需要额外写一个转换器，将Action和Func转换成你真正需要的那个委托类型。委托转换器的具体用法会在下面的例子里面看到。
+\subsection{委托适配器（DelegateAdapter）和委托转换器（DelegateConvertor）}
+\label{sec-5-2}
+\begin{itemize}
+\item 如果只在热更新的DLL项目中使用的委托，是不需要任何额外操作的，就跟在通常的C\#里那样使用即可
+\item 如果你需要将委托实例传给ILRuntime外部使用，那则根据情况，你需要额外添加适配器或者转换器。
+\item 如果在运行时发现缺少注册某个指定类型的委托适配器或者转换器时，ILRuntime会抛出相应的异常，根据提示添加注册即可。
+\item 1. \textbf{委托适配器（DelegateAdapter）}
+\begin{itemize}
+\item 如果将委托实例传出给ILRuntime外部使用，那就意味着需要将委托实例转换成真正的CLR（C\#运行时）委托实例，这个过程需要动态创建CLR的委托实例。由于IL2CPP之类的AOT编译技术无法在运行时生成新的类型，所以在创建委托实例的时候ILRuntime选择了显式注册的方式，以保证问题不被隐藏到上线后才发现。委托适配器的具体用法会在下面的例子里面看到。
+\end{itemize}
+\item 2. \textbf{委托转换器（DelegateConvertor）}
+\begin{itemize}
+\item ILRuntime内部是使用Action,以及Func这两个系统自带委托类型来生成的委托实例，所以如果你需要将一个不是Action或者Func类型的委托实例传到ILRuntime外部使用的话，除了委托适配器，还需要额外写一个转换器，将Action和Func转换成你真正需要的那个委托类型。委托转换器的具体用法会在下面的例子里面看到。
+\end{itemize}
+\end{itemize}
 
-* 热更新模块总结
-- 感觉源码相关的部分已经看得差不多了，感觉大部分懂了，
-- 可是还是有不少部分似懂非懂，需要在自己小游戏的实现里自己写和实现的过程中再回来一再参考加深理解
-- 明天会把这个热更新模块项目或是整个游戏框架疑难部分再多看一遍，
-- 然后打算着写开始熟悉自己游戏的源码和进行改造
-- 自己写和实现的过程中，应用会有狠多的知识点来考验自己
-- 可是也只有自己真正写过一遍，才能真正理解得透彻呀。爱表哥，爱生活！！！
-** 
-#+BEGIN_SRC csharp
-#+END_SRC 
+\section{热更新模块总结}
+\label{sec-6}
+\begin{itemize}
+\item 感觉源码相关的部分已经看得差不多了，感觉大部分懂了，
+\item 可是还是有不少部分似懂非懂，需要在自己小游戏的实现里自己写和实现的过程中再回来一再参考加深理解
+\item 明天会把这个热更新模块项目或是整个游戏框架疑难部分再多看一遍，
+\item 然后打算着写开始熟悉自己游戏的源码和进行改造
+\item 自己写和实现的过程中，应用会有狠多的知识点来考验自己
+\item 可是也只有自己真正写过一遍，才能真正理解得透彻呀。爱表哥，爱生活！！！
+\end{itemize}
+\subsection{}
+\label{sec-6-1}
+% Emacs 27.1 (Org mode 8.2.7c)
+\end{document}
