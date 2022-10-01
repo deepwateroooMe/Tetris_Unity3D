@@ -1,6 +1,0 @@
-/Users/qunyan/unity/tetris3D/trunk/client/trunk/Hotfix/HotFix/obj/Debug/HotFix.csprojAssemblyReference.cache
-/Users/qunyan/unity/tetris3D/trunk/client/trunk/Hotfix/HotFix/obj/Debug/HotFix.csproj.CoreCompileInputs.cache
-/Users/qunyan/unity/tetris3D/trunk/client/trunk/Assets/HotFix/HotFix.dll
-/Users/qunyan/unity/tetris3D/trunk/client/trunk/Assets/HotFix/HotFix.pdb
-/Users/qunyan/unity/tetris3D/trunk/client/trunk/Hotfix/HotFix/obj/Debug/HotFix.dll
-/Users/qunyan/unity/tetris3D/trunk/client/trunk/Hotfix/HotFix/obj/Debug/HotFix.pdb

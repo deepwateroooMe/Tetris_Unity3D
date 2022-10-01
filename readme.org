@@ -178,3 +178,6 @@ appdomain.DebugService.StartDebugService(56000)
 - 初音未来:梦幻歌姬 使用补丁方式：https://github.com/wuxiongbin/XIL
 - 本文流程图摘自：ILRuntime的QQ群的《ILRuntime热更框架.docx》(by a 704757217)
 - Unity实现c#热更新方案探究(三): https://zhuanlan.zhihu.com/p/37375372
+* remember necessary positoins
+  
+[[./pic/readme_20220930_204953.png]]
