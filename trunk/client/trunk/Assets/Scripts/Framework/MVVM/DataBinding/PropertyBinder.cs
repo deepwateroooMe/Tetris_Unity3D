@@ -1,74 +1,50 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿gusing System.Collections.Generic;
+using System;
 using System.Reflection;
-using System.Text;
-using uMVVM.Sources.Infrastructure;
-using UnityEditor;
+using Framework.Core;
 
-namespace Assets.Sources.Core.DataBinding
-{
-    public class PropertyBinder<T> where T:ViewModelBase
-    {
-        private delegate void BindHandler(T viewmodel);
-        private delegate void UnBindHandler(T viewmodel);
+namespace Framework.MVVM {
 
-        private readonly List<BindHandler> _binders=new List<BindHandler>();
-        private readonly List<UnBindHandler> _unbinders=new List<UnBindHandler>();
-        
-        public void Add<TProperty>(string name,BindableProperty<TProperty>.ValueChangedHandler valueChangedHandler )
-        {
-            var fieldInfo = typeof(T).GetField(name, BindingFlags.Instance | BindingFlags.Public);
-            if (fieldInfo == null)
-            {
-                throw new Exception(string.Format("Unable to find bindableproperty field '{0}.{1}'", typeof(T).Name, name));
-            }
+    public class PropertyBinder<ViewModelBase> {
 
-            _binders.Add(viewmodel =>
-            {
-                GetPropertyValue<TProperty>(name, viewmodel, fieldInfo).OnValueChanged += valueChangedHandler;
+        private delegate void BindHandler(ViewModelBase viewModel);
+        private delegate void UnBindHandler(ViewModelBase viewModel);
+
+        private readonly List<BindHandler> binders = new List<BindHandler>();
+        private readonly List<UnBindHandler> unBinders = new List<UnBindHandler>();
+
+        public void Add<TProperty>(string name, string realTypeName,
+                                   Action<TProperty, TProperty> valueChangedHandler) {
+            var fieldInfo = GameApplication.Instance.HotFix.LoadType(realTypeName)
+                .GetField(name, BindingFlags.Instance | BindingFlags.Public);
+            
+            if (fieldInfo == null) 
+                throw new Exception(string.Format("Unable to find bindableproperty field '{0}.{1}'", realTypeName, name));
+            
+            binders.Add(viewModel => {
+                GetPropertyValue<TProperty>(name, viewModel, realTypeName, fieldInfo).OnValueChanged += valueChangedHandler;
             });
-
-            _unbinders.Add(viewModel =>
-            {
-                GetPropertyValue<TProperty>(name, viewModel, fieldInfo).OnValueChanged -= valueChangedHandler;
+            unBinders.Add(viewModel => {
+                GetPropertyValue<TProperty>(name, viewModel, realTypeName, fieldInfo).OnValueChanged -= valueChangedHandler;
             });
-
         }
-
-        private  BindableProperty<TProperty> GetPropertyValue<TProperty>(string name, T viewModel,FieldInfo fieldInfo)
-        {
+        
+        private BindableProperty<TProperty> GetPropertyValue<TProperty>(string name, ViewModelBase viewModel, string realTypeName, FieldInfo fieldInfo) {
             var value = fieldInfo.GetValue(viewModel);
             BindableProperty<TProperty> bindableProperty = value as BindableProperty<TProperty>;
-            if (bindableProperty == null)
-            {
-                throw new Exception(string.Format("Illegal bindableproperty field '{0}.{1}' ", typeof(T).Name, name));
-            }
-
+            if (bindableProperty == null) 
+                throw new Exception(string.Format("Illegal bindableproperty field '{0}.{1}' ", realTypeName, name));
             return bindableProperty;
         }
-
-        public void Bind(T viewmodel)
-        {
-            if (viewmodel!=null)
-            {
-                for (int i = 0; i < _binders.Count; i++)
-                {
-                    _binders[i](viewmodel);
-                }
-            }
+        public void Bind(ViewModelBase viewModel) {
+            if (viewModel != null) 
+                for (int i = 0; i < binders.Count; i++) 
+                    binders[i](viewModel);
         }
-
-        public void Unbind(T viewmodel)
-        {
-            if (viewmodel!=null)
-            {
-                for (int i = 0; i < _unbinders.Count; i++)
-                {
-                    _unbinders[i](viewmodel);
-                }
-            }
+        public void UnBind(ViewModelBase viewModel) {
+            if (viewModel != null) 
+                for (int i = 0; i < unBinders.Count; i++) 
+                    unBinders[i](viewModel);
         }
-
     }
 }

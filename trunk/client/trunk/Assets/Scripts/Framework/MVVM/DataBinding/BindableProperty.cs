@@ -4,13 +4,10 @@ using System.Linq;
 using System.Text;
 using UnityEditor;
 
-namespace uMVVM.Sources.Infrastructure {
-    
+namespace Framework.MVVM {
+
     public class BindableProperty<T> {
-        public delegate void ValueChangedHandler(T oldValue, T newValue);
-
-        public ValueChangedHandler OnValueChanged;
-
+        public Action<T, T> OnValueChanged;
         private T _value;
         public T Value {
             get {
@@ -24,13 +21,11 @@ namespace uMVVM.Sources.Infrastructure {
                 }
             }
         }
-
-        private void ValueChanged(T oldValue, T newValue) {
+        void ValueChanged(T oldValue, T newValue) {
             if (OnValueChanged != null) {
                 OnValueChanged(oldValue, newValue);
             }
         }
-
         public override string ToString() {
             return (Value != null ? Value.ToString() : "null");
         }

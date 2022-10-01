@@ -19,14 +19,6 @@
   - GitHub 源码： https://github.com/rayosu/UnityDllInjector   UnityDllInjector
   - (翻译) 《C# to IL》第一章 IL入门
     - https://www.cnblogs.com/Jax/archive/2009/05/29/1491523.html
-- 
-  - 
-- 
-  - 
-- 
-  - 
-- 
-  - 
 
 ** ShaderS基础知识总结
 - Unity3d中Shader的一些关于矩阵变换的基本信息
@@ -79,12 +71,9 @@
 使用例子：
   #+BEGIN_SRC csharp
 o.position = mul(UNITY_MATRIX_MVP, v.vertex);
-
 o.proj0 = ComputeScreenPos(o.position);
-
 COMPUTE_EYEDEPTH(o.proj0.z);
   #+END_SRC
-
 
 * Reference
 ** Save Game progress 
@@ -150,10 +139,6 @@ public class MainActivity extends Activity {
 }
   #+END_SRC
   - 笔者推荐将showInterstitialAd放在BaseActivity中，然后在继承了BaseActivity的页面中直接调用即可展示广告。加载横幅广告和激励视频广告是类似的。
-- 
-  - 
-- 
-  - 
 
 ** Edge Detection
 - Outline Shader 有资源，手把手地教 using unity 原始为2018.3.3f1 好好学习一下
@@ -189,31 +174,16 @@ public class MainActivity extends Activity {
   - https://www.jianshu.com/p/fa7cea5f6a72
 - Unity3D开发之边缘检测Sobel算子的一些个人观点
   - https://blog.csdn.net/qq_33994566/article/details/79180058
-- 
-  - 
-- 
-  - 
 ** Mesh
 - Runtime Mesh Manipulation With Unity
   - https://www.raywenderlich.com/5128-runtime-mesh-manipulation-with-unity
-  - 
 ** Unity PostProcessing
 - Unity PostProcessing Stack v2源码分析系列
   - https://blog.csdn.net/wolf96/article/details/82796174
 - MMD联动Unity学习笔记 Vol.5.1 Post Processing Stack v2
   - https://www.bilibili.com/read/cv2780283/
   - 和一个小视频可以参考学习一下
-
-
-
-
-
-
 * Reference
-- 
-  - 
-- 
-  - 
 ** Admob广告
 - Android Google AdMob 广告接入示例
   - https://github.com/googleads/googleads-mobile-android-examples
@@ -244,13 +214,6 @@ public class MainActivity extends Activity {
 }
   #+END_SRC
   - 笔者推荐将showInterstitialAd放在BaseActivity中，然后在继承了BaseActivity的页面中直接调用即可展示广告。加载横幅广告和激励视频广告是类似的。
-- 
-  - 
-- 
-  - 
-
-
-
 ** Edge Detection
 - 关于Unity Shader的一些心得体会~ GitHub
   - Sjm-Shader-Collection/Volume 09 EdgeDetection详解边缘检测/Script/
@@ -276,18 +239,6 @@ public class MainActivity extends Activity {
   - https://www.jianshu.com/p/fa7cea5f6a72
 - Unity3D开发之边缘检测Sobel算子的一些个人观点
   - https://blog.csdn.net/qq_33994566/article/details/79180058
-- 
-  - 
-- 
-  - 
-- 
-  - 
-- 
-  - 
-- 
-  - 
-
-
 ** 摄像机跟随
 - Unity中Camera摄像头控制详解 （有视频）解释比较彻底清晰
   - https://www.cnblogs.com/machine/p/unity.html
@@ -296,11 +247,6 @@ public class MainActivity extends Activity {
   - https://www.cnblogs.com/chinarbolg/p/9601376.html
 - Unity3D】实现物体或UI的旋转显示  UIRotate.unitypackage
   - https://blog.csdn.net/q764424567/article/details/81318030
-- 
-  - 
-- 
-  - 
-
 ** concurrent
 - 用Semaphore实现对象池
   - https://donald-draper.iteye.com/blog/2360817
@@ -316,7 +262,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * 下午9:43:06 
  * @param <T> 
  */
-
 public class ObjectCache<T> {  
 
     // 对象工厂  
@@ -481,3 +426,12 @@ namespace DesignPattern.Objectpool  {
 - https://stackoverflow.com/questions/38198745/how-to-detect-left-mouse-click-but-not-when-the-click-occur-on-a-ui-button-compo
 ** 3d games
 - https://www.youtube.com/watch?v=_oEUJ_sirC8 with vedio downloaded
+
+
+
+
+
+
+
+
+

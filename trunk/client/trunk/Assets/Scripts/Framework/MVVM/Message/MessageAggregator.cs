@@ -1,37 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Assets.Sources.Core.Message;
+﻿using System.Collections.Generic;
+using Framework.Util;
+using System;
 
-namespace Assets.Sources.Infrastructure {
+namespace Framework.MVVM {
 
-    public delegate void MessageHandler<T>(object sender, MessageArgs<T> args);
+// 我现在把它理解为像安卓handler机制里的消息桶;但是这里更多的是对可观察可监听数据的订阅取消监听回调的这么一个全局唯一管理类
+// 自己的小游戏中,事件代理等是否会太多,有没有串口的性能限制呢?这里还需要再多想一想
+    public class MessageAggregator<T> : Singleton<MessageAggregator<T>> {
+        
+        private readonly Dictionary<string, Action<object, MessageArgs<T>>> messages
+            = new Dictionary<string, Action<object, MessageArgs<T>>>();
 
-    public class MessageAggregator<T> {
-        private readonly Dictionary<string, MessageHandler<T>> _messages = new Dictionary<string, MessageHandler<T>>();
-
-        public static readonly MessageAggregator<T> Instance=new MessageAggregator<T>();
-       
-        private MessageAggregator() {
-
+        public void Subscribe(string name, Action<object, MessageArgs<T>> handler) {
+            if (!messages.ContainsKey(name)) {
+                messages.Add(name, handler);
+            } else 
+                messages[name] += handler;
         }
-       
-        public void Subscribe(string name, MessageHandler<T> handler) {
-            if (!_messages.ContainsKey(name)) {
-                _messages.Add(name, handler);
-            } else {
-                _messages[name] += handler;
-            }
 
-        }
         public void Publish(string name, object sender, MessageArgs<T> args) {
-            if (_messages.ContainsKey(name) && _messages[name] != null) {
-                //转发
-                _messages[name](sender, args);
-            }
+            if (messages.ContainsKey(name) && messages[name] != null) 
+                messages[name](sender, args);
         }
-
     }
-
 }
