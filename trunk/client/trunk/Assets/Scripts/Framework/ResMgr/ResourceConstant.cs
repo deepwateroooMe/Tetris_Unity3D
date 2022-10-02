@@ -1,6 +1,7 @@
 using Framework.Core;
 using System.IO;
 using UnityEngine;
+using Framework.MVVM;
 
 // AssetBundle来源枚举: 定义了几个最基本的资源包来源以便区分对待
 public enum EAssetBunbleSourceType {

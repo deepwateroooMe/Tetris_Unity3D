@@ -65,11 +65,11 @@ namespace Framework.Core {
             appDomain.DelegateManager.RegisterMethodDelegate<Material>();
             appDomain.DelegateManager.RegisterMethodDelegate<TextAsset>();
             appDomain.DelegateManager.RegisterMethodDelegate<Sprite>();
-            appDomain.DelegateManager.RegisterMethodDelegate<Texture2D>();
-            appDomain.DelegateManager.RegisterMethodDelegate<TapGesture>();
-            appDomain.DelegateManager.RegisterMethodDelegate<LongPressGesture>();
-            appDomain.DelegateManager.RegisterMethodDelegate<DragGesture>();
-            appDomain.DelegateManager.RegisterMethodDelegate<PinchGesture>();
+            appDomain.DelegateManager.RegisterMethodDelegate<Texture2D>(); 
+            // appDomain.DelegateManager.RegisterMethodDelegate<TapGesture>(); // 暂时不理会触屏手势
+            // appDomain.DelegateManager.RegisterMethodDelegate<LongPressGesture>();
+            // appDomain.DelegateManager.RegisterMethodDelegate<DragGesture>();
+            // appDomain.DelegateManager.RegisterMethodDelegate<PinchGesture>();
             appDomain.DelegateManager.RegisterMethodDelegate<Exception>();
             appDomain.DelegateManager.RegisterFunctionDelegate<GameObject, GameObject>();
             appDomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, ILTypeInstance, int>();
@@ -108,46 +108,46 @@ namespace Framework.Core {
                     ((Action<BaseEventData>)action)(b);
                 });
             });
-            appDomain.DelegateManager.RegisterDelegateConvertor<GestureRecognizerTS<TapGesture>.GestureEventHandler>((action) => {
-                return new GestureRecognizerTS<TapGesture>.GestureEventHandler((gesture) => {
-                    ((Action<TapGesture>)action)(gesture);
-                });
-            });
-            appDomain.DelegateManager.RegisterDelegateConvertor<GestureRecognizerTS<LongPressGesture>.GestureEventHandler>((action) => {
-                return new GestureRecognizerTS<LongPressGesture>.GestureEventHandler((gesture) => {
-                    ((Action<LongPressGesture>)action)(gesture);
-                });
-            });
-            appDomain.DelegateManager.RegisterDelegateConvertor<GestureRecognizerTS<DragGesture>.GestureEventHandler>((action) => {
-                return new GestureRecognizerTS<DragGesture>.GestureEventHandler((gesture) => {
-                    ((Action<DragGesture>)action)(gesture);
-                });
-            });
-            appDomain.DelegateManager.RegisterDelegateConvertor<GestureRecognizerTS<PinchGesture>.GestureEventHandler>((action) => {
-                return new GestureRecognizerTS<PinchGesture>.GestureEventHandler((gesture) => {
-                    ((Action<PinchGesture>)action)(gesture);
-                });
-            });
+            // appDomain.DelegateManager.RegisterDelegateConvertor<GestureRecognizerTS<TapGesture>.GestureEventHandler>((action) => {
+            //     return new GestureRecognizerTS<TapGesture>.GestureEventHandler((gesture) => {
+            //         ((Action<TapGesture>)action)(gesture);
+            //     });
+            // });
+            // appDomain.DelegateManager.RegisterDelegateConvertor<GestureRecognizerTS<LongPressGesture>.GestureEventHandler>((action) => {
+            //     return new GestureRecognizerTS<LongPressGesture>.GestureEventHandler((gesture) => {
+            //         ((Action<LongPressGesture>)action)(gesture);
+            //     });
+            // });
+            // appDomain.DelegateManager.RegisterDelegateConvertor<GestureRecognizerTS<DragGesture>.GestureEventHandler>((action) => {
+            //     return new GestureRecognizerTS<DragGesture>.GestureEventHandler((gesture) => {
+            //         ((Action<DragGesture>)action)(gesture);
+            //     });
+            // });
+            // appDomain.DelegateManager.RegisterDelegateConvertor<GestureRecognizerTS<PinchGesture>.GestureEventHandler>((action) => {
+            //     return new GestureRecognizerTS<PinchGesture>.GestureEventHandler((gesture) => {
+            //         ((Action<PinchGesture>)action)(gesture);
+            //     });
+            // });
 
-#if UNITY_IPHONE            appDomain.DelegateManager.RegisterDelegateConvertor<com.mob.FinishedRecordEvent>((action) => {
-    return new com.mob.FinishedRecordEvent((ex) => {
-        ((Action<Exception>)action)(ex);
-    });
-});
-#endif
-appDomain.DelegateManager.RegisterDelegateConvertor<Comparison<ILTypeInstance>>((action) => {
-    return new Comparison<ILTypeInstance>((x, y) => {
-        return ((Func<ILTypeInstance, ILTypeInstance, System.Int32>)action)(x, y);
-    });
-});
+            #if UNITY_IPHONE
+                        appDomain.DelegateManager.RegisterDelegateConvertor<com.mob.FinishedRecordEvent>((action) => {
+                return new com.mob.FinishedRecordEvent((ex) => {
+                    ((Action<Exception>)action)(ex);
+                });
+            });
+            #endif
+            appDomain.DelegateManager.RegisterDelegateConvertor<Comparison<ILTypeInstance>>((action) => {
+                return new Comparison<ILTypeInstance>((x, y) => {
+                    return ((Func<ILTypeInstance, ILTypeInstance, System.Int32>)action)(x, y);
+                });
+            });
         }
 
         unsafe void InitializeCLRBindSetting() {
             foreach (var i in typeof(System.Activator).GetMethods()) {
-                //找到名字为CreateInstance，并且是泛型方法的方法定义
-                if (i.Name == "CreateInstance" && i.IsGenericMethodDefinition) {
-                    appDomain.RegisterCLRMethodRedirection(i, CreateInstance);
-                }
+                // 找到名字为CreateInstance，并且是泛型方法的方法定义
+                if (i.Name == "CreateInstance" && i.IsGenericMethodDefinition) 
+                    appDomain.RegisterCLRMethodRedirection(i, CreateInstance); // 方法重定向 
             }
         }
 
@@ -157,7 +157,7 @@ appDomain.DelegateManager.RegisterDelegateConvertor<Comparison<ILTypeInstance>>(
             appDomain.RegisterCrossBindingAdaptor(new ModuleBaseAdapter());
             appDomain.RegisterCrossBindingAdaptor(new IEnumeratorObjectAdaptor());
             appDomain.RegisterCrossBindingAdaptor(new MonoBehaviourAdapter());
-            appDomain.RegisterCrossBindingAdaptor(new InterfaceCrossBindingAdaptor());
+            appDomain.RegisterCrossBindingAdaptor(new InterfaceCrossBindingAdaptor()); // <<<<<<<<<<<<<<<<<<<< 
         }
 
         void InitializeValueTypeSetting() {
@@ -194,13 +194,13 @@ appDomain.DelegateManager.RegisterDelegateConvertor<Comparison<ILTypeInstance>>(
             IType[] genericArguments = method.GenericArguments;
             if (genericArguments != null && genericArguments.Length == 1) {
                 var t = genericArguments[0];
-                if (t is ILType)//如果T是热更DLL里的类型 {
+                if (t is ILType)//如果T是热更DLL里的类型 
                     //通过ILRuntime的接口来创建实例
                     return ILIntepreter.PushObject(esp, mStack, ((ILType)t).Instantiate());
+                else
+                    return ILIntepreter.PushObject(esp, mStack, Activator.CreateInstance(t.TypeForCLR));//通过系统反射接口创建实例
             } else
-                return ILIntepreter.PushObject(esp, mStack, Activator.CreateInstance(t.TypeForCLR));//通过系统反射接口创建实例
-        } else
-              throw new EntryPointNotFoundException();
+                throw new EntryPointNotFoundException();
+        }
     }
-}
 }

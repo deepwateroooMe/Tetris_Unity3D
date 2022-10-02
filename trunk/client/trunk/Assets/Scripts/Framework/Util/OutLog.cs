@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Framework.Util;
 
 namespace tetris3d {
 // Unity3D研究院之IOS&Android收集Log文件（六十二）

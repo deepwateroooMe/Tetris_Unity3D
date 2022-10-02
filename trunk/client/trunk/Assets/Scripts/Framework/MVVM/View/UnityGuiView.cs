@@ -1,159 +1,167 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Assets.Sources.Core.DataBinding;
-using DG.Tweening;
 using UnityEngine;
+using Framework.ResMgr;
 
-namespace uMVVM.Sources.Infrastructure {
+namespace Framework.MVVM {
 
-    [RequireComponent(typeof(CanvasGroup))] //  这里可能也还需要一些特殊处理
-    public abstract class UnityGuiView<T> : MonoBehaviour, IView<T> where T : ViewModelBase {
-    // public abstract class UnityGuiView<T> : IView<T> where T : ViewModelBase {
+    // unity程序集中的抽象基类,定义必要的逻辑(提取出子类可能都会用的方法逻辑这里处理)和需要继承者实现的各类方法
+    public abstract class UnityGuiView : IView<ViewModelBase> {
 
-
-        private bool _isInitialized; // 可能需要再扩展一下
-        public bool destroyOnHide; // 可能需要再扩展一下
-        // public virtual bool DestroyOnHide {
-        //     get return false;
-        // }
-        
-        protected readonly PropertyBinder<T> Binder = new PropertyBinder<T>();
-        public readonly BindableProperty<T> ViewModelProperty = new BindableProperty<T>();
-
-        // 显示之后的回掉函数
-        public Action RevealedAction { get; set; }
-        // 隐藏之后的回掉函数
-        public Action HiddenAction { get; set; }
-
-        public T BindingContext { // 使用泛型
+        // 热更新资源相关的一些getter/setters
+        public virtual string BundleName {
             get {
-                return ViewModelProperty.Value;
+                return string.Empty;
+            }
+        }
+        public virtual string AssetName {
+            get {
+                return string.Empty;
+            }
+        }
+        public virtual string ViewName {
+            get {
+                return string.Empty;
+            }
+        }
+        public virtual string ViewModelTypeName {
+            get {
+                return string.Empty;
+            }
+        }
+
+
+        public GameObject GameObject {
+            get;
+            set;
+        }
+        private Transform _transform;
+        public Transform Transform {
+            get {
+                if (_transform == null) 
+                    _transform = GameObject.transform;
+                return _transform;
+            }
+        }
+        private CanvasGroup _canvasGroup;
+        public CanvasGroup CanvasGroup {
+            get {
+                if (_canvasGroup == null) 
+                    _canvasGroup = GameObject.GetComponent<CanvasGroup>();
+                return _canvasGroup;
+            }
+        }
+        private bool _isInitialized;
+        public virtual bool DestoryOnHide {
+            get {
+                return false;
+            }
+        }
+        public virtual bool IsRoot {
+            get {
+                return false;
+            }
+        }
+        public static Action SetDownRootIndex;
+        public Action CloseOtherRootView;
+        protected readonly PropertyBinder<ViewModelBase> binder = new PropertyBinder<ViewModelBase>();
+        public readonly BindableProperty<ViewModelBase> viewModelProperty = new BindableProperty<ViewModelBase>();
+        public Action RevealedAction {
+            get;
+            set;
+        }
+        public Action HiddenAction {
+            get;
+            set;
+        }
+        public ViewModelBase BindingContext {
+            get {
+                return viewModelProperty.Value;
             }
             set {
                 if (!_isInitialized) {
                     OnInitialize();
                     _isInitialized = true;
                 }
-                //触发OnValueChanged事件
-                ViewModelProperty.Value = value;
+                viewModelProperty.Value = value;
             }
         }
-
-        // 初始化View，当BindingContext改变时执行
         protected virtual void OnInitialize() {
-            // CanvasGroup 的特殊处理
-            
-            // 无论ViewModel的Value怎样变化，只对OnValueChanged事件监听(绑定)一次
-            ViewModelProperty.OnValueChanged += OnBindingContextChanged;
+            GameObject = ResourceConstant.Loader.LoadClone(BundleName, AssetName, EAssetBundleUnloadLevel.Never);
+            GameObject.AddComponent<CanvasGroup>();
+            Transform.SetParent(GameObject.Find("ViewRoot").transform, false);
+            viewModelProperty.OnValueChanged += OnBindingContextChanged;
         }
-        
-        public void Reveal(bool immediate = false, Action action = null) {
-            if (action!=null) {
+        public void Reveal(bool immediate = true, Action action = null) {
+            if (action != null) 
                 RevealedAction += action;
-            }
             OnAppear();
             OnReveal(immediate);
             OnRevealed();
         }
-
-        public void Hide(bool immediate = false, Action action = null) {
-            if (action!=null) {
+        public void Hide(bool immediate = true, Action action = null) {
+            if (action != null) 
                 HiddenAction += action;
-            }
             OnHide(immediate);
             OnHidden();
             OnDisappear();
         }
-
-
-        // 激活gameObject,Disable->Enable
         public virtual void OnAppear() {
-            gameObject.SetActive(true);
-            BindingContext.OnStartReveal();
+            GameObject.SetActive(true);
         }
-        // 开始显示
         private void OnReveal(bool immediate) {
-            if (immediate) { //立即显示
-                transform.localScale = Vector3.one;
-                GetComponent<CanvasGroup>().alpha = 1;
-            } else {
+            BindingContext.OnStartReveal();
+            if (immediate) {
+                Transform.localScale = Vector3.one;
+                CanvasGroup.alpha = 1;
+            } else 
                 StartAnimatedReveal();
-            }
         }
-
-        // alpha 0->1 之后执行
         public virtual void OnRevealed() {
             BindingContext.OnFinishReveal();
-            //回调函数
-            if (RevealedAction!=null) {
+            if (RevealedAction != null) 
                 RevealedAction();
-            }
+            if (IsRoot) 
+                if (CloseOtherRootView != null) 
+                    CloseOtherRootView();
+            if (SetDownRootIndex != null) 
+                SetDownRootIndex();
         }
-      
         private void OnHide(bool immediate) {
             BindingContext.OnStartHide();
             if (immediate) {
-                //立即隐藏
-                transform.localScale = Vector3.zero;
-                GetComponent<CanvasGroup>().alpha = 0;
-            } else {
+                Transform.localScale = Vector3.zero;
+                CanvasGroup.alpha = 0;
+            } else 
                 StartAnimatedHide();
-            }
         }
-        // alpha 1->0时
         public virtual void OnHidden() {
-            //回掉函数
-            if (HiddenAction!=null) {
+            if (HiddenAction != null) 
                 HiddenAction();
-            }
         }
-        // 消失 Enable->Disable
         public virtual void OnDisappear() {
-            gameObject.SetActive(false);
+            GameObject.SetActive(false);
             BindingContext.OnFinishHide();
-            if (destroyOnHide) {
-                //销毁
-                Destroy(this.gameObject);
-            }
-
+            if (DestoryOnHide) 
+                UnityEngine.Object.Destroy(GameObject);
         }
-        // 当gameObject将被销毁时，这个方法被调用
-        public virtual void OnDestroy() {
-            if (BindingContext.IsRevealed) {
+        public virtual void OnDestory() {
+            if (BindingContext.IsRevealed) 
                 Hide(true);
-            }
             BindingContext.OnDestory();
             BindingContext = null;
-            ViewModelProperty.OnValueChanged = null;
+            viewModelProperty.OnValueChanged = null;
         }
-
-        // scale:1,alpha:1
         protected virtual void StartAnimatedReveal() {
-            var canvasGroup = GetComponent<CanvasGroup>();
-            canvasGroup.interactable = false;
-            transform.localScale = Vector3.one;
-
-            canvasGroup.DOFade(1, 0.2f).SetDelay(0.2f).OnComplete(() => {
-                    canvasGroup.interactable = true;
-                });
+            CanvasGroup.interactable = false;
+            Transform.localScale = Vector3.one;
         }
-        // alpha:0,scale:0
         protected virtual void StartAnimatedHide() {
-            var canvasGroup = GetComponent<CanvasGroup>();
-            canvasGroup.interactable = false;
-            canvasGroup.DOFade(0, 0.2f).SetDelay(0.2f).OnComplete(() => {
-                    transform.localScale = Vector3.zero;
-                    canvasGroup.interactable = true;
-                });
+            CanvasGroup.interactable = false;
         }
-        
-        // 绑定的上下文发生改变时的响应方法
-        // 利用反射+=/-=OnValuePropertyChanged
-        public virtual void OnBindingContextChanged(T oldValue, T newValue) {
-            Binder.Unbind(oldValue);
-            Binder.Bind(newValue);
+        protected virtual void OnBindingContextChanged(ViewModelBase oldValue, ViewModelBase newValue) {
+            binder.UnBind(oldValue);
+            binder.Bind(newValue);
         }
     }
 }
+

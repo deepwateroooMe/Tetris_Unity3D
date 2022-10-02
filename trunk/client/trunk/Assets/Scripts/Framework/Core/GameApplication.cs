@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Framework.Core;
-// using Framework.ResMgr;
+using Framework.ResMgr;
 using Framework.Util;
-// using System.Json;
+using System.Json;
 // using cn.sharesdk.unity3d;
 
 namespace Framework.core {
@@ -80,9 +80,9 @@ namespace Framework.core {
                 InitializeShareSDK();
         }
         void InitializeShareSDK() {
-            ShareSDK = GetComponent<ShareSDK>();
-            ShareSDK.authHandler = AuthResultHandler;
-            ShareSDK.Authorize(PlatformType.WeChat);
+            // ShareSDK = GetComponent<ShareSDK>();
+            // ShareSDK.authHandler = AuthResultHandler;
+            // ShareSDK.Authorize(PlatformType.WeChat);
         }
         // ShareSDK执行授权回调: 这里因为需要接入不同的SDK, 所以这里暂时再等一等再来实现
         // void AuthResultHandler(int reqID, ResponseState state, PlatformType type, Hashtable result) {
