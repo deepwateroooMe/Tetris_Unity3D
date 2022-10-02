@@ -107,30 +107,30 @@ public class ViewModelBaseAdapter : CrossBindingAdaptor {
             } else 
                 base.OnInitialize();
         }       
+        IMethod _onStartReveal;
+        bool _onStartRevealGot;
+        bool _isOnStartRevealInvoking = false;
+
+        IMethod _onFinishReveal;
+        bool _onFinishRevealGot;
+        bool _isOnFinishRevealInvoking = false;
+
+        IMethod _onStartHide;
+        bool _onStartHideGot;
+        bool _isOnStartHideInvoking = false;
+
+        IMethod _onFinishHide;
+        bool _onFinishHideGot;
+        bool _isOnFinishHideInvoking = false;
+
+        IMethod _onDestory;
+        bool _onDestoryGot;
+        bool _isOnDestoryInvoking = false;
+
+        IMethod _onInitialize;
+        bool _onInitializeGot;
+        bool _isOnInitializeInvoking = false;
     }
-    IMethod _onStartReveal;
-    bool _onStartRevealGot;
-    bool _isOnStartRevealInvoking = false;
-
-    IMethod _onFinishReveal;
-    bool _onFinishRevealGot;
-    bool _isOnFinishRevealInvoking = false;
-
-    IMethod _onStartHide;
-    bool _onStartHideGot;
-    bool _isOnStartHideInvoking = false;
-
-    IMethod _onFinishHide;
-    bool _onFinishHideGot;
-    bool _isOnFinishHideInvoking = false;
-
-    IMethod _onDestory;
-    bool _onDestoryGot;
-    bool _isOnDestoryInvoking = false;
-
-    IMethod _onInitialize;
-    bool _onInitializeGot;
-    bool _isOnInitializeInvoking = false;
 }
 
 

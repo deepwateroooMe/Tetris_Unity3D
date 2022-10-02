@@ -427,6 +427,11 @@ namespace DesignPattern.Objectpool  {
 ** 3d games
 - https://www.youtube.com/watch?v=_oEUJ_sirC8 with vedio downloaded
 
+* 本地热更新服务器的搭建与配置 
+  
+[[./pic/readme_20221002_153856.png]]
+
+
 
 
 

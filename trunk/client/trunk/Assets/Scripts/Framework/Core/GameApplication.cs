@@ -91,6 +91,7 @@ namespace Framework.Core {
         //         Debug.Log("cancel!");
         //     }
         // }
+
         IEnumerator Initialize() {
             ResourceMap resourceMap = gameObject.AddComponent<ResourceMap>();
             resourceMap.OnInitializeSuccess += StartHotFix;
@@ -102,7 +103,7 @@ namespace Framework.Core {
                 HotFix = HotFixILRunTime.Instance;
             } else {
                 if (useILRuntime) {
-                    HotFix = HotFixILRunTime.Instance;
+                    HotFix = HotFixILRunTime.Instance; // <<<<<<<<<< 
                 } else {
                     HotFix = HotFixReflector.Instance;
                 }
