@@ -1,4 +1,3 @@
-using Framework.core;
 using Framework.MVVM;
 using Framework.ResMgr;
 using Framework.Util;

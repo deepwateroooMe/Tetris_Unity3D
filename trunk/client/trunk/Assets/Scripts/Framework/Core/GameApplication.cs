@@ -5,9 +5,9 @@ using Framework.Core;
 using Framework.ResMgr;
 using Framework.Util;
 using System.Json;
-// using cn.sharesdk.unity3d;
 
-namespace Framework.core {
+// using cn.sharesdk.unity3d;
+namespace Framework.Core {
     // 入口类
     public class GameApplication : MonoBehaviour {
         
@@ -21,7 +21,6 @@ namespace Framework.core {
             get;
             set;
         }
-
         // 是否使用PDB调试信息
         public bool usePDB = false;
         // 是否使用ILRuntime模式热更新
@@ -32,7 +31,6 @@ namespace Framework.core {
         public string webRoot = string.Empty;
         // 强制登录
         public bool forceLogin = false;
-
 // 手指的触屏系统相关的逻辑晚点儿再补        
         // public ScreenRaycaster ScreenRaycaster {
         //     get;
@@ -43,7 +41,6 @@ namespace Framework.core {
         //     get;
         //     private set;
         // }
-
         void Awake() {
             _instance = this;
             // ScreenRaycaster = GameObject.Find("Gestures").GetComponent<ScreenRaycaster>();
