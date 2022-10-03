@@ -2,6 +2,7 @@
 using Framework.ResMgr;
 using System;
 using TMPro;
+using System.Drawing;
 
 namespace HotFix {
 
@@ -18,7 +19,7 @@ namespace HotFix {
         public abstract Font LoadFont(string bundleName, string assetName, 
                                       EAssetBundleUnloadLevel unloadLevel = 
                                       EAssetBundleUnloadLevel.ChangeSceneOver);
-        public abstract AnimationClip LoadAnimationClip(string bundleName, string assetName, 
+        public abstract UnityEngine.AnimationClip LoadAnimationClip(string bundleName, string assetName, 
                                                         EAssetBundleUnloadLevel unloadLevel = 
                                                         EAssetBundleUnloadLevel.ChangeSceneOver);
         public abstract AnimatorOverrideController LoadAnimatorOverrideController(string bundleName, string assetName, 

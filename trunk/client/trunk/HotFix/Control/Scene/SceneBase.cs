@@ -1,6 +1,5 @@
 ﻿using HotFix.Data;
 using UnityEngine;
-using System.Collections.Generic;
 using Framework.ResMgr;
 
 namespace HotFix.Control {
@@ -21,6 +20,32 @@ namespace HotFix.Control {
             set;
         }
 
-// 这里省掉了很多程序:要结合自己的游戏来一一实现
+        // 可以有同类物体的集合管理,集合数据结构map 等
+
+        public SceneBase(int type) {
+            Data = new SceneData();
+            Data.type = type;
+// .....
+            TypeData = TypeDataManager.GetSceneTypeData(Data.type);
+        }
+        public SceneBase(SceneData data) {
+            Data = data;
+            TypeData = TypeDataManager.GetSceneTypeData(Data.type);
+        }
+        public void LoadSceneGameObject() {
+            ResourceConstant.Loader.LoadCloneAsyn(TypeData.bundleName, TypeData.assetName, (go) => {
+                GameObject = go;
+                SetGameObjectName();
+                SceneManager.Instance.CurrentScene = this;
+                Initialize();
+            }, EAssetBundleUnloadLevel.ChangeSceneOver);
+        }
+
+        protected abstract void SetGameObjectName();
+        protected abstract void Initialize();
+
+        public virtual void Dispose() {
+            ResourceConstant.Loader.Unload(TypeData.bundleName, true);
+        }
     }
 }

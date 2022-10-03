@@ -2,6 +2,7 @@
 using Framework.ResMgr;
 using System;
 using TMPro;
+
 namespace HotFix {
 
     public class ResourceMapHandle : ResourceHandleBase {
