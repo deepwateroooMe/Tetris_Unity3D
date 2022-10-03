@@ -183,3 +183,575 @@ appdomain.DebugService.StartDebugService(56000)
 [[./pic/readme_20220930_204953.png]]
 
 
+
+* ILRuntime的研究
+- 借助网络上别人源码分析的步骤，自己（大项目中，以前的小项目源码内容大多已经狠熟悉的小项目里找找源码的不算）找一找学习一下追溯源码的过程，去理解整个过程的关键步骤与原理、
+- https://www.igiven.com/unity-2019-09-02-ilruntime/
+** 工程运行的入口
+*** HotFixILRunTime
+#+BEGIN_SRC csharp
+public class HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain {
+    public static ILRuntime.Runtime.Enviorment.AppDomain appDomain;
+    void Start() {
+        appDomain = new ILRuntime.Runtime.Enviorment.AppDomain(); // <<<<<<<<<< 
+#if UNITY_EDITOR
+        appDomain.UnityMainThreadID = System.Threading.Thread.CurrentThread.ManagedThreadId;
+#endif
+        TextAsset dllAsset = ResourceConstant.Loader.LoadAsset<TextAsset>("HotFix.dll", "HotFix.dll");
+        var msDll = new System.IO.MemoryStream(dllAsset.bytes);
+        if (GameApplication.Instance.usePDB) {
+            ResourceConstant.Loader.LoadAssetAsyn<TextAsset>("HotFix.pdb", "HotFix.pdb", (pdbAsset) => {
+                var msPdb = new System.IO.MemoryStream(pdbAsset.bytes);
+                appDomain.LoadAssembly(msDll, msPdb, new Mono.Cecil.Mdb.MdbReaderProvider()); // <<<<<<<<<<<<<<<<<<<< 
+                StartApplication();
+            }, EAssetBundleUnloadLevel.ChangeSceneOver);
+        } else {
+            appDomain.LoadAssembly(msDll, null, new Mono.Cecil.Mdb.MdbReaderProvider());
+            StartApplication();
+        }
+    }
+}
+#+END_SRC 
+- unity工程在执行的时候，会构建一个默认的appDomain，Assembly.Load，其实就是在这个程序域上加载Dll,所以相关的实质和前面一个部分相差不大，这就是c#热更新在unity中的应用(IOS不包括)。
+*** LoadAssembly(System.IO.Stream stream, System.IO.Stream symbol, ISymbolReaderProvider symbolReader)
+- 基于WWW的方式加载AssetBundle或者DLL/PDB后，接下来是将其封入到MemoryStream中，将dll和pdb的bytes都存入到内存流中后，执行其内部实现的LoadAssembly方法。
+#+BEGIN_SRC csharp
+// 从流加载Assembly,以及symbol符号文件(pdb)
+// <param name="stream">Assembly Stream</param>
+// <param name="symbol">symbol Stream</param>
+// <param name="symbolReader">symbol 读取器</param>
+public void LoadAssembly(System.IO.Stream stream, System.IO.Stream symbol, ISymbolReaderProvider symbolReader) {
+
+    var module = ModuleDefinition.ReadModule(stream); //从MONO中加载模块 // <<<<<<<<<<<<<<<<<<<< 
+
+    if (symbolReader != null && symbol != null)  
+        module.ReadSymbols(symbolReader.GetSymbolReader(module, symbol)); //加载符号表
+
+    if (module.HasAssemblyReferences) { //如果此模块引用了其他模块 
+        foreach (var ar in module.AssemblyReferences) {
+            /*if (moduleref.Contains(ar.Name) == false)
+              moduleref.Add(ar.Name);
+              if (moduleref.Contains(ar.FullName) == false)
+              moduleref.Add(ar.FullName);*/
+        }
+    }
+    if (module.HasTypes) {
+        List<ILType> types = new List<ILType>();
+        foreach (var t in module.GetTypes()) { //获取所有此模块定义的类型 
+            ILType type = new ILType(t, this);
+            mapType[t.FullName] = type;
+            types.Add(type);
+        }
+    }
+    if (voidType == null) {
+        voidType = GetType("System.Void");
+        intType = GetType("System.Int32");
+        longType = GetType("System.Int64");
+        boolType = GetType("System.Boolean");
+        floatType = GetType("System.Single");
+        doubleType = GetType("System.Double");
+        objectType = GetType("System.Object");
+    }
+    module.AssemblyResolver.ResolveFailure += AssemblyResolver_ResolveFailure;
+#if DEBUG
+    debugService.NotifyModuleLoaded(module.Name);
+#endif
+}
+#+END_SRC
+*** ReadModule(stream)
+#+BEGIN_SRC csharp
+public static ModuleDefinition ReadModule(Stream stream, ReaderParameters parameters) {
+    CheckStream(stream);
+    if (!stream.CanRead || !stream.CanSeek)
+        throw new ArgumentException();
+    Mixin.CheckParameters(parameters);
+    return ModuleReader.CreateModuleFrom(
+        ImageReader.ReadImageFrom(stream),  // <<<<<<<<<<<<<<<<<<<< 
+        parameters);
+}
+#+END_SRC
+**** ReadImageFrom()
+#+BEGIN_SRC csharp
+public static Image ReadImageFrom(Stream stream) {
+    try {
+        var reader = new ImageReader(stream); // <<<<<<<<<<<<<<<<<<<< 
+        reader.ReadImage(); // <<<<<<<<<<<<<<<<<<<< 
+        return reader.image;
+    } catch (EndOfStreamException e) {
+        throw new BadImageFormatException(Mixin.GetFullyQualifiedName(stream), e);
+    }
+}
+#+END_SRC
+***** ImageReader最终来自BinaryReader:
+#+BEGIN_SRC csharp
+namespace Mono.Cecil.PE {
+    sealed class ImageReader : BinaryStreamReader {
+        readonly Image image;
+        DataDirectory cli;
+        DataDirectory metadata;
+        
+        public ImageReader(Stream stream) : base(stream) { // <<<<<<<<<<<<<<<<<<<< 
+            image = new Image();
+            image.FileName = Mixin.GetFullyQualifiedName(stream);
+        }
+    }
+}
+
+class BinaryStreamReader : BinaryReader {
+    public BinaryStreamReader (Stream stream) : base (stream) { }
+    protected void Advance (int bytes) {
+        BaseStream.Seek (bytes, SeekOrigin.Current);
+    }
+    protected DataDirectory ReadDataDirectory () {
+        return new DataDirectory (ReadUInt32 (), ReadUInt32 ());
+    }
+}
+
+// Summary:
+//     Reads primitive data types as binary values in a specific encoding.
+[ComVisible(true)]
+public class BinaryReader : IDisposable {
+    public BinaryReader(Stream input);
+    public BinaryReader(Stream input, Encoding encoding);
+    public virtual Stream BaseStream { get; }
+    public virtual void Close();
+    public virtual int PeekChar();
+    public virtual int Read();
+    public virtual int Read(char[] buffer, int index, int count);
+    public virtual int Read(byte[] buffer, int index, int count);
+    public virtual bool ReadBoolean();
+    public virtual byte ReadByte();
+    public virtual byte[] ReadBytes(int count);
+    public virtual char ReadChar();
+    public virtual char[] ReadChars(int count);
+    public virtual decimal ReadDecimal();
+    public virtual double ReadDouble();
+    public virtual short ReadInt16();
+    public virtual int ReadInt32();
+    public virtual long ReadInt64();
+    [CLSCompliant(false)]
+    public virtual sbyte ReadSByte();
+    public virtual float ReadSingle();
+    public virtual string ReadString();
+    [CLSCompliant(false)]
+    public virtual ushort ReadUInt16();
+    [CLSCompliant(false)]
+    public virtual uint ReadUInt32();
+    [CLSCompliant(false)]
+    public virtual ulong ReadUInt64();
+    protected virtual void Dispose(bool disposing);
+    protected virtual void FillBuffer(int numBytes);
+    protected internal int Read7BitEncodedInt();
+}
+#+END_SRC
+***** 接下来的ReadImage操作：
+#+BEGIN_SRC csharp
+void ReadImage() {
+    if (BaseStream.Length < 128)
+        throw new BadImageFormatException();
+
+    // - DOSHeader
+    // PE                    2
+    // Start                58
+    // Lfanew                4
+    // End                  64
+
+    if (ReadUInt16() != 0x5a4d)
+        throw new BadImageFormatException();
+    Advance(58);
+    MoveTo(ReadUInt32());
+
+    if (ReadUInt32() != 0x00004550)
+        throw new BadImageFormatException();
+
+    // - PEFileHeader
+
+    // Machine                2
+    image.Architecture = ReadArchitecture();
+
+    // NumberOfSections        2
+    ushort sections = ReadUInt16();
+
+    // TimeDateStamp           4
+    // PointerToSymbolTable    4
+    // NumberOfSymbols         4
+    // OptionalHeaderSize      2
+    Advance(14);
+
+    // Characteristics         2
+    ushort characteristics = ReadUInt16();
+
+// 这四个操作，是最核心的操作，分别读取DLL的PE的各个信息，这样我们就进入下一个步骤。
+    ushort subsystem, dll_characteristics;
+    ReadOptionalHeaders(out subsystem, out dll_characteristics);
+    ReadSections(sections);
+    ReadCLIHeader();
+    ReadMetadata();
+
+    image.Kind = GetModuleKind(characteristics, subsystem);
+    image.Characteristics = (ModuleCharacteristics)dll_characteristics;
+}
+#+END_SRC
+***** 最终得到方法的IL汇编码
+- 让我们分拆来看看这几个读取函数的实现
+****** 1）ReadOptionalHeaders(out subsystem, out dll_characteristics)
+- 主要读取PE的相关信息，不做过多解释，可以参看源码阅读理解；
+#+BEGIN_SRC csharp
+void ReadOptionalHeaders(out ushort subsystem, out ushort dll_characteristics) {
+    // - PEOptionalHeader
+    //   - StandardFieldsHeader
+
+    // Magic                2
+    bool pe64 = ReadUInt16() == 0x20b;
+
+    //                        pe32 || pe64
+
+    // LMajor                1
+    // LMinor                1
+    // CodeSize                4
+    // InitializedDataSize    4
+    // UninitializedDataSize4
+    // EntryPointRVA        4
+    // BaseOfCode            4
+    // BaseOfData            4 || 0
+
+    //   - NTSpecificFieldsHeader
+
+    // ImageBase            4 || 8
+    // SectionAlignment        4
+    // FileAlignement        4
+    // OSMajor                2
+    // OSMinor                2
+    // UserMajor            2
+    // UserMinor            2
+    // SubSysMajor            2
+    // SubSysMinor            2
+    // Reserved                4
+    // ImageSize            4
+    // HeaderSize            4
+    // FileChecksum            4
+    Advance(66);
+
+    // SubSystem            2
+    subsystem = ReadUInt16();
+
+    // DLLFlags                2
+    dll_characteristics = ReadUInt16();
+    // StackReserveSize        4 || 8
+    // StackCommitSize        4 || 8
+    // HeapReserveSize        4 || 8
+    // HeapCommitSize        4 || 8
+    // LoaderFlags            4
+    // NumberOfDataDir        4
+
+    //   - DataDirectoriesHeader
+
+    // ExportTable            8
+    // ImportTable            8
+    // ResourceTable        8
+    // ExceptionTable        8
+    // CertificateTable        8
+    // BaseRelocationTable    8
+
+    Advance(pe64 ? 88 : 72);
+
+    // Debug                8
+    image.Debug = ReadDataDirectory();
+
+    // Copyright            8
+    // GlobalPtr            8
+    // TLSTable                8
+    // LoadConfigTable        8
+    // BoundImport            8
+    // IAT                    8
+    // DelayImportDescriptor8
+    Advance(56);
+
+    // CLIHeader            8
+    cli = ReadDataDirectory();
+
+    if (cli.IsZero)
+        throw new BadImageFormatException();
+
+    // Reserved                8
+    Advance(8);
+}
+#+END_SRC 
+****** 2）ReadSections(sections)
+- 读取分块数据
+  #+BEGIN_SRC csharp
+void ReadSections(ushort count) {
+    var sections = new Section[count];
+
+    for (int i = 0; i < count; i++) {
+        var section = new Section();
+
+// 封装一个Section，然后去执行读取，然后赋值给section的Data，注意回退了Index        
+        // Name
+        section.Name = ReadZeroTerminatedString(8);
+
+        // VirtualSize        4
+        Advance(4);
+
+        // VirtualAddress    4
+        section.VirtualAddress = ReadUInt32();
+        // SizeOfRawData    4
+        section.SizeOfRawData = ReadUInt32();
+        // PointerToRawData    4
+        section.PointerToRawData = ReadUInt32();
+
+        // PointerToRelocations        4
+        // PointerToLineNumbers        4
+        // NumberOfRelocations        2
+        // NumberOfLineNumbers        2
+        // Characteristics            4
+        Advance(16);
+
+        sections[i] = section;
+
+        ReadSectionData(section); // <<<<<<<<<<<<<<<<<<<< 
+    }
+
+    image.Sections = sections;
+}
+void ReadSectionData(Section section) {
+    var position = BaseStream.Position;
+
+    MoveTo(section.PointerToRawData);
+
+    var length = (int)section.SizeOfRawData;
+    var data = new byte[length];
+    int offset = 0, read;
+
+// <<<<<<<<<<<<<<<<<<<< 
+    while ((read = Read(data, offset, length - offset)) > 0) // Read: BinaryReader里Read方法的实现
+        offset += read;
+    section.Data = data;
+
+    BaseStream.Position = position;
+}
+  #+END_SRC 
+****** 3) ReadCLIHeader()：基本简单就读完了
+#+BEGIN_SRC csharp
+void ReadCLIHeader()　{
+    MoveTo(cli);
+
+    // - CLIHeader
+
+    // Cb                        4
+    // MajorRuntimeVersion        2
+    // MinorRuntimeVersion        2
+    Advance(8);
+
+    // Metadata                    8
+    metadata = ReadDataDirectory();
+    // Flags                    4
+    image.Attributes = (ModuleAttributes)ReadUInt32();
+    // EntryPointToken            4
+    image.EntryPointToken = ReadUInt32();
+    // Resources                8
+    image.Resources = ReadDataDirectory();
+    // StrongNameSignature        8
+    image.StrongName = ReadDataDirectory();
+    // CodeManagerTable            8
+    // VTableFixups                8
+    // ExportAddressTableJumps    8
+    // ManagedNativeHeader        8
+}
+#+END_SRC  
+****** 4）ReadMetadata()
+#+BEGIN_SRC csharp
+void ReadMetadata()　{
+    MoveTo(metadata);
+
+    if (ReadUInt32() != 0x424a5342)
+        throw new BadImageFormatException();
+
+    // MajorVersion            2
+    // MinorVersion            2
+    // Reserved                4
+    Advance(8);
+
+    var version = ReadZeroTerminatedString(ReadInt32());
+    image.Runtime = Mixin.ParseRuntime(version);
+
+    // Flags        2
+    Advance(2);
+
+    var streams = ReadUInt16();
+
+    var section = image.GetSectionAtVirtualAddress(metadata.VirtualAddress);
+    if (section == null)
+        throw new BadImageFormatException();
+
+    image.MetadataSection = section;
+
+    for (int i = 0; i < streams; i++) // <<<<<<<<<<<<<<<<<<<< 
+        ReadMetadataStream(section);
+
+    if (image.TableHeap != null)
+        ReadTableHeap(); // <<<<<<<<<<<<<<<<<<<< 
+}
+void ReadMetadataStream(Section section) {
+    // Offset        4
+    uint start = metadata.VirtualAddress - section.VirtualAddress + ReadUInt32(); // relative to the section start
+
+    // Size            4
+    uint size = ReadUInt32();
+
+    var name = ReadAlignedString(16);
+    switch (name) { // <<<<<<<<<<<<<<<<<<<< 下面的是重点
+        case "#~":
+        case "#-":
+            image.TableHeap = new TableHeap(section, start, size);
+            break;
+        case "#Strings":
+            image.StringHeap = new StringHeap(section, start, size);
+            break;
+        case "#Blob":
+            image.BlobHeap = new BlobHeap(section, start, size);
+            break;
+        case "#GUID":
+            image.GuidHeap = new GuidHeap(section, start, size);
+            break;
+        case "#US":
+            image.UserStringHeap = new UserStringHeap(section, start, size);
+            break;
+    }
+}
+#+END_SRC  
+- 核心是两个操作，一个是ReadMetadataStream，就是根据不同的标识符来新建不同的存储结构；一个是ReadTableHeap:
+******* ReadTableHeap() 
+#+BEGIN_SRC csharp
+void ReadTableHeap() {
+    var heap = image.TableHeap;
+
+    uint start = heap.Section.PointerToRawData;
+
+    MoveTo(heap.Offset + start);
+
+    // Reserved            4
+    // MajorVersion        1
+    // MinorVersion        1
+    Advance(6);
+
+    // HeapSizes        1
+    var sizes = ReadByte();
+
+    // Reserved2        1
+    Advance(1);
+
+    // Valid            8
+    heap.Valid = ReadInt64();
+
+    // Sorted            8
+    heap.Sorted = ReadInt64();
+
+    for (int i = 0; i < TableHeap.TableCount; i++) {
+        if (!heap.HasTable((Table)i))
+            continue;
+        heap.Tables[i].Length = ReadUInt32();// <<<<<<<<<<<<<<<<<<<< 
+    } 
+    SetIndexSize(image.StringHeap, sizes, 0x1);
+    SetIndexSize(image.GuidHeap, sizes, 0x2);
+    SetIndexSize(image.BlobHeap, sizes, 0x4);
+
+    ComputeTableInformations();
+}
+#+END_SRC  
+ -初始化heap中的Table后，进行一次Compute，获取size:
+******* ComputeTableInformations()
+#+BEGIN_SRC csharp
+void ComputeTableInformations() {
+    uint offset = (uint)BaseStream.Position - image.MetadataSection.PointerToRawData; // header
+
+    int stridx_size = image.StringHeap.IndexSize;
+    int blobidx_size = image.BlobHeap != null ? image.BlobHeap.IndexSize : 2;
+
+    var heap = image.TableHeap;
+    var tables = heap.Tables;
+
+    for (int i = 0; i < TableHeap.TableCount; i++)  {
+        var table = (Table)i;
+        if (!heap.HasTable(table))
+            continue;
+
+        int size;
+        switch (table) {
+        case Table.Module:
+            size = 2    // Generation
+                + stridx_size    // Name
+                + (image.GuidHeap.IndexSize * 3);    // Mvid, EncId, EncBaseId
+            break;
+        case Table.TypeRef:
+            size = GetCodedIndexSize(CodedIndex.ResolutionScope)    // ResolutionScope
+                + (stridx_size * 2);    // Name, Namespace
+            break;
+        // 中间省略无数步
+        default:
+            throw new NotSupportedException();
+        }
+
+        tables[i].RowSize = (uint)size; // <<<<<<<<<<<<<<<<<<<< 然后填充size:
+        tables[i].Offset = offset;
+
+        offset += (uint)size * tables[i].Length;
+    }
+}
+#+END_SRC  
+- 基于这四步操作，我们可以将IL的汇编码存储到Image中，然后进一步执行后续的CreateModule操作:
+**** CreateModule操作:
+#+BEGIN_SRC csharp
+public static ModuleDefinition ReadModule(Stream stream, ReaderParameters parameters) {
+    CheckStream(stream);
+    if (!stream.CanRead || !stream.CanSeek)
+        throw new ArgumentException();
+    Mixin.CheckParameters(parameters);
+ return ModuleReader.CreateModuleFrom( // <<<<<<<<<<<<<<<<<<<<  
+        ImageReader.ReadImageFrom(stream),
+        parameters);
+}
+#+END_SRC  
+***** CreateModuleFrom(Image image, ReaderParameters parameters) 
+#+BEGIN_SRC csharp
+public static ModuleDefinition CreateModuleFrom(Image image, ReaderParameters parameters) {
+
+    var module = ReadModule(image, parameters); // <<<<<<<<<<<<<<<<<<<< 
+
+    ReadSymbols(module, parameters);
+    if (parameters.AssemblyResolver != null)
+        module.assembly_resolver = parameters.AssemblyResolver;
+    if (parameters.MetadataResolver != null)
+        module.metadata_resolver = parameters.MetadataResolver;
+    return module;
+}
+#+END_SRC  
+- 具体过程步骤如下：
+  #+BEGIN_SRC csharp
+public static ModuleDefinition CreateModuleFrom(Image image, ReaderParameters parameters) {
+
+    var module = ReadModule(image, parameters); // <<<<<<<<<<<<<<<<<<<< 
+
+    ReadSymbols(module, parameters);
+    if (parameters.AssemblyResolver != null)
+        module.assembly_resolver = parameters.AssemblyResolver;
+    if (parameters.MetadataResolver != null)
+        module.metadata_resolver = parameters.MetadataResolver;
+    return module;
+}
+ static ModuleDefinition ReadModule(Image image, ReaderParameters parameters) {
+    var reader = CreateModuleReader(image, parameters.ReadingMode);
+
+                    reader.ReadModule(); // <<<<<<<<<<<<<<<<<<<< 
+
+    return reader.module;
+}
+protected override void ReadModule() {
+    this.module.Read(this.module, (module, reader) => {
+            ReadModuleManifest(reader);
+            ReadModule(module);
+            return module;
+        });
+}
+  #+END_SRC 
+** 基于LoadedTypes来实现反射方法的调用
