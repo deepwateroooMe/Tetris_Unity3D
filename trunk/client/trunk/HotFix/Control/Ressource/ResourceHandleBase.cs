@@ -2,7 +2,6 @@
 using Framework.ResMgr;
 using System;
 using TMPro;
-using System.Drawing;
 
 namespace HotFix {
 

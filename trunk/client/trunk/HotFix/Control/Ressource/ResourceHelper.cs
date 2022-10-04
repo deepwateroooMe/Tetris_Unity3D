@@ -18,7 +18,7 @@ namespace HotFix {
 #region Load
         public static T LoadAsset<T>(string bundleName, string assetName, 
                                      EAssetBundleUnloadLevel unloadLevel = 
-                                     EAssetBundleUnloadLevel.ChangeSceneOver) where T : Object {
+                                     EAssetBundleUnloadLevel.ChangeSceneOver) where T : UnityEngine.Object {
             return Handle.LoadAsset<T>(bundleName, assetName, unloadLevel);
         }
         public static TMP_FontAsset LoadTMP_FontAsset(string bundleName, string assetName, 
