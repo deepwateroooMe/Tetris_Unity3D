@@ -49,7 +49,7 @@ namespace HotFix {
         public abstract GameObject LoadClone(string bundleName, string assetName, 
                                              EAssetBundleUnloadLevel unloadLevel = 
                                              EAssetBundleUnloadLevel.ChangeSceneOver);
-#endregion
+#endregion 
 #region LoadAsyn
         public abstract void LoadAssetAsyn<T>(string bundleName, string assetName, Action<T> onSuccess, 
                                               EAssetBundleUnloadLevel unloadLevel = 

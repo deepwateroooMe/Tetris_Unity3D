@@ -156,7 +156,7 @@ namespace Framework.ResMgr {
                 return null;
             }
         }
-        public TMP_FontAsset LoadTMP_FontAsset(string bundleName, string assetName, 
+        public TMPro.TMP_FontAsset LoadTMP_FontAsset(string bundleName, string assetName, 
                                                EAssetBundleUnloadLevel unloadLevel = 
                                                EAssetBundleUnloadLevel.ChangeSceneOver) {
             string finalBundleName = GetFinalBundleName(bundleName);

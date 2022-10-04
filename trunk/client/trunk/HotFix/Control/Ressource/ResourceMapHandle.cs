@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using Framework.ResMgr;
 using System;
-using TMPro;
+using System.Drawing;
 
 namespace HotFix {
 
@@ -36,7 +36,7 @@ namespace HotFix {
         }
         public override AnimatorOverrideController LoadAnimatorOverrideController(string bundleName, string assetName, 
                                                                                   EAssetBundleUnloadLevel unloadLevel = 
-                                                                                  EAssetBundleUnloadLevel.ChangeSceneOver) {
+                                                                                  EAssetBundleUnloadLevel.ChangeSceneOver) { 
             return Loader.LoadAnimatorOverrideController(bundleName, assetName, unloadLevel);
         }
         public override RuntimeAnimatorController LoadRuntimeAnimatorController(string bundleName, string assetName, 
@@ -91,7 +91,7 @@ namespace HotFix {
                                                    EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
             Loader.LoadTMP_FontAssetAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
         }
-        public override void LoadFontAsyn(string bundleName, string assetName, Action<Font> onSuccess, 
+        public override void LoadFontAsyn(string bundleName, string assetName, Action<System.Drawing.Font> onSuccess, 
                                           EAssetBundleUnloadLevel unloadLevel = 
                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
             Loader.LoadFontAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);

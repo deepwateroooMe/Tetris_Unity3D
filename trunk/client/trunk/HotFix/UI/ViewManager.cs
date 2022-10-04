@@ -10,6 +10,7 @@ using System.Collections;
 namespace HotFix.UI {
     using Framework.MVVM;
     using Framework.Util;
+    using System.Drawing;
     using System.Windows.Controls;
 
     // 它说，我是一个静态管理类，我要把每个需要热更新的视图都持有一个静态引用;
@@ -74,7 +75,7 @@ namespace HotFix.UI {
 // 这里应该是一个导航视图吧，猜测（不是视图，是panel　？）昨天晚上少眠，今天状态相对较差，期待明天会比较好
 // 明天这些部分，今天所有有疑问的部分都再仔细地看一下    
         static void ShowStartPanel() {
-            GuideView.Reveal();
+            TestView.Reveal();
         }
 #region Util
 #endregion

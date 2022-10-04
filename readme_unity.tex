@@ -1,4 +1,4 @@
-% Created 2022-10-01 Sat 15:16
+% Created 2022-10-03 Mon 07:48
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -330,7 +330,7 @@ public interface IEnumerator { // 这里是从网上搜来的C#里的
         }
         public void Reset() {
             if (_Reset == null) 
-n                _Reset = instance.Type.GetMethod("MoveNext", 0);
+                _Reset = instance.Type.GetMethod("MoveNext", 0);
             if (_Reset != null)
                 appdomain.Invoke(_Reset, instance);
         }
@@ -1331,7 +1331,11 @@ public class MessageAggregator<T> : Singleton<MessageAggregator<T>> {
 \item 如果是全部在热更工程中的继承，用法跟普通继承是一样的。如果你想在热更DLL项目当中继承一个Unity主工程里的类，或者实现一个主工程里的接口，这就是跨域继承，你需要在Unity主工程中实现一个继承适配器。
 \item 在ILRuntime中，存在两种继承，一种就是普通的继承，和平时的继承的用法一样，这里我们着重的介绍下第二种继承，跨域继承，
 \item 为unity工程和热更工程处于两个不同的程序域，是无法直接进行代码互通的。所以需要去跨域继承。
-\item 这里留个将来还可供参考的链接
+\item 上面说的牛头不对马尾.这里是 \textbf{适配,为什么需要使用适配呢?}
+\item 是因为在运行时,这是两个不同的程序域,运行时ILRuntime热更新模块并不知道unity中的类型,所以需要在 Unity 工程中写适配器来让 ILRuntime 知道如何调用 Unity 代码，或当 Unity 的事件触发时让 ILRuntime 能够监听到。
+\item ILRuntime 其实是一个独立的 C\# 虚拟机，而这个虚拟机要在运行时与 Unity 的脚本进行交互，但由于 iOS 的 AOT 限制，在运行时 ILRuntime 中不知道 Unity 中的类型，所以需要在 Unity 工程中写适配器来让 ILRuntime 知道如何调用 Unity 代码，或当 Unity 的事件触发时让 ILRuntime 能够监听到。
+\item 下面补一下之前没有理解透彻的关于 \textbf{CLR绑定} (是对可能会有的大量GC Alloc回收等开销进行的性能优化,包括框架中用到的对于vector2 vector3等的处理): 在 Hotfix 工程中，假如需要调用 Unity 工程的方法，ILRuntime 会通过反射对目标方法进行调用，这个过程会有因为装箱和拆箱等操作产生的大量 GC Alloc 和额外开销。因此需要借助 CLR 绑定 功能，通过将需要的函数调用进行静态绑定，如此调用时就不会出现 GC Alloc 和额外开销。
+\item CLR 绑定本质上是基于 CLR 重定向实现的(CLR 方法重定向)
 \end{itemize}
 \subsubsection{ModuleBase.cs}
 \label{sec-6-3-1}
@@ -2061,10 +2065,13 @@ public class ViewModelBaseAdapter : CrossBindingAdaptor { // 这里需要再想�
             } else 
                 base.OnInitialize();
         }       
+
     // _onStart/_onFinish: Reveal + Hide;
         IMethod _onStartReveal;
         bool _onStartRevealGot;
-        bool _isOnStartRevealInvoking = false;
+        bool _isOnStartRevealInvoking = false; // 虚函数是否在调用中标识
+// 没有参数建议显式传递 null 为参数列表，否则会自动 new object[0] 导致 GC Alloc
+// 对于虚函数而言，必须设定一个标识位来确定是否当前已经在调用中，否则如果脚本类中调用 base.继承类的方法名() 就会造成无限循环，最终导致爆栈
         IMethod _onFinishReveal;
         bool _onFinishRevealGot;
         bool _isOnFinishRevealInvoking = false;
