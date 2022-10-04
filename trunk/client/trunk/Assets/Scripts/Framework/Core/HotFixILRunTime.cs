@@ -15,7 +15,9 @@ using UnityEngine.EventSystems;
 namespace Framework.Core {
 
     public class HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain {
+
         public static ILRuntime.Runtime.Enviorment.AppDomain appDomain;
+
         void Start() {
             appDomain = new ILRuntime.Runtime.Enviorment.AppDomain();
 #if UNITY_EDITOR

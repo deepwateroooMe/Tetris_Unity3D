@@ -14,22 +14,25 @@ namespace Framework.ResMgr {
     // 按需加载
     public class ResourceMap : MonoBehaviour, IResourceLoader {
 
-        static ResourceMap _instance;
+        // 静态实例，在是游戏程序集，但是借助公用接口，这个实例用样作为引用借给热更新程序集调用相关函数获取资源等
+        static ResourceMap _instance; 
         public static ResourceMap Instance {
             get {
                 return _instance;
             }
         }
 
-        // ResourceList初始化成功
+        // ResourceList初始化成功，委托
         public Action OnInitializeSuccess;
-        // Assetbundle资源包集合
+        
+        // Assetbundle资源包集合: 资源包字典,资源包管理器
         // Key: AssetBundleName
-        public Dictionary<string, AssetBundleSpec> assetBundleSpecs = new Dictionary<string, AssetBundleSpec>();
+        public Dictionary<string, AssetBundleSpec>  assetBundleSpecs = new Dictionary<string, AssetBundleSpec>();
         // 正在下载的AssetBundle
         public AssetBundleSpec downloadingAssetBundleSpec;
         // AssetBundle下载队列
         public Queue<AssetLoader> downloadingAssets = new Queue<AssetLoader>();
+
         // AssetBundle下载信息缓存集合
         public Dictionary<string, AssetBundleDownloadReference> downloadingAssetBundleSpecs
             = new Dictionary<string, AssetBundleDownloadReference>();
@@ -38,10 +41,12 @@ namespace Framework.ResMgr {
             public AssetBundleSpec spec;
             public int referenceCount;
         }
+
         public Action<AssetLoader> onNextAssetLoader;
         float checkSaveTimes = 0;
         bool haveCachedChanged = false;
 
+// 具备unity控件的生命周期，先看一下启动过程        
 #region Initialize
         void Awake() {
             _instance = this;
@@ -51,8 +56,8 @@ namespace Framework.ResMgr {
         }
         // 初始化
         void Initialize() {
-            CheckResourcePathExist();
-            if (ResourceConstant.CacheAssetBundle) {
+            CheckResourcePathExist();　// 资源路径是否存在，不存在则创建
+            if (ResourceConstant.CacheAssetBundle) {　// 默认是缓存资源的
                 FillResourceList();
                 FillHotFixList();
             }
@@ -73,6 +78,7 @@ namespace Framework.ResMgr {
             string text = FileHelp.ReadString("AssetBundleList.txt");
             Debug.Log("ResourceList:  " + text);
             if (!string.IsNullOrEmpty(text)) {
+// 把文件中的所有:一个一个的资源包都解析(若是最新资源包)或是作好需要下载更新的标记 ?               
                 AnalysisResourceList(text, EAssetBunbleSourceType.Primary);
             }
         }
@@ -80,15 +86,16 @@ namespace Framework.ResMgr {
         void FillHotFixList() {
             // Debug.Log("FillHotFixList");
             // string text = File.ReadAllText(ResourceConstant.AssetBundleCacheRoot + "/HotFixList.txt");
+// 从可作热更新的资源包列表里读出相关(下载的)资源?            
             string text = FileHelp.ReadString("HotFixList.txt");
             Debug.Log("HotFixList:  " + text);
             if (!string.IsNullOrEmpty(text)) {
-                AnalysisResourceList(text, EAssetBunbleSourceType.Hotfix);
+                AnalysisResourceList(text, EAssetBunbleSourceType.Hotfix); // 同样的方法分析可作热更新的资源包列表数据
             }
         }
         // 从资源服务器下载bundleList
         void DownLoadServerResourceList() {
-            if (!GameApplication.Instance.useLocal) {
+            if (!GameApplication.Instance.useLocal) { // 如果有热更新服务器可供热更新的话
                 // Debug.Log("DownLoadServerResourceList");
                 string url = Path.Combine(ResourceConstant.RemoteAssetBundleUrl, "AssetBundleList.txt");
                 url = url + "?timestamp=" + DateTime.Now.ToString();
@@ -103,27 +110,28 @@ namespace Framework.ResMgr {
                 }, (request) => {
                     DebugHelper.LogError("DownLoadServerResourceList Fail", true);
                 }, 3);
-            } else {
+            } else { // 如果没有或是不是热更新服务器,则把本地资源再遍历检查一遍
                 string text = FileHelp.ReadString("AssetBundleList.txt");
                 if (!string.IsNullOrEmpty(text)) {
                     AnalysisResourceList(text, EAssetBunbleSourceType.Server);
                 }
-                GameApplication.Instance.StartHotFix();
+                GameApplication.Instance.StartHotFix(); // 直接调用热更新
             }
         }
         // 显示加载进度条
         void InitializeLoadingPanel() { }
-        // 分析资源文件
+
+        // 分析资源文件: 包括所有资源的列表,每一行是一个程序或是材料等相关资源包的信息
         void AnalysisResourceList(string text, EAssetBunbleSourceType type) {
-            string[] fileInfos = text.Split('\n');
+            string[] fileInfos = text.Split('\n'); // 以行为单位区分不同的资源包
             int fileInfosLength = fileInfos.Length;
-            for (int i = 0; i < fileInfosLength - 1; i++) {
-                string[] fileInfoParams = fileInfos[i].Split(',');
+            for (int i = 0; i < fileInfosLength - 1; i++) { // 遍历每个资源包(从程序资源包到材料资源包等)
+                string[] fileInfoParams = fileInfos[i].Split(','); // 每行每个资源包以,为单位区分不同列与属性
                 if (fileInfoParams.Length >= 2) {
-                    if (!assetBundleSpecs.ContainsKey(fileInfoParams[0])) {
+                    if (!assetBundleSpecs.ContainsKey(fileInfoParams[0])) { // 某个层级某种类型的资源的名字,如果不存在,则添加
                         AssetBundleSpec asset = new AssetBundleSpec(fileInfoParams[0], fileInfoParams[1], int.Parse(fileInfoParams[2]), type);
                         assetBundleSpecs.Add(fileInfoParams[0], asset);
-                    } else {
+                    } else { // 已经存在,则作MD5比对,作好相应的标记(是否需要热更新下载服务器资源包等)
                         assetBundleSpecs[fileInfoParams[0]].Check(fileInfoParams[1], int.Parse(fileInfoParams[2]), type);
                     }
                 } else {

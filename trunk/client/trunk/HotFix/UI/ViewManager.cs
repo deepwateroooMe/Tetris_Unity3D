@@ -20,8 +20,9 @@ namespace HotFix.UI {
     // 面板管理器:  看上面，是完全可以用framework里定义的适配什么的呀
     public static class ViewManager {
         // 这里固化适配为两维三维都可以
-        public static Canvas UI2DRoot;
+        public static Canvas UI2DRoot; // 这些也是
         public static Canvas UI3DRoot;
+        
         public static RectTransform transfom;
         public static Dictionary<string, UnityGuiView> views = new Dictionary<string, UnityGuiView>();
         // public static TMP_FontAsset pingfangregularFont; // 把字体的部分都先简单地略过
@@ -46,7 +47,7 @@ namespace HotFix.UI {
         // }
 // 仔细看这个方法：不是从热更新程序集里加载出unity里运行所需要的东西了吗？    
         static void CreateBaseUI() {
-            ResourceHelper.LoadCloneAsyn("ui/ui2droot", "UI2DRoot", // 明天上午去仔细追踪查看一下这个异步方法的细节
+            ResourceHelper.LoadCloneAsyn("ui/ui2droot", "UI2DRoot", // 这里是有预设的包，读出资源就可以加载
                                          (go) => {
                                              go.name = "UI2DRoot";
                                              GameObject.DontDestroyOnLoad(go);

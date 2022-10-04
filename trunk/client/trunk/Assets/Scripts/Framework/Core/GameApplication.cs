@@ -31,11 +31,11 @@ namespace Framework.Core {
         public string webRoot = string.Empty;
         // 强制登录
         public bool forceLogin = false;
-// 手指的触屏系统相关的逻辑晚点儿再补        
-        // public ScreenRaycaster ScreenRaycaster {
-        //     get;
-        //     private set;
-        // }
+// 手指的触屏系统相关的逻辑晚点儿再补: 但是这里有个陷井，就是这一步是带起根场景或是视图的关键点，缺少这一步，最开始的非热更新场景出不来，应该是        
+        public ScreenRaycaster ScreenRaycaster {
+            get;
+            private set;
+        }
 // google, hotmail, LinkedIn facebook etc        
         // public ShareSDK ShareSDK { 
         //     get;
@@ -43,7 +43,11 @@ namespace Framework.Core {
         // }
         void Awake() {
             _instance = this;
-            // ScreenRaycaster = GameObject.Find("Gestures").GetComponent<ScreenRaycaster>();
+
+// 这里相当于是自己实现了射线检测，是否点击中某个UI上控件的按钮，比如最开始第一屏的“开始游戏”等。＝＝＞　去追到这个按钮的回调过程            
+// 这里有点儿没有弄明白，这个的启动过程和起作用的过程细节是什么样的？？？
+            ScreenRaycaster = GameObject.Find("Gestures").GetComponent<ScreenRaycaster>();
+
             DontDestroyOnLoad(gameObject);
             // InitializeClientConfig();
             // InitializeSDKs();
@@ -94,7 +98,8 @@ namespace Framework.Core {
 
         IEnumerator Initialize() {
             ResourceMap resourceMap = gameObject.AddComponent<ResourceMap>();
-            resourceMap.OnInitializeSuccess += StartHotFix;
+// 脚本添加过程，和程序资源的加载启动？过程，去看这个资源管理类的加载资源细节过程，什么时候结束的，结束了才调用热更新程序集的启动            
+            resourceMap.OnInitializeSuccess += StartHotFix;　
             ResourceConstant.Loader = resourceMap;
             yield return new WaitForEndOfFrame();
         }

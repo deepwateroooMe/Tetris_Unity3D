@@ -14,7 +14,8 @@ namespace Framework.Util {
 
         // 开启一个协程
         public static Coroutine StartCoroutine(IEnumerator routine) {
-            if (coroutine == null) {
+// 第一次创建的时候，就是新建控件，保持不销毁，并添加脚本
+            if (coroutine == null) { 
                 GameObject coroutineGameObject = new GameObject("CoroutineGameObject");
                 Object.DontDestroyOnLoad(coroutineGameObject);
                 coroutine = coroutineGameObject.AddComponent<CoroutineBehaviour>();
