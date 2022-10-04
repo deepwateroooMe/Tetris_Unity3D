@@ -34,6 +34,7 @@ namespace Framework.Core {
                 StartApplication();
             }
         }
+        
         void StartApplication() {
             InitializeILRunTimeHotFixSetting();
             DoStaticMethod("HotFix.HotFixMain", "Start");
@@ -141,7 +142,6 @@ namespace Framework.Core {
                 });
             });
         }
-
         unsafe void InitializeCLRBindSetting() {
             foreach (var i in typeof(System.Activator).GetMethods()) {
                 // 找到名字为CreateInstance，并且是泛型方法的方法定义
@@ -149,7 +149,6 @@ namespace Framework.Core {
                     appDomain.RegisterCLRMethodRedirection(i, CreateInstance); // 方法重定向 
             }
         }
-
         void InitializeAdapterSetting() {
             appDomain.RegisterCrossBindingAdaptor(new ViewModelBaseAdapter());
             appDomain.RegisterCrossBindingAdaptor(new UnityGuiViewAdapter());
@@ -158,7 +157,6 @@ namespace Framework.Core {
             appDomain.RegisterCrossBindingAdaptor(new MonoBehaviourAdapter());
             appDomain.RegisterCrossBindingAdaptor(new InterfaceCrossBindingAdaptor()); // <<<<<<<<<<<<<<<<<<<< 
         }
-
         void InitializeValueTypeSetting() {
             appDomain.RegisterValueTypeBinder(typeof(Vector3), new Vector3Binder());
             appDomain.RegisterValueTypeBinder(typeof(Vector2), new Vector2Binder());

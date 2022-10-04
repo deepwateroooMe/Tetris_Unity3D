@@ -27,7 +27,7 @@ namespace Framework.ResMgr {
             set;
         }
         public static readonly string bundleExtension = ".ab";
-        static string _resourceWebRoot = "http:// localhost/"; // 先暂时就只能手动复制粘贴或是本地服务器暂时用一下
+        static string _resourceWebRoot = "http://localhost/"; // 先暂时就只能手动复制粘贴或是本地服务器暂时用一下
         // 资源服务器路径
         public static string ResourceWebRoot {
             get { return _resourceWebRoot; }
@@ -75,11 +75,11 @@ namespace Framework.ResMgr {
 #if UNITY_EDITOR
                 path = GetEditorAssetBundleUrl();
 #elif UNITY_STANDALONE_WIN
-                path = "file:// " + Application.dataPath + "/TempStreamingAssets/";
+                path = "file:///" + Application.dataPath + "/TempStreamingAssets/";
 #elif UNITY_ANDROID
                 path = Application.streamingAssetsPath;
 #elif UNITY_IPHONE
-                path = "file:// " + Application.dataPath + "/Raw/";
+                path = "file://" + Application.dataPath + "/Raw/";
 #endif
                 return path;
             }
@@ -90,11 +90,11 @@ namespace Framework.ResMgr {
 #if UNITY_EDITOR
                 path = GetEditorAssetBundleUrl();
 #elif UNITY_STANDALONE_WIN
-                path = "file:// " + Application.dataPath + "/StreamingAssets/";
+                path = "file:///" + Application.dataPath + "/StreamingAssets/";
 #elif UNITY_ANDROID
-                path = "file:// " + Application.persistentDataPath + "/";
+                path = "file://" + Application.persistentDataPath + "/";
 #elif UNITY_IPHONE
-                path = "file:// " + Application.persistentDataPath + "/";
+                path = "file://" + Application.persistentDataPath + "/";
 #endif
                 return path;
             }
