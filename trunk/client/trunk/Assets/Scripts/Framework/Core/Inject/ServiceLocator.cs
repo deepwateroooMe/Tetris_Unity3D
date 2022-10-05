@@ -1,97 +1,81 @@
-﻿using System;
-using System.Collections.Generic;
-using Assets.Sources.Core.Factory;
-using UnityEditor.VersionControl;
-
-namespace Assets.Sources.Core.Inject
-{
-    public class ServiceLocator
-    {
-        private static SingletonObjectFactory _singletonObjectFactory=new SingletonObjectFactory();
-        private static TransientObjectFactory _transientObjectFactory=new TransientObjectFactory();
-
-        private static readonly Dictionary<Type, Func<object>> Container = new Dictionary<Type, Func<object>>();
-        /// <summary>
-        /// 对每一次请求，只返回唯一的实例
-        /// </summary>
-        /// <typeparam name="TInterface"></typeparam>
-        /// <typeparam name="TInstance"></typeparam>
-        public static void RegisterSingleton<TInterface, TInstance>() where TInstance : class, new()
-        {
-            Container.Add(typeof(TInterface), Lazy<TInstance>(FactoryType.Singleton));
+﻿using System.Collections.Generic;
+using System;
+namespace Framework.Core {
+    public class ServiceLocatorContain {
+        public string TypeName {
+            get;
+            private set;
         }
-        /// <summary>
-        /// 对每一次请求，只返回唯一的实例
-        /// </summary>
-        /// <typeparam name="TInstance"></typeparam>
-        public static void RegisterSingleton<TInstance>() where TInstance : class, new()
-        {
-            Container.Add(typeof(TInstance), Lazy<TInstance>(FactoryType.Singleton));
+        public Func<object> Function {
+            get;
+            set;
         }
-        /// <summary>
-        /// 对每一次请求，返回不同的实例
-        /// </summary>
-        /// <typeparam name="TInterface"></typeparam>
-        /// <typeparam name="TInstance"></typeparam>
-        public static void RegisterTransient<TInterface, TInstance>() where TInstance : class, new()
-        {
-            Container.Add(typeof(TInterface),Lazy<TInstance>(FactoryType.Transient));
+        public ServiceLocatorContain(string name, Func<object> func) {
+            TypeName = name;
+            Function = func;
         }
-        /// <summary>
-        /// 对每一次请求，返回不同的实例
-        /// </summary>
-        /// <typeparam name="TInstance"></typeparam>
-        public static void RegisterTransient<TInstance>() where TInstance : class, new()
-        {
-            Container.Add(typeof(TInstance),Lazy<TInstance>(FactoryType.Transient));
+    }
+    public class ServiceLocator {
+        private SingletonObjectFactory _singletonObjectFactory = new SingletonObjectFactory();
+        private TransientObjectFactory _transientObjectFactory = new TransientObjectFactory();
+        private static readonly Dictionary<Type, ServiceLocatorContain> Container = new Dictionary<Type, ServiceLocatorContain>();
+        public void RegisterSingleton(string interfaceName, string typeName) {
+            ServiceLocatorContain contain = new ServiceLocatorContain(typeName, Lazy(FactoryType.Singleton, typeName));
+            Type type = GameApplication.Instance.HotFix.LoadType(interfaceName);
+            if (!Container.ContainsKey(type)) {
+                Container.Add(type, contain);
+            } else {
+                throw new Exception("Container contains key: " + type);
+            }
         }
-
-        /// <summary>
-        /// 清空容器
-        /// </summary>
-        public static void Clear()
-        {
+        public void RegisterSingleton(string typeName) {
+            ServiceLocatorContain contain = new ServiceLocatorContain(typeName, Lazy(FactoryType.Singleton, typeName));
+            Type type = GameApplication.Instance.HotFix.LoadType(typeName);
+            if (!Container.ContainsKey(type)) {
+                Container.Add(type, contain);
+            } else {
+                throw new Exception("Container contains key: " + type);
+            }
+        }
+        public void RegisterTransient(string interfaceName, string typeName) {
+            ServiceLocatorContain contain = new ServiceLocatorContain(typeName, Lazy(FactoryType.Transient, typeName));
+            Type type = GameApplication.Instance.HotFix.LoadType(interfaceName);
+            if (!Container.ContainsKey(type)) {
+                Container.Add(type, contain);
+            } else {
+                throw new Exception("Container contains key: " + type);
+            }
+        }
+        public void RegisterTransient(string typeName) {
+            ServiceLocatorContain contain = new ServiceLocatorContain(typeName, Lazy(FactoryType.Transient, typeName));
+            Type type = GameApplication.Instance.HotFix.LoadType(typeName);
+            if (!Container.ContainsKey(type)) {
+                Container.Add(type, contain);
+            } else {
+                throw new Exception("Container contains key: " + type);
+            }
+        }
+        public void Clear() {
             Container.Clear();
         }
-
-        /// <summary>
-        /// 从容器中获取一个实例
-        /// </summary>
-        /// <typeparam name="TInterface"></typeparam>
-        /// <returns></returns>
-        public static TInterface Resolve<TInterface>() where TInterface : class
-        {
-            return Resolve(typeof(TInterface)) as TInterface;
+        public TInterface Resolve<TInterface>(string keyName) where TInterface : class {
+            return Resolve(GameApplication.Instance.HotFix.LoadType(keyName)) as TInterface;
         }
-
-        /// <summary>
-        /// 从容器中获取一个实例
-        /// </summary>
-        /// <returns></returns>
-        private static object Resolve(Type type)
-        {
-            if (!Container.ContainsKey(type))
-            {
+        private static object Resolve(Type type) {
+            if (!Container.ContainsKey(type)) {
                 return null;
             }
-            return Container[type]();
-         }
-
-
-        private static Func<object> Lazy<TInstance>(FactoryType factoryType) where TInstance : class, new()
-        {
-            return () =>
-            {
-                switch (factoryType)
-                {
-                    case FactoryType.Singleton:
-                        return _singletonObjectFactory.AcquireObject<TInstance>();
-                    default:
-                        return _transientObjectFactory.AcquireObject<TInstance>();
+            return Container[type].Function();
+        }
+        private Func<object> Lazy(FactoryType factoryType, string typeFullName) {
+            return () => {
+                switch (factoryType) {
+                case FactoryType.Singleton:
+                    return _singletonObjectFactory.AcquireObject(typeFullName);
+                default:
+                    return _transientObjectFactory.AcquireObject(typeFullName);
                 }
-                
             };
         }
     }
-
 }

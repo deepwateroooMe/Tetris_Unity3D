@@ -96,7 +96,7 @@ public class AssetBundleTool : MonoBehaviour {
     // 资源存储路径
 // 暂时想把它放这里，可是感觉生成的位置不对，先确定能生成唯一一个场景的资源包：是可以生成了，那么我可以先生成一个游戏起始的场景
     // static string tempStreamingAssetPath = "../../../client/trunk/TempStreamingAssets";
-    static string tempStreamingAssetPath = "../../../../TempStreamingAssets";　
+    static string tempStreamingAssetPath = "../../../TempStreamingAssets";　
     // 获取当前平台
     static BuildTarget GetBuildTarget() {
         BuildTarget buildTarget = BuildTarget.StandaloneWindows;

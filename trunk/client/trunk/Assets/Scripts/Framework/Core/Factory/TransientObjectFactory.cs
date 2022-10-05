@@ -1,30 +1,14 @@
-﻿using System;
-using Assets.Sources.Core.Infrastructure;
+﻿using ILRuntime.CLR.TypeSystem;
+using System;
+using Framework.Util;
 
-namespace Assets.Sources.Core.Factory
-{
-    public class TransientObjectFactory : IObjectFactory
-    {
-        public object AcquireObject(string className)
-        {
-            return AcquireObject(TypeFinder.ResolveType(className));
-        }
-
-        public object AcquireObject(Type type)
-        {
-            var obj = Activator.CreateInstance(type, false);
-            return obj;
-        }
-
-        public object AcquireObject<TInstance>() where TInstance : class, new()
-        {
-            var instance = new TInstance();
+namespace Framework.Core {
+    public class TransientObjectFactory : IObjectFactory {
+        public object AcquireObject(string classFullName) {
+            var instance = GameApplication.Instance.HotFix.CreateInstance(classFullName);
             return instance;
         }
-
-        public void ReleaseObject(object obj)
-        {
-           
+        public void ReleaseObject(object obj) {
         }
     }
 }

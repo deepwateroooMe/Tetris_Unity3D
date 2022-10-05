@@ -1,7 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using Framework.Core;
 using Framework.ResMgr;
 using Framework.Util;
 using System.Json;
@@ -32,7 +30,7 @@ namespace Framework.Core {
         // 强制登录
         public bool forceLogin = false;
 // 手指的触屏系统相关的逻辑晚点儿再补: 但是这里有个陷井，就是这一步是带起根场景或是视图的关键点，缺少这一步，最开始的非热更新场景出不来，应该是        
-        public ScreenRaycaster ScreenRaycaster {
+        public ScreenRaycaster ScreenRaycaster { // 这个包裹里还有两个没能适配的小BUG,可能会出问题，到时再解决　Handle.CircleCap() ==> Handle.CircleHandleCap()
             get;
             private set;
         }
