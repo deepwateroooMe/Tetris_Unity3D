@@ -76,30 +76,30 @@ namespace HotFix.UI {
 // 这里应该是一个导航视图吧，猜测（不是视图，是panel　？）昨天晚上少眠，今天状态相对较差，期待明天会比较好
 // 明天这些部分，今天所有有疑问的部分都再仔细地看一下    
         static void ShowStartPanel() {
-            TestView.Reveal();
+            MenuView.Reveal();
         }
 #region Util
 #endregion
 
-#region GridItemPool
-        public static Transform poolRoot;
-// 这里所彩的数据结构栈：应该是与特定的应用特性相关的，能够保证后进先出和保证效率的
-        public static Dictionary<string, Stack<GameObject>> gridItemPool = new Dictionary<string, Stack<GameObject>>();
-        public static GameObject GetGridItemFromPool(string name) {
-            if (gridItemPool.ContainsKey(name) && gridItemPool[name].Count > 0) {
-                var gridItem = gridItemPool[name].Pop();
-                return gridItem;
-            }
-            return null;
-        }
-        public static void CacheGridItemToPool(string name, GameObject go) {
-            if (!gridItemPool.ContainsKey(name)) 
-                gridItemPool[name] = new Stack<GameObject>();
-            Stack<GameObject> goList = gridItemPool[name];
-            go.transform.SetParent(poolRoot, false);
-            goList.Push(go);
-        }
-#endregion
+// #region GridItemPool
+//         public static Transform poolRoot;
+// // 这里所彩的数据结构栈：应该是与特定的应用特性相关的，能够保证后进先出和保证效率的
+//         public static Dictionary<string, Stack<GameObject>> gridItemPool = new Dictionary<string, Stack<GameObject>>();
+//         public static GameObject GetGridItemFromPool(string name) {
+//             if (gridItemPool.ContainsKey(name) && gridItemPool[name].Count > 0) {
+//                 var gridItem = gridItemPool[name].Pop();
+//                 return gridItem;
+//             }
+//             return null;
+//         }
+//         public static void CacheGridItemToPool(string name, GameObject go) {
+//             if (!gridItemPool.ContainsKey(name)) 
+//                 gridItemPool[name] = new Stack<GameObject>();
+//             Stack<GameObject> goList = gridItemPool[name];
+//             go.transform.SetParent(poolRoot, false);
+//             goList.Push(go);
+//         }
+// #endregion
     
 // 视图里的小物件管理，是热更新起始时重要的三个步骤之二:　可是仍然感觉他们只是很不起眼的一两个小物件，根本不值一提呀
 // 这部分的细节暂时跳过，等改天实现自己游戏热更新需要参考的时候还可以修补上    
@@ -139,26 +139,26 @@ namespace HotFix.UI {
 
 // 热更新的视图，远远不止这两个，但是留这两个已经够参考了，其它删除了
 #region Views
-        static TestView _testView;
-        public static TestView TestView {
+        static MenuView _menuView;
+        public static MenuView MenuView {
             get {
-                if (_testView == null) {
-                    _testView = new TestView();
-                    _testView.BindingContext = new TestViewModel();
-                    views.Add(_testView.ViewName, _testView);
+                if (_menuView == null) {
+                    _menuView = new MenuView();
+                    _menuView.BindingContext = new MenuViewModel();
+                    views.Add(_menuView.ViewName, _menuView);
                 }
-                return _testView;
+                return _menuView;
             }
         }
-        static GuideView _guideView;
-        public static GuideView GuideView {
+        static SettingsView _settingsView;
+        public static SettingsView SettingsView {
             get {
-                if (_guideView == null) {
-                    _guideView = new GuideView();
-                    _guideView.BindingContext = new GuideViewModel();
-                    views.Add(_guideView.ViewName, _guideView);
+                if (_settingsView == null) {
+                    _settingsView = new SettingsView();
+                    _settingsView.BindingContext = new SettingsViewModel();
+                    views.Add(_settingsView.ViewName, _settingsView);
                 }
-                return _guideView;
+                return _settingsView;
             }
         }
 #endregion

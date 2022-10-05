@@ -29,7 +29,7 @@ namespace Framework.Core {
         public string webRoot = string.Empty;
         // 强制登录
         public bool forceLogin = false;
-// 手指的触屏系统相关的逻辑晚点儿再补: 但是这里有个陷井，就是这一步是带起根场景或是视图的关键点，缺少这一步，最开始的非热更新场景出不来，应该是        
+// 手指的触屏系统相关的逻辑晚点儿再补: 当分处在两个不同的程序域，热更新程序域里是无法检测到用户的点击事件的，所以这个射线检测来判定视图上点击事件的程序包必须得包装给热更新程序域使用
         public ScreenRaycaster ScreenRaycaster { // 这个包裹里还有两个没能适配的小BUG,可能会出问题，到时再解决　Handle.CircleCap() ==> Handle.CircleHandleCap()
             get;
             private set;

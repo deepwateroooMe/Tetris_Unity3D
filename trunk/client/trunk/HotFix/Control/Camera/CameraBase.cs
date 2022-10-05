@@ -14,14 +14,9 @@ namespace HotFix.Control {
             get;
             set;
         }
-        public Transform Transform {
+        public UnityEngine.Transform Transform {
             get {
                 return GameObject.transform;
-            }
-        }
-        public Transform Target {
-            get {
-                return Wrap.Target;
             }
         }
 
@@ -30,6 +25,13 @@ namespace HotFix.Control {
             get;
             protected set;
         }
+
+        //public Transform Target {
+        //    get {
+        //        return Wrap.Target;
+        //    }
+        //}
+
         public abstract CameraWrapBase CreateWrap();
 
         public void SetFieldOfView(float f) {
@@ -45,11 +47,11 @@ namespace HotFix.Control {
 
 // 虚拟方法        
         public virtual void OnTouchDrag(DragGesture gesture) {
-            Wrap.OnTouchDrag(gesture);
+            //Wrap.OnTouchDrag(gesture);
         }
-        public virtual void OnPinch(PinchGesture gesture) {
-            Wrap.OnPinch(gesture);
-        }
+        //public virtual void OnPinch(PinchGesture gesture) {
+        //    Wrap.OnPinch(gesture);
+        //}
         protected virtual void Initialize() {
         }
     }

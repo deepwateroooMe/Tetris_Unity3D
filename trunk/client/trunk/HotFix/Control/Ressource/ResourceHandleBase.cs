@@ -18,7 +18,7 @@ namespace HotFix {
         public abstract Font LoadFont(string bundleName, string assetName, 
                                       EAssetBundleUnloadLevel unloadLevel = 
                                       EAssetBundleUnloadLevel.ChangeSceneOver);
-        public abstract UnityEngine.AnimationClip LoadAnimationClip(string bundleName, string assetName, 
+        public abstract AnimationClip LoadAnimationClip(string bundleName, string assetName, 
                                                         EAssetBundleUnloadLevel unloadLevel = 
                                                         EAssetBundleUnloadLevel.ChangeSceneOver);
         public abstract AnimatorOverrideController LoadAnimatorOverrideController(string bundleName, string assetName, 

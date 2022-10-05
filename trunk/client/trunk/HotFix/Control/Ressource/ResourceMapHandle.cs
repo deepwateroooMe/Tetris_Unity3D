@@ -1,18 +1,16 @@
 ﻿using UnityEngine;
 using Framework.ResMgr;
 using System;
-using System.Drawing;
+using TMPro;
 
 namespace HotFix {
 
     public class ResourceMapHandle : ResourceHandleBase {
-// 它说它有一个两个程序域间公用接口类的索引;并且公用接口类经过适配可以被两个程序域相认;那么拿到这个索引就可以去调用unity程序集里基本所有的东西了
         IResourceLoader Loader {
             get {
                 return ResourceConstant.Loader;
             }
         }
-        
 #region Load
         public override T LoadAsset<T>(string bundleName, string assetName, 
                                        EAssetBundleUnloadLevel unloadLevel = 
@@ -36,7 +34,7 @@ namespace HotFix {
         }
         public override AnimatorOverrideController LoadAnimatorOverrideController(string bundleName, string assetName, 
                                                                                   EAssetBundleUnloadLevel unloadLevel = 
-                                                                                  EAssetBundleUnloadLevel.ChangeSceneOver) { 
+                                                                                  EAssetBundleUnloadLevel.ChangeSceneOver) {
             return Loader.LoadAnimatorOverrideController(bundleName, assetName, unloadLevel);
         }
         public override RuntimeAnimatorController LoadRuntimeAnimatorController(string bundleName, string assetName, 
@@ -91,7 +89,7 @@ namespace HotFix {
                                                    EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
             Loader.LoadTMP_FontAssetAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
         }
-        public override void LoadFontAsyn(string bundleName, string assetName, Action<System.Drawing.Font> onSuccess, 
+        public override void LoadFontAsyn(string bundleName, string assetName, Action<Font> onSuccess, 
                                           EAssetBundleUnloadLevel unloadLevel = 
                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
             Loader.LoadFontAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
