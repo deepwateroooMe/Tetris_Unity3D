@@ -68,10 +68,10 @@ namespace Framework.Core {
             appDomain.DelegateManager.RegisterMethodDelegate<TextAsset>();
             appDomain.DelegateManager.RegisterMethodDelegate<Sprite>();
             appDomain.DelegateManager.RegisterMethodDelegate<Texture2D>(); 
-            // appDomain.DelegateManager.RegisterMethodDelegate<TapGesture>(); // 暂时不理会触屏手势
-            // appDomain.DelegateManager.RegisterMethodDelegate<LongPressGesture>();
-            // appDomain.DelegateManager.RegisterMethodDelegate<DragGesture>();
-            // appDomain.DelegateManager.RegisterMethodDelegate<PinchGesture>();
+            appDomain.DelegateManager.RegisterMethodDelegate<TapGesture>(); // 暂时不理会触屏手势
+            appDomain.DelegateManager.RegisterMethodDelegate<LongPressGesture>();
+            appDomain.DelegateManager.RegisterMethodDelegate<DragGesture>();
+            appDomain.DelegateManager.RegisterMethodDelegate<PinchGesture>();
             appDomain.DelegateManager.RegisterMethodDelegate<Exception>();
             appDomain.DelegateManager.RegisterFunctionDelegate<GameObject, GameObject>();
             appDomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, ILTypeInstance, int>();
@@ -110,26 +110,26 @@ namespace Framework.Core {
                     ((Action<BaseEventData>)action)(b);
                 });
             });
-            // appDomain.DelegateManager.RegisterDelegateConvertor<GestureRecognizerTS<TapGesture>.GestureEventHandler>((action) => {
-            //     return new GestureRecognizerTS<TapGesture>.GestureEventHandler((gesture) => {
-            //         ((Action<TapGesture>)action)(gesture);
-            //     });
-            // });
-            // appDomain.DelegateManager.RegisterDelegateConvertor<GestureRecognizerTS<LongPressGesture>.GestureEventHandler>((action) => {
-            //     return new GestureRecognizerTS<LongPressGesture>.GestureEventHandler((gesture) => {
-            //         ((Action<LongPressGesture>)action)(gesture);
-            //     });
-            // });
-            // appDomain.DelegateManager.RegisterDelegateConvertor<GestureRecognizerTS<DragGesture>.GestureEventHandler>((action) => {
-            //     return new GestureRecognizerTS<DragGesture>.GestureEventHandler((gesture) => {
-            //         ((Action<DragGesture>)action)(gesture);
-            //     });
-            // });
-            // appDomain.DelegateManager.RegisterDelegateConvertor<GestureRecognizerTS<PinchGesture>.GestureEventHandler>((action) => {
-            //     return new GestureRecognizerTS<PinchGesture>.GestureEventHandler((gesture) => {
-            //         ((Action<PinchGesture>)action)(gesture);
-            //     });
-            // });
+            appDomain.DelegateManager.RegisterDelegateConvertor<GestureRecognizerTS<TapGesture>.GestureEventHandler>((action) => {
+                return new GestureRecognizerTS<TapGesture>.GestureEventHandler((gesture) => {
+                    ((Action<TapGesture>)action)(gesture);
+                });
+            });
+            appDomain.DelegateManager.RegisterDelegateConvertor<GestureRecognizerTS<LongPressGesture>.GestureEventHandler>((action) => {
+                return new GestureRecognizerTS<LongPressGesture>.GestureEventHandler((gesture) => {
+                    ((Action<LongPressGesture>)action)(gesture);
+                });
+            });
+            appDomain.DelegateManager.RegisterDelegateConvertor<GestureRecognizerTS<DragGesture>.GestureEventHandler>((action) => {
+                return new GestureRecognizerTS<DragGesture>.GestureEventHandler((gesture) => {
+                    ((Action<DragGesture>)action)(gesture);
+                });
+            });
+            appDomain.DelegateManager.RegisterDelegateConvertor<GestureRecognizerTS<PinchGesture>.GestureEventHandler>((action) => {
+                return new GestureRecognizerTS<PinchGesture>.GestureEventHandler((gesture) => {
+                    ((Action<PinchGesture>)action)(gesture);
+                });
+            });
 
             #if UNITY_IPHONE
                         appDomain.DelegateManager.RegisterDelegateConvertor<com.mob.FinishedRecordEvent>((action) => {
