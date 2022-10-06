@@ -10,18 +10,18 @@ namespace HotFix.Data {
 
 #region TypeDatas
         // 对于每种自定义自封装的类型，启用一个字典来进行管理;同自定义类型的数据，用一个长量型的long作为key来进行区分实例
-        static Dictionary<long, SceneTypeData> sceneTypeDatas;
+        //static Dictionary<long, SceneTypeData> sceneTypeDatas;
 
-        public static Dictionary<long, SceneTypeData> GetSceneTypeDatas() {
-            return sceneTypeDatas;
-        }
-        public static SceneTypeData GetSceneTypeData(long id) {
-            if (sceneTypeDatas.ContainsKey(id)) {
-                return sceneTypeDatas[id];
-            } else {
-                return null;
-            }
-        }
+        //public static Dictionary<long, SceneTypeData> GetSceneTypeDatas() {
+        //    return sceneTypeDatas;
+        //}
+        //public static SceneTypeData GetSceneTypeData(long id) {
+        //    if (sceneTypeDatas.ContainsKey(id)) {
+        //        return sceneTypeDatas[id];
+        //    } else {
+        //        return null;
+        //    }
+        //}
 #endregion
         // 热更新起始时，资源包里：对于不同场景的初始化;
         // 这里是在热更新程序资源集里
@@ -36,18 +36,18 @@ namespace HotFix.Data {
         }
         static void InitializeSceneTypeData(string jsonStr) { // 反序列化，将序列化数据反转成通用场景数据
             if (jsonStr != null) {
-                sceneTypeDatas = new Dictionary<long, SceneTypeData>(); // SceneTypeData
-                JsonArray jsonArray = JsonSerializer.Deserialize(jsonStr) as JsonArray;
-                if (jsonArray != null) {
-                    foreach (JsonValue jsonValue in jsonArray) {
-                        SceneTypeData typeData = SceneTypeData.JsonToObject(jsonValue.ToString());
-                        if (!sceneTypeDatas.ContainsKey(typeData.id)) // 当前资源管理器还没有这种类型（int id）的场景呢，就添加上，否则抛出异常
-                            sceneTypeDatas.Add(typeData.id, typeData);
-                        else // 当前场景类型资源已添加,给个提示
-                            Debug.LogError("sceneTypeDatas contains key: " + typeData.id);
-                    }
-                } else 
-                    Debug.LogError("sceneTypeData jsonArray is null");
+                //sceneTypeDatas = new Dictionary<long, SceneTypeData>(); // SceneTypeData
+                //JsonArray jsonArray = JsonSerializer.Deserialize(jsonStr) as JsonArray;
+                //if (jsonArray != null) {
+                //    foreach (JsonValue jsonValue in jsonArray) {
+                //        SceneTypeData typeData = SceneTypeData.JsonToObject(jsonValue.ToString());
+                //        if (!sceneTypeDatas.ContainsKey(typeData.id)) // 当前资源管理器还没有这种类型（int id）的场景呢，就添加上，否则抛出异常
+                //            sceneTypeDatas.Add(typeData.id, typeData);
+                //        else // 当前场景类型资源已添加,给个提示
+                //            Debug.LogError("sceneTypeDatas contains key: " + typeData.id);
+                //    }
+                //} else 
+                //    Debug.LogError("sceneTypeData jsonArray is null");
             }
         }
     }

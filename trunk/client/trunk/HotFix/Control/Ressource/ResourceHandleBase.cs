@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
-using Framework.ResMgr;
 using System;
 using TMPro;
+
 namespace HotFix {
 
     public abstract class ResourceHandleBase {

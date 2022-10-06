@@ -8,10 +8,6 @@ using UnityEngine.EventSystems;
 using System.Collections;
 
 namespace HotFix.UI {
-    using Framework.MVVM;
-    using Framework.Util;
-    using System.Drawing;
-    using System.Windows.Controls;
 
     // 它说，我是一个静态管理类，我要把每个需要热更新的视图都持有一个静态引用;
     // 当需要实例化的时候，要么返回现持非空的视图，要么就新实例化一个该类型的视图
@@ -60,9 +56,9 @@ namespace HotFix.UI {
                                              viewRect.anchorMin = Vector2.zero;
                                              viewRect.anchorMax = Vector2.one;
                                              viewRect.pivot = new Vector2(0.5f, 0.5f);
-                                             poolRoot = new GameObject("PoolRoot").transform;
-                                             poolRoot.SetParent(UI2DRoot.transform, false);
-                                             poolRoot.gameObject.SetActive(false);
+                                             //poolRoot = new GameObject("PoolRoot").transform;
+                                             //poolRoot.SetParent(UI2DRoot.transform, false);
+                                             //poolRoot.gameObject.SetActive(false);
                                              ShowStartPanel();
                                          }, EAssetBundleUnloadLevel.Never);
         }
@@ -150,17 +146,17 @@ namespace HotFix.UI {
                 return _menuView;
             }
         }
-        static SettingsView _settingsView;
-        public static SettingsView SettingsView {
-            get {
-                if (_settingsView == null) {
-                    _settingsView = new SettingsView();
-                    _settingsView.BindingContext = new SettingsViewModel();
-                    views.Add(_settingsView.ViewName, _settingsView);
-                }
-                return _settingsView;
-            }
-        }
+        //static SettingsView _settingsView;
+        //public static SettingsView SettingsView {
+        //    get {
+        //        if (_settingsView == null) {
+        //            _settingsView = new SettingsView();
+        //            _settingsView.BindingContext = new SettingsViewModel();
+        //            views.Add(_settingsView.ViewName, _settingsView);
+        //        }
+        //        return _settingsView;
+        //    }
+        //}
 #endregion
     }
 }

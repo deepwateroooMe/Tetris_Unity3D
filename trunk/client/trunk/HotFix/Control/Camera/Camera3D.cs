@@ -11,7 +11,7 @@ namespace HotFix.Control {
             get;
             set;
         }
-        public Camera3D(UnityEngine.GameObject go) : base(go) { }
+        public Camera3D(GameObject go) : base(go) { }
 
         public override CameraWrapBase CreateWrap() {
             Camera3DWrap = GameObject.GetOrAddComponent<Camera3DWrap>();
