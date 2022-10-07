@@ -1,11 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using Framework.MVVM;
-using TMPro;
-using System.Json;
 using Framework.Util;
-using UnityEngine.EventSystems;
 using System.Collections;
+using UnityEngine.EventSystems;
 
 namespace HotFix.UI {
 

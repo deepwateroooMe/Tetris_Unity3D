@@ -5,7 +5,7 @@ using System.Collections;
 
 public class InterfaceCrossBindingAdaptor : CrossBindingAdaptor {
 
-    // 因为是interface,只需要实现基类的三个方法就可以了吗?只有一个地方用到,HotFixILRunTime.cs里去找
+    // 因为是interface,只需要实现基类的三个方法就可以了吗?只有一个地方用到,HotFixILRunTime.cs里热更新程序域启动的时候会用到去找
     public override Type BaseCLRType {
         get {
             return typeof(IEnumerator);

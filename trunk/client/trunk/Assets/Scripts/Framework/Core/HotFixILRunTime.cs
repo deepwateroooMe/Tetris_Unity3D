@@ -171,15 +171,14 @@ namespace Framework.Core {
             return appDomain.Invoke(staticMethod, null, null);
         }
 
+// IHotFixMain 里的两个方法的实现         
 #region Override
-
         public Type LoadType(string typeName) {
             if (appDomain.LoadedTypes.ContainsKey(typeName)) {
                 return appDomain.LoadedTypes[typeName].ReflectionType;
             }
             return null;
         }
-
         public object CreateInstance(string typeName) {
             ILType type = (ILType)appDomain.LoadedTypes[typeName];
             var instance = type.Instantiate();

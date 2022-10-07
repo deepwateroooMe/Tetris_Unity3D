@@ -9,7 +9,7 @@ namespace HotFix {
         public static void Start() {
             Debug.Log("InitializeTypeDatas");
             TypeDataManager.InitializeTypeDatas();
-            ViewManager.InitializeItemDatas();
+            //ViewManager.InitializeItemDatas();
             Debug.Log("HotFixMain.Start()");
             ViewManager.InitializeStartUI();
         }

@@ -21,6 +21,13 @@ public class IEnumeratorObjectAdaptor : CrossBindingAdaptor {
         return new Adaptor(appdomain, instance);
     }
 
+// IEnumerator是所有非泛型枚举器的基接口。换而言之就是IEnumerator定义了一种适用于任意集合的迭代方式
+// 协程里yield关键字是一个迭代器，相当于实现了IEnumerator枚举器;所以这里的逻辑是连通起来的
+    // public interface IEnumerator {
+    //     object Current { get; }
+    //     bool MoveNext();
+    //     void Reset();
+    // }
     internal class Adaptor : IEnumerator<object>, CrossBindingAdaptorType {
         ILTypeInstance instance;
         ILRuntime.Runtime.Enviorment.AppDomain appdomain;
@@ -39,11 +46,12 @@ public class IEnumeratorObjectAdaptor : CrossBindingAdaptor {
                 return obj;
             }
         }
-// 枚举器类型的四个迭代方法        
+// 枚举器类型的四个迭代方法,好像仍然也?是协程中每个需要分布完成的小步骤        
         IMethod _MoveNext;
         IMethod _get_Current;
         IMethod _Reset;
         IMethod _Dispose;
+
         public bool MoveNext() {
             if (_MoveNext == null) 
                 _MoveNext = instance.Type.GetMethod("MoveNext", 0);

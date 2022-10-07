@@ -21,6 +21,7 @@ public class IDisposableAdaptor : CrossBindingAdaptor {
     }
 
     internal class Adaptor : IDisposable, CrossBindingAdaptorType {
+
         ILTypeInstance instance;
         ILRuntime.Runtime.Enviorment.AppDomain appdomain;
 
