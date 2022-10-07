@@ -4,6 +4,7 @@ using Framework.MVVM;
 using Framework.Util;
 using System.Collections;
 using UnityEngine.EventSystems;
+using HotFix.UI.View.SettingsView;
 
 namespace HotFix.UI {
 
@@ -144,17 +145,17 @@ namespace HotFix.UI {
                 return _menuView;
             }
         }
-        //static SettingsView _settingsView;
-        //public static SettingsView SettingsView {
-        //    get {
-        //        if (_settingsView == null) {
-        //            _settingsView = new SettingsView();
-        //            _settingsView.BindingContext = new SettingsViewModel();
-        //            views.Add(_settingsView.ViewName, _settingsView);
-        //        }
-        //        return _settingsView;
-        //    }
-        //}
+        static SettingsView _settingsView;
+        public static SettingsView SettingsView {
+           get {
+               if (_settingsView == null) {
+                   _settingsView = new SettingsView();
+                   _settingsView.BindingContext = new SettingsViewModel();
+                   views.Add(_settingsView.ViewName, _settingsView);
+               }
+               return _settingsView;
+           }
+        }
 #endregion
     }
 }

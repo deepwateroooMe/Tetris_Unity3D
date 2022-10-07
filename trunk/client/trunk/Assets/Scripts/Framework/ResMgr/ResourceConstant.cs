@@ -158,7 +158,7 @@ namespace Framework.ResMgr {
 #region EditorCode
 #if UNITY_EDITOR
         static string GetEditorAssetBundleUrl() {
-            string path = "file:// " + GetEditorAssetPath();
+            string path = "file:///" + GetEditorAssetPath();
             return path;
         }
         // 获取编辑器运行时资源路径
