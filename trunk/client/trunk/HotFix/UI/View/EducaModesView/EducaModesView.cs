@@ -49,14 +49,18 @@ namespace HotFix.UI {
             thrToggle = GameObject.FindChildByName("Toggle3").GetComponent<Toggle>();
             furToggle = GameObject.FindChildByName("Toggle4").GetComponent<Toggle>();
             fivToggle = GameObject.FindChildByName("Toggle5").GetComponent<Toggle>();
-
+            if (!thrToggle.isOn) thrToggle.isOn = true;
+            if (furToggle.isOn) furToggle.isOn = false;
+            if (fivToggle.isOn) fivToggle.isOn = false;
+            
             conBtn = GameObject.FindChildByName("conBtn").GetComponent<Button>();
             conBtn.onClick.AddListener(OnClickConButton);
         }
 
         void OnClickConButton() {
-            // 检查是否存有先前游戏进度数据,有则弹窗;无直接进游戏界面
-           
+            // 检查是否存有先前游戏进度数据,有则弹窗;无直接进游戏界面,这一小步暂时跳过
+            ActiveToggle();
+            
         }
         
         void ActiveToggle() {
