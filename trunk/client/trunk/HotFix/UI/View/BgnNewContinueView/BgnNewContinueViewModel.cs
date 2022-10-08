@@ -1,8 +1,12 @@
-﻿using Framework.MVVM;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Framework.MVVM;
 
 namespace HotFix.UI {
 
-    public class MenuViewModel : ViewModelBase {
+    public class BgnNewContinueViewModel : ViewModelBase {
 
         protected override void OnInitialize() {
             base.OnInitialize();

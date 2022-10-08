@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 //using System.Threading.Tasks;
 using Framework.MVVM;
+using UnityEngine.UI;
 
 namespace HotFix.UI.View.SettingsView
 {
@@ -34,37 +35,48 @@ namespace HotFix.UI.View.SettingsView
             }
         }
 
-        // Button eduButton; // Education
-        // Button claButton; // Classic
-        // Button chaButton; // Challenge
+        Button creBtn; // CREDIT
+        Button ratBtn; // RATE GAME
+        Button sunBtn; // SUNUME GAME
+        Button adsBtn; // SUNUME GAME
+        Button lotBtn; // TUTORIAL
+        Button setBtn; // BACK TO MAIN MENU
 
-        // protected override void OnInitialize() {
-        //     base.OnInitialize();
+        protected override void OnInitialize() {
+            base.OnInitialize();
 
-        //     eduButton = GameObject.FindChildByName("eduBtn").GetComponent<Button>();
-        //     eduButton.onClick.AddListener(OnClickEduButton);
+            creBtn = GameObject.FindChildByName("creBtn").GetComponent<Button>();
+            creBtn.onClick.AddListener(OnClickCreButton);
 
-        //     claButton = GameObject.FindChildByName("claBtn").GetComponent<Button>();
-        //     claButton.onClick.AddListener(OnClickClaButton);
+            ratBtn = GameObject.FindChildByName("ratBtn").GetComponent<Button>();
+            ratBtn.onClick.AddListener(OnClickRatButton);
 
-        //     chaButton = GameObject.FindChildByName("chaBtn").GetComponent<Button>();
-        //     chaButton.onClick.AddListener(OnClickChaButton);
-        //     // SetDownRootIndex = ChageViewsIndex;
-        // }
+            sunBtn = GameObject.FindChildByName("sunBtn").GetComponent<Button>();
+            sunBtn.onClick.AddListener(OnClickSunButton);
 
-        void ChageViewsIndex() {
-            //UnityEngine.Transform.SetAsLastSibling();
+            adsBtn = GameObject.FindChildByName("adsBtn").GetComponent<Button>();
+            adsBtn.onClick.AddListener(OnClickAdsButton);
+
+            lotBtn = GameObject.FindChildByName("lotBtn").GetComponent<Button>();
+            lotBtn.onClick.AddListener(OnClickLotButton);
+
+            setBtn = GameObject.FindChildByName("setBtn").GetComponent<Button>();
+            setBtn.onClick.AddListener(OnClickSetButton);
+
         }
-        void OnClickEduButton() {
-            // ViewManager.MainView.Reveal();
+
+        void OnClickCreButton() {
         }
-        void OnClickClaButton() {
-         
-            // ViewManager.FindView.Reveal();
+        void OnClickRatButton() {
         }
-        void OnClickChaButton() {
-       
-            // ViewManager.DesginView.Reveal();
+        void OnClickSunButton() {
+        }
+        void OnClickAdsButton() {
+        }
+        void OnClickLotButton() {
+            // ViewSetager.DesginView.Reveal();
+        }
+        void OnClickSetButton() {
         }
     }
 }

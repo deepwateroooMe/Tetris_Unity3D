@@ -45,14 +45,16 @@ namespace HotFix.UI {
 
             chaButton = GameObject.FindChildByName("chaBtn").GetComponent<Button>();
             chaButton.onClick.AddListener(OnClickChaButton);
+
             // SetDownRootIndex = ChageViewsIndex;
         }
+        // void ChageViewsIndex() {
+        //     //UnityEngine.Transform.SetAsLastSibling();
+        // }
 
-        void ChageViewsIndex() {
-            //UnityEngine.Transform.SetAsLastSibling();
-        }
         void OnClickEduButton() {
-            // ViewManager.MainView.Reveal();
+            ViewManager.EducaModesView.Reveal();
+            // 当前的视图需要隐藏起来吗? 检查一下逻辑
         }
         void OnClickClaButton() {
          

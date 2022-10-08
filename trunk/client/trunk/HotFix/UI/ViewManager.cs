@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using Framework.MVVM;
 using Framework.Util;
 using System.Collections;
+using HotFix.UI.View.MidMenuView;
 using UnityEngine.EventSystems;
 using HotFix.UI.View.SettingsView;
+using HotFix.UI.View.TestView;
 
 namespace HotFix.UI {
 
@@ -134,6 +136,39 @@ namespace HotFix.UI {
 
 // 热更新的视图，远远不止这两个，但是留这两个已经够参考了，其它删除了
 #region Views
+        // static MenuView _menuView;
+        // public static MenuView MenuView {
+        //     get {
+        //         if (_menuView == null) {
+        //             _menuView = new MenuView();
+        //             _menuView.BindingContext = new MenuViewModel();
+        //             views.Add(_menuView.ViewName, _menuView);
+        //         }
+        //         return _menuView;
+        //     }
+        // }
+        static BgnNewContinueView _bgnnewcontinueView;
+        public static BgnNewContinueView BgnNewContinueView {
+            get {
+                if (_bgnnewcontinueView == null) {
+                    _bgnnewcontinueView = new BgnNewContinueView();
+                    _bgnnewcontinueView.BindingContext = new BgnNewContinueViewModel();
+                    views.Add(_bgnnewcontinueView.ViewName, _bgnnewcontinueView);
+                }
+                return _bgnnewcontinueView;
+            }
+        }
+        static EducaModesView _educamodesView;
+        public static EducaModesView EducaModesView {
+            get {
+                if (_educamodesView == null) {
+                    _educamodesView = new EducaModesView();
+                    _educamodesView.BindingContext = new EducaModesViewModel();
+                    views.Add(_educamodesView.ViewName, _educamodesView);
+                }
+                return _educamodesView;
+            }
+        }
         static MenuView _menuView;
         public static MenuView MenuView {
             get {
@@ -143,6 +178,17 @@ namespace HotFix.UI {
                     views.Add(_menuView.ViewName, _menuView);
                 }
                 return _menuView;
+            }
+        }
+        static MidMenuView _midmenuView;
+        public static MidMenuView MidMenuView {
+            get {
+                if (_midmenuView == null) {
+                    _midmenuView = new MidMenuView();
+                    _midmenuView.BindingContext = new MidMenuViewModel();
+                    views.Add(_midmenuView.ViewName, _midmenuView);
+                }
+                return _midmenuView;
             }
         }
         static SettingsView _settingsView;
@@ -155,6 +201,17 @@ namespace HotFix.UI {
                }
                return _settingsView;
            }
+        }
+        static TestView _testView;
+        public static TestView TestView {
+            get {
+                if (_testView == null) {
+                    _testView = new TestView();
+                    _testView.BindingContext = new TestViewModel();
+                    views.Add(_testView.ViewName, _testView);
+                }
+                return _testView;
+            }
         }
 #endregion
     }
