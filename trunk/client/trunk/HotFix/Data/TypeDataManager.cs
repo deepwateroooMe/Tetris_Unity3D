@@ -28,9 +28,9 @@ namespace HotFix.Data {
         // 热更新程序域:它所拥有的是自己IType子类型的各种数据
         
         public static void InitializeTypeDatas() { // 那么加载的是场景（场景专用资源包吗？是的；不是资源包里关于场景的那一小部分）场景分场景新技术包；小控件分小控件打包
-            string sceneJson = ResourceHelper.LoadTextAsset("scene/config/scene", "scene", EAssetBundleUnloadLevel.LoadOver).text;
-            if (!string.IsNullOrEmpty(sceneJson)) // 只要从场景资源包里的读出的字符串非空，就反序列化成特定类型备用
-                InitializeSceneTypeData(sceneJson);
+            //string sceneJson = ResourceHelper.LoadTextAsset("scene/config/scene", "scene", EAssetBundleUnloadLevel.LoadOver).text;
+            //if (!string.IsNullOrEmpty(sceneJson)) // 只要从场景资源包里的读出的字符串非空，就反序列化成特定类型备用
+            //    InitializeSceneTypeData(sceneJson);
             // 游戏中我并不只光光用到场景数据,还用到其它比如不同的俄罗斯方块砖等,这些资源也都是需要一一加载的
             
         }
