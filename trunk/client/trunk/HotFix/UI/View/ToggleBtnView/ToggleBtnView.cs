@@ -30,41 +30,28 @@ namespace HotFix.UI {
             }
         }
 
-        Button eduButton; // Education
-        Button claButton; // Classic
-        Button chaButton; // Challenge
+        // enum Type { // Buttons group type
+        //     DIRS = 0,
+        //     ROTATIONS = 1
+        // }
+        // Type type = 0;
+        int type = 0;
+        Button togButton; // Togcation
 
         protected override void OnInitialize() {
             base.OnInitialize();
 
-            eduButton = GameObject.FindChildByName("eduBtn").GetComponent<Button>();
-            eduButton.onClick.AddListener(OnClickEduButton);
+            togButton = GameObject.FindChildByName("togBtn").GetComponent<Button>();
+            togButton.onClick.AddListener(OnClickTogButton);
 
-            claButton = GameObject.FindChildByName("claBtn").GetComponent<Button>();
-            claButton.onClick.AddListener(OnClickClaButton);
-
-            chaButton = GameObject.FindChildByName("chaBtn").GetComponent<Button>();
-            chaButton.onClick.AddListener(OnClickChaButton);
-
-            // SetDownRootIndex = ChageViewsIndex;
         }
-        // void ChageViewsIndex() {
-        //     //UnityEngine.Transform.SetAsLastSibling();
-        // }
-
-        void OnClickEduButton() {
-            ViewManager.EducaModesView.Reveal();
+        void OnClickTogButton() {
             // 当前的视图需要隐藏起来吗? 检查一下逻辑
-            Hide();
-        }
-        void OnClickClaButton() {
-         
-            // ViewManager.FindView.Reveal();
-            Hide();
-        }
-        void OnClickChaButton() {
-       
-            // ViewManager.DesginView.Reveal();
+            type ^= 1;
+// 根据当前需要显示的按钮组的值的不同,来显示平移组或是旋转组
+// 这两个组的按钮也需要分别制作成视图,两个不同的视图
+            // if (type == 0)
+            // else
             Hide();
         }
     }

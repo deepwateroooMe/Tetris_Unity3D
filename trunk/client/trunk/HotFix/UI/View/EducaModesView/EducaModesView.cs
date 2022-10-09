@@ -59,8 +59,29 @@ namespace HotFix.UI {
             ActiveToggle();
             // 这里想到的简单实现是:因为只是三四五三种不同的格子,将三种不同的格子的视图绑定到同一个视图模型上,进行数据的统一分情况管理?
             // curToggle = 5; // 得到了想要的格子的设置值,根据这个值来配置视图
-            
-            
+            switch (curToggle) {
+            case 3:
+                ViewManager.ThreeGridView.Reveal();
+                break;
+            case 4:
+                ViewManager.FourGridView.Reveal();
+                break;
+            case 5:
+                ViewManager.FiveGridView.Reveal();
+                break;
+            }
+
+// 所有游戏场景公用视图资源等            
+            ViewManager.DesView.Reveal(); // 不可变的
+            ViewManager.ScoreDataView.Reveal(); // 可变数据
+            ViewManager.StaticBtnsView.Reveal();// 基本只有按钮的图像变化刷新
+            ViewManager.ToggleBtnView.Reveal(); // 需要改变按钮视图组,调用更为频繁,单列为一个视图
+
+            ViewManager.EduBtnsView.Reveal(); // 教育儿童模式专用两个按钮,只有图像变化
+            ViewManager.ComTetroView.Reveal();// 所有游戏主场景需要用到的方块砖视图
+            ViewManager.EduTetroView.Reveal();// 教育儿童模式专用的方块砖视图
+
+            Hide();
         }
         
         void ActiveToggle() {
@@ -75,13 +96,12 @@ namespace HotFix.UI {
                 curToggle = 5;
             }
 
-            // if (isSavedFileExist()) {
+// 这里这个视图的加载之后再考虑,太简单            
+            // if (isSavedFileExist()) { 
             //     easyModeToggleSizePanel.SetActive(false);
             //     newGameOrLoadSavedGamePanel.SetActive(true);
             // } else
             //     LoadScene("Main");
         }
-        
-        
     }
 }

@@ -147,6 +147,116 @@ namespace HotFix.UI {
         //         return _menuView;
         //     }
         // }
+        static ThreeGridView _threegridView;
+        public static ThreeGridView ThreeGridView {
+            get {
+                if (_threegridView == null) {
+                    _threegridView = new ThreeGridView();
+                    _threegridView.BindingContext = new ThreeGridViewModel();
+                    views.Add(_threegridView.ViewName, _threegridView);
+                }
+                return _threegridView;
+            }
+        }
+        static FourGridView _fourgridView;
+        public static FourGridView FourGridView {
+            get {
+                if (_fourgridView == null) {
+                    _fourgridView = new FourGridView();
+                    _fourgridView.BindingContext = new FourGridViewModel();
+                    views.Add(_fourgridView.ViewName, _fourgridView);
+                }
+                return _fourgridView;
+            }
+        }
+        static FiveGridView _fivegridView;
+        public static FiveGridView FiveGridView {
+            get {
+                if (_fivegridView == null) {
+                    _fivegridView = new FiveGridView();
+                    _fivegridView.BindingContext = new FiveGridViewModel();
+                    views.Add(_fivegridView.ViewName, _fivegridView);
+                }
+                return _fivegridView;
+            }
+        }
+        static ComTetroView _comtetroView;
+        public static ComTetroView ComTetroView {
+            get {
+                if (_comtetroView == null) {
+                    _comtetroView = new ComTetroView();
+                    _comtetroView.BindingContext = new ComTetroViewModel();
+                    views.Add(_comtetroView.ViewName, _comtetroView);
+                }
+                return _comtetroView;
+            }
+        }
+        static DesView _desView;
+        public static DesView DesView {
+            get {
+                if (_desView == null) {
+                    _desView = new DesView();
+                    _desView.BindingContext = new DesViewModel();
+                    views.Add(_desView.ViewName, _desView);
+                }
+                return _desView;
+            }
+        }
+        static EduBtnsView _edubtnsView;
+        public static EduBtnsView EduBtnsView {
+            get {
+                if (_edubtnsView == null) {
+                    _edubtnsView = new EduBtnsView();
+                    _edubtnsView.BindingContext = new EduBtnsViewModel();
+                    views.Add(_edubtnsView.ViewName, _edubtnsView);
+                }
+                return _edubtnsView;
+            }
+        }
+        static EduTetroView _edutetroView;
+        public static EduTetroView EduTetroView {
+            get {
+                if (_edutetroView == null) {
+                    _edutetroView = new EduTetroView();
+                    _edutetroView.BindingContext = new EduTetroViewModel();
+                    views.Add(_edutetroView.ViewName, _edutetroView);
+                }
+                return _edutetroView;
+            }
+        }
+        static ScoreDataView _scoredataView;
+        public static ScoreDataView ScoreDataView {
+            get {
+                if (_scoredataView == null) {
+                    _scoredataView = new ScoreDataView();
+                    _scoredataView.BindingContext = new ScoreDataViewModel();
+                    views.Add(_scoredataView.ViewName, _scoredataView);
+                }
+                return _scoredataView;
+            }
+        }
+        static StaticBtnsView _staticbtnsView;
+        public static StaticBtnsView StaticBtnsView {
+            get {
+                if (_staticbtnsView == null) {
+                    _staticbtnsView = new StaticBtnsView();
+                    _staticbtnsView.BindingContext = new StaticBtnsViewModel();
+                    views.Add(_staticbtnsView.ViewName, _staticbtnsView);
+                }
+                return _staticbtnsView;
+            }
+        }
+        static ToggleBtnView _togglebtnView;
+        public static ToggleBtnView ToggleBtnView {
+            get {
+                if (_togglebtnView == null) {
+                    _togglebtnView = new ToggleBtnView();
+                    _togglebtnView.BindingContext = new ToggleBtnViewModel();
+                    views.Add(_togglebtnView.ViewName, _togglebtnView);
+                }
+                return _togglebtnView;
+            }
+        }
         static BgnNewContinueView _bgnnewcontinueView;
         public static BgnNewContinueView BgnNewContinueView {
             get {
