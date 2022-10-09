@@ -49,9 +49,6 @@ namespace HotFix.UI {
             thrToggle = GameObject.FindChildByName("Toggle3").GetComponent<Toggle>();
             furToggle = GameObject.FindChildByName("Toggle4").GetComponent<Toggle>();
             fivToggle = GameObject.FindChildByName("Toggle5").GetComponent<Toggle>();
-            if (!thrToggle.isOn) thrToggle.isOn = true;
-            if (furToggle.isOn) furToggle.isOn = false;
-            if (fivToggle.isOn) fivToggle.isOn = false;
             
             conBtn = GameObject.FindChildByName("conBtn").GetComponent<Button>();
             conBtn.onClick.AddListener(OnClickConButton);
@@ -60,6 +57,9 @@ namespace HotFix.UI {
         void OnClickConButton() {
             // 检查是否存有先前游戏进度数据,有则弹窗;无直接进游戏界面,这一小步暂时跳过
             ActiveToggle();
+            // 这里想到的简单实现是:因为只是三四五三种不同的格子,将三种不同的格子的视图绑定到同一个视图模型上,进行数据的统一分情况管理?
+            // curToggle = 5; // 得到了想要的格子的设置值,根据这个值来配置视图
+            
             
         }
         
