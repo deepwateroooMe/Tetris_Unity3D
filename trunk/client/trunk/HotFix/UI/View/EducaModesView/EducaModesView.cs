@@ -73,15 +73,17 @@ namespace HotFix.UI {
 
 // 所有游戏场景公用视图资源等            
             ViewManager.DesView.Reveal(); // 不可变的
+// 这几个视图被我显示到了CANVAS画布之外去了.....需要调整
             ViewManager.ScoreDataView.Reveal(); // 可变数据
             ViewManager.StaticBtnsView.Reveal();// 基本只有按钮的图像变化刷新
-            ViewManager.ToggleBtnView.Reveal(); // 需要改变按钮视图组,调用更为频繁,单列为一个视图
+            ViewManager.ToggleBtnView.Reveal(); // 需要改变按钮视图组,调用更为频繁,单列为一个视图(但是可能还是应该合并到上面static里,因其逻辑复杂只是单列出来,能够文件小逻辑更为清淅一点儿?)
+            ViewManager.EduBtnsView.Reveal();   // 教育儿童模式专用两个按钮,只有图像变化
 
-            ViewManager.EduBtnsView.Reveal(); // 教育儿童模式专用两个按钮,只有图像变化
-            ViewManager.ComTetroView.Reveal();// 所有游戏主场景需要用到的方块砖视图
-            ViewManager.EduTetroView.Reveal();// 教育儿童模式专用的方块砖视图
+// 这两个预制还没有做好
+            // ViewManager.ComTetroView.Reveal();// 所有游戏主场景需要用到的方块砖视图
+            // ViewManager.EduTetroView.Reveal();// 教育儿童模式专用的方块砖视图
 
-            Hide();
+            Hide(); // 这个当前的不是说是隐藏的吗?为什么还是出现了呢?
         }
         
         void ActiveToggle() {

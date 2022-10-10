@@ -31,6 +31,15 @@ namespace HotFix.UI {
             }
         }
 
+        public override void OnAppear() {
+            base.OnAppear();
+            CloseOtherRootView = CloseOtherRootViews;
+        }
+
+        void CloseOtherRootViews() {
+            ViewManager.CloseOtherRootViews(ViewName);
+        }
+
 // 当进行了这一次的热更新重构,这一次是否可以:
 // 从最底层来优化游戏设计与性能:
         // 先前接触到一个ipad上比较好的方块砖游戏是:下左右前后五个面均投射出方块砖在其平面上应有的投影

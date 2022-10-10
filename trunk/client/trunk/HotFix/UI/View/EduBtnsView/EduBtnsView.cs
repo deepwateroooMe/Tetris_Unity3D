@@ -30,42 +30,25 @@ namespace HotFix.UI {
             }
         }
 
-        Button eduButton; // Education
-        Button claButton; // Classic
-        Button chaButton; // Challenge
+        Button swaButton; // swap current tetrominos to be a newly generating(it's coming after click) tetromino set
+        Button undButton; // undo last selected tetromino landing, revert it back
 
         protected override void OnInitialize() {
             base.OnInitialize();
 
-            eduButton = GameObject.FindChildByName("eduBtn").GetComponent<Button>();
-            eduButton.onClick.AddListener(OnClickEduButton);
+            swaButton = GameObject.FindChildByName("swaBtn").GetComponent<Button>();
+            swaButton.onClick.AddListener(OnClickSwaButton);
 
-            claButton = GameObject.FindChildByName("claBtn").GetComponent<Button>();
-            claButton.onClick.AddListener(OnClickClaButton);
-
-            chaButton = GameObject.FindChildByName("chaBtn").GetComponent<Button>();
-            chaButton.onClick.AddListener(OnClickChaButton);
-
-            // SetDownRootIndex = ChageViewsIndex;
+            undButton = GameObject.FindChildByName("undBtn").GetComponent<Button>();
+            undButton.onClick.AddListener(OnClickUndButton);
         }
-        // void ChageViewsIndex() {
-        //     //UnityEngine.Transform.SetAsLastSibling();
-        // }
 
-        void OnClickEduButton() {
-            ViewManager.EducaModesView.Reveal();
-            // 当前的视图需要隐藏起来吗? 检查一下逻辑
-            Hide();
+        void OnClickSwaButton() {
+            // 这里需要下发指令到视图数据层,并根据随机数生成的新的tetromino来重新刷新UI
         }
-        void OnClickClaButton() {
-         
-            // ViewManager.FindView.Reveal();
-            Hide();
-        }
-        void OnClickChaButton() {
-       
-            // ViewManager.DesginView.Reveal();
-            Hide();
+
+        void OnClickUndButton() {
+            // 类似的逻辑下发数据,并由数据驱动刷新UI
         }
     }
 }

@@ -30,41 +30,25 @@ namespace HotFix.UI {
             }
         }
 
-        Button eduButton; // Education
-        Button claButton; // Classic
-        Button chaButton; // Challenge
+        Button pauButton; // pause Game
+        Button falButton; // fall fast button
 
         protected override void OnInitialize() {
             base.OnInitialize();
 
-            eduButton = GameObject.FindChildByName("eduBtn").GetComponent<Button>();
-            eduButton.onClick.AddListener(OnClickEduButton);
+            pauButton = GameObject.FindChildByName("pauBtn").GetComponent<Button>();
+            pauButton.onClick.AddListener(OnClickPauButton);
 
-            claButton = GameObject.FindChildByName("claBtn").GetComponent<Button>();
-            claButton.onClick.AddListener(OnClickClaButton);
-
-            chaButton = GameObject.FindChildByName("chaBtn").GetComponent<Button>();
-            chaButton.onClick.AddListener(OnClickChaButton);
-
-            // SetDownRootIndex = ChageViewsIndex;
+            falButton = GameObject.FindChildByName("falBtn").GetComponent<Button>();
+            falButton.onClick.AddListener(OnClickFalButton);
         }
-        // void ChageViewsIndex() {
-        //     //UnityEngine.Transform.SetAsLastSibling();
-        // }
 
-        void OnClickEduButton() {
-            ViewManager.EducaModesView.Reveal();
-            // 当前的视图需要隐藏起来吗? 检查一下逻辑
+        void OnClickPauButton() {
+            ViewManager.MidMenuView.Reveal();
             Hide();
         }
-        void OnClickClaButton() {
-         
-            // ViewManager.FindView.Reveal();
-            Hide();
-        }
-        void OnClickChaButton() {
-       
-            // ViewManager.DesginView.Reveal();
+
+        void OnClickFalButton() {
             Hide();
         }
     }

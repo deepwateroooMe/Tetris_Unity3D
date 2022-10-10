@@ -30,42 +30,18 @@ namespace HotFix.UI {
             }
         }
 
-        Button eduButton; // Education
-        Button claButton; // Classic
-        Button chaButton; // Challenge
+        Text scoText; // Score Text
+        Text lvlText; // Level Text
+        Text linText; // Line Text
 
         protected override void OnInitialize() {
             base.OnInitialize();
 
-            eduButton = GameObject.FindChildByName("eduBtn").GetComponent<Button>();
-            eduButton.onClick.AddListener(OnClickEduButton);
+            scoText = GameObject.FindChildByName("scoTxt").GetComponent<Text>();
+            lvlText = GameObject.FindChildByName("lvlTxt").GetComponent<Text>();
+            linText = GameObject.FindChildByName("linTxt").GetComponent<Text>();
 
-            claButton = GameObject.FindChildByName("claBtn").GetComponent<Button>();
-            claButton.onClick.AddListener(OnClickClaButton);
-
-            chaButton = GameObject.FindChildByName("chaBtn").GetComponent<Button>();
-            chaButton.onClick.AddListener(OnClickChaButton);
-
-            // SetDownRootIndex = ChageViewsIndex;
-        }
-        // void ChageViewsIndex() {
-        //     //UnityEngine.Transform.SetAsLastSibling();
-        // }
-
-        void OnClickEduButton() {
-            ViewManager.EducaModesView.Reveal();
-            // 当前的视图需要隐藏起来吗? 检查一下逻辑
-            Hide();
-        }
-        void OnClickClaButton() {
-         
-            // ViewManager.FindView.Reveal();
-            Hide();
-        }
-        void OnClickChaButton() {
-       
-            // ViewManager.DesginView.Reveal();
-            Hide();
+            // 需要有来自ViewModel的数据变化来刷新UI
         }
     }
 }

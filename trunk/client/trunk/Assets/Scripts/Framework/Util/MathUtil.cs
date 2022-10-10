@@ -4,10 +4,12 @@ using UnityEngine;
 
 namespace Framework.MVVM {
 
+    // commented out all Game.cs related for tmp
     public static class MathUtil {
         private const string TAG = "MathUtilities";
 
-        private static int m = GameMenuData.Instance.gridSize;
+        // private static int m = GameMenuData.Instance.gridSize;
+        private static int m = 5;
         private static int n = 12;
 
         public static int getIndex(int x, int y, int z) {
@@ -115,12 +117,12 @@ namespace Framework.MVVM {
         public static void print(int x, int y, int z) {
             Debug.Log("(x,y,z): [" + x + ", " + y + ", " + z +"]: ");
         }
-        public static void printWithGridVal(int x, int y, int z) {
-            Debug.Log("(x,y,z): [" + x + ", " + y + ", " + z +"]: " + Game.gridOcc[x, y, z]);
-        }
-        public static void printWithGridVal(int [] pos) {
-            Debug.Log("(x,y,z): [" + pos[0] + ", " + pos[1] + ", " + pos[2] +"]: " + Game.gridOcc[pos[0], pos[1], pos[2]]);
-        }
+        // public static void printWithGridVal(int x, int y, int z) {
+        //     Debug.Log("(x,y,z): [" + x + ", " + y + ", " + z +"]: " + Game.gridOcc[x, y, z]);
+        // }
+        // public static void printWithGridVal(int [] pos) {
+        //     Debug.Log("(x,y,z): [" + pos[0] + ", " + pos[1] + ", " + pos[2] +"]: " + Game.gridOcc[pos[0], pos[1], pos[2]]);
+        // }
 
         public static void printBoard(int[,,] gridOcc) {
             Debug.Log(TAG + ": printBoard gridOcc[,,]:"); 

@@ -13,24 +13,24 @@ namespace Framework.Util {
 
         public float rayLength = 1000f;
         public LayerMask layerMask;
-        public Camera prevGameObjectCamera;
+        // public Camera prevGameObjectCamera; // 暂时移走了
         
-        void Update () {  
+        // void Update () {  
 
-            // if (Input.GetMouseButtonDown(0)) {
-            if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject()) {
-                RaycastHit hit;
-                // Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);  
-                Ray ray = prevGameObjectCamera.ScreenPointToRay(Input.mousePosition);  
-                if (Physics.Raycast(ray, out hit, rayLength, layerMask)) {  
-                    // 如果与物体发生碰撞，在Scene视图中绘制射线  
-                    Debug.DrawLine(ray.origin, hit.point, Color.green);  
-                    // 打印射线检测到的物体的名称  
-                    Debug.Log("射线检测到的物体名称: " + hit.transform.name);
-                    Debug.Log(TAG + " " + hit.collider.name); 
-                }  
-            }
-        }
+        //     // if (Input.GetMouseButtonDown(0)) {
+        //     if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject()) {
+        //         RaycastHit hit;
+        //         // Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);  
+        //         Ray ray = prevGameObjectCamera.ScreenPointToRay(Input.mousePosition);  
+        //         if (Physics.Raycast(ray, out hit, rayLength, layerMask)) {  
+        //             // 如果与物体发生碰撞，在Scene视图中绘制射线  
+        //             Debug.DrawLine(ray.origin, hit.point, Color.green);  
+        //             // 打印射线检测到的物体的名称  
+        //             Debug.Log("射线检测到的物体名称: " + hit.transform.name);
+        //             Debug.Log(TAG + " " + hit.collider.name); 
+        //         }  
+        //     }
+        // }
             
     }
 }
