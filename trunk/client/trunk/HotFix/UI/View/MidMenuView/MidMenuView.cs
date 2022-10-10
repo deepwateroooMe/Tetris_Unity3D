@@ -59,16 +59,22 @@ namespace HotFix.UI.View.MidMenuView
             creBtn.onClick.AddListener(OnClickCreButton);
         }
 
-        void OnClickSavButton() {
+        void OnClickSavButton() { // SAVE GAME
         }
-        void OnClickResButton() {
+        void OnClickResButton() { // RESUME GAME: 隐藏当前游戏过程中的视图,就可以了
+            Hide(); // 隐藏当前视图就可以了
         }
-        void OnClickGuiButton() {
+        void OnClickGuiButton() { // 可以视频GUIDE吗?
             // ViewManager.DesginView.Reveal();
         }
-        void OnClickManButton() {
-            // ViewManager.DesginView.Reveal();
+
+// 等预制做得再大一点儿,好一点儿:需要检查一下这里的逻辑,不知道是否因为射线的穿透点到其它实则隐藏的视图,调起了其它窗口,这是不应该的        
+        void OnClickManButton() { // BACK TO MAIN MENU
+            ViewManager.MenuView.Reveal();
+            // 这里需要隐藏所有的游戏视图相关界面,有很多个;请视图管理者来关
+            // ViewManager.CloseOtherRootViews("MenuView");
         }
+
         void OnClickCreButton() {
             // ViewManager.DesginView.Reveal();
         }

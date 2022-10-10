@@ -4,10 +4,10 @@ using Framework.ResMgr;
 
 namespace Framework.MVVM {
 
-    // unity程序集中的抽象基类,定义必要的逻辑(提取出子类可能都会用的方法逻辑这里处理)和需要继承者实现的各类方法
+// unity程序集中的抽象基类,定义必要的逻辑(提取出子类可能都会用的方法逻辑这里处理)和需要继承者实现的各类方法
     public abstract class UnityGuiView : IView<ViewModelBase> {
 
-        // 热更新资源相关的一些getter/setters
+// 热更新资源相关的一些getter/setters
         public virtual string BundleName {
             get {
                 return string.Empty;
@@ -29,7 +29,8 @@ namespace Framework.MVVM {
             }
         }
 
-
+// 这里,热更新里接下来会继承续写的视图: 实则被定义为UI上的一个一个的控件,所以可以获取控件的GameObject,而并非一个一个的场景
+// 并且现框架的热更新只作同一场景下的视图热更新,好像并不曾汲及同一个应用下不同的游戏场景的切换,这块可以再检查扩展一下,如果自己的游戏需要的话        
         public GameObject GameObject {
             get;
             set;
@@ -120,7 +121,7 @@ namespace Framework.MVVM {
             BindingContext.OnFinishReveal();
             if (RevealedAction != null) 
                 RevealedAction();
-            if (IsRoot) 
+            if (IsRoot) // 这种情况下,会框架会要求自动关闭其它所有视图
                 if (CloseOtherRootView != null) 
                     CloseOtherRootView();
             if (SetDownRootIndex != null) 

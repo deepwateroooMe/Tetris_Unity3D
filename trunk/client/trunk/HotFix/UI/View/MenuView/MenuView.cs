@@ -30,6 +30,15 @@ namespace HotFix.UI {
             }
         }
 
+        public override void OnAppear() {
+            base.OnAppear(); // 这里,在基类UnityGuiView里OnRevealed()基类实现里,若是根视图,为自动关闭其它所有视图
+// 这里是只是赋值回调函数,方便将来回调,还是说这里已经回调了呢(这里应该还没有,回去检查)@!            
+            CloseOtherRootView = CloseOtherRootViews; // 只是赋值
+        }
+        void CloseOtherRootViews() {
+            ViewManager.CloseOtherRootViews(ViewName);
+        }
+
         Button eduButton; // Education
         Button claButton; // Classic
         Button chaButton; // Challenge

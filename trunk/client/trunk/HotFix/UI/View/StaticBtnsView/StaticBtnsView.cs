@@ -45,11 +45,9 @@ namespace HotFix.UI {
 
         void OnClickPauButton() {
             ViewManager.MidMenuView.Reveal();
-            Hide();
         }
 
         void OnClickFalButton() {
-            Hide();
         }
     }
 }

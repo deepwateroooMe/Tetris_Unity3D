@@ -31,14 +31,14 @@ namespace HotFix.UI {
             }
         }
 
-        public override void OnAppear() {
-            base.OnAppear();
-            CloseOtherRootView = CloseOtherRootViews;
-        }
-
-        void CloseOtherRootViews() {
-            ViewManager.CloseOtherRootViews(ViewName);
-        }
+// 这里游戏的视图界面被定义成了很多个小的视图,所以把其它小视图都移除是不对的,会移走游戏界面需要用到的控件        
+        // public override void OnAppear() {
+        //     base.OnAppear();
+        //     CloseOtherRootView = CloseOtherRootViews;
+        // }
+        // void CloseOtherRootViews() {
+        //     ViewManager.CloseOtherRootViews(ViewName);
+        // }
 
 // 当进行了这一次的热更新重构,这一次是否可以:
 // 从最底层来优化游戏设计与性能:

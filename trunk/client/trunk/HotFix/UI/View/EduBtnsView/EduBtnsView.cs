@@ -1,4 +1,5 @@
 ﻿using Framework.MVVM;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace HotFix.UI {
@@ -41,6 +42,8 @@ namespace HotFix.UI {
 
             undButton = GameObject.FindChildByName("undBtn").GetComponent<Button>();
             undButton.onClick.AddListener(OnClickUndButton);
+
+            Debug.Log("up to here ");
         }
 
         void OnClickSwaButton() {
