@@ -7,6 +7,7 @@ using HotFix.UI.View.MidMenuView;
 using UnityEngine.EventSystems;
 using HotFix.UI.View.SettingsView;
 using HotFix.UI.View.TestView;
+using UnityEngine.UI;
 
 namespace HotFix.UI {
 
@@ -44,24 +45,48 @@ namespace HotFix.UI {
         // }
 // 仔细看这个方法：不是从热更新程序集里加载出unity里运行所需要的东西了吗？    
         static void CreateBaseUI() {
-            ResourceHelper.LoadCloneAsyn("ui/ui2droot", "UI2DRoot", // 这里是有预设的包，读出资源就可以加载
-                                         (go) => {
-                                             go.name = "UI2DRoot";
-                                             GameObject.DontDestroyOnLoad(go);
-                                             UI2DRoot = go.GetComponent<Canvas>();
-                                             var viewRoot = new GameObject("ViewRoot"); // 实例化一个新空控件当作是视图层的根节点
-                                             viewRoot.layer = LayerMask.NameToLayer("UI");　
-                                                                                              var viewRect = viewRoot.AddComponent<RectTransform>();
-                                             viewRect.SetParent(UI2DRoot.transform, false);
-                                             viewRect.sizeDelta = new Vector2(0, 0);
-                                             viewRect.anchorMin = Vector2.zero;
-                                             viewRect.anchorMax = Vector2.one;
-                                             viewRect.pivot = new Vector2(0.5f, 0.5f);
-                                             //poolRoot = new GameObject("PoolRoot").transform;
-                                             //poolRoot.SetParent(UI2DRoot.transform, false);
-                                             //poolRoot.gameObject.SetActive(false);
-                                             ShowStartPanel();
-                                         }, EAssetBundleUnloadLevel.Never);
+            ResourceHelper
+                .LoadCloneAsyn(
+                    "ui/ui2droot",
+                    "UI2DRoot", // 这里是有预设的包，读出资源就可以加载
+                    (go) => {
+                        go.name = "UI2DRoot";
+                        GameObject.DontDestroyOnLoad(go);
+
+// 因为我相机调不太好,想把这里的位置重新设置成我先前的位置
+                        RectTransform rt = go.GetComponent<RectTransform>();
+                        // // rt.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, 0, rt.rect.width);
+                        // // rt.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 0, rt.rect.height);
+
+// //改变RectTransform的top
+//                         rt.offsetMax = new Vector2(rt.offsetMax.x, top);
+//  //改变RectTransform的bottom
+//                         rt.offsetMin = new Vector2(rt.offsetMin.x, bottom);
+//改变RectTransform的width，height
+                        rt.sizeDelta = new Vector2(1920, 3412);
+//改变RectTransform的pos
+                        // rt.anchoredPosition3D = new Vector3(posx,posy,posz);
+                        // rt.anchoredPosition = new Vector2(posx,posy);
+                        rt.anchoredPosition = new Vector3(130, 231, 0);
+                        // go.GetComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                        // go.GetComponent<CanvasScaler>().referenceResolution = new Vector2 (1920,1200);
+
+                        UI2DRoot = go.GetComponent<Canvas>();
+                        var viewRoot = new GameObject("ViewRoot"); // 实例化一个新空控件当作是视图层的根节点
+                        viewRoot.layer = LayerMask.NameToLayer("UI");　
+                                                                         var viewRect = viewRoot.AddComponent<RectTransform>();
+                        viewRect.SetParent(UI2DRoot.transform, false); // ori
+                        // viewRect.SetParent(UI2DRoot.transform, true);
+                        viewRect.sizeDelta = new Vector2(0, 0);
+                        viewRect.anchorMin = Vector2.zero;
+                        viewRect.anchorMax = Vector2.one;
+                        viewRect.pivot = new Vector2(0.5f, 0.5f);
+
+                        //poolRoot = new GameObject("PoolRoot").transform;
+                        //poolRoot.SetParent(UI2DRoot.transform, false);
+                        //poolRoot.gameObject.SetActive(false);
+                        ShowStartPanel();
+                    }, EAssetBundleUnloadLevel.Never);
         }
 // 遍历当前视图管理器里所管理的所有的视图，凡是不是所指定特定视图的，一律隐藏起来（应该只是不让用户看见，它还在那里，在幕后的某个角落乘凉）
         public static void CloseOtherRootViews(string viewName) {

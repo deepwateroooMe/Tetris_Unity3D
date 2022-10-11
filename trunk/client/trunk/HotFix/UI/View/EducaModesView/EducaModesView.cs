@@ -79,9 +79,8 @@ namespace HotFix.UI {
             ViewManager.ToggleBtnView.Reveal(); // 需要改变按钮视图组,调用更为频繁,单列为一个视图(但是可能还是应该合并到上面static里,因其逻辑复杂只是单列出来,能够文件小逻辑更为清淅一点儿?)
             ViewManager.EduBtnsView.Reveal();   // 教育儿童模式专用两个按钮,只有图像变化
 
-// 这两个预制还没有做好
-            // ViewManager.ComTetroView.Reveal();// 所有游戏主场景需要用到的方块砖视图
-            // ViewManager.EduTetroView.Reveal();// 教育儿童模式专用的方块砖视图
+            ViewManager.ComTetroView.Reveal();// 所有游戏主场景需要用到的方块砖视图
+            ViewManager.EduTetroView.Reveal();// 教育儿童模式专用的方块砖视图
 
             Hide(); // 这个当前的不是说是隐藏的吗?为什么还是出现了呢?
         }

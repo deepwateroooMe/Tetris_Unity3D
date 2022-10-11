@@ -30,42 +30,42 @@ namespace HotFix.UI {
             }
         }
 
-        Button eduButton; // Education
-        Button claButton; // Classic
-        Button chaButton; // Challenge
+        // Button eduButton; // Education
+        // Button claButton; // Classic
+        // Button chaButton; // Challenge
 
-        protected override void OnInitialize() {
-            base.OnInitialize();
+        // protected override void OnInitialize() {
+        //     base.OnInitialize();
 
-            eduButton = GameObject.FindChildByName("eduBtn").GetComponent<Button>();
-            eduButton.onClick.AddListener(OnClickEduButton);
+        //     eduButton = GameObject.FindChildByName("eduBtn").GetComponent<Button>();
+        //     eduButton.onClick.AddListener(OnClickEduButton);
 
-            claButton = GameObject.FindChildByName("claBtn").GetComponent<Button>();
-            claButton.onClick.AddListener(OnClickClaButton);
+        //     claButton = GameObject.FindChildByName("claBtn").GetComponent<Button>();
+        //     claButton.onClick.AddListener(OnClickClaButton);
 
-            chaButton = GameObject.FindChildByName("chaBtn").GetComponent<Button>();
-            chaButton.onClick.AddListener(OnClickChaButton);
+        //     chaButton = GameObject.FindChildByName("chaBtn").GetComponent<Button>();
+        //     chaButton.onClick.AddListener(OnClickChaButton);
 
-            // SetDownRootIndex = ChageViewsIndex;
-        }
-        // void ChageViewsIndex() {
-        //     //UnityEngine.Transform.SetAsLastSibling();
+        //     // SetDownRootIndex = ChageViewsIndex;
         // }
+        // // void ChageViewsIndex() {
+        // //     //UnityEngine.Transform.SetAsLastSibling();
+        // // }
 
-        void OnClickEduButton() {
-            ViewManager.EducaModesView.Reveal();
-            // 当前的视图需要隐藏起来吗? 检查一下逻辑
-            Hide();
-        }
-        void OnClickClaButton() {
+        // void OnClickEduButton() {
+        //     ViewManager.EducaModesView.Reveal();
+        //     // 当前的视图需要隐藏起来吗? 检查一下逻辑
+        //     Hide();
+        // }
+        // void OnClickClaButton() {
          
-            // ViewManager.FindView.Reveal();
-            Hide();
-        }
-        void OnClickChaButton() {
+        //     // ViewManager.FindView.Reveal();
+        //     Hide();
+        // }
+        // void OnClickChaButton() {
        
-            // ViewManager.DesginView.Reveal();
-            Hide();
-        }
+        //     // ViewManager.DesginView.Reveal();
+        //     Hide();
+        // }
     }
 }
