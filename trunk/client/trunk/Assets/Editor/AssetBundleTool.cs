@@ -10,8 +10,8 @@ public class AssetBundleTool : MonoBehaviour {
     static string _dirName = string.Empty;
     
 #region MenuItemFunction
-    // 设置bundleName
-    [MenuItem("Assets/AssetBundle/SetAssetBundleName")]
+    // 设置bundleName Assets/AssetBundle/ ==> Assets/
+    [MenuItem("Assets/SetAssetBundleName")]
     static void SetAssetBundleName() {
         string path = string.Empty;
         Object[] selectedAssets = Selection.GetFiltered(typeof(Object), SelectionMode.Assets);
@@ -21,14 +21,14 @@ public class AssetBundleTool : MonoBehaviour {
         }
     }
     // 增量打包
-    [MenuItem("Assets/AssetBundle/BuildChangedBundle")]
+    [MenuItem("Assets/BuildChangedBundle")]
     static void BuildChangedBundle() {
         BuildTarget buildTarget = GetBuildTarget();
         var root = GetBundleRoot(buildTarget);
         BuildBundle(root, buildTarget, BuildAssetBundleOptions.StrictMode | BuildAssetBundleOptions.ChunkBasedCompression);
     }
     // 强制重新打包
-    [MenuItem("Assets/AssetBundle/RebuildAllBundle")]
+    [MenuItem("Assets/RebuildAllBundle")]
     static void RebuildAllBundle() {
         BuildTarget buildTarget = GetBuildTarget();
         var root = GetBundleRoot(buildTarget);
@@ -37,7 +37,8 @@ public class AssetBundleTool : MonoBehaviour {
 #endregion
     
 #region BuildDll
-    [MenuItem("Assets/AssetBundle/BuildHotFixDllBundle")]
+    // [MenuItem("Assets/BuildHotFixDllBundle")]
+    [MenuItem("Assets/BuildHotFixDllBundle")]
     public static void BuildHotFixDllBundle() {
         BuildTarget buildTarget = GetBuildTarget();
         AssetBundleBuild dll = new AssetBundleBuild() {

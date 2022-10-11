@@ -53,33 +53,40 @@ namespace HotFix.UI {
                         go.name = "UI2DRoot";
                         GameObject.DontDestroyOnLoad(go);
 
-// 因为我相机调不太好,想把这里的位置重新设置成我先前的位置
+                        // CoroutineHelper.StartCoroutine(GetRectSize(go.GetComponent<RectTransform>()));
+// // 因为我相机调不太好,想把这里的位置重新设置成我先前的位置
                         RectTransform rt = go.GetComponent<RectTransform>();
-                        // // rt.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, 0, rt.rect.width);
-                        // // rt.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 0, rt.rect.height);
+                        rt.rotation = Quaternion.Euler(Vector3.zero);
+                        
+//                         // // rt.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, 0, rt.rect.width);
+//                         // // rt.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 0, rt.rect.height);
 
-// //改变RectTransform的top
-//                         rt.offsetMax = new Vector2(rt.offsetMax.x, top);
-//  //改变RectTransform的bottom
-//                         rt.offsetMin = new Vector2(rt.offsetMin.x, bottom);
-//改变RectTransform的width，height
-                        rt.sizeDelta = new Vector2(1920, 3412);
-//改变RectTransform的pos
-                        // rt.anchoredPosition3D = new Vector3(posx,posy,posz);
-                        // rt.anchoredPosition = new Vector2(posx,posy);
-                        rt.anchoredPosition = new Vector3(130, 231, 0);
+// // //改变RectTransform的top
+// //                         rt.offsetMax = new Vector2(rt.offsetMax.x, top);
+// //  //改变RectTransform的bottom
+// //                         rt.offsetMin = new Vector2(rt.offsetMin.x, bottom);
+// //改变RectTransform的width，height
+//                         rt.sizeDelta = new Vector2(1920, 3412);
+// //改变RectTransform的pos
+//                         // rt.anchoredPosition3D = new Vector3(posx,posy,posz);
+//                         // rt.anchoredPosition = new Vector2(posx,posy);
+//                         rt.anchoredPosition3D = new Vector3(130, 231, 0);
+//                         // Vector3 vec = rectTransform.anchoredPosition3D; // 参考的另外的写法
+//                         // rectTransform.anchoredPosition3D = new Vector3(vec.x, vec.y, 0);
+
                         // go.GetComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
                         // go.GetComponent<CanvasScaler>().referenceResolution = new Vector2 (1920,1200);
 
                         UI2DRoot = go.GetComponent<Canvas>();
                         var viewRoot = new GameObject("ViewRoot"); // 实例化一个新空控件当作是视图层的根节点
-                        viewRoot.layer = LayerMask.NameToLayer("UI");　
-                                                                         var viewRect = viewRoot.AddComponent<RectTransform>();
+                        viewRoot.layer = LayerMask.NameToLayer("UI");
+                        var viewRect = viewRoot.AddComponent<RectTransform>();
                         viewRect.SetParent(UI2DRoot.transform, false); // ori
-                        // viewRect.SetParent(UI2DRoot.transform, true);
+                        // // viewRect.SetParent(UI2DRoot.transform, true);
                         viewRect.sizeDelta = new Vector2(0, 0);
                         viewRect.anchorMin = Vector2.zero;
-                        viewRect.anchorMax = Vector2.one;
+                        viewRect.anchorMax = Vector2.one; // ori
+                        // viewRect.anchorMax = Vector2.zero;
                         viewRect.pivot = new Vector2(0.5f, 0.5f);
 
                         //poolRoot = new GameObject("PoolRoot").transform;
@@ -88,17 +95,55 @@ namespace HotFix.UI {
                         ShowStartPanel();
                     }, EAssetBundleUnloadLevel.Never);
         }
+
+        static IEnumerator GetRectSize(RectTransform rt) {
+            //RectTransform rt = go.GetComponent<RectTransform>();
+            float obj_width = rt.rect.size.x;
+            float obj_height = rt.rect.size.y;
+ 
+            //Canvas出现[Some Values Driven By Canvas]提示时UI物体不能及时获取到宽高，需等待
+            yield return obj_width != 0 && obj_width != 0;
+            Debug.Log($"宽 = {obj_width}  高 = {obj_height}");
+
+            rt.sizeDelta = new Vector2(1920, 3412);
+//改变RectTransform的pos
+            // rt.anchoredPosition3D = new Vector3(posx,posy,posz);
+            // rt.anchoredPosition = new Vector2(posx,posy); 
+            rt.anchoredPosition3D = new Vector3(130, 231, 0);
+            rt.rotation = Quaternion.Euler(Vector3.zero);
+            obj_width = rt.rect.size.x;
+            obj_height = rt.rect.size.y;
+            Debug.Log($"宽 = {obj_width}  高 = {obj_height}");
+            Debug.Log("rt.anchoredPosition3D: x: " + rt.anchoredPosition3D.x + ", y: " + rt.anchoredPosition3D.y + ", z: " + rt.anchoredPosition3D.z);
+            Debug.Log("rt.rotation: x: " + rt.rotation.x + ", y: " + rt.rotation.y + ", z: " + rt.rotation.z);
+
+            yield return null;
+        }
+
 // 遍历当前视图管理器里所管理的所有的视图，凡是不是所指定特定视图的，一律隐藏起来（应该只是不让用户看见，它还在那里，在幕后的某个角落乘凉）
         public static void CloseOtherRootViews(string viewName) {
             foreach (var view in views.Values) 
                 if (view.ViewName != viewName && view.IsRoot) 
                     view.Hide();
         }
-    
+
+
 // 这里应该是一个导航视图吧，猜测（不是视图，是panel　？）昨天晚上少眠，今天状态相对较差，期待明天会比较好
 // 明天这些部分，今天所有有疑问的部分都再仔细地看一下    
         static void ShowStartPanel() {
             MenuView.Reveal();
+
+//             // 所有游戏场景公用视图资源等            
+//             ViewManager.DesView.Reveal(); // 不可变的
+// // 这几个视图被我显示到了CANVAS画布之外去了.....需要调整
+//             ViewManager.ScoreDataView.Reveal(); // 可变数据
+//             ViewManager.StaticBtnsView.Reveal();// 基本只有按钮的图像变化刷新
+//             ViewManager.ToggleBtnView.Reveal(); // 需要改变按钮视图组,调用更为频繁,单列为一个视图(但是可能还是应该合并到上面static里,因其逻辑复杂只是单列出来,能够文件小逻辑更为清淅一点儿?)
+//             ViewManager.EduBtnsView.Reveal();   // 教育儿童模式专用两个按钮,只有图像变化
+
+//             ViewManager.ComTetroView.Reveal();// 所有游戏主场景需要用到的方块砖视图
+//             ViewManager.EduTetroView.Reveal();// 教育儿童模式专用的方块砖视图
+
         }
 #region Util
 #endregion

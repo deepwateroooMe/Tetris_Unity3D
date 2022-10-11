@@ -2,16 +2,20 @@
 namespace Framework.Util {
 
     public abstract class CameraWrapBase : MonoBehaviour {
+
         public KeyCode leftKey = KeyCode.LeftArrow;
         public KeyCode rightKey = KeyCode.RightArrow;
         public KeyCode upKey = KeyCode.UpArrow;
         public KeyCode downKey = KeyCode.DownArrow;
+
         public KeyCode zoomInKey = KeyCode.Q;
         public KeyCode zoomOutKey = KeyCode.E;
+
         public float focusOffsetY = 1f;
         public float defaultDistance = 5f;
         public bool acceptInput = true;
         public bool isZoomSpeedUp = true;
+
         public float speedX = 180f;
         public float speedY = 80f;
         public float speedZoom = 30f;
@@ -27,6 +31,7 @@ namespace Framework.Util {
         public float minLimitX = 0f;
         public float maxLimitX = 90f;
         public float zoomDampening = 10f;
+
         public virtual Transform Target {
             get;
             protected set;
@@ -46,6 +51,7 @@ namespace Framework.Util {
         public virtual void Update() {
         }
         public abstract void LateUpdate();
+
         public void GetInput() {
             moveX = 0f;
             moveY = 0f;
@@ -70,6 +76,7 @@ namespace Framework.Util {
                 Zoom(-1);
             }
         }
+
         protected void Zoom(float input) {
             input = Mathf.Clamp(input, -1, 1);
             float final = input * Time.deltaTime * speedZoom;
