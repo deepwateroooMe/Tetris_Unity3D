@@ -1,4 +1,4 @@
-% Created 2022-10-11 Tue 20:22
+% Created 2022-10-12 Wed 09:56
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -36,6 +36,63 @@
 \section{大致进展计划}
 \label{sec-1}
 \begin{itemize}
+\item \textbf{框架搭好测试运行好了}, \textbf{必要的游戏场景资源建好了};接下来 \textbf{会侧重游戏逻辑MVVM设计模式,视图与视图数据的分离与监听通知等}
+\item 前段时间一直想当然天真地以为这个框架是ILRuntime + MVVM设计模式,实际上因为框架中使用了UniRx,这个框架应该更多的是MVP? 需要再好好读一下理解一下框架中的双向数据传递以及数据驱动等,把这些都弄懂理顺
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221012_085735.png}
+\begin{itemize}
+\item MVP设计模式 Model-View-(Reactive)Presenter Pattern
+\item 用UniRx可以实现MVP(MVRP)设计模式。
+\item 为什么应该用MVP模式而不是MVVM模式？Unity没有提供UI绑定机制，创建一个绑定层过于复杂并且会对性能造成影响。 尽管如此，视图还是需要更新。Presenters层知道view的组件并且能更新它们。虽然没有真的绑定，但Observables可以通知订阅者，功能上也差不多。这种模式叫做Reactive Presenter：
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// Presenter for scene(canvas) root.
+public class ReactivePresenter : MonoBehaviour {
+
+    // Presenter is aware of its View (binded in the inspector)
+    public Button MyButton;
+    public Toggle MyToggle;
+    
+    // State-Change-Events from Model by ReactiveProperty
+    Enemy enemy = new Enemy(1000);
+
+    void Start() {
+        // Rx supplies user events from Views and Models in a reactive manner 
+        MyButton.OnClickAsObservable().Subscribe(_ => enemy.CurrentHp.Value -= 99);
+        MyToggle.OnValueChangedAsObservable().SubscribeToInteractable(MyButton);
+
+        // Models notify Presenters via Rx, and Presenters update their views
+        enemy.CurrentHp.SubscribeToText(MyText);
+        enemy.IsDead.Where(isDead => isDead == true)
+            .Subscribe(_ => {
+                MyToggle.interactable = MyButton.interactable = false;
+            });
+    }
+}
+
+// The Model. All property notify when their values change
+public class Enemy {
+    public ReactiveProperty<long> CurrentHp { get; private set; }
+    public ReactiveProperty<bool> IsDead { get; private set; }
+
+    public Enemy(int initialHp) {
+        // Declarative Property
+        CurrentHp = new ReactiveProperty<long>(initialHp);
+        IsDead = CurrentHp.Select(x => x <= 0).ToReactiveProperty();
+    }
+}
+\end{minted}
+\item 视图层是一个场景scene，是Unity的hierachy定义的。展示层在Unity初始化时将视图层绑定。XxxAsObservable方法可以很容易的创建事件信号signals，没有任何开销。SubscribeToText and SubscribeToInteractable 都是简洁的类似绑定的辅助函数。虽然这些工具很简单，但是非常有用。在Unity中使用很平滑，性能很好，而且让你的代码更简洁。
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221012_085957.png}
+\begin{itemize}
+\item V -> RP -> M -> RP -> V 完全用响应式的方式连接。UniRx提供了所有的适配方法和类，不过其他的MVVM(or MV*)框架也可以使用。UniRx/ReactiveProperty只是一个简单的工具包。
+\item 下面有个Rx讲给小白说的话:
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221012_095227.png}
+\begin{itemize}
 \item 今天晚上和明天就力所能力地看可以 \textbf{由现有的基本框架到明天傍晚能够实现多少基本流程}
 \item 现在,进行热更新重构后,感觉 \textbf{第一要务是尽快地把现有功能都整理实现做出来,做出来是第一要务;} 丑就丑,美术和优化绝大部分实现完后才再考虑
 \item 过程中纪录自己感觉需要重构或实现的点滴,需要补的知道点等;在无聊近乎麻木的重构过程中也希望能尽快地捡起需要补的知识点;希望最终整个游戏的实现流程由框架搭建测试通过,到流程由简到难都是顺畅的
@@ -46,6 +103,11 @@
 \end{itemize}
 \section{游戏基本场景设计}
 \label{sec-2}
+\begin{itemize}
+\item 热更新里重新实现在的游戏主场景如下:
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221011_201317.png} 
 \begin{itemize}
 \item 主游戏菜单与游戏过程中选择菜单: 最右为Educational has 3 choices:
 \end{itemize}
@@ -66,13 +128,9 @@
 
 \includegraphics[width=.9\linewidth]{./pic/readme_20221007_195217.png}
 \begin{itemize}
-\item 现在是热更新的框架到上个周末就搭好了,这一两天忙点儿,必要的游戏场景视图基本搭配到位: 场景的搭建没有任何复杂的地方,只是相机的使用相对不够熟练,所以的都只是基本功
+\item 现在是热更新的框架到上个周末就搭好了,这一两天忙点儿,必要的游戏场景视图基本搭配到位: 场景的搭建没有任何复杂的地方,只是相机的使用相对不够熟练,所有的都只是场景搭建基本功
 \end{itemize}
 
-\includegraphics[width=.9\linewidth]{./pic/readme_20221011_201317.png} 
-\begin{itemize}
-\item 框架搭好测试运行好了,必要的游戏场景资源建好了;接下来会侧重游戏逻辑MVVM设计模式,视图与视图数据的分离与监听通知等
-\end{itemize}
 \section{进展过程与基本问题}
 \label{sec-3}
 \begin{itemize}
@@ -106,6 +164,7 @@
 -　主要是两个小项目：
 \begin{itemize}
 \item 资源包的准备：热更新分程序热更新和资源的热更新；那么现在的项目就是资源的热更新是分成了两个小项目来实现资源热更新资源包的自动打包(分场景打包和其它资源打包)；程序热更新因为主要是更新视图，游戏的所有基本逻辑主程序都运行在热更新程序包下，所以三个小项目便可以实现所有资源(是指包括资源和程序)的自动打包为可上载热更新服务器的程序包。(三个小项目看起来是最简单的，但是全部实现出来可能还是工作量最大的)
+
 \item 服务器层的相对理解：应该是需要一个好用的第三方程序，或是合适好有物服务器来提供必要的资源包上载到服务器；服务器层可能还需要根据不同的应用平台(IOS安卓等)来进行一定的配置，以及必要的压力测试保证相对大量用户的情况下可以正常上载下载运行(后一步暂不考虑)
 \item 客户端：对于不同的客户端应用平台，游戏运行时的资源包MD5比对的原理要再熟悉一下
 \item 我觉得我该考虑尽快至少建个本地服务器了

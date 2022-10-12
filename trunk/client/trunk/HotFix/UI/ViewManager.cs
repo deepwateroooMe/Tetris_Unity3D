@@ -97,7 +97,7 @@ namespace HotFix.UI {
                     }, EAssetBundleUnloadLevel.Never);
         }
 
-        static IEnumerator GetRectSize(RectTransform rt) {
+        static IEnumerator GetRectSize(RectTransform rt) { // 自己添加到这里的
 //             //RectTransform rt = go.GetComponent<RectTransform>();
 //             float obj_width = rt.rect.size.x;
 //             float obj_height = rt.rect.size.y;
@@ -129,29 +129,11 @@ namespace HotFix.UI {
                     if (view.ViewName != viewName) 
                     view.Hide();
         }
-        // public static void CloseAllOtherViews(string viewName) {
-        //     foreach (var view in views.Values) 
-        //         if (view.ViewName != viewName) 
-        //             view.Hide();
-        // }
-
 
 // 这里应该是一个导航视图吧，猜测（不是视图，是panel　？）昨天晚上少眠，今天状态相对较差，期待明天会比较好
 // 明天这些部分，今天所有有疑问的部分都再仔细地看一下    
         static void ShowStartPanel() {
             MenuView.Reveal();
-
-//             // 所有游戏场景公用视图资源等            
-//             ViewManager.DesView.Reveal(); // 不可变的
-// // 这几个视图被我显示到了CANVAS画布之外去了.....需要调整
-//             ViewManager.ScoreDataView.Reveal(); // 可变数据
-//             ViewManager.StaticBtnsView.Reveal();// 基本只有按钮的图像变化刷新
-//             ViewManager.ToggleBtnView.Reveal(); // 需要改变按钮视图组,调用更为频繁,单列为一个视图(但是可能还是应该合并到上面static里,因其逻辑复杂只是单列出来,能够文件小逻辑更为清淅一点儿?)
-//             ViewManager.EduBtnsView.Reveal();   // 教育儿童模式专用两个按钮,只有图像变化
-
-//             ViewManager.ComTetroView.Reveal();// 所有游戏主场景需要用到的方块砖视图
-//             ViewManager.EduTetroView.Reveal();// 教育儿童模式专用的方块砖视图
-
         }
 #region Util
 #endregion

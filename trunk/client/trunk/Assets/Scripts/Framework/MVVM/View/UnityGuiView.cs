@@ -30,7 +30,7 @@ namespace Framework.MVVM {
         }
 
 // 这里,热更新里接下来会继承续写的视图: 实则被定义为UI上的一个一个的控件,所以可以获取控件的GameObject,而并非一个一个的场景
-// 并且现框架的热更新只作同一场景下的视图热更新,好像并不曾汲及同一个应用下不同的游戏场景的切换,这块可以再检查扩展一下,如果自己的游戏需要的话        
+// 现框架的热更新只作同一场景下的视图热更新,好像并不曾汲及同一个应用下不同的游戏场景的切换,这块可以再检查扩展一下,如果自己的游戏需要的话        
         public GameObject GameObject {
             get;
             set;
@@ -62,10 +62,13 @@ namespace Framework.MVVM {
                 return false;
             }
         }
-        public static Action SetDownRootIndex;
-        public Action CloseOtherRootView;
+
         protected readonly PropertyBinder<ViewModelBase> binder = new PropertyBinder<ViewModelBase>();
         public readonly BindableProperty<ViewModelBase> viewModelProperty = new BindableProperty<ViewModelBase>();
+
+        public static Action SetDownRootIndex; // 这些是可以最终指删除的内容
+        public Action CloseOtherRootView; // 公用回调接口
+
         public Action RevealedAction {
             get;
             set;
@@ -74,7 +77,7 @@ namespace Framework.MVVM {
             get;
             set;
         }
-        public ViewModelBase BindingContext {
+        public ViewModelBase BindingContext { // 实现在了前端视图View与后端视图模型ViewModel的绑定
             get {
                 return viewModelProperty.Value;
             }
@@ -83,14 +86,15 @@ namespace Framework.MVVM {
                     OnInitialize();
                     _isInitialized = true;
                 }
-                viewModelProperty.Value = value;
+                viewModelProperty.Value = value; // 会自动触发广告天下通知所有订阅的监听回调 
             }
         }
         protected virtual void OnInitialize() {
             GameObject = ResourceConstant.Loader.LoadClone(BundleName, AssetName, EAssetBundleUnloadLevel.Never);
+// 第一次实例化该视图的时候,为什么会一定要再加个CanvasGroup元件Component呢?            
             GameObject.AddComponent<CanvasGroup>();
             Transform.SetParent(GameObject.Find("ViewRoot").transform, false);
-            viewModelProperty.OnValueChanged += OnBindingContextChanged;
+            viewModelProperty.OnValueChanged += OnBindingContextChanged; // 注册视图背后视图模型的监听回调函数
         }
         public void Reveal(bool immediate = true, Action action = null) {
             if (action != null) 
@@ -109,11 +113,13 @@ namespace Framework.MVVM {
         public virtual void OnAppear() {
             GameObject.SetActive(true);
         }
+
         private void OnReveal(bool immediate) {
             BindingContext.OnStartReveal();
             if (immediate) {
-                Transform.localScale = Vector3.one;
-                CanvasGroup.alpha = 1;
+// 这里就是昨天早些时候的我预制所有的放大位数都不起效的原因了,因为第一次实例化时强改成了(1,1,1),所以先前的(7,7,7)都变成了(1,1,1)!!!
+                Transform.localScale = Vector3.one; 
+                CanvasGroup.alpha = 1; // 设置为全透明
             } else 
                 StartAnimatedReveal();
         }
@@ -121,7 +127,7 @@ namespace Framework.MVVM {
             BindingContext.OnFinishReveal();
             if (RevealedAction != null) 
                 RevealedAction();
-            if (IsRoot) // 这种情况下,会框架会要求自动关闭其它所有视图
+            if (IsRoot) // 这种情况下,该框架会要求自动关闭其它所有视图
                 if (CloseOtherRootView != null) 
                     CloseOtherRootView();
             if (SetDownRootIndex != null) 
@@ -130,7 +136,7 @@ namespace Framework.MVVM {
         private void OnHide(bool immediate) {
             BindingContext.OnStartHide();
             if (immediate) {
-                Transform.localScale = Vector3.zero;
+                Transform.localScale = Vector3.zero; // .....
                 CanvasGroup.alpha = 0;
             } else 
                 StartAnimatedHide();
@@ -159,6 +165,7 @@ namespace Framework.MVVM {
         protected virtual void StartAnimatedHide() {
             CanvasGroup.interactable = false;
         }
+
         protected virtual void OnBindingContextChanged(ViewModelBase oldValue, ViewModelBase newValue) {
             binder.UnBind(oldValue);
             binder.Bind(newValue);

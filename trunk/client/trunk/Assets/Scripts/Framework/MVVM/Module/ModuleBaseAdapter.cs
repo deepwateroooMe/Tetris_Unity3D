@@ -22,13 +22,9 @@ public class ModuleBaseAdapter : CrossBindingAdaptor {
     }
 
     class ModuleBaseAdaptor : ModuleBase, CrossBindingAdaptorType {
+
         ILTypeInstance instance;
         ILRuntime.Runtime.Enviorment.AppDomain appdomain;
-
-        IMethod _onInitialize;
-        bool _onInitializeGot;
-        IMethod _excute;
-        bool _excuteGot;
 
         public ModuleBaseAdaptor() { }
         public ModuleBaseAdaptor(ILRuntime.Runtime.Enviorment.AppDomain appdomain, ILTypeInstance instance) {
@@ -46,6 +42,7 @@ public class ModuleBaseAdapter : CrossBindingAdaptor {
             if (_onInitialize != null) 
                 appdomain.Invoke(_onInitialize, instance, null);
         }
+
         public override void Excute() {
             if (!_excuteGot) {
                 _excute = instance.Type.GetMethod("Excute");
@@ -54,5 +51,10 @@ public class ModuleBaseAdapter : CrossBindingAdaptor {
             if (_excute != null) 
                 appdomain.Invoke(_excute, instance, null);
         }
+
+        IMethod _onInitialize;
+        bool _onInitializeGot;
+        IMethod _excute;
+        bool _excuteGot;
     }
 }

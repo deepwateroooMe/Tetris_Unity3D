@@ -22,6 +22,7 @@ public class ViewModelBaseAdapter : CrossBindingAdaptor {
     }
 
     class ViewModelBaseAdaptor : ViewModelBase, CrossBindingAdaptorType {
+
         ILTypeInstance instance;
         ILRuntime.Runtime.Enviorment.AppDomain appdomain;
 

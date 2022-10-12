@@ -4,6 +4,8 @@ using ILRuntime.Runtime.Enviorment;
 using ILRuntime.Runtime.Intepreter;
 using Framework.MVVM;
 
+// 适配器是定义在Unity的程序集里,但是是作为封装后的.dll提供给热更新程序域使用,
+// 以方便热更新程序域里在必要的时候调用Unity里相关的回调等,以便能够实现热更新程序域里完成(原本应该是在Unity程序域里实现的)绝大部分的游戏逻辑
 public class UnityGuiViewAdapter : CrossBindingAdaptor {
 
 // 实现基类的三个方法    
@@ -22,6 +24,7 @@ public class UnityGuiViewAdapter : CrossBindingAdaptor {
     }
 
     class UnityGuiViewAdaptor : UnityGuiView, CrossBindingAdaptorType {
+
         ILTypeInstance instance; // <<<<<<<<<< 接口类里的实例,公用接口
         ILRuntime.Runtime.Enviorment.AppDomain appdomain;
 
@@ -30,8 +33,10 @@ public class UnityGuiViewAdapter : CrossBindingAdaptor {
             this.appdomain = appdomain;
             this.instance = instance;
         }
-
         public ILTypeInstance ILInstance { get { return instance; } } // <<<<<<<<<< 
+// 上面的代码都是100% 的框架套路写法
+
+// 定义热更新里的基类逻辑: 它说,如果热更新运行到这个函数,就调用unity里的OnInitialize()生命周期回调函数(如此,便实现了热更新调用unity程序域里的方法)
         protected override void OnInitialize() {
             if (!_onInitializeGot) {
                 _onInitialize = instance.Type.GetMethod("OnInitialize");
@@ -137,9 +142,11 @@ public class UnityGuiViewAdapter : CrossBindingAdaptor {
             }
         }
 
-// 这里跨域继承的本质是说:借助了一个公用接口,使得两个不同的域之间架起了一座可以调用(热更新调用unity里的资源方法回调等)的桥;
-// 在每个选择性地进行了跨域适配的适配器里,都存有一个(上下文传下来的unity域的引用instance,)那么就可以借用这个来调用热更新程序域外的方法等
-// 这个框架里的CRL跨域适配是选择性,只在必要的层面和必要的视图逻辑上使用跨域继承
+// 这里跨域继承的本质是说:借助了一个公用接口(和相应的公用接口层面的适配器),使得两个不同的域之间架起了一座可以调用(热更新调用unity里的资源方法回调等)的桥;
+// 在每个选择性地进行了跨域适配的适配器里,都存有一个(上下文传下来的unity程序域实例的引用instance reference,)
+// 那么就可以借用这个unity instance reference来调用热更新程序域以外unity域里的方法等
+// 这个框架里的CRL跨域适配是选择性,只在必要的层面和必要的视图逻辑上使用跨域继承(框架项目里注册了六类不同的适配器)
+        
         object[] param2 = new object[2];
         protected override void OnBindingContextChanged(ViewModelBase oldValue, ViewModelBase newValue) {
             if (!_onBindingContextChangedGot) {
@@ -305,3 +312,6 @@ public class UnityGuiViewAdapter : CrossBindingAdaptor {
         bool isOnBindingContextChangedInvoking = false;
     }
 }
+
+
+
