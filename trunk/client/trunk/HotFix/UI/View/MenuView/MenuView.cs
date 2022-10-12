@@ -36,7 +36,8 @@ namespace HotFix.UI {
             CloseOtherRootView = CloseOtherRootViews; // 只是赋值
         }
         void CloseOtherRootViews() {
-            ViewManager.CloseOtherRootViews(ViewName);
+            // ViewManager.CloseOtherRootViews(ViewName);
+            ViewManager.CloseOtherRootViews("MenuView");
         }
 
         Button eduButton; // Education

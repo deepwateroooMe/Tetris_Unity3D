@@ -52,11 +52,12 @@ namespace HotFix.UI {
                     (go) => {
                         go.name = "UI2DRoot";
                         GameObject.DontDestroyOnLoad(go);
+                        // go.GetComponent<RectTransform>().rotation = Quaternion.Euler(Vector3.zero);
 
-                        // CoroutineHelper.StartCoroutine(GetRectSize(go.GetComponent<RectTransform>()));
+                        CoroutineHelper.StartCoroutine(GetRectSize(go.GetComponent<RectTransform>()));
 // // 因为我相机调不太好,想把这里的位置重新设置成我先前的位置
-                        RectTransform rt = go.GetComponent<RectTransform>();
-                        rt.rotation = Quaternion.Euler(Vector3.zero);
+                        // RectTransform rt = go.GetComponent<RectTransform>();
+                        // rt.rotation = Quaternion.Euler(Vector3.zero);
                         
 //                         // // rt.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, 0, rt.rect.width);
 //                         // // rt.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 0, rt.rect.height);
@@ -97,35 +98,42 @@ namespace HotFix.UI {
         }
 
         static IEnumerator GetRectSize(RectTransform rt) {
-            //RectTransform rt = go.GetComponent<RectTransform>();
-            float obj_width = rt.rect.size.x;
-            float obj_height = rt.rect.size.y;
+//             //RectTransform rt = go.GetComponent<RectTransform>();
+//             float obj_width = rt.rect.size.x;
+//             float obj_height = rt.rect.size.y;
  
-            //Canvas出现[Some Values Driven By Canvas]提示时UI物体不能及时获取到宽高，需等待
-            yield return obj_width != 0 && obj_width != 0;
-            Debug.Log($"宽 = {obj_width}  高 = {obj_height}");
+//             //Canvas出现[Some Values Driven By Canvas]提示时UI物体不能及时获取到宽高，需等待
+//             yield return obj_width != 0 && obj_width != 0;
+//             Debug.Log($"宽 = {obj_width}  高 = {obj_height}");
 
-            rt.sizeDelta = new Vector2(1920, 3412);
-//改变RectTransform的pos
-            // rt.anchoredPosition3D = new Vector3(posx,posy,posz);
-            // rt.anchoredPosition = new Vector2(posx,posy); 
-            rt.anchoredPosition3D = new Vector3(130, 231, 0);
+//             rt.sizeDelta = new Vector2(1920, 3412);
+// //改变RectTransform的pos
+//             // rt.anchoredPosition3D = new Vector3(posx,posy,posz);
+//             // rt.anchoredPosition = new Vector2(posx,posy); 
+//             rt.anchoredPosition3D = new Vector3(130, 231, 0);
             rt.rotation = Quaternion.Euler(Vector3.zero);
-            obj_width = rt.rect.size.x;
-            obj_height = rt.rect.size.y;
-            Debug.Log($"宽 = {obj_width}  高 = {obj_height}");
-            Debug.Log("rt.anchoredPosition3D: x: " + rt.anchoredPosition3D.x + ", y: " + rt.anchoredPosition3D.y + ", z: " + rt.anchoredPosition3D.z);
+            // obj_width = rt.rect.size.x;
+            // obj_height = rt.rect.size.y;
+            // Debug.Log($"宽 = {obj_width}  高 = {obj_height}");
+            // Debug.Log("rt.anchoredPosition3D: x: " + rt.anchoredPosition3D.x + ", y: " + rt.anchoredPosition3D.y + ", z: " + rt.anchoredPosition3D.z);
             Debug.Log("rt.rotation: x: " + rt.rotation.x + ", y: " + rt.rotation.y + ", z: " + rt.rotation.z);
-
             yield return null;
         }
 
-// 遍历当前视图管理器里所管理的所有的视图，凡是不是所指定特定视图的，一律隐藏起来（应该只是不让用户看见，它还在那里，在幕后的某个角落乘凉）
+// 遍历当前视图管理器里所管理的所有的视图，凡是不是所指定特定视图的，并且是根视图,一律隐藏起来
+        // （应该只是不让用户看见，它还在那里，在幕后的某个角落乘凉）
+// 问题是:其它的不是根视图的,视图管理器它不管 ?!!!        
         public static void CloseOtherRootViews(string viewName) {
             foreach (var view in views.Values) 
-                if (view.ViewName != viewName && view.IsRoot) 
+                // if (view.ViewName != viewName && view.IsRoot) // 我把这里改写了,因为我目前还没有调控IsRoot视图参数
+                    if (view.ViewName != viewName) 
                     view.Hide();
         }
+        // public static void CloseAllOtherViews(string viewName) {
+        //     foreach (var view in views.Values) 
+        //         if (view.ViewName != viewName) 
+        //             view.Hide();
+        // }
 
 
 // 这里应该是一个导航视图吧，猜测（不是视图，是panel　？）昨天晚上少眠，今天状态相对较差，期待明天会比较好
@@ -172,7 +180,7 @@ namespace HotFix.UI {
 // 这部分的细节暂时跳过，等改天实现自己游戏热更新需要参考的时候还可以修补上    
 
 #region Other
-        static bool isOverUI = false;
+         static bool isOverUI = false;
         static bool isCheckedOverUI = false;
         static List<RaycastResult> raycastResults = new List<RaycastResult>();
         // 是否触摸到UI控件

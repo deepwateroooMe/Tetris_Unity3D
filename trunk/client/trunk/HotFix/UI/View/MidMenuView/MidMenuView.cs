@@ -72,7 +72,8 @@ namespace HotFix.UI.View.MidMenuView
         void OnClickManButton() { // BACK TO MAIN MENU
             ViewManager.MenuView.Reveal();
             // 这里需要隐藏所有的游戏视图相关界面,有很多个;请视图管理者来关
-            // ViewManager.CloseOtherRootViews("MenuView");
+            ViewManager.CloseOtherRootViews("MenuView");
+            Hide();
         }
 
         void OnClickCreButton() {
