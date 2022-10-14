@@ -124,7 +124,8 @@ namespace HotFix.UI {
         // （应该只是不让用户看见，它还在那里，在幕后的某个角落乘凉）
 // 问题是:其它的不是根视图的,视图管理器它不管 ?!!!        
         public static void CloseOtherRootViews(string viewName) {
-            foreach (var view in views.Values) 
+            foreach (var view in views.Values)
+// 设置根视图层级:那么若是根视图下仍有好几个子视图,就能够站在更高的层面上统一调整其以及所有子视图的显示与隐藏,比如游戏视图需要设置根视图为TRUE                
                 // if (view.ViewName != viewName && view.IsRoot) // 我把这里改写了,因为我目前还没有调控IsRoot视图参数
                     if (view.ViewName != viewName) 
                     view.Hide();
@@ -134,32 +135,117 @@ namespace HotFix.UI {
 // 明天这些部分，今天所有有疑问的部分都再仔细地看一下    
         static void ShowStartPanel() {
             MenuView.Reveal();
+            // ViewManager.DownRootView.Reveal(); // 考虑这里是否需要将游戏模式转化为gameMode index或是int值?
         }
 #region Util
 #endregion
 
-// #region GridItemPool
-//         public static Transform poolRoot;
-// // 这里所彩的数据结构栈：应该是与特定的应用特性相关的，能够保证后进先出和保证效率的
-//         public static Dictionary<string, Stack<GameObject>> gridItemPool = new Dictionary<string, Stack<GameObject>>();
-//         public static GameObject GetGridItemFromPool(string name) {
-//             if (gridItemPool.ContainsKey(name) && gridItemPool[name].Count > 0) {
-//                 var gridItem = gridItemPool[name].Pop();
-//                 return gridItem;
-//             }
-//             return null;
-//         }
-//         public static void CacheGridItemToPool(string name, GameObject go) {
-//             if (!gridItemPool.ContainsKey(name)) 
-//                 gridItemPool[name] = new Stack<GameObject>();
-//             Stack<GameObject> goList = gridItemPool[name];
-//             go.transform.SetParent(poolRoot, false);
-//             goList.Push(go);
-//         }
-// #endregion
+// 此区域目前只作参考 
+// 这个过于简单的资源池 理解参考:在视图层面的某个视图中,对视图中可能会出现的各元素使用了资源池.
+// 希望方块砖游戏中要用到的资源池能够设计得再好一点儿,不同类型的缓存资源需要有缓存上限
+#region GridItemPool
+        public static Transform poolRoot; // 固定的视图层面资源池根节点
+// 资源池：每种不同类型使用一个栈来保存缓存的该类型资源,FIFO
+// 这里就当是一个资源缓存池,每种类型的资源使用栈来保存,以最大限度地优化进出栈内存性能?
+        public static Dictionary<string, Stack<GameObject>> gridItemPool = new Dictionary<string, Stack<GameObject>>(); // 栈
+
+        public static GameObject GetGridItemFromPool(string name) {
+            if (gridItemPool.ContainsKey(name) && gridItemPool[name].Count > 0) {
+                var gridItem = gridItemPool[name].Pop();
+                return gridItem;
+            }
+            return null; // 如果没有返回空,得保证需要的时候,资源池拿不到,也得从加工厂里加工一个出来
+        }
+        public static void CacheGridItemToPool(string name, GameObject go) { // 将某种类型的元件缓存到资源池中去
+            if (!gridItemPool.ContainsKey(name)) 
+                gridItemPool[name] = new Stack<GameObject>();
+            Stack<GameObject> goList = gridItemPool[name];
+            go.transform.SetParent(poolRoot, false); // 所有需要缓存的资源对象均以此poolRoot为根节点
+            goList.Push(go);
+        }
+#endregion
     
-// 视图里的小物件管理，是热更新起始时重要的三个步骤之二:　可是仍然感觉他们只是很不起眼的一两个小物件，根本不值一提呀
-// 这部分的细节暂时跳过，等改天实现自己游戏热更新需要参考的时候还可以修补上    
+// 视图里的小物件管理，是热更新起始时重要的三个步骤之二:　视图中需要可能会用到的运行时需要实例化的小物件(比如各种不同类型的方块砖/阴影砖,粒子系统等)管理
+// 与此部分相关联的是UI csharp项目中这些不同类型方块砖(以及不同类型的小MINO,粒子系统)的预设制作,相关数据导入?
+// 视图中使用到的运行时需要实例化的小物件包括:
+        // 各种不同类型的方块砖(7种)
+        // 各种不同类型方块砖的一一对应阴影方块砖(7种)
+        // 各种不同类型方块砖的一一对应小MINO(7种)
+        // 教育模式下的粒子系统(1种?)
+        // 延伸扩展的可以包括游戏中使用到的不同层级的BUTTON: 主页面的三个按钮可以是一种类型;游戏主界面的各个调控按钮(swap, undo, fallfast, pause, toggleBtn)? 但是因为目前已经本身是在热更新程序集,这个思路可能又会抽象出一层更为高层的架构,暂时就只是想想算了,但可以考虑和收集思路
+    // 那么就需要使用至少三个?四个字典来管理这些个不同类型的数据,以便实时实例化
+#region ItemDatas
+        public static void InitializeItemDatas() {
+            string planItemJson = ResourceHelper.LoadTextAsset("ui/config/planitem", "planitem", EAssetBundleUnloadLevel.LoadOver).text;
+            //Debug.Log("planItemJson: " + planItemJson);
+            if (!string.IsNullOrEmpty(planItemJson)) {
+                InitializePlanItemData(planItemJson);
+            }
+            string chapterItemJson = ResourceHelper.LoadTextAsset("ui/config/chapteritem", "chapteritem", EAssetBundleUnloadLevel.LoadOver).text;
+            //Debug.Log("chapterItemJson: " + chapterItemJson);
+            if (!string.IsNullOrEmpty(chapterItemJson)) {
+                InitializeChapterItemData(chapterItemJson);
+            }
+        }
+        static Dictionary<int, PlanItemData> planItemDatas;
+        static Dictionary<int, ChapterItemData> chapterItemDatas;
+        public static Dictionary<int, PlanItemData> GetPlanItemDatas() {
+            return planItemDatas;
+        }
+        public static Dictionary<int, ChapterItemData> GetChapterItemDatas() {
+            return chapterItemDatas;
+        }
+        public static PlanItemData GetPlanItemData(int id) {
+            if (planItemDatas.ContainsKey(id)) {
+                return planItemDatas[id];
+            } else {
+                return null;
+            }
+        }
+        public static ChapterItemData GetChapterItemData(int id) {
+            if (chapterItemDatas.ContainsKey(id)) {
+                return chapterItemDatas[id];
+            } else {
+                return null;
+            }
+        }
+        static void InitializePlanItemData(string jsonStr) {
+            if (jsonStr != null) {
+                planItemDatas = new Dictionary<int, PlanItemData>();
+                JsonArray jsonArray = JsonSerializer.Deserialize(jsonStr) as JsonArray;
+                if (jsonArray != null) {
+                    foreach (JsonValue jsonValue in jsonArray) {
+                        PlanItemData data = PlanItemData.JsonToObject(jsonValue.ToString());
+                        if (!planItemDatas.ContainsKey(data.id)) {
+                            planItemDatas.Add(data.id, data);
+                        } else {
+                            Debug.LogError("planItemDatas contains key: " + data.id);
+                        }
+                    }
+                } else {
+                    Debug.LogError("planItemData jsonArray is null");
+                }
+            }
+        }
+        static void InitializeChapterItemData(string jsonStr) {
+            if (jsonStr != null) {
+                chapterItemDatas = new Dictionary<int, ChapterItemData>();
+                JsonArray jsonArray = JsonSerializer.Deserialize(jsonStr) as JsonArray;
+                if (jsonArray != null) {
+                    foreach (JsonValue jsonValue in jsonArray) {
+                        ChapterItemData data = ChapterItemData.JsonToObject(jsonValue.ToString());
+                        if (!chapterItemDatas.ContainsKey(data.type)) {
+                            chapterItemDatas.Add(data.type, data);
+                        } else {
+                            Debug.LogError("chapterItemDatas contains key: " + data.type);
+                        }
+                    }
+                } else {
+                    Debug.LogError("chapterItemData jsonArray is null");
+                }
+            }
+        }
+#endregion
 
 #region Other
          static bool isOverUI = false;

@@ -9,22 +9,23 @@ namespace HotFix.Data.Data {
     public class GameData {
         private const string TAG = "GameData";
     
-        public int gameMode;
-        public int score;
+        public int gameMode; // 这里把几种不同的游戏模式当作几个不同的(场景)来处理?
+        public int score; // 当前游戏进展数据: 得分,级别,消除过的行数等
         public int level;
         public int lines;
 
+        // 这里始终是以字符串来标记游戏场景里可能会存在的各种物件: 游戏面板大方格里的所有数据,下一(两)个方块砖的类型等 
         public string prevPreview;
         public string prevPreview2;
         public string nextTetrominoType;    
         public string previewTetrominoType; 
         public string previewTetromino2Type;
     
-        public SerializedTransform cameraData;
-        public TetrominoData nextTetrominoData; 
-        public List<MinoData> grid;
-        public List<TetrominoData> parentList;
-        public bool saveForUndo;
+        public SerializedTransform cameraData;  // 相机数据
+        public TetrominoData nextTetrominoData; // 大方格中的当前方块砖
+        public List<MinoData> grid;             // 大方格中的所有先前数据
+        public List<TetrominoData> parentList;  // 如果有方块砖链表,那么链表中的方块砖有可能是残缺的(因为游戏过程中的消除行与列等)
+        public bool saveForUndo; // 区分教育模式与经典模式 
         
         public GameData (Game game) { 
             gameMode = game.gameMode;
@@ -60,7 +61,7 @@ namespace HotFix.Data.Data {
                 }
             }
             
-            // dealing with Game Data: gird
+            // dealing with Game Data: gird 
             int [] pos = new int[3];
             int x = 0, y = 0, z = 0;
             for (int i = 0; i < listSize; i++) {

@@ -68,7 +68,7 @@ namespace Framework.Core {
             appDomain.DelegateManager.RegisterMethodDelegate<TextAsset>();
             appDomain.DelegateManager.RegisterMethodDelegate<Sprite>();
             appDomain.DelegateManager.RegisterMethodDelegate<Texture2D>(); 
-            appDomain.DelegateManager.RegisterMethodDelegate<TapGesture>(); // 暂时不理会触屏手势
+            appDomain.DelegateManager.RegisterMethodDelegate<TapGesture>(); 
             appDomain.DelegateManager.RegisterMethodDelegate<LongPressGesture>();
             appDomain.DelegateManager.RegisterMethodDelegate<DragGesture>();
             appDomain.DelegateManager.RegisterMethodDelegate<PinchGesture>();
@@ -132,7 +132,7 @@ namespace Framework.Core {
             });
 
             #if UNITY_IPHONE
-                        appDomain.DelegateManager.RegisterDelegateConvertor<com.mob.FinishedRecordEvent>((action) => {
+            appDomain.DelegateManager.RegisterDelegateConvertor<com.mob.FinishedRecordEvent>((action) => {
                 return new com.mob.FinishedRecordEvent((ex) => {
                     ((Action<Exception>)action)(ex);
                 });

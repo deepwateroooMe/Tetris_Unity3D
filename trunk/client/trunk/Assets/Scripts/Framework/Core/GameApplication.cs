@@ -59,7 +59,7 @@ namespace Framework.Core {
 #endregion
         }
         void InitializeClientConfig() {
-            var str = FileHelp.ReadString("ClientConfig.txt");
+            var str = FileHelp.ReadString("ClientConfig.txt"); // 这此是写在用户手机的配置文件里的
             if (!string.IsNullOrEmpty(str)) {
                 JsonObject jsonObject = JsonSerializer.Deserialize(str) as JsonObject;
                 if (jsonObject != null) {

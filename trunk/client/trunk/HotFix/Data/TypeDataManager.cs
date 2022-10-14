@@ -5,8 +5,11 @@ using UnityEngine;
 
 namespace HotFix.Data {
 
-// TypeData管理器: 静态管理类
-    public static class TypeDataManager { // 文件比较大，仅以场景数据一种类型来作分析
+// TypeData管理器: 静态管理类,不同场景类型,不同Tetromino类型的反序列化初始化,加载场景以及序列化的物体
+// 更高一层的管理层：负责对某类特定资源包(比如场景资源包)里的产资源数组反序列化为数组元素类型的TypeData,并对这类TypeData统一管理
+// 这里的层级结构就相当于是: GameData里我保存游戏场景时的几个部件,它们的序列化又是在另一个层次层面
+    
+    public static class TypeDataManager { // 场景的加载,场景里各可序列化,序列化过的各种不同物件的反序列化与初始化
 
 #region TypeDatas
         // 对于每种自定义自封装的类型，启用一个字典来进行管理;同自定义类型的数据，用一个长量型的long作为key来进行区分实例
