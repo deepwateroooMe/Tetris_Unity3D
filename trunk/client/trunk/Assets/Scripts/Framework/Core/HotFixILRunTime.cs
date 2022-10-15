@@ -188,15 +188,15 @@ namespace Framework.Core {
 #endregion
 
         public unsafe static StackObject* CreateInstance(ILIntepreter intp, StackObject* esp, IList<object> mStack, CLRMethod method, bool isNewObj) {
-            //获取泛型参数<T>的实际类型
+            // 获取泛型参数<T>的实际类型
             IType[] genericArguments = method.GenericArguments;
             if (genericArguments != null && genericArguments.Length == 1) {
                 var t = genericArguments[0];
-                if (t is ILType)//如果T是热更DLL里的类型 
-                    //通过ILRuntime的接口来创建实例
+                if (t is ILType) // 如果T是热更DLL里的类型 
+                    // 通过ILRuntime的接口来创建实例
                     return ILIntepreter.PushObject(esp, mStack, ((ILType)t).Instantiate());
                 else
-                    return ILIntepreter.PushObject(esp, mStack, Activator.CreateInstance(t.TypeForCLR));//通过系统反射接口创建实例
+                    return ILIntepreter.PushObject(esp, mStack, Activator.CreateInstance(t.TypeForCLR)); // 通过系统反射接口创建实例
             } else
                 throw new EntryPointNotFoundException();
         }

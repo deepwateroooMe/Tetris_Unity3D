@@ -165,8 +165,8 @@ namespace HotFix.UI {
         }
 #endregion
     
-// 视图里的小物件管理，是热更新起始时重要的三个步骤之二:　视图中需要可能会用到的运行时需要实例化的小物件(比如各种不同类型的方块砖/阴影砖,粒子系统等)管理
-// 与此部分相关联的是UI csharp项目中这些不同类型方块砖(以及不同类型的小MINO,粒子系统)的预设制作,相关数据导入?
+// 视图里的小物件管理:　视图中需要可能会用到的运行时需要实例化的小物件(比如各种不同类型的方块砖/阴影砖,粒子系统等)管理
+// 与此部分相关联的是UI csharp项目中这些不同类型方块砖(以及不同类型的小MINO,粒子系统)的预设制作,相关数据导入? 与那个项目(UI相关逻辑)的设计与资源打包相关联
 // 视图中使用到的运行时需要实例化的小物件包括:
         // 各种不同类型的方块砖(7种)
         // 各种不同类型方块砖的一一对应阴影方块砖(7种)
@@ -189,6 +189,7 @@ namespace HotFix.UI {
         }
         static Dictionary<int, PlanItemData> planItemDatas;
         static Dictionary<int, ChapterItemData> chapterItemDatas;
+        
         public static Dictionary<int, PlanItemData> GetPlanItemDatas() {
             return planItemDatas;
         }

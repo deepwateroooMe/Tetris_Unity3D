@@ -12,10 +12,10 @@ namespace HotFix.Data {
     
     public class TransformData {
 
-// 所有序列化与反序列化的对象都是特异的个体,所以还是需要id与类型相区分的
+// 所有序列化与反序列化的对象都是特异的个体,所以还是需要id与类型相区分的: ID 类型,两个有什么区别,只要一个可以吗? 
         // 实例ID
         public int instanceID;
-        // 家具类型
+        // 类型
         public long type;
 
 #region Transform
@@ -39,8 +39,7 @@ namespace HotFix.Data {
         public float scaleZ;
 #endregion
 
-// 任何实例都可以有的3个公用方法        
-        // 反序列化
+// 任何实例都可以有的3个公用方法: JsonToObject(), ObjectToJson(), ToString()        
         public static TransformData JsonToObject(string json) {
             TransformData data = new TransformData();
             JsonObject jsonObject = JsonSerializer.Deserialize(json) as JsonObject;
