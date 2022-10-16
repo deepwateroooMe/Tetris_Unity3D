@@ -17,8 +17,9 @@ namespace HotFix.UI {
     // 热更新包里，看得是平淡无奇的ViewModel，但是因为继承自CrossBindingAdapter的子类的ViewModelAdapter，使用View　怎么样呢？跨域识别，相互认得即可
     // 面板管理器:  看上面，是完全可以用framework里定义的适配什么的呀
     public static class ViewManager {
+
         // 这里固化适配为两维三维都可以
-        public static Canvas UI2DRoot; // 这些也是
+        public static Canvas UI2DRoot; 
         public static Canvas UI3DRoot;
         
         public static RectTransform transfom;
@@ -473,3 +474,4 @@ namespace HotFix.UI {
 #endregion
     }
 }
+

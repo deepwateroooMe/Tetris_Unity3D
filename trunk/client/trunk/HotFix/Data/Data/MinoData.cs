@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Json;
 using System.Linq;
 using System.Text;
 using Framework.MVVM;
+using Framework.Util;
 using UnityEngine;
 
 namespace HotFix.Data.Data {
@@ -76,7 +78,7 @@ namespace HotFix.Data.Data {
                 return ObjectToJson().ToString();
             }
         // 序列化
-        public JsonObject ObjectToJson() {
+        public System.Json.JsonObject ObjectToJson() {
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.Add("instanceID", instanceID);
                 jsonObject.Add("type", type);

@@ -5,6 +5,7 @@ using System;
 namespace Framework.Core {
 
     public class PoolObjectFactory : Singleton<PoolObjectFactory>, IObjectFactory {
+
         public class ObjectPool {
             public readonly List<PoolData> _pool;
             public int Max {
@@ -30,10 +31,12 @@ namespace Framework.Core {
                 set;
             }
         }
+
         private readonly Dictionary<Type, ObjectPool> pool;
         public PoolObjectFactory() {
             pool = new Dictionary<Type, ObjectPool>();
         }
+
         public object AcquireObject(string classFullName) {
             Type type = GameApplication.Instance.HotFix.LoadType(classFullName);
             lock (pool) {
@@ -64,6 +67,7 @@ namespace Framework.Core {
                 return obj;
             }
         }
+
         public void ReleaseObject(object obj) {
         }
     }

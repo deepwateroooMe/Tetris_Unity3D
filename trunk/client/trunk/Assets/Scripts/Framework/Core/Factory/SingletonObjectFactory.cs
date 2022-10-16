@@ -4,6 +4,7 @@ using System;
 namespace Framework.Core {
 
     public class SingletonObjectFactory : IObjectFactory {
+
         private static Dictionary<Type, object> cachedObjects = null;
         private static readonly object _lock = new object();
 
