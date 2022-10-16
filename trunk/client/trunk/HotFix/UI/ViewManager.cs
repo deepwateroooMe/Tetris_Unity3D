@@ -91,9 +91,10 @@ namespace HotFix.UI {
                         // viewRect.anchorMax = Vector2.zero;
                         viewRect.pivot = new Vector2(0.5f, 0.5f);
 
-                        //poolRoot = new GameObject("PoolRoot").transform;
-                        //poolRoot.SetParent(UI2DRoot.transform, false);
-                        //poolRoot.gameObject.SetActive(false);
+                        // poolRoot = new GameObject("PoolRoot").transform;
+                        // poolRoot.SetParent(UI2DRoot.transform, false);
+                        // poolRoot.gameObject.SetActive(false);
+
                         ShowStartPanel();
                     }, EAssetBundleUnloadLevel.Never);
         }

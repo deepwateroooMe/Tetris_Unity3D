@@ -71,9 +71,11 @@ namespace HotFix.UI {
                 break;
             }
 
-// 所有游戏场景公用视图资源等            
+// 所有游戏场景公用视图资源等
+            // 想要把这些视图合并成一个的原因是:合并成一个共用一个ViewModel(不合并也可以共用同一个),试图实现视图层与视图模型层模块化双向数据传递
+            // 这个游戏比参考项目中的逻辑更为复杂一点儿,必须去回想上半年当初车载按摩模块View ViewModel的双向数据传递逻辑并在这个项目中实现出来
+            // 这里细分是因为游戏逻辑中有逻辑相关视图的隐藏也显示, 但是我现在去游戏逻辑里找,又还没有找出来
             ViewManager.DesView.Reveal(); // 不可变的
-// 这几个视图被我显示到了CANVAS画布之外去了.....需要调整
             ViewManager.ScoreDataView.Reveal(); // 可变数据
             ViewManager.ComTetroView.Reveal();// 所有游戏主场景需要用到的方块砖视图
             ViewManager.EduTetroView.Reveal();// 教育儿童模式专用的方块砖视图
