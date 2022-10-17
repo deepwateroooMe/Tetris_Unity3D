@@ -3,6 +3,7 @@ using UnityEngine.UI;
 
 namespace HotFix.UI {
 
+    // 这里类似GameView,将MenuView与EducaModesView合并成一个视图，方便其共同的视图模型数据作为ParentViewModel提供给其子视图游戏主视图使用
     public class MenuView : UnityGuiView {
         public override string BundleName {
             get {

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Json;
 using System.Linq;
 using System.Text;
+using Framework.Util;
 
 public enum TetrominoPos {
     // NONE = 0,
@@ -31,8 +33,41 @@ public enum TetrominoType {
 }
 
 namespace HotFix.Data.TypedData {
+
+// 能再提炼成MINO TYPE, TETROMINO TYPE,以及SCENE TYPE吗? 之后再考虑
     public class TetrominoTypeData {
 
+        // 类型ID
+        public int id;
+        // GameObject名
+        public string gameObjectName;
+        // mino名
+        public string name;
+        // tetromino类别
+        public int tetrominoType;
+
+        public string bundleName;
+        public string assetName;
         
+        public static TetrominoTypeData JsonToObject(string json) {
+            TetrominoTypeData typeData = new TetrominoTypeData();
+            JsonObject jsonObject = JsonSerializer.Deserialize(json) as JsonObject;
+            if (jsonObject != null) {
+                typeData.id = jsonObject["id"];
+                typeData.gameObjectName = jsonObject["gameObjectName"].ToString();
+                typeData.name = jsonObject["name"].ToString();
+                typeData.tetrominoType = jsonObject["tetrominoType"];
+                typeData.bundleName = jsonObject["bundleName"].ToString();
+                typeData.assetName = jsonObject["assetName"].ToString();
+            }
+            return typeData;
+        }
+        
+        public override string ToString() {
+            return "id: " + id + " gameObjectName: " + gameObjectName + " name: " + name
+            + " tetrominoType: " + tetrominoType
+                + " bundleName: " + bundleName
+                + " assetName: " + assetName;
+        }
     }
 }

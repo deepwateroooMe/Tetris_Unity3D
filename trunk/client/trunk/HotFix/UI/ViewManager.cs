@@ -53,16 +53,12 @@ namespace HotFix.UI {
                     (go) => {
                         go.name = "UI2DRoot";
                         GameObject.DontDestroyOnLoad(go);
-                        // go.GetComponent<RectTransform>().rotation = Quaternion.Euler(Vector3.zero);
 
+                        // go.GetComponent<RectTransform>().rotation = Quaternion.Euler(Vector3.zero);
                         CoroutineHelper.StartCoroutine(GetRectSize(go.GetComponent<RectTransform>()));
 // // 因为我相机调不太好,想把这里的位置重新设置成我先前的位置
                         // RectTransform rt = go.GetComponent<RectTransform>();
                         // rt.rotation = Quaternion.Euler(Vector3.zero);
-                        
-//                         // // rt.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, 0, rt.rect.width);
-//                         // // rt.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 0, rt.rect.height);
-
 // // //改变RectTransform的top
 // //                         rt.offsetMax = new Vector2(rt.offsetMax.x, top);
 // //  //改变RectTransform的bottom
@@ -75,9 +71,6 @@ namespace HotFix.UI {
 //                         rt.anchoredPosition3D = new Vector3(130, 231, 0);
 //                         // Vector3 vec = rectTransform.anchoredPosition3D; // 参考的另外的写法
 //                         // rectTransform.anchoredPosition3D = new Vector3(vec.x, vec.y, 0);
-
-                        // go.GetComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-                        // go.GetComponent<CanvasScaler>().referenceResolution = new Vector2 (1920,1200);
 
                         UI2DRoot = go.GetComponent<Canvas>();
                         var viewRoot = new GameObject("ViewRoot"); // 实例化一个新空控件当作是视图层的根节点
@@ -127,7 +120,7 @@ namespace HotFix.UI {
 // 问题是:其它的不是根视图的,视图管理器它不管 ?!!!        
         public static void CloseOtherRootViews(string viewName) {
             foreach (var view in views.Values)
-// 设置根视图层级:那么若是根视图下仍有好几个子视图,就能够站在更高的层面上统一调整其以及所有子视图的显示与隐藏,比如游戏视图需要设置根视图为TRUE                
+// 设置根视图层级:那么若是根视图下仍有好几个子视图,就能够站在更高的层面上统一调整其以及所有子视图的显示与隐藏,比如游戏视图需要设置根视图为TRUE
                 // if (view.ViewName != viewName && view.IsRoot) // 我把这里改写了,因为我目前还没有调控IsRoot视图参数
                     if (view.ViewName != viewName) 
                     view.Hide();
@@ -169,6 +162,7 @@ namespace HotFix.UI {
     
 // 视图里的小物件管理:　视图中需要可能会用到的运行时需要实例化的小物件(比如各种不同类型的方块砖/阴影砖,粒子系统等)管理
 // 与此部分相关联的是UI csharp项目中这些不同类型方块砖(以及不同类型的小MINO,粒子系统)的预设制作,相关数据导入? 与那个项目(UI相关逻辑)的设计与资源打包相关联
+        // 注意这里是确实需要在UI中显示出来的小物件;是在初始化的时候就显示出来的;但是后来需要显示出来的也是需要初始化的,应该可以放在这里处理
 // 视图中使用到的运行时需要实例化的小物件包括:
         // 各种不同类型的方块砖(7种)
         // 各种不同类型方块砖的一一对应阴影方块砖(7种)
@@ -176,79 +170,79 @@ namespace HotFix.UI {
         // 教育模式下的粒子系统(1种?)
         // 延伸扩展的可以包括游戏中使用到的不同层级的BUTTON: 主页面的三个按钮可以是一种类型;游戏主界面的各个调控按钮(swap, undo, fallfast, pause, toggleBtn)? 但是因为目前已经本身是在热更新程序集,这个思路可能又会抽象出一层更为高层的架构,暂时就只是想想算了,但可以考虑和收集思路
     // 那么就需要使用至少三个?四个字典来管理这些个不同类型的数据,以便实时实例化
-#region ItemDatas
-        public static void InitializeItemDatas() {
-            string planItemJson = ResourceHelper.LoadTextAsset("ui/config/planitem", "planitem", EAssetBundleUnloadLevel.LoadOver).text;
-            //Debug.Log("planItemJson: " + planItemJson);
-            if (!string.IsNullOrEmpty(planItemJson)) {
-                InitializePlanItemData(planItemJson);
-            }
-            string chapterItemJson = ResourceHelper.LoadTextAsset("ui/config/chapteritem", "chapteritem", EAssetBundleUnloadLevel.LoadOver).text;
-            //Debug.Log("chapterItemJson: " + chapterItemJson);
-            if (!string.IsNullOrEmpty(chapterItemJson)) {
-                InitializeChapterItemData(chapterItemJson);
-            }
-        }
-        static Dictionary<int, PlanItemData> planItemDatas;
-        static Dictionary<int, ChapterItemData> chapterItemDatas;
+// #region ItemDatas
+//         public static void InitializeItemDatas() {
+//             string planItemJson = ResourceHelper.LoadTextAsset("ui/config/planitem", "planitem", EAssetBundleUnloadLevel.LoadOver).text;
+//             //Debug.Log("planItemJson: " + planItemJson);
+//             if (!string.IsNullOrEmpty(planItemJson)) {
+//                 InitializePlanItemData(planItemJson);
+//             }
+//             string chapterItemJson = ResourceHelper.LoadTextAsset("ui/config/chapteritem", "chapteritem", EAssetBundleUnloadLevel.LoadOver).text;
+//             //Debug.Log("chapterItemJson: " + chapterItemJson);
+//             if (!string.IsNullOrEmpty(chapterItemJson)) {
+//                 InitializeChapterItemData(chapterItemJson);
+//             }
+//         }
+//         static Dictionary<int, PlanItemData> planItemDatas;
+//         static Dictionary<int, ChapterItemData> chapterItemDatas;
         
-        public static Dictionary<int, PlanItemData> GetPlanItemDatas() {
-            return planItemDatas;
-        }
-        public static Dictionary<int, ChapterItemData> GetChapterItemDatas() {
-            return chapterItemDatas;
-        }
-        public static PlanItemData GetPlanItemData(int id) {
-            if (planItemDatas.ContainsKey(id)) {
-                return planItemDatas[id];
-            } else {
-                return null;
-            }
-        }
-        public static ChapterItemData GetChapterItemData(int id) {
-            if (chapterItemDatas.ContainsKey(id)) {
-                return chapterItemDatas[id];
-            } else {
-                return null;
-            }
-        }
-        static void InitializePlanItemData(string jsonStr) {
-            if (jsonStr != null) {
-                planItemDatas = new Dictionary<int, PlanItemData>();
-                JsonArray jsonArray = JsonSerializer.Deserialize(jsonStr) as JsonArray;
-                if (jsonArray != null) {
-                    foreach (JsonValue jsonValue in jsonArray) {
-                        PlanItemData data = PlanItemData.JsonToObject(jsonValue.ToString());
-                        if (!planItemDatas.ContainsKey(data.id)) {
-                            planItemDatas.Add(data.id, data);
-                        } else {
-                            Debug.LogError("planItemDatas contains key: " + data.id);
-                        }
-                    }
-                } else {
-                    Debug.LogError("planItemData jsonArray is null");
-                }
-            }
-        }
-        static void InitializeChapterItemData(string jsonStr) {
-            if (jsonStr != null) {
-                chapterItemDatas = new Dictionary<int, ChapterItemData>();
-                JsonArray jsonArray = JsonSerializer.Deserialize(jsonStr) as JsonArray;
-                if (jsonArray != null) {
-                    foreach (JsonValue jsonValue in jsonArray) {
-                        ChapterItemData data = ChapterItemData.JsonToObject(jsonValue.ToString());
-                        if (!chapterItemDatas.ContainsKey(data.type)) {
-                            chapterItemDatas.Add(data.type, data);
-                        } else {
-                            Debug.LogError("chapterItemDatas contains key: " + data.type);
-                        }
-                    }
-                } else {
-                    Debug.LogError("chapterItemData jsonArray is null");
-                }
-            }
-        }
-#endregion
+//         public static Dictionary<int, PlanItemData> GetPlanItemDatas() {
+//             return planItemDatas;
+//         }
+//         public static Dictionary<int, ChapterItemData> GetChapterItemDatas() {
+//             return chapterItemDatas;
+//         }
+//         public static PlanItemData GetPlanItemData(int id) {
+//             if (planItemDatas.ContainsKey(id)) {
+//                 return planItemDatas[id];
+//             } else {
+//                 return null;
+//             }
+//         }
+//         public static ChapterItemData GetChapterItemData(int id) {
+//             if (chapterItemDatas.ContainsKey(id)) {
+//                 return chapterItemDatas[id];
+//             } else {
+//                 return null;
+//             }
+//         }
+//         static void InitializePlanItemData(string jsonStr) {
+//             if (jsonStr != null) {
+//                 planItemDatas = new Dictionary<int, PlanItemData>();
+//                 JsonArray jsonArray = JsonSerializer.Deserialize(jsonStr) as JsonArray;
+//                 if (jsonArray != null) {
+//                     foreach (JsonValue jsonValue in jsonArray) {
+//                         PlanItemData data = PlanItemData.JsonToObject(jsonValue.ToString());
+//                         if (!planItemDatas.ContainsKey(data.id)) {
+//                             planItemDatas.Add(data.id, data);
+//                         } else {
+//                             Debug.LogError("planItemDatas contains key: " + data.id);
+//                         }
+//                     }
+//                 } else {
+//                     Debug.LogError("planItemData jsonArray is null");
+//                 }
+//             }
+//         }
+//         static void InitializeChapterItemData(string jsonStr) {
+//             if (jsonStr != null) {
+//                 chapterItemDatas = new Dictionary<int, ChapterItemData>();
+//                 JsonArray jsonArray = JsonSerializer.Deserialize(jsonStr) as JsonArray;
+//                 if (jsonArray != null) {
+//                     foreach (JsonValue jsonValue in jsonArray) {
+//                         ChapterItemData data = ChapterItemData.JsonToObject(jsonValue.ToString());
+//                         if (!chapterItemDatas.ContainsKey(data.type)) {
+//                             chapterItemDatas.Add(data.type, data);
+//                         } else {
+//                             Debug.LogError("chapterItemDatas contains key: " + data.type);
+//                         }
+//                     }
+//                 } else {
+//                     Debug.LogError("chapterItemData jsonArray is null");
+//                 }
+//             }
+//         }
+// #endregion
 
 #region Other
          static bool isOverUI = false;
@@ -296,6 +290,17 @@ namespace HotFix.UI {
         //         return _menuView;
         //     }
         // }
+        static GameView _GameView;
+        public static GameView GameView {
+            get {
+                if (_GameView == null) {
+                    _GameView = new GameView();
+                    _GameView.BindingContext = new GameViewModel();
+                    views.Add(_GameView.ViewName, _GameView);
+                }
+                return _GameView;
+            }
+        }
         static ThreeGridView _threegridView;
         public static ThreeGridView ThreeGridView {
             get {

@@ -7,13 +7,13 @@ using Framework.Util;
 
 // 补做7个mino预设
 public enum MinoType {
-    Imino = 0,
-    Jmino = 1,
-    Lmino = 2,
-    Omino = 3,
-    Smino = 4,
-    Tmino = 5,
-    Zmino = 6,
+    minoI = 0,
+    minoJ = 1,
+    minoL = 2,
+    minoO = 3,
+    minoS = 4,
+    minoT = 5,
+    minoZ = 6,
 }
 
 namespace HotFix.Data.TypedData {
@@ -29,6 +29,7 @@ namespace HotFix.Data.TypedData {
         public string name;
         // mino类别
         public int minoType;
+
         public string bundleName;
         public string assetName;
         
@@ -47,11 +48,11 @@ namespace HotFix.Data.TypedData {
         }
         
         public override string ToString() {
-            return "id: " + id + " gameObjectName: " + gameObjectName + " name: " + name;
-            //   + " code: " + code
-            //+ " description: " + description + " link: " + link
-            //+ " defaultLength: " + defaultLength + " defaultWidth: " + defaultWidth
-            //+ " defaultHeight: " + defaultHeight + " minLengthScale: " + minLengthScale
+            return "id: " + id + " gameObjectName: " + gameObjectName + " name: " + name
+            + " minoType: " + minoType
+                + " bundleName: " + bundleName
+                + " assetName: " + assetName;
         }
     }
 }
+

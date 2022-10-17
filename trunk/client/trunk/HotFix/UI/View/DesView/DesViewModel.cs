@@ -17,4 +17,3 @@ namespace HotFix.UI {
         }
     }
 }
-// namespace HotFix.UI.View.DesView

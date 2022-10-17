@@ -2,6 +2,9 @@
 using UnityEngine;
 using System.Collections.Generic;
 using Framework.ResMgr;
+using HotFix.Control.Scene;
+using HotFix.Data.Data;
+using HotFix.Data.TypedData;
 
 namespace HotFix.Control {
 

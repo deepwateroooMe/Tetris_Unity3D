@@ -17,6 +17,7 @@
             private set;
         }
 
+        // 这个还是狠好用的,可以得到父级视图模型的数据
         public ViewModelBase ParentViewModel {
             get;
             set;
