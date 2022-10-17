@@ -25,6 +25,7 @@ namespace HotFix.Control {
 
         // 家具的集合
         public Dictionary<int, FurnitureBase> furnitures = new Dictionary<int, FurnitureBase>();
+
         public SceneBase(int type) {
             Data = new SceneData();
             Data.type = type;
@@ -32,10 +33,13 @@ namespace HotFix.Control {
             Data.furnitureDatas = new Dictionary<int, FurnitureData>();
             TypeData = TypeDataManager.GetSceneTypeData(Data.type);
         }
+
         public SceneBase(SceneData data) {
             Data = data;
             TypeData = TypeDataManager.GetSceneTypeData(Data.type);
         }
+
+// 这里也就说明:按场景打包,这样方便场景加载时加载所有接下来场景所必要的所有资源,与卸载的时候释放不必要的资源
         public void LoadSceneGameObject() {
             ResourceConstant.Loader.LoadCloneAsyn(TypeData.bundleName, TypeData.assetName, (go) => {
                 GameObject = go;
@@ -44,8 +48,10 @@ namespace HotFix.Control {
                 Initialize();
             }, EAssetBundleUnloadLevel.ChangeSceneOver);
         }
+
         protected abstract void SetGameObjectName();
         protected abstract void Initialize();
+
         public virtual void Dispose() {
             ResourceConstant.Loader.Unload(TypeData.bundleName, true);
         }

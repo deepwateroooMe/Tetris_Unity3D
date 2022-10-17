@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using HotFix.Data.Data;
+using UnityEngine;
 
 namespace HotFix.Control.Game {
 
@@ -22,7 +26,7 @@ namespace HotFix.Control.Game {
         public static void SaveGame(Game game) { 
             Debug.Log(TAG + ": SaveGame()"); 
             BinaryFormatter formatter = new BinaryFormatter();
-            path.Clear();
+            path.Length = 0; // .NET 4.0 封装到了Clear()方法里去
             if (GameMenuData.Instance.gameMode > 0) {
                 path.Append(Application.persistentDataPath + "/" + GameMenuData.Instance.saveGamePathFolderName + "/game.save"); 
             } else {

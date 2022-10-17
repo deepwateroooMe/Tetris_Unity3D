@@ -1,5 +1,6 @@
 ﻿using deepwaterooo.tetris3d;
 using Framework.MVVM;
+using HotFix.Control.Game;
 using UnityEngine;
 
 namespace HotFix.Control.Tetromino {
@@ -95,7 +96,7 @@ namespace HotFix.Control.Tetromino {
             // FindObjectOfType<Game>().MoveZNeg(); // moveCanvas moves too
 
             if (CheckIsValidPosition()) {
-                FindObjectOfType<Game>().UpdateGrid(Game.nextTetromino);
+                FindObjectOfType<Game.Game>().UpdateGrid(Game.nextTetromino);
                 PlayMoveAudio();
             } else {
                 Game.nextTetromino.transform.position += new Vector3(0, 0, 1);

@@ -96,6 +96,7 @@ public class ViewModelBaseAdapter : CrossBindingAdaptor {
                 base.OnDestory();
             }
         }
+        
         protected override void OnInitialize() {
             if (!_onInitializeGot) {
                 _onInitialize = instance.Type.GetMethod("OnInitialize");
@@ -133,6 +134,5 @@ public class ViewModelBaseAdapter : CrossBindingAdaptor {
         bool _isOnInitializeInvoking = false;
     }
 }
-
 
 

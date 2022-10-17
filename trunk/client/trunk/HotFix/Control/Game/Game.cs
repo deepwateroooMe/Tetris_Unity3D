@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using Framework.MVVM;
 using HotFix.Control.Scene;
+using HotFix.Control.Tetromino;
 using HotFix.Data.Data;
 using UnityEngine;
 using UnityEngine.UI;
@@ -848,7 +849,7 @@ namespace HotFix.Control.Game {
             // Debug.Log(TAG + " (defaultContainer == null) after: " + (defaultContainer == null)); 
             // nextTetromino.transform.SetParent(defaultContainer.transform, false);
             
-            nextTetromino.GetComponent<Tetromino>().enabled = !nextTetromino.GetComponent<Tetromino>().enabled; 
+            nextTetromino.GetComponent<Tetromino.Tetromino>().enabled = !nextTetromino.GetComponent<Tetromino.Tetromino>().enabled; 
             nextTetrominoType = nextTetromino.GetComponent<TetrominoType>().type;
             Debug.Log(TAG + " nextTetromino.name: " + nextTetromino.name);
         }
@@ -934,7 +935,7 @@ namespace HotFix.Control.Game {
 
         public void onActiveTetrominoMove(TetrominoMoveEventInfo info) { 
             Debug.Log(TAG + ": onTetrominoMove()");
-            if (nextTetromino.GetComponent<Tetromino>().IsMoveValid) {
+            if (nextTetromino.GetComponent<Tetromino.Tetromino>().IsMoveValid) {
                 moveCanvas.transform.position += info.delta;
                 if ((int)info.delta.y != 0) {
                     rotateCanvas.transform.position += new Vector3(0, info.delta.y, 0);
@@ -944,7 +945,7 @@ namespace HotFix.Control.Game {
         }
         public void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
             // Debug.Log(TAG + ": onActiveTetrominoRotate()"); 
-            if (nextTetromino.GetComponent<Tetromino>().IsRotateValid) {
+            if (nextTetromino.GetComponent<Tetromino.Tetromino>().IsRotateValid) {
                 UpdateGrid(nextTetromino); 
             }
         }
@@ -1102,7 +1103,7 @@ namespace HotFix.Control.Game {
             hud_lines.text = numLinesCleared.ToString();
         }
 
-        public bool CheckIsAboveGrid(Tetromino tetromino) {
+        public bool CheckIsAboveGrid(Tetromino.Tetromino tetromino) {
             // public bool CheckIsAboveGrid(Transform transform) {
             for (int x = 0; x < gridWidth; x++)
                 for (int j = 0; j < gridWidth; j++) 
