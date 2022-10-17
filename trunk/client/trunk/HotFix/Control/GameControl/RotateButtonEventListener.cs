@@ -5,7 +5,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace HotFix.Control.Game {
+namespace HotFix.Control {
 
     public class RotateButtonEventListener : MonoBehaviour, IPointerClickHandler { 
         private const string TAG = "RotateButtonEventListener";

@@ -4,10 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
-using HotFix.Data.Data;
+using Framework.MVVM;
+using HotFix.Data;
+using HotFix.UI;
 using UnityEngine;
 
-namespace HotFix.Control.Game {
+namespace HotFix.Control {
 
 // 游戏的存储系统:我认为是属于游戏逻辑,应该放在Game control里
 
@@ -23,14 +25,18 @@ namespace HotFix.Control.Game {
         private static string currentPath;
         private static StringBuilder path = new StringBuilder("");
             
-        public static void SaveGame(Game game) { 
-            Debug.Log(TAG + ": SaveGame()"); 
+        // public static void SaveGame(Game game) { // 以前写成了相当于是全局静态数据,现在传ViewModelBase就可以了
+            public static void SaveGame(ViewModelBase viewModel) { 
+            Debug.Log(TAG + ": SaveGame()");
+            MenuViewModel parentViewModel = (MenuViewModel)viewModel.ParentViewModel;
+            int gameMode = parentViewModel.gameMode;
             BinaryFormatter formatter = new BinaryFormatter();
             path.Length = 0; // .NET 4.0 封装到了Clear()方法里去
-            if (GameMenuData.Instance.gameMode > 0) {
-                path.Append(Application.persistentDataPath + "/" + GameMenuData.Instance.saveGamePathFolderName + "/game.save"); 
+            if (gameMode > 0) {
+                path.Append(Application.persistentDataPath + "/" + parentViewModel.saveGamePathFolderName + "/game.save"); 
             } else {
-                path.Append(Application.persistentDataPath + "/" + GameMenuData.Instance.saveGamePathFolderName + "/grid" + GameMenuData.Instance.gridSize + "/game.save"); 
+                path.Append(Application.persistentDataPath + "/" + parentViewModel.saveGamePathFolderName
+                            + "/grid" + parentViewModel.gridWidth + "/game.save"); 
             }
             currentPath = path.ToString();
             if (File.Exists(currentPath)) {
@@ -41,8 +47,9 @@ namespace HotFix.Control.Game {
                 }            
             }
             FileStream stream = new FileStream(currentPath, FileMode.Create);
-            GameData data = new GameData(game);
-            formatter.Serialize(stream, data);
+            // following commented for tmp
+            // GameData data = new GameData(game); // 如果有了视图模型以及更幕后的游戏应用模型,不是不应该再保存视图层面的这些了吗,想想
+            //formatter.Serialize(stream, data);
             stream.Close();
         }
 

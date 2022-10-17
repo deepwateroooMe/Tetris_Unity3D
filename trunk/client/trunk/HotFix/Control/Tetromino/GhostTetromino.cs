@@ -5,7 +5,7 @@ using System.Text;
 using Framework.MVVM;
 using UnityEngine;
 
-namespace HotFix.Control.Tetromino {
+namespace HotFix.Control {
 
     public class GhostTetromino : MonoBehaviour {
         private const string TAG = "GhostTetromino";

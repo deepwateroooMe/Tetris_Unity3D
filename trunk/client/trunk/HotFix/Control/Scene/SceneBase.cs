@@ -2,9 +2,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 using Framework.ResMgr;
-using HotFix.Control.Scene;
-using HotFix.Data.Data;
-using HotFix.Data.TypedData;
 
 namespace HotFix.Control {
 
@@ -26,14 +23,13 @@ namespace HotFix.Control {
             set;
         }
 
-        // 家具的集合
-        public Dictionary<int, FurnitureBase> furnitures = new Dictionary<int, FurnitureBase>();
+        // 方块砖的集合
+        public Dictionary<int, TetrominoBase> tetrominos = new Dictionary<int, TetrominoBase>();
 
         public SceneBase(int type) {
             Data = new SceneData();
             Data.type = type;
-            Data.materialDatas = new Dictionary<string, MaterialData>();
-            Data.furnitureDatas = new Dictionary<int, FurnitureData>();
+            Data.tetrominoDatas = new Dictionary<int, TetrominoData>();
             TypeData = TypeDataManager.GetSceneTypeData(Data.type);
         }
 

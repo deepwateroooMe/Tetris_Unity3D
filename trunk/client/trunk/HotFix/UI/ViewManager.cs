@@ -84,9 +84,19 @@ namespace HotFix.UI {
                         // viewRect.anchorMax = Vector2.zero;
                         viewRect.pivot = new Vector2(0.5f, 0.5f);
 
-                        // poolRoot = new GameObject("PoolRoot").transform;
+// all the managers: Event, Audio, Pool etc
+                        Transform managersRoot = new GameObject("ManagersRoot").transform;
+                        managersRoot.SetParent(UI2DRoot.transform, false);
+                        poolRoot = new GameObject("PoolRoot").transform;
                         // poolRoot.SetParent(UI2DRoot.transform, false);
-                        // poolRoot.gameObject.SetActive(false);
+                        poolRoot.SetParent(managersRoot, false);
+                        poolRoot.gameObject.SetActive(false);
+                        audioRoot = new GameObject("AudioRoot").transform;
+                        audioRoot.SetParent(managersRoot.transform, false);
+                        audioRoot.gameObject.SetActive(false);
+                        eventRoot = new GameObject("EventRoot").transform;
+                        eventRoot.SetParent(managersRoot.transform, false);
+                        eventRoot.gameObject.SetActive(false);
 
                         ShowStartPanel();
                     }, EAssetBundleUnloadLevel.Never);
@@ -159,6 +169,8 @@ namespace HotFix.UI {
             goList.Push(go);
         }
 #endregion
+        public static Transform eventRoot; // 固定的视图层面资源池根节点
+        public static Transform audioRoot; // 固定的视图层面资源池根节点
     
 // 视图里的小物件管理:　视图中需要可能会用到的运行时需要实例化的小物件(比如各种不同类型的方块砖/阴影砖,粒子系统等)管理
 // 与此部分相关联的是UI csharp项目中这些不同类型方块砖(以及不同类型的小MINO,粒子系统)的预设制作,相关数据导入? 与那个项目(UI相关逻辑)的设计与资源打包相关联
@@ -480,4 +492,5 @@ namespace HotFix.UI {
 #endregion
     }
 }
+
 

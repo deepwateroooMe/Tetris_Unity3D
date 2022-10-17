@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using UnityEngine;
+using Framework.ResMgr;
+using HotFix.Data;
 
-namespace HotFix.Control.Scene {
+namespace HotFix.Control {
 
 // 场景管理器: 我的游戏里也写过好几个不同的管理类，热更新里的管理类与unity里的普通管理类有什么不同呢？
     public class SceneManager { // unity里不同场景的编号不同,　这里以int 值不同来区分不同的游戏场景
@@ -30,33 +29,36 @@ namespace HotFix.Control.Scene {
             currentSelectGameObjectInstanceID = 100000001;
             SceneTypeData typeData = TypeDataManager.GetSceneTypeData(type);
 
-            if (typeData.type == (int)ESceneType.Edit) {
-                CurrentScene = new EditScene(type);
-                CurrentScene.LoadSceneGameObject();
-            } else if (typeData.type == (int)ESceneType.Show) {
-                CurrentScene = new ShowScene(type);
-                CurrentScene.LoadSceneGameObject();
-            } else if (typeData.type == (int)ESceneType.Camera) {
-                CurrentScene = new CameraScene(type);
+            if (typeData.type == (int)ESceneType.StartUp) {
+                CurrentScene = new StartUpScene(type);
                 CurrentScene.LoadSceneGameObject();
             }
+            // followed: commented out cause has only 1 scene
+            //else if (typeData.type == (int)ESceneType.Show) { 
+            //    CurrentScene = new ShowScene(type);
+            //    CurrentScene.LoadSceneGameObject();
+            //} else if (typeData.type == (int)ESceneType.Camera) {
+            //    CurrentScene = new CameraScene(type);
+            //    CurrentScene.LoadSceneGameObject();
+            //}
         }
 
         // 加载一个场景
         public void LoadScene(SceneData data) {
             ClearLastSceneGameObject();
-            currentSelectGameObjectInstanceID = data.GetMaxFurnitureInstanceID();
+            //currentSelectGameObjectInstanceID = data.GetMaxFurnitureInstanceID();
             SceneTypeData typeData = TypeDataManager.GetSceneTypeData(data.type);
-            if (typeData.type == (int)ESceneType.Edit) {
-                CurrentScene = new EditScene(data);
-                CurrentScene.LoadSceneGameObject();
-            } else if (typeData.type == (int)ESceneType.Show) {
-                CurrentScene = new ShowScene(data);
-                CurrentScene.LoadSceneGameObject();
-            } else if (typeData.type == (int)ESceneType.Camera) {
-                CurrentScene = new CameraScene(data);
+            if (typeData.type == (int)ESceneType.StartUp) {
+                CurrentScene = new StartUpScene(data);
                 CurrentScene.LoadSceneGameObject();
             }
+            //else if (typeData.type == (int)ESceneType.Show) {
+            //    CurrentScene = new ShowScene(data);
+            //    CurrentScene.LoadSceneGameObject();
+            //} else if (typeData.type == (int)ESceneType.Camera) {
+            //    CurrentScene = new CameraScene(data);
+            //    CurrentScene.LoadSceneGameObject();
+            //}
         }
         void ClearLastSceneGameObject() {
             if (CurrentScene != null && CurrentScene.GameObject != null) 
@@ -77,8 +79,8 @@ namespace HotFix.Control.Scene {
         public void LoadShowScene(string bundleName, string assetName) {
             string json = ResourceConstant.Loader.LoadTextAsset(bundleName, assetName, EAssetBundleUnloadLevel.LoadOver).text;
             //Debug.Log("json: " + json);
-            SceneData sceneData = SceneData.JsonToObject(json);
-            LoadScene(sceneData);
+            //SceneData sceneData = SceneData.JsonToObject(json); // cmn for tmp
+            //LoadScene(sceneData);
         }
     }
 }

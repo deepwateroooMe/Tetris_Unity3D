@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Framework.MVVM;
-using HotFix.Control.Game;
+using HotFix.Control;
 using UnityEngine;
 
-namespace HotFix.Data.Data {
+namespace HotFix.Data {
 
     [System.Serializable]
     public class GameData {

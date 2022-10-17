@@ -5,7 +5,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace HotFix.Control.Game {
+namespace HotFix.Control {
 
 // , IPointerEnterHandler, IPointerExitHandler: 没有实现得这么细,没有到这层细节上来
     public class MoveButtonEventListener : MonoBehaviour, IPointerClickHandler { 

@@ -6,7 +6,7 @@ using System.Text;
 using Framework.Util;
 using UnityEngine;
 
-namespace HotFix.Control.Game {
+namespace HotFix.Control {
     // 对每种类型的预设,建立一个池,每种类型设定他们自己的缓存个数大小
     // 对于热更新程序域来说,没有了面板上可序列化的随时编辑,有代码里随时更改各种不同预设个数的随时编辑,仍然可以直接放到热更新程序域里去使用
     // 需要更改的是热更新里实例化预设的方式

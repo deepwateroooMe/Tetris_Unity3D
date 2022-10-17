@@ -1,6 +1,7 @@
 ﻿using Framework.Util;
 using System.Collections.Generic;
 using System.Json;
+using HotFix.Data.TypedData;
 using UnityEngine;
 
 namespace HotFix.Data {
@@ -13,18 +14,30 @@ namespace HotFix.Data {
 
 #region TypeDatas
         // 对于每种自定义自封装的类型，启用一个字典来进行管理;同自定义类型的数据，用一个长量型的long作为key来进行区分实例
-        //static Dictionary<long, SceneTypeData> sceneTypeDatas;
+        static Dictionary<long, TetrominoTypeData> tetrominoTypeDatas;
+        static Dictionary<long, SceneTypeData> sceneTypeDatas;
 
-        //public static Dictionary<long, SceneTypeData> GetSceneTypeDatas() {
-        //    return sceneTypeDatas;
-        //}
-        //public static SceneTypeData GetSceneTypeData(long id) {
-        //    if (sceneTypeDatas.ContainsKey(id)) {
-        //        return sceneTypeDatas[id];
-        //    } else {
-        //        return null;
-        //    }
-        //}
+        public static Dictionary<long, TetrominoTypeData> GetTetrominoTypeDatas() {
+            return tetrominoTypeDatas;
+        }
+        public static Dictionary<long, SceneTypeData> GetSceneTypeDatas() {
+           return sceneTypeDatas;
+        }
+        
+        public static TetrominoTypeData GetTetrominoTypeData(long id) {
+           if (tetrominoTypeDatas.ContainsKey(id)) {
+               return tetrominoTypeDatas[id];
+           } else {
+               return null;
+           }
+        }
+        public static SceneTypeData GetSceneTypeData(long id) {
+            if (sceneTypeDatas.ContainsKey(id)) {
+                return sceneTypeDatas[id];
+            } else {
+                return null;
+            }
+        }
 #endregion
         // 热更新起始时，资源包里：对于不同场景的初始化;
         // 这里是在热更新程序资源集里

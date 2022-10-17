@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using Framework.Util;
 
-namespace HotFix.Data.Data {
+namespace HotFix.Data {
 
     // 场景实例数据: 像是一个基类,是所有场景数据所共有的
     public class SceneData { //　再去多想一想，为什么要用SceneData 与SceneTypeData相区分？
@@ -22,74 +22,75 @@ namespace HotFix.Data.Data {
 
 // 接下来就是场景中的元件:各类单个数据,或是各类各种不同数据的集合        
         // 单个数据
-        public SingleData singleData;
-        //  某数据类型的集合
-        public Dictionary<string, TypeoneData> typeoneDatas;
-        // 另一数据类型的集合
-        public Dictionary<int, TypetwoData> typetwoDatas;
+        // public SingleData singleData; // for tmp
+        // 对于游戏场景中的大方格中的方块砖与立方体,可能要采用不同的数据结构来保存,这里不是在保存
+        // //  某数据类型的集合
+        public Dictionary<int, TetrominoData> tetrominoDatas;
+        // // 另一数据类型的集合
+        // public Dictionary<int, TypetwoData> typetwoDatas;
 
-        // 反序列化
-        public static SceneData JsonToObject(string json) {
-            SceneData data = new SceneData();
-            JsonObject jsonObject = JsonSerializer.Deserialize(json) as JsonObject;
-            if (jsonObject != null) {
-                if (jsonObject.ContainsKey("instanceID")) {
-                    data.instanceID = jsonObject["instanceID"];
-                }
-                data.type = jsonObject["type"];
-                if (jsonObject.ContainsKey("singleData")) {
-                    JsonValue singleJonValue = jsonObject["singleData"];
-                    data.singleData = SingleData.JsonToObject(singleJonValue.ToString());
-                }
-                data.typeoneDatas = new Dictionary<string, TypeoneData>();
-                JsonValue jsonValue = jsonObject["typeoneDatas"];
-                JsonArray jsonArray = JsonSerializer.Deserialize(jsonValue.ToString()) as JsonArray;
-                foreach (var value in jsonArray) {
-                    TypeoneData typeoneData = TypeoneData.JsonToObject(value.ToString());
-                    data.typeoneDatas.Add(typeoneData.gameObjectName, typeoneData);
-                }
-                data.typetwoDatas = new Dictionary<int, TypetwoData>();
-                JsonValue jsonValue2 = jsonObject["typetwoDatas"];
-                JsonArray jsonArray2 = JsonSerializer.Deserialize(jsonValue2.ToString()) as JsonArray;
-                foreach (var value in jsonArray2) {
-                    TypetwoData typetwoData = TypetwoData.JsonToObject(value.ToString());
-                    data.typetwoDatas.Add(typetwoData.instanceID, typetwoData);
-                }
-            }
-            return data;
-        }
-        public override string ToString() {
-            return ObjectToJson().ToString();
-        }
-        // 序列化
-        public JsonObject ObjectToJson() {
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.Add("instanceID", instanceID);
-            jsonObject.Add("type", type);
-            JsonObject singleJsonObject = singleData.ObjectToJson();
-            jsonObject.Add("singleData", singleJsonObject);
-            JsonArray jsonArray = new JsonArray();
-            foreach (var data in typeoneDatas.Values) {
-                JsonObject dataJsonObject = data.ObjectToJson();
-                jsonArray.Add(dataJsonObject);
-            }
-            jsonObject.Add("typeoneDatas", jsonArray.ToString());
-            JsonArray jsonArray2 = new JsonArray();
-            foreach (var data in typetwoDatas.Values) {
-                JsonObject dataJsonObject = data.ObjectToJson();
-                jsonArray2.Add(dataJsonObject);
-            }
-            jsonObject.Add("typetwoDatas", jsonArray2.ToString());
-            return jsonObject;
-        }
-        public int GetMaxTypetwoInstanceID() {
-            int maxID = 100000001;
-            foreach (var key in typetwoDatas.Keys) {
-                if (key > maxID) {
-                    maxID = key;
-                }
-            }
-            return maxID;
-        }
+        // // 反序列化
+        // public static SceneData JsonToObject(string json) {
+        //     SceneData data = new SceneData();
+        //     JsonObject jsonObject = JsonSerializer.Deserialize(json) as JsonObject;
+        //     if (jsonObject != null) {
+        //         if (jsonObject.ContainsKey("instanceID")) {
+        //             data.instanceID = jsonObject["instanceID"];
+        //         }
+        //         data.type = jsonObject["type"];
+        //         if (jsonObject.ContainsKey("singleData")) {
+        //             JsonValue singleJonValue = jsonObject["singleData"];
+        //             // data.singleData = SingleData.JsonToObject(singleJonValue.ToString());
+        //         }
+        //         data.typeoneDatas = new Dictionary<string, TypeoneData>();
+        //         JsonValue jsonValue = jsonObject["typeoneDatas"];
+        //         JsonArray jsonArray = JsonSerializer.Deserialize(jsonValue.ToString()) as JsonArray;
+        //         foreach (var value in jsonArray) {
+        //             TypeoneData typeoneData = TypeoneData.JsonToObject(value.ToString());
+        //             data.typeoneDatas.Add(typeoneData.gameObjectName, typeoneData);
+        //         }
+        //         data.typetwoDatas = new Dictionary<int, TypetwoData>();
+        //         JsonValue jsonValue2 = jsonObject["typetwoDatas"];
+        //         JsonArray jsonArray2 = JsonSerializer.Deserialize(jsonValue2.ToString()) as JsonArray;
+        //         foreach (var value in jsonArray2) {
+        //             TypetwoData typetwoData = TypetwoData.JsonToObject(value.ToString());
+        //             data.typetwoDatas.Add(typetwoData.instanceID, typetwoData);
+        //         }
+        //     }
+        //     return data;
+        // }
+        // public override string ToString() {
+        //     return ObjectToJson().ToString();
+        // }
+        // // 序列化
+        // public JsonObject ObjectToJson() {
+        //     JsonObject jsonObject = new JsonObject();
+        //     jsonObject.Add("instanceID", instanceID);
+        //     jsonObject.Add("type", type);
+        //     JsonObject singleJsonObject = singleData.ObjectToJson();
+        //     jsonObject.Add("singleData", singleJsonObject);
+        //     JsonArray jsonArray = new JsonArray();
+        //     foreach (var data in typeoneDatas.Values) {
+        //         JsonObject dataJsonObject = data.ObjectToJson();
+        //         jsonArray.Add(dataJsonObject);
+        //     }
+        //     jsonObject.Add("typeoneDatas", jsonArray.ToString());
+        //     JsonArray jsonArray2 = new JsonArray();
+        //     foreach (var data in typetwoDatas.Values) {
+        //         JsonObject dataJsonObject = data.ObjectToJson();
+        //         jsonArray2.Add(dataJsonObject);
+        //     }
+        //     jsonObject.Add("typetwoDatas", jsonArray2.ToString());
+        //     return jsonObject;
+        // }
+        // public int GetMaxTypetwoInstanceID() {
+        //     int maxID = 100000001;
+        //     foreach (var key in typetwoDatas.Keys) {
+        //         if (key > maxID) {
+        //             maxID = key;
+        //         }
+        //     }
+        //     return maxID;
+        // }
     }
 }

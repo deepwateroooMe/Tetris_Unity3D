@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace HotFix.Data.Data {
+namespace HotFix.Data {
 
     // 原游戏中照搬过来的,没有检查逻辑
     // 感觉这个步骤有点儿: 把问题系统化了,是一个系列嵌套下来的;

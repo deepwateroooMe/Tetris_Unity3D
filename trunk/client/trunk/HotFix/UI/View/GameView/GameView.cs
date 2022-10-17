@@ -104,6 +104,7 @@ namespace HotFix.UI {
 
         }
         void OnClickPauButton() {
+            ViewModel.PauseGame(); // 游戏暂停
             ViewManager.MidMenuView.Reveal();
             // Hide(); // 若是隐藏,这里也只会隐藏当前视图- StaticBtnsView一个视图,而不是游戏场景里的所有小视图
         }

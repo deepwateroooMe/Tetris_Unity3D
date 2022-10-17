@@ -1,13 +1,13 @@
 ﻿using Framework.Util;
 using System.Json;
 
-namespace HotFix.Data.TypedData {
+namespace HotFix.Data {
 
 // 这里可以自定义几个不同的场景类型，方便程序区分: 这里是同一家公司里的几个不同的应用,使用了同一个热更新程序集
 // 这个类也包括其所在的资源包的一些相关信息
     public enum ESceneType { // 每个应用对应于其中的一个场景
         None = 0,
-        Edit = 1,
+        StartUp = 1,
         Show = 2,
         Camera = 3
     }

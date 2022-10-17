@@ -1,9 +1,8 @@
 ﻿using deepwaterooo.tetris3d;
 using Framework.MVVM;
-using HotFix.Control.Game;
 using UnityEngine;
 
-namespace HotFix.Control.Tetromino {
+namespace HotFix.Control {
 
     // 这段程序与游戏主逻辑的偶合比较重,不适合放在这里,移去热更新程序包,预设实例化的时候再动态添加
     public class Tetromino : MonoBehaviour, IType, IEntity { 
@@ -162,15 +161,15 @@ namespace HotFix.Control.Tetromino {
             // verticalTimer = 0;
             // if (Game.nextTetromino == null) return;
             Game.nextTetromino.transform.position += new Vector3(0, -1, 0);
-            FindObjectOfType<Game>().MoveDown();
+            FindObjectOfType<Game.Game>().MoveDown();
             // Debug.Log(TAG + " CheckIsValidPosition(): " + CheckIsValidPosition()); 
             if (CheckIsValidPosition()) {
-                FindObjectOfType<Game>().UpdateGrid(Game.nextTetromino);
+                FindObjectOfType<Game.Game>().UpdateGrid(Game.nextTetromino);
                 if (Input.GetKey(KeyCode.DownArrow)) 
                     PlayMoveAudio();
             } else {
                 Game.nextTetromino.transform.position += new Vector3(0, 1, 0);
-                FindObjectOfType<Game>().recycleGhostTetromino(); // 涉及事件的先后顺序，这里处理比较安全：确保在Tetromino之前处理
+                FindObjectOfType<Game.Game>().recycleGhostTetromino(); // 涉及事件的先后顺序，这里处理比较安全：确保在Tetromino之前处理
                 onTetrominoLand();
                 if (info == null)
                     info = new TetrominoLandEventInfo();
@@ -181,16 +180,16 @@ namespace HotFix.Control.Tetromino {
         }
         public void SlamDown() {
             Debug.Log(TAG + ": SlamDown()");
-            Debug.Log(TAG + " FindObjectOfType<Game>().getSlamDownIndication(): " + FindObjectOfType<Game>().getSlamDownIndication()); 
+            Debug.Log(TAG + " FindObjectOfType<Game>().getSlamDownIndication(): " + FindObjectOfType<Game.Game>().getSlamDownIndication()); 
             // if (FindObjectOfType<Game>().buttonInteractableList[5] == 0) return;
-            if (FindObjectOfType<Game>().gameMode == 0 && FindObjectOfType<Game>().getSlamDownIndication() == 0) return;
+            if (FindObjectOfType<Game.Game>().gameMode == 0 && FindObjectOfType<Game.Game>().getSlamDownIndication() == 0) return;
             while (CheckIsValidPosition()) {
                 Game.nextTetromino.transform.position += new Vector3(0, -1, 0);
-                FindObjectOfType<Game>().MoveDown(); 
+                FindObjectOfType<Game.Game>().MoveDown(); 
             }
             if (!CheckIsValidPosition()) {
                 Game.nextTetromino.transform.position += new Vector3(0, 1, 0);
-                FindObjectOfType<Game>().recycleGhostTetromino();
+                FindObjectOfType<Game.Game>().recycleGhostTetromino();
                 onTetrominoLand();
                 if (info == null)
                     info = new TetrominoLandEventInfo();
@@ -204,11 +203,11 @@ namespace HotFix.Control.Tetromino {
                 if (mino.CompareTag("mino")) {
                     // Vector3 pos = FindObjectOfType<Game>().Round(mino.position);
                     Vector3 pos = MathUtil.Round(mino.position);
-                    if (!FindObjectOfType<Game>().CheckIsInsideGrid(pos)) {
+                    if (!FindObjectOfType<Game.Game>().CheckIsInsideGrid(pos)) {
                         return false;
                     }
-                    if (FindObjectOfType<Game>().GetTransformAtGridPosition(pos) != null
-                        && FindObjectOfType<Game>().GetTransformAtGridPosition(pos).parent != Game.nextTetromino.transform) {
+                    if (FindObjectOfType<Game.Game>().GetTransformAtGridPosition(pos) != null
+                        && FindObjectOfType<Game.Game>().GetTransformAtGridPosition(pos).parent != Game.nextTetromino.transform) {
                         return false;
                     }
                 }

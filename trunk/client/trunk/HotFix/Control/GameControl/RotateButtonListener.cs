@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-namespace HotFix.Control.Game {
+namespace HotFix.Control {
 
     public class RotateButtonListener : MonoBehaviour {
         private const string TAG = "RotateButtonListener";

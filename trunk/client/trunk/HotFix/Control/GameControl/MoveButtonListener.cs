@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using HotFix.Control.Game;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace HotFix.Control.Tetromino {
+namespace HotFix.Control {
 
     // 移动的不仅仅只是画布,还有当前的方块砖,所以放热更新程序域里去
     // 更多的应该是MoveCanvasView MoveCanvasViewModel里的按钮点击事件与回调逻辑

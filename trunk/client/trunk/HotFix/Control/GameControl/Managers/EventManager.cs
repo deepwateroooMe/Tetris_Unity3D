@@ -5,7 +5,7 @@ using System.Text;
 using Framework.Util;
 using UnityEngine;
 
-namespace HotFix.Control.Game {
+namespace HotFix.Control {
 
     public class EventManager : Singleton<EventManager> { // Singleton: 晚点儿把重构前的游戏逻辑理解清楚了再优化架构小细节
         private const string TAG = "EventManager";

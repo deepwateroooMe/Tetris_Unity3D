@@ -7,7 +7,7 @@ using Framework.MVVM;
 using Framework.Util;
 using UnityEngine;
 
-namespace HotFix.Data.Data {
+namespace HotFix.Data {
 
     // https:// thomaslevesque.com/2009/06/12/c-parentchild-relationship-and-xml-serialization/ 很详细的解释
     public interface IMinoData<P> where P : class { // Defines the contract for an object that has a parent object

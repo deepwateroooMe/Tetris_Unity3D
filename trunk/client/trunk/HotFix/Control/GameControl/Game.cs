@@ -2,16 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using Framework.MVVM;
-using HotFix.Control.Scene;
-using HotFix.Control.Tetromino;
-using HotFix.Data.Data;
+using HotFix.Data;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace HotFix.Control.Game {
+namespace HotFix.Control {
 
     public class Game : MonoBehaviour {
         private static string TAG = "Game";
@@ -143,66 +140,68 @@ namespace HotFix.Control.Game {
         // disableAllButtons();
         // enable: undoButton
 
-#region pausePanel Button Handlers
-        public void onResumeGame() {
-            Time.timeScale = 1.0f;
-            isPaused = false;
-            pausePanel.SetActive(false);
-            audioSource.Play();
-        }
-        
-        void SaveGame(SaveGameEventInfo info) {
-            Debug.Log(TAG + ": SaveGame()");
-            saveForUndo = false;
-            onGameSave();
-            hasSavedGameAlready = true;
-            savedGamePanel.SetActive(true);
-        }
-        public void onSavedGamePanelOK() {
-            savedGamePanel.SetActive(false);
-        }
-        public void onBackToMainMenu() {
-            if (!hasSavedGameAlready && gameStarted) { // gameStarted
-                saveGameReminderPanel.SetActive(true);
-            } else {
-                cleanUpGameBroad();
-                isPaused = false;
-                Time.timeScale = 1.0f;
-                SceneManager.LoadScene("GameMenu");
-            }
-        }
-        public void onYesToSaveGame() {
-            saveForUndo = false;
-            onGameSave();
-            hasSavedGameAlready = true;
-            saveGameReminderPanel.SetActive(false);
-            pausePanel.SetActive(false);
-            cleanUpGameBroad();
-            isPaused = false;
-            Time.timeScale = 1.0f;
-            SceneManager.LoadScene("GameMenu");
-        }
-        public void onNoToNotSaveGame() { // 如何才能够延迟加载呢？
-            hasSavedGameAlready = false;
-            saveGameReminderPanel.SetActive(false);
-            pausePanel.SetActive(false);
-            cleanUpGameBroad();
-            isPaused = false;
-            Time.timeScale = 1.0f;
-            if (gameMode == 1)
-                gameStarted = false;
-            // still have to check this due to auto Save
-            string path = new StringBuilder(Application.persistentDataPath).Append("/").Append(GameMenuData.Instance.saveGamePathFolderName).Append("/game.save").ToString();
-            if (File.Exists(path)) {
-                try {
-                    File.Delete(path);
-                } catch (System.Exception ex) {
-                    Debug.LogException(ex);
-                }
-            }
-            SceneManager.LoadScene("GameMenu");
-        }
-#endregion
+        // 下面的这些逻辑全部应该是在MenuViewModel里实现,和下传数据给子视图,或幕后游戏应用主模型
+// #region pausePanel Button Handlers
+//         public void onResumeGame() {
+//             Time.timeScale = 1.0f;
+//             isPaused = false;
+//             pausePanel.SetActive(false);
+//             audioSource.Play();
+//         }
+
+//         void SaveGame(SaveGameEventInfo info) {
+//             Debug.Log(TAG + ": SaveGame()");
+//             saveForUndo = false;
+//             onGameSave();
+//             hasSavedGameAlready = true;
+//             savedGamePanel.SetActive(true);
+//         }
+//         public void onSavedGamePanelOK() {
+//             savedGamePanel.SetActive(false);
+//         }
+//         public void onBackToMainMenu() {
+//             if (!hasSavedGameAlready && gameStarted) { // gameStarted
+//                 saveGameReminderPanel.SetActive(true);
+//             } else {
+//                 cleanUpGameBroad();
+//                 isPaused = false;
+//                 Time.timeScale = 1.0f;
+//                 SceneManager.LoadScene("GameMenu");
+//             }
+//         }
+//         public void onYesToSaveGame() {
+//             saveForUndo = false;
+//             onGameSave();
+//             hasSavedGameAlready = true;
+//             saveGameReminderPanel.SetActive(false);
+//             pausePanel.SetActive(false);
+//             cleanUpGameBroad();
+//             isPaused = false;
+//             Time.timeScale = 1.0f;
+//             SceneManager.LoadScene("GameMenu");
+//         }
+//         public void onNoToNotSaveGame() { // 如何才能够延迟加载呢？
+//             hasSavedGameAlready = false;
+//             saveGameReminderPanel.SetActive(false);
+//             pausePanel.SetActive(false);
+//             cleanUpGameBroad();
+//             isPaused = false;
+//             Time.timeScale = 1.0f;
+//             if (gameMode == 1)
+//                 gameStarted = false;
+//             // still have to check this due to auto Save
+//             string path = new StringBuilder(Application.persistentDataPath).Append("/").Append(GameMenuData.Instance.saveGamePathFolderName).Append("/game.save").ToString();
+//             if (File.Exists(path)) {
+//                 try {
+//                     File.Delete(path);
+//                 } catch (System.Exception ex) {
+//                     Debug.LogException(ex);
+//                 }
+//             }
+//             SceneManager.LoadScene("GameMenu");
+//         }
+// #endregion
+
         IEnumerator asyncLoadScene() {
             AsyncOperation async = SceneManager.LoadSceneAsync("GameMenu");
             yield return async;
@@ -1103,7 +1102,7 @@ namespace HotFix.Control.Game {
             hud_lines.text = numLinesCleared.ToString();
         }
 
-        public bool CheckIsAboveGrid(Tetromino.Tetromino tetromino) {
+        public bool CheckIsAboveGrid(Tetromino tetromino) {
             // public bool CheckIsAboveGrid(Transform transform) {
             for (int x = 0; x < gridWidth; x++)
                 for (int j = 0; j < gridWidth; j++) 

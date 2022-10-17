@@ -5,7 +5,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace HotFix.Control.Game {
+namespace HotFix.Control {
 
     // 当有两个不同的程序域,当项目大到一定的程度之后,
     // 必须得像最初测试热更新框架一样来测试这些是否如期运行,否则现在整合过来的,可能到时还都得删除掉
