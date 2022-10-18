@@ -1,4 +1,4 @@
-#+latex_class: cn-article
+emem#+latex_class: cn-article
 #+title: Tetris 3D Reference
 #+author: deepwaterooo
 #+options: ^:nil

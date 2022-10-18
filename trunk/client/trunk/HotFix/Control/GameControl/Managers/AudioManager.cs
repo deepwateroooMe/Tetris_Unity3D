@@ -25,7 +25,7 @@ namespace HotFix.Control {
         void OnEnable () {
             Debug.Log(TAG + ": OnEnable()"); 
             // Debug.Log(TAG + " gameObject.name: " + gameObject.name);
-            //audioSource = GameObject.GetComponent<AudioSource>(); // 今天才加的,加得不对,控制中没有AudioSource元件
+            audioSource = gameObject.GetComponent<AudioSource>(); 
 
             EventManager.Instance.RegisterListener<CanvasMovedEventInfo>(onCanvasMoved);
             EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onTetrominoLand);

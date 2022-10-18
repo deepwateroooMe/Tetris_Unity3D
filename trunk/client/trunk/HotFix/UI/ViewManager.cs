@@ -56,7 +56,7 @@ namespace HotFix.UI {
                     "UI2DRoot", // 这里是有预设的包，读出资源就可以加载
                     (go) => {
                         go.name = "UI2DRoot";
-                        GameObject.DontDestroyOnLoad(go);
+                        GameObject.DontDestroyOnLoad(go); // 以此为父节点的所有子节点都不会被销毁,包括各种管理类
 
                         // go.GetComponent<RectTransform>().rotation = Quaternion.Euler(Vector3.zero);
                         CoroutineHelper.StartCoroutine(GetRectSize(go.GetComponent<RectTransform>()));
@@ -99,8 +99,8 @@ namespace HotFix.UI {
                         audioRoot = new GameObject("AudioRoot").transform;
                         audioRoot.SetParent(managersRoot.transform, false);
                         audioRoot.gameObject.SetActive(false);
-                        audioRoot.gameObject.AddComponent<AudioManager>(); // 需要能够感知生命周期,因为加在依附地控件上,所以具备了感知生命周期的能力
-                        
+                        audioRoot.gameObject.AddComponent<AudioSource>(); 
+                        audioRoot.gameObject.AddComponent<AudioManager>(); // AudioManager : SingletonMono<AudioManager>
                         
                         eventRoot = new GameObject("EventRoot").transform;
                         eventRoot.SetParent(managersRoot.transform, false);
