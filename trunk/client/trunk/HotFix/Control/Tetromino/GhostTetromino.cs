@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Framework.MVVM;
+using HotFix.UI;
 using UnityEngine;
 
 namespace HotFix.Control {
@@ -45,14 +46,14 @@ namespace HotFix.Control {
         bool CheckIsValidPosition() {
             foreach (Transform mino in transform) {
                 Vector3 pos = MathUtil.Round(mino.position);
-                if (!FindObjectOfType<Game.Game>().CheckIsInsideGrid(pos))
+                if (!ViewManager.GameView.ViewModel.CheckIsInsideGrid(pos))
                     return false;
 
-                if (FindObjectOfType<Game.Game>().GetTransformAtGridPosition(pos) != null &&
-                    FindObjectOfType<Game.Game>().GetTransformAtGridPosition(pos).parent.CompareTag("currentActiveTetromino"))
+                if (ViewManager.GameView.ViewModel.GetTransformAtGridPosition(pos) != null &&
+                    ViewManager.GameView.ViewModel.GetTransformAtGridPosition(pos).parent.CompareTag("currentActiveTetromino"))
                     return true;
-                if (FindObjectOfType<Game.Game>().GetTransformAtGridPosition(pos) != null &&
-                    FindObjectOfType<Game.Game>().GetTransformAtGridPosition(pos).parent != transform) {
+                if (ViewManager.GameView.ViewModel.GetTransformAtGridPosition(pos) != null &&
+                    ViewManager.GameView.ViewModel.GetTransformAtGridPosition(pos).parent != transform) {
                     return false;
                 }
             }

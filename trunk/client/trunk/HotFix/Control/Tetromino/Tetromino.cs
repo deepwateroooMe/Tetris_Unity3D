@@ -170,7 +170,7 @@ namespace HotFix.Control {
                     PlayMoveAudio();
             } else {
                 ViewManager.GameView.nextTetromino.transform.position += new Vector3(0, 1, 0);
-                ViewManager.GameView.recycleGhostTetromino(); // 涉及事件的先后顺序，这里处理比较安全：确保在Tetromino之前处理
+                ViewManager.GameView.ViewModel.recycleGhostTetromino(); // 涉及事件的先后顺序，这里处理比较安全：确保在Tetromino之前处理
                 onTetrominoLand();
                 if (info == null)
                     info = new TetrominoLandEventInfo();
@@ -181,16 +181,16 @@ namespace HotFix.Control {
         }
         public void SlamDown() {
             Debug.Log(TAG + ": SlamDown()");
-            Debug.Log(TAG + " ViewManager.GameView.getSlamDownIndication(): " + ViewManager.GameView.getSlamDownIndication()); 
+            Debug.Log(TAG + " ViewManager.GameView.getSlamDownIndication(): " + ViewManager.GameView.ViewModel.getSlamDownIndication()); 
             // if (ViewManager.GameView.buttonInteractableList[5] == 0) return;
-            if (((MenuViewModel)ViewManager.GameView.ViewModel.ParentViewModel).gameMode == 0 && ViewManager.GameView.getSlamDownIndication() == 0) return;
+            if (((MenuViewModel)ViewManager.GameView.ViewModel.ParentViewModel).gameMode == 0 && ViewManager.GameView.ViewModel.getSlamDownIndication() == 0) return;
             while (CheckIsValidPosition()) {
                 ViewManager.GameView.nextTetromino.transform.position += new Vector3(0, -1, 0);
                 ViewManager.GameView.MoveDown(); 
             }
             if (!CheckIsValidPosition()) {
                 ViewManager.GameView.nextTetromino.transform.position += new Vector3(0, 1, 0);
-                ViewManager.GameView.recycleGhostTetromino();
+                ViewManager.GameView.ViewModel.recycleGhostTetromino();
                 onTetrominoLand();
                 if (info == null)
                     info = new TetrominoLandEventInfo();
@@ -207,8 +207,8 @@ namespace HotFix.Control {
                     if (!ViewManager.GameView.ViewModel.CheckIsInsideGrid(pos)) {
                         return false;
                     }
-                    if (ViewManager.GameView.GetTransformAtGridPosition(pos) != null
-                        && ViewManager.GameView.GetTransformAtGridPosition(pos).parent != ViewManager.GameView.nextTetromino.transform) {
+                    if (ViewManager.GameView.ViewModel.GetTransformAtGridPosition(pos) != null
+                        && ViewManager.GameView.ViewModel.GetTransformAtGridPosition(pos).parent != ViewManager.GameView.nextTetromino.transform) {
                         return false;
                     }
                 }

@@ -81,6 +81,8 @@ namespace HotFix.UI {
         AudioSource audioSource;
         AudioSource m_ExplosionAudio;
 
+        public GameObject moveCanvas;    // public ?
+        public GameObject rotateCanvas;
         public GameObject nextTetromino; // 这里把原本的静态标志STATIC给移掉了
         public GameObject ghostTetromino; 
 
@@ -201,6 +203,9 @@ namespace HotFix.UI {
             manBtn.onClick.AddListener(OnClickManButton);
             creBtn = GameObject.FindChildByName("creBtn").GetComponent<Button>();
             creBtn.onClick.AddListener(OnClickCreButton);
+
+            moveCanvas = GameObject.FindChildByName("moveCanvas");
+            rotateCanvas = GameObject.FindChildByName("rotateCanvas");
         }
 
         void OnClickPauButton() { // public void PauseGame()
