@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using HotFix.UI;
+using UnityEngine;
 
 namespace HotFix.Control {
 
@@ -37,7 +38,7 @@ namespace HotFix.Control {
 
             moveInfo = new TetrominoMoveEventInfo();
             moveInfo.delta = delta;
-            moveInfo.unitGO = Game.nextTetromino;
+            moveInfo.unitGO = ViewManager.GameView.nextTetromino;
             Debug.Log(TAG + " moveInfo.unitGO.name: " + moveInfo.unitGO.name); 
             EventManager.Instance.FireEvent(moveInfo); // 点击事件的触发传递与回调
         }

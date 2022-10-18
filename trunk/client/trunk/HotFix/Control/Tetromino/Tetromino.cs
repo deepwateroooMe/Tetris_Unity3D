@@ -1,5 +1,6 @@
 ﻿using deepwaterooo.tetris3d;
 using Framework.MVVM;
+using HotFix.UI;
 using UnityEngine;
 
 namespace HotFix.Control {
@@ -60,7 +61,7 @@ namespace HotFix.Control {
             Debug.Log(TAG + " gameObject.name: " + gameObject.name);
             
             audioSource = GetComponent<AudioSource>();
-            fallSpeed = Game.fallSpeed;
+            fallSpeed = ViewManager.GameView.ViewModel.fallSpeed;
             info = new TetrominoLandEventInfo();
 
             EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onTetrominoMove); 
@@ -91,47 +92,47 @@ namespace HotFix.Control {
             // if (!movedImmediateHorizontal) 
             //     movedImmediateHorizontal = true;
             // horizontalTimer = 0;
-            Game.nextTetromino.transform.position += new Vector3(0, 0, -1); 
+            ViewManager.GameView.nextTetromino.transform.position += new Vector3(0, 0, -1); 
             // FindObjectOfType<Game>().MoveZNeg(); // moveCanvas moves too
 
             if (CheckIsValidPosition()) {
-                FindObjectOfType<Game.Game>().UpdateGrid(Game.nextTetromino);
+                ViewManager.GameView.ViewModel.UpdateGrid(ViewManager.GameView.nextTetromino);
                 PlayMoveAudio();
             } else {
-                Game.nextTetromino.transform.position += new Vector3(0, 0, 1);
-                // FindObjectOfType<Game>().MoveZPos(); // moveCanvas moves too
+                ViewManager.GameView.nextTetromino.transform.position += new Vector3(0, 0, 1);
+                // ViewManager.GameView.MoveZPos(); // moveCanvas moves too
             }
         }
         
         public void onTetrominoMove(TetrominoMoveEventInfo eventInfo) { // 不使用 _command_
             // Debug.Log(TAG + ": onTetrominoMove()"); 
             isMoveValid = false;
-            Game.nextTetromino.transform.position += eventInfo.delta;
+            ViewManager.GameView.nextTetromino.transform.position += eventInfo.delta;
             if (CheckIsValidPosition()) {
                 isMoveValid = true;
                 PlayMoveAudio();
             } else {
-                Game.nextTetromino.transform.position -= eventInfo.delta;
+                ViewManager.GameView.nextTetromino.transform.position -= eventInfo.delta;
             }
         }
         // public void RotateXPos() {
-        //     Game.nextTetromino.transform.Rotate(90, 0, 0);
+        //     ViewManager.GameView.nextTetromino.transform.Rotate(90, 0, 0);
         //     if (CheckIsValidPosition()) {
-        //         FindObjectOfType<Game>().UpdateGrid(Game.nextTetromino);
+        //         ViewManager.GameView.UpdateGrid(ViewManager.GameView.nextTetromino);
         //         PlayRotateAudio();
         //     } else { 
-        //         Game.nextTetromino.transform.Rotate(-90, 0, 0); 
+        //         ViewManager.GameView.nextTetromino.transform.Rotate(-90, 0, 0); 
         //     }
         // }
         public void onTetrominoRotate(TetrominoRotateEventInfo eventInfo) {
             // Debug.Log(TAG + ": onTetrominoRotate()"); 
-            Game.nextTetromino.transform.Rotate(eventInfo.delta);
+            ViewManager.GameView.nextTetromino.transform.Rotate(eventInfo.delta);
             isRotateValid = false;
             if (CheckIsValidPosition()) {
                 isRotateValid = true;
                 PlayRotateAudio();
             } else { 
-                Game.nextTetromino.transform.Rotate(Vector3.zero - eventInfo.delta); 
+                ViewManager.GameView.nextTetromino.transform.Rotate(Vector3.zero - eventInfo.delta); 
             }
         }
 
@@ -139,9 +140,9 @@ namespace HotFix.Control {
         private void onTetrominoLand() {
             Debug.Log(TAG + ": onTetrominoLand()"); 
             PlayLandAudio();
-            Game.nextTetromino.tag = "Untagged";
-            Game.nextTetromino.GetComponent<Tetromino>().enabled = false;
-            Game.currentScore += individualScore;            
+            ViewManager.GameView.nextTetromino.tag = "Untagged";
+            ViewManager.GameView.nextTetromino.GetComponent<Tetromino>().enabled = false;
+            ViewManager.GameView.ViewModel.currentScore += individualScore;            
         }
         
         public void MoveDown() {
@@ -159,17 +160,17 @@ namespace HotFix.Control {
             // if (!movedImmediateVertical) 
             //     movedImmediateVertical = true;
             // verticalTimer = 0;
-            // if (Game.nextTetromino == null) return;
-            Game.nextTetromino.transform.position += new Vector3(0, -1, 0);
-            FindObjectOfType<Game.Game>().MoveDown();
+            // if (ViewManager.GameView.nextTetromino == null) return;
+            ViewManager.GameView.nextTetromino.transform.position += new Vector3(0, -1, 0);
+            ViewManager.GameView.MoveDown();
             // Debug.Log(TAG + " CheckIsValidPosition(): " + CheckIsValidPosition()); 
             if (CheckIsValidPosition()) {
-                FindObjectOfType<Game.Game>().UpdateGrid(Game.nextTetromino);
+                ViewManager.GameView.ViewModel.UpdateGrid(ViewManager.GameView.nextTetromino);
                 if (Input.GetKey(KeyCode.DownArrow)) 
                     PlayMoveAudio();
             } else {
-                Game.nextTetromino.transform.position += new Vector3(0, 1, 0);
-                FindObjectOfType<Game.Game>().recycleGhostTetromino(); // 涉及事件的先后顺序，这里处理比较安全：确保在Tetromino之前处理
+                ViewManager.GameView.nextTetromino.transform.position += new Vector3(0, 1, 0);
+                ViewManager.GameView.recycleGhostTetromino(); // 涉及事件的先后顺序，这里处理比较安全：确保在Tetromino之前处理
                 onTetrominoLand();
                 if (info == null)
                     info = new TetrominoLandEventInfo();
@@ -180,16 +181,16 @@ namespace HotFix.Control {
         }
         public void SlamDown() {
             Debug.Log(TAG + ": SlamDown()");
-            Debug.Log(TAG + " FindObjectOfType<Game>().getSlamDownIndication(): " + FindObjectOfType<Game.Game>().getSlamDownIndication()); 
-            // if (FindObjectOfType<Game>().buttonInteractableList[5] == 0) return;
-            if (FindObjectOfType<Game.Game>().gameMode == 0 && FindObjectOfType<Game.Game>().getSlamDownIndication() == 0) return;
+            Debug.Log(TAG + " ViewManager.GameView.getSlamDownIndication(): " + ViewManager.GameView.getSlamDownIndication()); 
+            // if (ViewManager.GameView.buttonInteractableList[5] == 0) return;
+            if (((MenuViewModel)ViewManager.GameView.ViewModel.ParentViewModel).gameMode == 0 && ViewManager.GameView.getSlamDownIndication() == 0) return;
             while (CheckIsValidPosition()) {
-                Game.nextTetromino.transform.position += new Vector3(0, -1, 0);
-                FindObjectOfType<Game.Game>().MoveDown(); 
+                ViewManager.GameView.nextTetromino.transform.position += new Vector3(0, -1, 0);
+                ViewManager.GameView.MoveDown(); 
             }
             if (!CheckIsValidPosition()) {
-                Game.nextTetromino.transform.position += new Vector3(0, 1, 0);
-                FindObjectOfType<Game.Game>().recycleGhostTetromino();
+                ViewManager.GameView.nextTetromino.transform.position += new Vector3(0, 1, 0);
+                ViewManager.GameView.recycleGhostTetromino();
                 onTetrominoLand();
                 if (info == null)
                     info = new TetrominoLandEventInfo();
@@ -199,15 +200,15 @@ namespace HotFix.Control {
         }
 
         public bool CheckIsValidPosition() { 
-            foreach (Transform mino in Game.nextTetromino.transform) {
+            foreach (Transform mino in ViewManager.GameView.nextTetromino.transform) {
                 if (mino.CompareTag("mino")) {
-                    // Vector3 pos = FindObjectOfType<Game>().Round(mino.position);
+                    // Vector3 pos = ViewManager.GameView.Round(mino.position);
                     Vector3 pos = MathUtil.Round(mino.position);
-                    if (!FindObjectOfType<Game.Game>().CheckIsInsideGrid(pos)) {
+                    if (!ViewManager.GameView.ViewModel.CheckIsInsideGrid(pos)) {
                         return false;
                     }
-                    if (FindObjectOfType<Game.Game>().GetTransformAtGridPosition(pos) != null
-                        && FindObjectOfType<Game.Game>().GetTransformAtGridPosition(pos).parent != Game.nextTetromino.transform) {
+                    if (ViewManager.GameView.GetTransformAtGridPosition(pos) != null
+                        && ViewManager.GameView.GetTransformAtGridPosition(pos).parent != ViewManager.GameView.nextTetromino.transform) {
                         return false;
                     }
                 }
@@ -295,8 +296,8 @@ namespace HotFix.Control {
 
         void Update () {
             // Debug.Log(TAG + ": Update()");
-            // Debug.Log(TAG + " (Game.isPaused): " + (Game.isPaused)); 
-            if (!Game.isPaused) {
+            // Debug.Log(TAG + " (ViewManager.GameView.ViewModel.isPaused): " + (ViewManager.GameView.ViewModel.isPaused)); 
+            if (!ViewManager.GameView.ViewModel.isPaused) {
                 CheckUserInput();
                 UpdateIndividualScore();
                 UpdateFallSpeed();       // static 1.0f
@@ -315,7 +316,7 @@ namespace HotFix.Control {
 
         void UpdateFallSpeed() {
             // Debug.Log(TAG + ": UpdateFallSpeed()"); 
-            fallSpeed = Game.fallSpeed;
+            fallSpeed = ViewManager.GameView.ViewModel.fallSpeed;
         }
     
         void UpdateIndividualScore() {
@@ -329,17 +330,17 @@ namespace HotFix.Control {
         }
 
         void PlayMoveAudio() {
-            audioSource = Game.nextTetromino.GetComponent<AudioSource>();
+            audioSource = ViewManager.GameView.nextTetromino.GetComponent<AudioSource>();
             audioSource.PlayOneShot(moveSound);
         }
 
         void PlayRotateAudio() {
-            audioSource = Game.nextTetromino.GetComponent<AudioSource>();
+            audioSource = ViewManager.GameView.nextTetromino.GetComponent<AudioSource>();
             audioSource.PlayOneShot(rotateSound);
         }
 
         void PlayLandAudio() {
-            audioSource = Game.nextTetromino.GetComponent<AudioSource>();
+            audioSource = ViewManager.GameView.nextTetromino.GetComponent<AudioSource>();
             audioSource.PlayOneShot(landSound);
         }
 
@@ -420,7 +421,7 @@ namespace HotFix.Control {
         //         rotateMinoOnly(90, 0, 0);
         //     }
         //     if (CheckIsValidPosition()) {
-        //         FindObjectOfType<Game>().UpdateGrid(Game.nextTetromino);
+        //         ViewManager.GameView.UpdateGrid(ViewManager.GameView.nextTetromino);
         //         PlayRotateAudio();
         //     } else { 
         //         if (limitRotation) {
@@ -452,7 +453,7 @@ namespace HotFix.Control {
         //         rotateMinoOnly(-90, 0, 0);
         //     }
         //     if (CheckIsValidPosition()) {
-        //         FindObjectOfType<Game>().UpdateGrid(Game.nextTetromino);
+        //         ViewManager.GameView.UpdateGrid(ViewManager.GameView.nextTetromino);
         //         PlayRotateAudio();
         //     } else { 
         //         if (limitRotation) {
@@ -485,7 +486,7 @@ namespace HotFix.Control {
         //     }
 		
         //     if (CheckIsValidPosition()) {
-        //         FindObjectOfType<Game>().UpdateGrid(Game.nextTetromino);
+        //         ViewManager.GameView.UpdateGrid(ViewManager.GameView.nextTetromino);
         //         PlayRotateAudio();
         //     } else { 
         //         if (limitRotation) {
@@ -518,7 +519,7 @@ namespace HotFix.Control {
         //     }
 		
         //     if (CheckIsValidPosition()) {
-        //         FindObjectOfType<Game>().UpdateGrid(Game.nextTetromino);
+        //         ViewManager.GameView.UpdateGrid(ViewManager.GameView.nextTetromino);
         //         PlayRotateAudio();
         //     } else { 
         //         if (limitRotation) {
@@ -551,7 +552,7 @@ namespace HotFix.Control {
         //     }
 		
         //     if (CheckIsValidPosition()) {
-        //         FindObjectOfType<Game>().UpdateGrid(Game.nextTetromino);
+        //         ViewManager.GameView.UpdateGrid(ViewManager.GameView.nextTetromino);
         //         PlayRotateAudio();
         //     } else { 
         //         if (limitRotation) {
@@ -584,7 +585,7 @@ namespace HotFix.Control {
         //     }
 		
         //     if (CheckIsValidPosition()) {
-        //         FindObjectOfType<Game>().UpdateGrid(Game.nextTetromino);
+        //         ViewManager.GameView.UpdateGrid(ViewManager.GameView.nextTetromino);
         //         PlayRotateAudio();
         //     } else { 
         //         if (limitRotation) {
@@ -607,7 +608,7 @@ namespace HotFix.Control {
         //         yield return new WaitForSeconds(2.0f * fallSpeed);
 
         //         Debug.Log("Tetromino MyUpdate: ");
-        //         if (!Game.isPaused) {
+        //         if (!ViewManager.GameView.ViewModel.isPaused) {
         //             CheckUserInput();
         //         }
         //     }

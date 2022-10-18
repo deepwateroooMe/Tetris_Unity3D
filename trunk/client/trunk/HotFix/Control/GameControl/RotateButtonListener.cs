@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using HotFix.UI;
 using UnityEngine;
 
 namespace HotFix.Control {
@@ -38,7 +39,7 @@ namespace HotFix.Control {
 
             rotateInfo = new TetrominoRotateEventInfo();
             rotateInfo.delta = delta;
-            rotateInfo.unitGO = Game.nextTetromino;
+            rotateInfo.unitGO = ViewManager.GameView.nextTetromino;
             EventManager.Instance.FireEvent(rotateInfo);
         }
         

@@ -7,7 +7,8 @@ using UnityEngine;
 
 namespace HotFix.Control {
 
-    public class AudioManager : Singleton<AudioManager> { 
+    // 应用中的音效播放管理器:它应该管理游戏中所有声音相关的,存有相关的音频,控制播放与停止等等,后来加上的?感觉代码不完整
+    public class AudioManager : SingletonMono<AudioManager> { // 感知Mono生命周期
         private const string TAG = "AudioManager";
 
         private static AudioSource audioSource;
@@ -24,7 +25,7 @@ namespace HotFix.Control {
         void OnEnable () {
             Debug.Log(TAG + ": OnEnable()"); 
             // Debug.Log(TAG + " gameObject.name: " + gameObject.name);
-            audioSource = GameObject.GetComponent<AudioSource>();
+            //audioSource = GameObject.GetComponent<AudioSource>(); // 今天才加的,加得不对,控制中没有AudioSource元件
 
             EventManager.Instance.RegisterListener<CanvasMovedEventInfo>(onCanvasMoved);
             EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onTetrominoLand);

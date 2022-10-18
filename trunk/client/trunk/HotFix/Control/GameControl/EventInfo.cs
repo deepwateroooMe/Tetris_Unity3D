@@ -26,9 +26,11 @@ namespace HotFix.Control {
         public Vector3 delta; 
     }
     public class TetrominoMoveEventInfo : EventInfo {     // move 
+        public GameObject unitGO; // 这里前后有两上不同的版本,重构的原因不是很明白,要仔细看一下
         public Vector3 delta;
     }
     public class TetrominoRotateEventInfo : EventInfo {   // rotate
+        public GameObject unitGO; // 这里前后有两上不同的版本,重构的原因不是很明白,要仔细看一下
         public Vector3 delta;
     }
     public class TetrominoLandEventInfo : EventInfo {     // land

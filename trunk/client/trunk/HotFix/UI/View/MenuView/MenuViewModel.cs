@@ -1,8 +1,12 @@
-﻿using Framework.MVVM;
+﻿using System.IO;
+using System.Text;
+using Framework.MVVM;
+using UnityEngine;
 
 namespace HotFix.UI {
 
     public class MenuViewModel : ViewModelBase {
+        private const string TAG = "MenuViewModel";
 
         // 这里想要把视图相关数据放入视图模型中来,其它视图类同
         // 可能还是需要把主游戏视图合并为一个相对更大的视图,方便绑定一个ViewModel;
@@ -54,14 +58,91 @@ namespace HotFix.UI {
             DelegateSubscribe();
         }
 
+        public void onGameModeSelected(int gameMode) {
+            _gameMode = gameMode;
+            switch (gameMode) {
+            case 0:
+                _saveGamePathFolderName = "educational";
+                break;
+            case 1:
+                _saveGamePathFolderName = "classic";
+                break;
+            case 2:
+                _saveGamePathFolderName = "challenge";
+                break;
+            // default:
+            //     return                
+            }
+        }
+        
         void Initialization() {
             _gameMode = 0;
             _loadSavedGame = false;
             _saveGamePathFolderName = "";
             _gridWidth = -1;
         }
-
         void DelegateSubscribe() {
+        }
+
+        // public void onLogin() {
+        //     LoadScene("Signin");
+        // }
+
+        public void onLogout() {
+            
+        }
+
+        public void getCredit() {
+            
+        }
+        
+        public void rateTheGame() {
+            
+        }
+        
+        public void toggleSounds() {
+            
+        }
+        
+        public void getAdsFree() {
+            
+        }
+
+    // 这些方法里,很多应该挪至视图里
+        // public void onNewGame() {
+        //     _loadSavedGame = false;
+        //     LoadScene("Main");
+        // }
+        // public void onLoadSavedGame() { // saved file in separate folders:  challenge classic educational
+        //     // try to always keep the last saved game for this specific mode
+        //     // if (isSavedFileExist()) { // set global flag
+        //     _loadSavedGame = true;
+        //     LoadScene("Main");
+        //     // } 
+        // }
+        // public void onClosePanel() {
+        //     newGameOrLoadSavedGamePanel.SetActive(false);
+        // }
+        
+        private bool isSavedFileExist() {
+            Debug.Log(TAG + ": isSavedFileExist()");
+            StringBuilder currentPath = new StringBuilder("");
+            if (_gameMode > 0)
+                currentPath.Append(Application.persistentDataPath + "/" + _saveGamePathFolderName + "/game.save");
+            else 
+                currentPath.Append(Application.persistentDataPath + "/" + _saveGamePathFolderName + "/grid" + _gridWidth + "/game.save");
+            Debug.Log(TAG + " currentPath: " + currentPath.ToString()); 
+            if (File.Exists(currentPath.ToString()))
+                return true;
+            return false;
+        }
+        
+        // private void LoadScene(string scene) {
+        //     SceneManager.LoadSceneAsync(scene); // 这里用的是系统的UnityEngine的
+        // }
+
+        public void toggleSettings() {
+            
         }
     }
 }

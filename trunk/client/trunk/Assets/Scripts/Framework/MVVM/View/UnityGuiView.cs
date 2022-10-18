@@ -91,7 +91,8 @@ namespace Framework.MVVM {
         }
         protected virtual void OnInitialize() {
             GameObject = ResourceConstant.Loader.LoadClone(BundleName, AssetName, EAssetBundleUnloadLevel.Never);
-// 第一次实例化该视图的时候,为什么会一定要再加个CanvasGroup元件Component呢?            
+// 第一次实例化该视图的时候,为什么会一定要再加个CanvasGroup元件Component呢?
+// 某些视图中会用到这个,这里有个点位符的作用,避免将来一大堆的非空检测?
             GameObject.AddComponent<CanvasGroup>();
             Transform.SetParent(GameObject.Find("ViewRoot").transform, false);
             viewModelProperty.OnValueChanged += OnBindingContextChanged; // 注册视图背后视图模型的监听回调函数

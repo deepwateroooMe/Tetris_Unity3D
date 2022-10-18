@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Framework.MVVM;
 using Framework.Util;
 using System.Collections;
+using HotFix.Control;
 using HotFix.UI.View.MidMenuView;
 using UnityEngine.EventSystems;
 using HotFix.UI.View.SettingsView;
@@ -44,6 +45,9 @@ namespace HotFix.UI {
         //     regularFont = ResourceHelper.LoadFont("ui/font/regular", "regular", EAssetBundleUnloadLevel.Never);
         //     mediumFont = ResourceHelper.LoadFont("ui/font/medium", "medium", EAssetBundleUnloadLevel.Never);
         // }
+
+        public static Transform eventRoot; // 固定的视图层面资源池根节点
+        public static Transform audioRoot; // 固定的视图层面资源池根节点
 // 仔细看这个方法：不是从热更新程序集里加载出unity里运行所需要的东西了吗？    
         static void CreateBaseUI() {
             ResourceHelper
@@ -91,9 +95,13 @@ namespace HotFix.UI {
                         // poolRoot.SetParent(UI2DRoot.transform, false);
                         poolRoot.SetParent(managersRoot, false);
                         poolRoot.gameObject.SetActive(false);
+
                         audioRoot = new GameObject("AudioRoot").transform;
                         audioRoot.SetParent(managersRoot.transform, false);
                         audioRoot.gameObject.SetActive(false);
+                        audioRoot.gameObject.AddComponent<AudioManager>(); // 需要能够感知生命周期,因为加在依附地控件上,所以具备了感知生命周期的能力
+                        
+                        
                         eventRoot = new GameObject("EventRoot").transform;
                         eventRoot.SetParent(managersRoot.transform, false);
                         eventRoot.gameObject.SetActive(false);
@@ -169,8 +177,6 @@ namespace HotFix.UI {
             goList.Push(go);
         }
 #endregion
-        public static Transform eventRoot; // 固定的视图层面资源池根节点
-        public static Transform audioRoot; // 固定的视图层面资源池根节点
     
 // 视图里的小物件管理:　视图中需要可能会用到的运行时需要实例化的小物件(比如各种不同类型的方块砖/阴影砖,粒子系统等)管理
 // 与此部分相关联的是UI csharp项目中这些不同类型方块砖(以及不同类型的小MINO,粒子系统)的预设制作,相关数据导入? 与那个项目(UI相关逻辑)的设计与资源打包相关联
