@@ -1,7 +1,12 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections;
+using System.IO;
 using System.Text;
+using deepwaterooo.tetris3d;
 using Framework.MVVM;
+using Framework.Util;
 using HotFix.Control;
+using HotFix.Data;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -86,6 +91,61 @@ namespace HotFix.UI {
         public GameObject nextTetromino; // 这里把原本的静态标志STATIC给移掉了
         public GameObject ghostTetromino; 
 
+        public AudioClip clearLineSound;
+
+        public Text hud_score;
+        public Text hud_level;
+        public Text hud_lines;
+        public Canvas hud_canvas;
+
+        public GameObject m_ExplosionPrefab;
+
+        public Button invertButton;
+        public Sprite newImg; 
+        public Sprite prevImg;
+        public GameObject previewSet;
+        public GameObject previewSet2;
+        public GameObject defaultContainer;
+    
+        // private int numberOfRowsThisTurn = 0;
+        private GameObject cycledPreviewTetromino;
+    
+        private bool gameStarted = false;
+
+        private Vector3 previewTetrominoPosition = new Vector3(-17f, -5f, -9.81f); 
+        private Vector3 previewTetromino2Position = new Vector3(-68.3f, 19.6f, 32.4f); // (-56.3f, -0.1f, 32.4f) (-24.8f, -0.1f, 32.4f);
+    
+        public int numLinesCleared = 0;
+
+        public GameObject emptyGO;
+        public Transform tmpTransform;
+
+        public GameObject previewTetromino;
+        public GameObject previewTetromino2;
+
+        // public string prevPreview; // to remember previous spawned choices
+        // public string prevPreview2;
+        // public string nextTetrominoType;  
+        // public string previewTetrominoType; 
+        // public string previewTetromino2Type;
+
+        private SaveGameEventInfo saveGameInfo;
+
+        private GameObject tmpParentGO;
+
+        public GameObject previewSelectionButton;
+        public GameObject previewSelectionButton2;
+        public GameObject swapPreviewTetrominoButton;
+        public GameObject undoButton;
+        
+        public GameObject savedGamePanel;
+        public GameObject saveGameReminderPanel;
+
+        private bool isDuringUndo = false;
+        public bool saveForUndo = true;
+
+        // private GameObject baseBoard;
+        
         public override void OnRevealed() {
             base.OnRevealed();
             // 当当前视图显示结束之后,还是应该之前开始显示的时候呢,调用游戏开始的初始化等相关配置
@@ -110,32 +170,30 @@ namespace HotFix.UI {
             EventManager.Instance.RegisterListener<SaveGameEventInfo>(SaveGame); 
             EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
             EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
-            EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
+            // EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); // 自己重构时commented out for tmp
 
-            tmpTransform = emptyGO.transform;
-            audioSource = GetComponent<AudioSource>();
-
-            if (!string.IsNullOrEmpty(GameMenuData.Instance.saveGamePathFolderName)) {
-                gameMode = GameMenuData.Instance.gameMode;
-                loadSavedGame = GameMenuData.Instance.loadSavedGame;
-                StringBuilder path = new StringBuilder("");
-                if (gameMode > 0)
-                    path.Append(Application.persistentDataPath + "/" + GameMenuData.Instance.saveGamePathFolderName + "/game.save");
-                else 
-                    path.Append(Application.persistentDataPath + "/" + GameMenuData.Instance.saveGamePathFolderName + "/grid" + gridWidth + "/game.save");
-                if (loadSavedGame) {
-                    LoadGame(path.ToString());
-                } else {
-                    LoadNewGame();
-                }
-            } else {
-                LoadNewGame();
-            }
-
-            currentLevel = startingLevel;
-            startingHighScore = PlayerPrefs.GetInt("highscore");
-            startingHighScore2 = PlayerPrefs.GetInt("highscore2");
-            startingHighScore3 = PlayerPrefs.GetInt("highscore3");
+            // tmpTransform = emptyGO.transform;
+            // audioSource = GetComponent<AudioSource>();
+            // if (!string.IsNullOrEmpty(GameMenuData.Instance.saveGamePathFolderName)) {
+            //     gameMode = GameMenuData.Instance.gameMode;
+            //     loadSavedGame = GameMenuData.Instance.loadSavedGame;
+            //     StringBuilder path = new StringBuilder("");
+            //     if (gameMode > 0)
+            //         path.Append(Application.persistentDataPath + "/" + GameMenuData.Instance.saveGamePathFolderName + "/game.save");
+            //     else 
+            //         path.Append(Application.persistentDataPath + "/" + GameMenuData.Instance.saveGamePathFolderName + "/grid" + gridWidth + "/game.save");
+            //     if (loadSavedGame) {
+            //         LoadGame(path.ToString());
+            //     } else {
+            //         LoadNewGame();
+            //     }
+            // } else {
+            //     LoadNewGame();
+            // }
+            // currentLevel = startingLevel;
+            // startingHighScore = PlayerPrefs.GetInt("highscore");
+            // startingHighScore2 = PlayerPrefs.GetInt("highscore2");
+            // startingHighScore3 = PlayerPrefs.GetInt("highscore3");
         
             //1.粒子特效的GameObject实例化完毕。
             //2.确保粒子所用到的贴图载入内存
@@ -255,7 +313,7 @@ namespace HotFix.UI {
         // MidMenuView 里的5 个按钮
         void OnClickSavButton() { // SAVE GAME
         }
-        void OnClickResButton() { // RESUME GAME: 隐藏当前游戏过程中的视图,就可以了 // public void onResumeGame();
+        void OnClickResButton() { // RESUME GAME: 隐藏当前游戏过程中的视图,就可以了 // public void OnClickResButton();
             Time.timeScale = 1.0f;
             ViewModel.isPaused = false;
             pausePanel.SetActive(false);
@@ -338,22 +396,554 @@ namespace HotFix.UI {
             SaveSystem.SaveGame(ViewModel);
         }
 
-// 平移与旋转两套按钮的上下移动: 应该是放在视图里的吧;最好是写成观察者模式,UI观察数据的变化,UI事件触发下发更新数据指令
-        public void MoveDown() {
+        void setAllBaseBoardInactive() {
+            baseBoard3.SetActive(false);
+            baseBoard4.SetActive(false);
+            baseBoard5.SetActive(false);
+        }
+        IEnumerator asyncLoadScene() {
+            // AsyncOperation async = SceneManager.LoadSceneAsync("GameMenu");
+            // yield return async;
+            yield return null;
+        }
+        // void onGameSave(SaveGameEventInfo info) {
+        //void onGameSave() {
+        //    Debug.Log(TAG + ": onGameSave()");
+        //    if (tmpTransform == null) // Bug: 再检查一下这个到底是怎么回事
+        //        tmpTransform = new GameObject().transform;
+        //    SaveSystem.SaveGame(this);
+        //}
+        public void CheckUserInput() {  // originally pasuseButton & continueButton
+            Debug.Log(TAG + ": CheckUserInput()"); 
+            if (Time.timeScale == 1.0f) {
+                PauseGame();
+            } else {
+                OnClickResButton();
+            }
+        }
+
+        public void PauseGame() {
+            Time.timeScale = 0f;	    
+            audioSource.Pause();
+            ViewModel.isPaused = true;
+
+            // Bug: disable all Hud canvas buttons: swap
+            audioSource.Pause();
+            pausePanel.SetActive(true);
+            // Bug cleaning: when paused game, if game has NOT started yet, disable Save Button
+            if (!gameStarted) {
+                
+            }
+        }
+
+        public void onActiveTetrominoLand(TetrominoLandEventInfo info) {
+            Debug.Log(TAG + ": onActiveTetrominoLand()");
+            MoveUp(); 
+            ViewModel.UpdateGrid(nextTetromino);
+
+            // Debug.Log(TAG + ": gridOcc[,,] before Land and Save()"); 
+            // MathUtil.printBoard(gridOcc); 
+            
+            recycleGhostTetromino();
+
+            // // SaveGameEventInfo fire here 
+            // saveGameInfo = new SaveGameEventInfo();
+            // EventManager.Instance.FireEvent(saveGameInfo);
+            // change an approach: it is unnessary and do NOT apply delegates and events here
+            onGameSave();
+
+            ViewModel.DeleteRow();
+            Debug.Log(TAG + " (CheckIsAboveGrid(nextTetromino.GetComponent<Tetromino>())): " + (ViewModel.CheckIsAboveGrid(nextTetromino.GetComponent<Tetromino>()))); 
+            if (ViewModel.CheckIsAboveGrid(nextTetromino.GetComponent<Tetromino>())) {
+                GameOver();
+            }            
+            DisableMoveRotationCanvas();
+            Array.Clear(ViewModel.buttonInteractableList, 0, ViewModel.buttonInteractableList.Length);
+            if (((MenuViewModel)ViewModel.ParentViewModel).gameMode == 0) {
+                ViewModel.buttonInteractableList[0] = 1;
+                ViewModel.buttonInteractableList[1] = 1;
+                ViewModel.buttonInteractableList[2] = 1;
+                ViewModel.buttonInteractableList[3] = 1; // undo button
+            } else 
+                SpawnnextTetromino();  
+        }
+
+        public void recycleGhostTetromino() {
+            Debug.Log(TAG + ": recycleGhostTetromino()");
+            Debug.Log(TAG + " ghostTetromino.name: " + ghostTetromino.name); 
+            // Debug.Log(TAG + " (ghostTetromino == null): " + (ghostTetromino == null));
+            // Debug.Log(TAG + " ghostTetromino.tag: " + ghostTetromino.tag); 
+            // Debug.Log(TAG + " ghostTetromino.CompareTag(\"currentGhostTetromino\"): " + ghostTetromino.CompareTag("currentGhostTetromino")); 
+            if (ghostTetromino != null) {
+                ghostTetromino.tag = "Untagged";
+                PoolManager.Instance.ReturnToPool(ghostTetromino, ghostTetromino.GetComponent<TetrominoType>().type);
+            }
+        }
+        
+        private void LoadNewGame() {
+            Debug.Log(TAG + ": LoadNewGame()");
+            // gameMode = ((MenuViewModel)ViewModel.ParentViewModel).gameMode;
+            // fallSpeed = 3.0f; // should be recorded too, here
+            // if (gameMode == 0)
+            //     resetGridOccBoard();
+            ViewModel.InitializationForNewGame();
+            SpawnnextTetromino();  
+
+// 不是说,要把这些都写成是观察者模式的吗?
+            // currentScore = 0;
+            hud_score.text = "0";
+            // currentLevel = startingLevel;
+            hud_level.text = ViewModel.currentLevel.ToString();
+            hud_lines.text = "0";
+
+            if (ViewModel.gameMode > 0) { // disable some components
+                previewSelectionButton.SetActive(false);
+                previewSelectionButton2.SetActive(false);
+                swapPreviewTetrominoButton.SetActive(false);
+                undoButton.SetActive(false);
+            }
+            rotateCanvas.SetActive(false);
+        }
+        void OnDisable() {
+            Debug.Log(TAG + ": OnDisable()");
+
+            if (EventManager.Instance != null) {
+                // if (gameMode == 0) {
+                // EventManager.Instance.UnregisterListener<SwapPreviewsEventInfo>(onSwapPreviewTetrominos);
+                // EventManager.Instance.UnregisterListener<UndoGameEventInfo>(onUndoGame); 
+                // EventManager.UndoButtonClicked -= onUndoGame;
+                // EventManager.SwapButtonClicked -= onSwapPreviewTetrominos;
+                // }                
+                EventManager.Instance.UnregisterListener<SaveGameEventInfo>(SaveGame); 
+                EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove);
+                EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
+                EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
+            }
+        }
+
+        private void SpawnPreviewTetromino() {
+            Debug.Log(TAG + ": SpawnPreviewTetromino()"); 
+            previewTetromino = PoolManager.Instance.GetFromPool(
+                ViewModel.GetRandomTetromino(), previewTetrominoPosition,
+                Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
+            previewTetromino.transform.SetParent(previewSet.transform, false);
+
+            // if (previewTetromino.GetComponent<Rotate>() != null)
+            //     previewTetromino.GetComponent<Rotate>().enabled = !previewTetromino.GetComponent<Rotate>().enabled;
+            // else
+            //     previewTetromino.AddComponent<Rotate>();
+            ViewModel.previewTetrominoType = previewTetromino.GetComponent<TetrominoType>().type;
+
+            Debug.Log(TAG + " (previewTetromino != null): " + (previewTetromino != null)); 
+            Debug.Log(TAG + " previewTetromino.name: " + previewTetromino.name); 
+            
+            if (ViewModel.gameMode == 0) { // previewTetromino2
+                // excepts: undoButton toggleButton fallButton
+                ViewModel.buttonInteractableList[3] = 0;
+                ViewModel.buttonInteractableList[4] = 0;
+                ViewModel.buttonInteractableList[5] = 0;
+
+                previewTetromino2 = PoolManager.Instance.GetFromPool(
+                    ViewModel.GetRandomTetromino(), previewTetromino2Position, 
+                    Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
+                previewTetromino2.transform.SetParent(previewSet2.transform, false);
+                // if (previewTetromino2.GetComponent<Rotate>() != null)
+                //     previewTetromino2.GetComponent<Rotate>().enabled = !previewTetromino2.GetComponent<Rotate>().enabled;
+                // else
+                //     previewTetromino2.AddComponent<Rotate>();
+                ViewModel.previewTetromino2Type = previewTetromino2.GetComponent<TetrominoType>().type;
+                // previewTetromino2.layer = LayerMask.NameToLayer("UI"); // not working on this RayCast button click right now
+            }
+        }
+        private void SpawnPreviewTetromino(string type1, string type2) {
+            previewTetromino = PoolManager.Instance.GetFromPool(type1, previewTetrominoPosition, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
+            previewTetromino.transform.SetParent(previewSet.transform, false);
+            // if (previewTetromino.GetComponent<Rotate>() != null)
+            //     previewTetromino.GetComponent<Rotate>().enabled = !previewTetromino.GetComponent<Rotate>().enabled;
+            // else
+            //     previewTetromino.AddComponent<Rotate>();
+            ViewModel.previewTetrominoType = previewTetromino.GetComponent<TetrominoType>().type;
+
+            if (ViewModel.gameMode == 0) { // previewTetromino2
+                previewTetromino2 = PoolManager.Instance.GetFromPool(type2, previewTetromino2Position, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
+                previewTetromino2.transform.SetParent(previewSet2.transform, false);
+                // if (previewTetromino2.GetComponent<Rotate>() != null)
+                //     previewTetromino2.GetComponent<Rotate>().enabled = !previewTetromino2.GetComponent<Rotate>().enabled;
+                // else
+                //     previewTetromino2.AddComponent<Rotate>();
+                ViewModel.previewTetromino2Type = previewTetromino2.GetComponent<TetrominoType>().type;
+            }
+            ViewModel.buttonInteractableList[3] = 1; // undoButton
+        }
+        public void playFirstTetromino() {
+            Debug.Log(TAG + ": playFirstTetromino()");
+            Debug.Log(TAG + " ViewModel.buttonInteractableList[0]: " + ViewModel.buttonInteractableList[0]); 
+            if (ViewModel.buttonInteractableList[0] == 0) return;
+            ViewModel.prevPreview = previewTetromino.GetComponent<TetrominoType>().type;   
+            ViewModel.prevPreview2 = previewTetromino2.GetComponent<TetrominoType>().type;
+            preparePreviewTetrominoRecycle(2);
+            PoolManager.Instance.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+            previewTetromino.transform.localScale -= ViewModel.previewTetrominoScale;
+            // previewTetromino.GetComponent<Rotate>().enabled = !previewTetromino.GetComponent<Rotate>().enabled;
+            
+            nextTetromino = previewTetromino;
+            currentActiveTetrominoPrepare();
+            gameStarted = true;
+            
+            SpawnGhostTetromino();  
+            moveRotatecanvasPrepare();
+            SpawnPreviewTetromino();
+
+            // disables: previewSelectionButton previewSelectionButton2 swapPreviewTetrominoButton
+            // enables: undoButton toggleButton fallButton
+            if (ViewModel.gameMode == 0) {
+                ViewModel.buttonInteractableList[0] = 0;
+                ViewModel.buttonInteractableList[1] = 0;
+                ViewModel.buttonInteractableList[2] = 0;
+                ViewModel.buttonInteractableList[3] = 1;
+                ViewModel.buttonInteractableList[4] = 1;
+                ViewModel.buttonInteractableList[5] = 1;
+            }
+            // printViewModel.buttonInteractableList();
+        }
+        // void printViewModel.buttonInteractableList() {
+        //     for (int i = 0; i < 6; i++) 
+        //         Debug.Log(TAG + " ViewModel.buttonInteractableList[i]: i : " + i + ", " + ViewModel.buttonInteractableList[i]); 
+        // }
+        public void playSecondTetromino() {
+            Debug.Log(TAG + ": playSecondTetromino()"); 
+            Debug.Log(TAG + " ViewModel.buttonInteractableList[1]: " + ViewModel.buttonInteractableList[1]); 
+            if (ViewModel.buttonInteractableList[1] == 0) return;
+            ViewModel.prevPreview = previewTetromino.GetComponent<TetrominoType>().type;   
+            ViewModel.prevPreview2 = previewTetromino2.GetComponent<TetrominoType>().type;
+            preparePreviewTetrominoRecycle(1);
+            PoolManager.Instance.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+            previewTetromino2.transform.localScale -= ViewModel.previewTetrominoScale;
+            // previewTetromino2.layer = LayerMask.NameToLayer("Default");
+            // previewTetromino2.GetComponent<Rotate>().enabled = !previewTetromino2.GetComponent<Rotate>().enabled;
+
+            nextTetromino = previewTetromino2;
+            currentActiveTetrominoPrepare();
+            gameStarted = true;
+            
+            SpawnGhostTetromino();  
+            moveRotatecanvasPrepare();
+            SpawnPreviewTetromino();
+            
+            // disables: previewSelectionButton previewSelectionButton2 swapPreviewTetrominoButton
+            // enables: undoButton toggleButton fallButton
+            if (ViewModel.gameMode == 0) {
+                ViewModel.buttonInteractableList[0] = 0;
+                ViewModel.buttonInteractableList[1] = 0;
+                ViewModel.buttonInteractableList[2] = 0;
+                ViewModel.buttonInteractableList[3] = 1;
+                ViewModel.buttonInteractableList[4] = 1;
+                ViewModel.buttonInteractableList[5] = 1;
+            }
+            // printViewModel.buttonInteractableList();
+        }
+        private void preparePreviewTetrominoRecycle(int i) { 
+            cycledPreviewTetromino = i == 1 ? previewTetromino : previewTetromino2;
+            // cycledPreviewTetromino.GetComponent<Rotate>().enabled = !cycledPreviewTetromino.GetComponent<Rotate>().enabled; // disable
+            cycledPreviewTetromino.transform.localScale -= ViewModel.previewTetrominoScale;
+            cycledPreviewTetromino.transform.position = Vector3.zero;
+            cycledPreviewTetromino.transform.rotation = Quaternion.identity;
+            cycledPreviewTetromino.SetActive(false);
+        }
+        public void SpawnnextTetromino() {
+            Debug.Log(TAG + ": SpawnnextTetromino()");
+            if (!gameStarted) {
+                if (ViewModel.gameMode == 0) {
+                    SpawnPreviewTetromino();
+                } else {
+                    gameStarted = true;
+                    nextTetromino = PoolManager.Instance.GetFromPool(
+                        ViewModel.GetRandomTetromino(),
+                        new Vector3(2.0f, ViewModel.gridHeight - 1f, 2.0f),
+                        Quaternion.identity);
+                    currentActiveTetrominoPrepare();
+                    moveCanvas.gameObject.SetActive(true);  
+                    SpawnGhostTetromino();
+                    SpawnPreviewTetromino();
+                }
+            } else {
+                previewTetromino.transform.localScale -= ViewModel.previewTetrominoScale;
+                // previewTetromino.GetComponent<Rotate>().enabled = !previewTetromino.GetComponent<Rotate>().enabled;
+
+                nextTetromino = previewTetromino;
+                currentActiveTetrominoPrepare();
+                
+                SpawnGhostTetromino();  
+                moveRotatecanvasPrepare();
+                SpawnPreviewTetromino();
+            }
+        }
+
+        private void recycleNextTetromino() {
+            Debug.Log(TAG + ": recycleNextTetromino()"); 
+            if (nextTetromino != null) {
+                nextTetromino.tag = "Untagged";
+                nextTetromino.GetComponent<Tetromino>().enabled = false;
+                ViewModel.resetGridAfterDisappearingNextTetromino(nextTetromino);  // this one for undo click only ???? Nonono
+                if (nextTetromino.transform.childCount == 4) {
+                    PoolManager.Instance.ReturnToPool(nextTetromino, nextTetromino.GetComponent<TetrominoType>().type);
+                } else 
+                    GameObject.Destroy(nextTetromino.gameObject);
+            }
+            // nextTetromino = null;
+        }
+        private void recycleThreeMajorTetromino() {
+            // 回收三样东西：nextTetromino previewTetromino previewTetromino2
+            recycleNextTetromino();
+            preparePreviewTetrominoRecycle(1);
+            PoolManager.Instance.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+            preparePreviewTetrominoRecycle(2);
+            PoolManager.Instance.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+        }
+
+        public void onUndoGame() { // 分一部分的逻辑到视图模型中去
+            Debug.Log(TAG + ": onUndoGame()");
+            if (ViewModel.buttonInteractableList[3] == 0) return;
+            Array.Clear(ViewModel.buttonInteractableList, 0, ViewModel.buttonInteractableList.Length);
+            isDuringUndo = true;
+            recycleThreeMajorTetromino();
+
+            StringBuilder path = new StringBuilder("");
+            // if (!string.IsNullOrEmpty(GameMenuData.Instance.saveGamePathFolderName)) 
+            path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName + "/game" + ".save");
+            // else
+            //     path.Append(Application.persistentDataPath + "/game" + ".save");
+            GameData gameData = SaveSystem.LoadGame(path.ToString());
+            StringBuilder type = new StringBuilder("");
+            if (ViewModel.hasDeletedMinos) {
+                ViewModel.currentScore = gameData.score; // 这里要改
+                ViewModel.currentLevel = gameData.level;
+                numLinesCleared = gameData.lines;
+                hud_score.text = ViewModel.currentScore.ToString();
+                hud_level.text = ViewModel.currentLevel.ToString(); // 这不希望变的
+                hud_lines.text = numLinesCleared.ToString();
+
+                // Debug.Log(TAG + ": onUndoGame() current board before respawn"); 
+                // MathUtil.printBoard(gridOcc); 
+                
+                Debug.Log(TAG + " gameData.parentList.Count: " + gameData.parentList.Count);
+                ViewModel.LoadDataFromParentList(gameData.parentList);
+
+                GameObject.FindGameObjectWithTag("MainCamera").transform.position = DeserializedTransform.getDeserializedTransPos(gameData.cameraData); // MainCamera
+                GameObject.FindGameObjectWithTag("MainCamera").transform.rotation = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
+            }
+            moveCanvas.gameObject.SetActive(false);   // moveCanvas rotateCanvas: SetActive(false)
+            rotateCanvas.gameObject.SetActive(false);
+            if (ViewModel.prevPreview != null) { // previewTetromino previewTetromino2
+                type.Length = 0;
+                string type2 = ViewModel.prevPreview2;
+                SpawnPreviewTetromino(type.Append(ViewModel.prevPreview).ToString(), type2);
+            }
+            ViewModel.buttonInteractableList[0] = 1; 
+            ViewModel.buttonInteractableList[1] = 1; 
+            ViewModel.buttonInteractableList[2] = 1; 
+            ViewModel.buttonInteractableList[3] = 0; // buttons are supposed to click once at a time only
+            isDuringUndo = false;
+        }
+        
+        void LoadGame(string path) {  // when load Scene load game: according to gameMode
+            Debug.Log(TAG + ": LoadGame()");
+            if (ViewModel.gameMode == 0)
+                ViewModel.resetGridOccBoard(); 
+            GameData gameData = SaveSystem.LoadGame(path);
+            ViewModel.gameMode = gameData.gameMode;
+            
+            ViewModel.currentScore = gameData.score;
+            ViewModel.currentLevel = gameData.level;
+            numLinesCleared = gameData.lines;
+            hud_score.text = ViewModel.currentScore.ToString();
+            hud_level.text = ViewModel.currentLevel.ToString();
+            hud_lines.text = numLinesCleared.ToString();
+            
+            // hud_canvas.enabled = true; // 这个是需要根据不同的mode 来进行处理的
+            if (ViewModel.gameMode > 0) { // disable some components
+                previewSelectionButton.SetActive(false);
+                previewSelectionButton2.SetActive(false);
+                swapPreviewTetrominoButton.SetActive(false);
+                undoButton.SetActive(false);
+            }
+
+            Debug.Log(TAG + " gameData.parentList.Count: " + gameData.parentList.Count); 
+            ViewModel.LoadDataFromParentList(gameData.parentList);
+
+            // currentActiveTetromino: if it has NOT landed yet
+            StringBuilder type = new StringBuilder("");
+            Debug.Log(TAG + " (gameData.nextTetrominoData != null): " + (gameData.nextTetrominoData != null)); 
+            if (gameData.nextTetrominoData != null) {
+                nextTetromino = PoolManager.Instance.GetFromPool(type.Append(gameData.nextTetrominoData.type).ToString(),
+                                                                 DeserializedTransform.getDeserializedTransPos(gameData.nextTetrominoData.transform),
+                                                                 DeserializedTransform.getDeserializedTransRot(gameData.nextTetrominoData.transform));
+                nextTetromino.tag = "currentActiveTetromino";
+                // if (defaultContainer == null) // 我不要再管这个东西了
+                //     defaultContainer = GameObject.FindGameObjectWithTag("defaultContainer");
+                // nextTetromino.transform.SetParent(defaultContainer.transform, false);
+                nextTetromino.GetComponent<Tetromino>().enabled = !nextTetromino.GetComponent<Tetromino>().enabled; 
+                ViewModel.nextTetrominoType = nextTetromino.GetComponent<TetrominoType>().type;
+
+                moveCanvas.gameObject.SetActive(true);
+                moveCanvas.transform.position = new Vector3(moveCanvas.transform.position.x, nextTetromino.transform.position.y, moveCanvas.transform.position.z);
+                // 也需要重新设置 rotateCanvas 的位置
+                SpawnGhostTetromino();
+            }
+
+            // previewTetromino previewTetromino2
+            type.Length = 0;
+            string type2 = ViewModel.previewTetromino2Type;
+            SpawnPreviewTetromino(type.Append(ViewModel.previewTetrominoType).ToString(), type2);
+            if (ViewModel.prevPreview != null) {
+                ViewModel.prevPreview = ViewModel.prevPreview;
+                ViewModel.prevPreview2 = ViewModel.prevPreview2;
+            } 
+            // MainCamera rotation
+            GameObject.FindGameObjectWithTag("MainCamera").transform.position = DeserializedTransform.getDeserializedTransPos(gameData.cameraData);
+            GameObject.FindGameObjectWithTag("MainCamera").transform.rotation = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
+            
+            if (nextTetromino != null && nextTetromino.CompareTag("currentActiveTetromino")) // Performance Bug: CompareTag()
+                gameStarted = true;
+            ViewModel.loadSavedGame = false;
+            ViewModel.loadSavedGame = false;
+        }    
+        private void currentActiveTetrominoPrepare() {
+            Debug.Log(TAG + ": currentActiveTetrominoPrepare()");
+            nextTetromino.tag = "currentActiveTetromino";
+            nextTetromino.transform.rotation = Quaternion.identity;
+
+            if (ViewModel.gameMode == 0 && (ViewModel.gridWidth == 3 || ViewModel.gridWidth == 4)) {
+                nextTetromino.transform.localPosition = new Vector3(1.0f, ViewModel.gridHeight - 1f, 1.0f);
+            } else 
+                nextTetromino.transform.localPosition = new Vector3(2.0f, ViewModel.gridHeight - 1f, 2.0f);
+            
+            // Debug.Log(TAG + " (defaultContainer == null) before: " + (defaultContainer == null)); 
+            // if (defaultContainer == null)
+            //     defaultContainer = GameObject.FindGameObjectWithTag("defaultContainer");
+            // Debug.Log(TAG + " (defaultContainer == null) after: " + (defaultContainer == null)); 
+            // nextTetromino.transform.SetParent(defaultContainer.transform, false);
+            
+            nextTetromino.GetComponent<Tetromino>().enabled = !nextTetromino.GetComponent<Tetromino>().enabled; 
+            ViewModel.nextTetrominoType = nextTetromino.GetComponent<TetrominoType>().type;
+            Debug.Log(TAG + " nextTetromino.name: " + nextTetromino.name);
+        }
+        
+        public void onActiveTetrominoMove(TetrominoMoveEventInfo info) { 
+            Debug.Log(TAG + ": onTetrominoMove()");
+            if (nextTetromino.GetComponent<Tetromino>().IsMoveValid) {
+                moveCanvas.transform.position += info.delta;
+                if ((int)info.delta.y != 0) {
+                    rotateCanvas.transform.position += new Vector3(0, info.delta.y, 0);
+                }
+                ViewModel.UpdateGrid(nextTetromino);
+            }
+        }
+        public void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
+            // Debug.Log(TAG + ": onActiveTetrominoRotate()"); 
+            if (nextTetromino.GetComponent<Tetromino>().IsRotateValid) {
+                ViewModel.UpdateGrid(nextTetromino); 
+            }
+        }
+        
+        public void onSwapPreviewTetrominos () {
+            Debug.Log(TAG + ": swapPreviewTetrominosFunc()");
+            if (ViewModel.buttonInteractableList[2] == 0) return;
+            preparePreviewTetrominoRecycle(1); // recycle 1st tetromino first
+            PoolManager.Instance.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+            preparePreviewTetrominoRecycle(2); // recycle 2st tetromino then
+            PoolManager.Instance.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+            SpawnPreviewTetromino();
+        }
+        
+        // public void onSwapPreviewTetrominos(SwapPreviewsEventInfo swapInfo) {
+        //     // Debug.Log(TAG + ": swapPreviewTetrominos()");
+        //     if (ViewModel.buttonInteractableList[2] == 0) return;
+        //     // Debug.Log(TAG + " swapInfo.tag.ToString(): " + swapInfo.tag.ToString()); 
+        //     preparePreviewTetrominoRecycle(1); // recycle 1st tetromino first
+        //     PoolManager.Instance.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+        //     preparePreviewTetrominoRecycle(2); // recycle 2st tetromino then
+        //     PoolManager.Instance.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+        //     SpawnPreviewTetromino();
+        // }
+    
+        private void moveRotatecanvasPrepare() { // 暂时放在视图,仍然应该是在视图模型中的
+            // Debug.Log(TAG + ": moveRotatecanvasPrepare()"); 
+            moveCanvas.transform.localPosition = new Vector3(2.1f, ViewModel.gridHeight - 1f, 2.1f);     
+            rotateCanvas.transform.localPosition = new Vector3(2.1f, ViewModel.gridHeight - 1f, 2.1f);
+            ViewModel.isMovement = false;
+            ViewModel.toggleButtons(1);
+        }
+
+        public string GetGhostTetrominoType(GameObject gameObject) { // ghostTetromino
+            Debug.Log(TAG + ": GetGhostTetrominoType()"); 
+            StringBuilder type = new StringBuilder("");
+            Debug.Log(TAG + " gameObject.name: " + gameObject.name); 
+            string tmp = gameObject.name.Substring(10, 1);
+            switch(tmp) {
+            case "T" : type.Append("shadowT"); break;
+            case "I" : type.Append("shadowI"); break;
+            case "J" : type.Append("shadowJ"); break;
+            case "L" : type.Append("shadowL"); break;
+            case "O" : type.Append("shadowO"); break;
+            case "S" : type.Append("shadowS"); break;
+            case "Z" : type.Append("shadowZ"); break;
+            }
+            return type.ToString(); 
+        }    
+
+        public void DisableMoveRotationCanvas() {
+            Debug.Log(TAG + ": DisableMoveRotationCanvas()"); 
+            moveCanvas.gameObject.SetActive(false);
+            rotateCanvas.SetActive(false);
+        }
+    
+        public void SpawnGhostTetromino() {
+            //Debug.Log(TAG + ": SpawnGhostTetromino() nextTetromino.tag: " + nextTetromino.tag); 
+            GameObject tmpTetromino = GameObject.FindGameObjectWithTag("currentActiveTetromino");
+            //Debug.Log(TAG + ": SpawnGhostTetromino() (tmpTetromino == null): " + (tmpTetromino == null)); 
+            ghostTetromino = PoolManager.Instance.GetFromPool(GetGhostTetrominoType(nextTetromino), nextTetromino.transform.position, nextTetromino.transform.rotation);
+            ghostTetromino.GetComponent<GhostTetromino>().enabled = true;
+        }
+
+        void Update() {
+            ViewModel.UpdateScore();
+            UpdateUI();
+            ViewModel.UpdateLevel();
+            ViewModel.UpdateSpeed();
+            //CheckUserInput();  // this is a bug need to be fixed, the screen is flashing
+        }
+
+        void UpdateUI() {
+            // Debug.Log(TAG + ": UpdateUI()");
+            // Debug.Log(TAG + " ViewModel.currentScore: " + ViewModel.currentScore);
+            // Debug.Log(TAG + " (hud_score != null): " + (hud_score != null)); 
+            hud_score.text = ViewModel.currentScore.ToString();
+            hud_level.text = ViewModel.currentLevel.ToString();
+            hud_lines.text = numLinesCleared.ToString();
+        }
+
+        public void GameOver() {
+            Debug.Log(TAG + ": GameOver()"); 
+            ViewModel.UpdateHighScore();
+            // SceneManager.LoadScene("GameOver");
+        }
+
+        // 平移与旋转两套按钮的上下移动: 应该是放在视图里的吧;最好是写成观察者模式,UI观察数据的变化,UI事件触发下发更新数据指令
+       public void MoveDown() {
             moveCanvas.transform.position += new Vector3(0, -1, 0);
             rotateCanvas.transform.position += new Vector3(0, -1, 0);
         }
         public void MoveUp() {
             Debug.Log(TAG + ": MoveUp()");
             MathUtil.print(nextTetromino.transform.position);
+            
             moveCanvas.transform.position += new Vector3(0, 1, 0);
             rotateCanvas.transform.position += new Vector3(0, 1, 0);
         }
-
-        void setAllBaseBoardInactive() {
-            baseBoard3.SetActive(false);
-            baseBoard4.SetActive(false);
-            baseBoard5.SetActive(false);
-        }
-    }
+   }
 }
+
+
+
+

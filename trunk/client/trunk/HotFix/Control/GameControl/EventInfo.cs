@@ -34,8 +34,9 @@ namespace HotFix.Control {
         public Vector3 delta;
     }
     public class TetrominoLandEventInfo : EventInfo {     // land
+        public GameObject unitGO; // 这里前后有两上不同的版本,重构的原因不是很明白,要仔细看一下
     }
-    
+
     public class SwapPreviewsEventInfo : EventInfo {      // swapPreviewTetrominoButton
     }
     public class SaveGameEventInfo : EventInfo {          // Save Game

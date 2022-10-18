@@ -1,5 +1,6 @@
 ﻿using System.Json;
 using Framework.Util;
+using UnityEngine;
 
 namespace HotFix.Data {
 
@@ -10,7 +11,8 @@ namespace HotFix.Data {
         // 实例ID
         public int instanceID;
         // 类型
-        public long type;
+        // public long type;
+        public string type;
 
         // 忘记了原游戏中旋转的逻辑是如何处理的了,需要回头再回去查看一下
         // 方块砖: 位置,与旋转方向都很重要;缩放有两种模式(游戏大方格中的正常比例,与预览中的小尺寸预览)
@@ -82,39 +84,40 @@ namespace HotFix.Data {
     }
 
 
-//         public string name { get; set; }
-//         public string type { get; set; }
-//         public SerializedTransform transform { get; set; }  
-//         public MinoDataCollection<TetrominoData, MinoData> children { get; private set; } 
-// // 为什么我会写两三个构造器呢?
-//         public TetrominoData(Transform parentTrans, string type, string name) {
-//             this.name = name;
-//             this.type = type;
-//             transform = new SerializedTransform(parentTrans);
-//             children = new MinoDataCollection<TetrominoData, MinoData>(this);
-//             foreach (Transform mino in parentTrans) {
-//                 if (mino.CompareTag("mino")) { 
-//                     MinoData minoDataItem = new MinoData(mino, new StringBuilder("mino" + type.Substring(5, 1)).ToString()); // shapeX ==> minoX
-//                     children.Add(minoDataItem);
-//                 }
-//             }
-//         }
-//         public TetrominoData(Transform parentTrans) {
-//             transform = new SerializedTransform(parentTrans);
-//             children = new MinoDataCollection<TetrominoData, MinoData>(this);
-//             foreach (Transform mino in parentTrans) {
-//                 if (mino.CompareTag("mino")) {
-//                     MinoData minoDataItem = new MinoData(mino);
-//                     children.Add(minoDataItem);
-//                 }
-//             }
-//         }
-//         public void print() {
-//             Debug.Log(TAG + ": Parent TetrominoData: "); 
-//             this.transform.print();
-//             foreach (var minoData in children) {
-//                 Debug.Log(TAG + " minoData.idx: " + minoData.idx); 
-//                 minoData.print();
-//             }
-//         }
+    // public string name { get; set; }
+    // public string type { get; set; }
+    // public SerializedTransform transform { get; set; }
+    // // 这个公用方法不能这么写
+    // //public MinoDataCollection<TetrominoData, MinoData> children { get; private set; } 
+    // 为什么我会写两三个构造器呢?
+    // public TetrominoData(Transform parentTrans, string type, string name) {
+    //     this.name = name;
+    //     this.type = type;
+    //     transform = new SerializedTransform(parentTrans);
+    //     children = new MinoDataCollection<TetrominoData, MinoData>(this);
+    //     foreach (Transform mino in parentTrans) {
+    //         if (mino.CompareTag("mino")) { 
+    //             MinoData minoDataItem = new MinoData(mino, new StringBuilder("mino" + type.Substring(5, 1)).ToString()); // shapeX ==> minoX
+    //             children.Add(minoDataItem);
+    //         }
+    //     }
+    // }
+    // public TetrominoData(Transform parentTrans) {
+    //     transform = new SerializedTransform(parentTrans);
+    //     children = new MinoDataCollection<TetrominoData, MinoData>(this);
+    //     foreach (Transform mino in parentTrans) {
+    //         if (mino.CompareTag("mino")) {
+    //             MinoData minoDataItem = new MinoData(mino);
+    //             children.Add(minoDataItem);
+    //         }
+    //     }
+    // }
+    //public void print() {
+    //        Debug.Log(TAG + ": Parent TetrominoData: "); 
+    //        // this.transform.print();
+    //        foreach (var minoData in children) {
+    //            Debug.Log(TAG + " minoData.idx: " + minoData.idx); 
+    //            minoData.print();
+    //        }
+    //    }
 }
