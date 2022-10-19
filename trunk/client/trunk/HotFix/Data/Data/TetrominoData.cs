@@ -11,29 +11,25 @@ using UnityEngine;
 
 namespace HotFix.Data {
 
-    // 方块砖实例数据
-    // follow examples, that only difference is that it has children components, which can also be serialized objects
+    // 方块砖实例数据:  就是说,现在暂时是两套机制,原源码的BinaryFormatter机制,以及热更新重构后的Json序列化反序列化机制,还要让两套机制同时运行时能适配原源码
     public class TetrominoData {
         private const string TAG = "TetrominoData";
 
         // 实例ID
-        public string instanceID;
+        public long id; // instanceID
+        // 名字
+        public string name;
         // 类型
-        // public long type;
         public string type;
 
         
 // 大致的设计思路: 这个序列化,反序列化等
-        // GameView/Items: 一个文件列出所有的 IType 一个.json文件 
+        // GameView/Items: 两三个文件列出不同的类型来
         // ViewManager.cs: parse 出三四种不同的类型，用三四个不同的字典来管理
         // 过程中将资源池整合到ViewManager中去
-       // 定义ItemControlBase抽象基类公用控制逻辑，继承出三四种不同的实现，
+        // 定义TetrominoBase抽象基类公用控制逻辑，继承出三四种不同的实现，
         // 资源池根据类型激活或是失活脚本
-// 这里不能把自定义类型的MinoData当作简单字段类型来集合类序列化,必须自定义序列化(可序列化的简单字段类型的 List<T>,这里不适用)
-        public List<MinoData> children; 
-        
 
-        // 忘记了原游戏中旋转的逻辑是如何处理的了,需要回头再回去查看一下
         // 方块砖: 位置,与旋转方向都很重要;缩放有两种模式(游戏大方格中的正常比例,与预览中的小尺寸预览)
 #region Transform
         // PositionX
@@ -55,82 +51,73 @@ namespace HotFix.Data {
         // ScaleZ
         public float scaleZ;
 
+        public List<MinoData> _children; 
 // 方块砖所特有的: 这里的这层父子们的嵌套逻辑会把序列化给搞昏的,所以必须得自定义序列化,比现项目中的序列化要稍微复杂那么一点点儿
-        // public MinoDataCollection<TetrominoData, MinoData> children { get; private set; } 
+        // 现在的逻辑没有继续明确父子关系,在什么地方可能会有影响呢? 有影响,模型里会判断小立方体的父控制是谁,所以这层关系要维护起来
+        public MinoDataCollection<TetrominoData, MinoData> children { get; private set; } 
 #endregion
 
-        // 套路的三个公用方法
-        // 反序列化
-            // {
-                    // "id": 8,
-            //         "name": "tetrominoI", instanceID
-            //         "type": "tetrominoI",
-            //         "positionX": 0.0,
-            //         "positionY": 0.0,
-            //         "positionZ": 0.0,
-            //         "children": [
-            //             {
-                    //             "id": 1,
-            //                     "name": "minoI", 
-            //                     "type": "minoI",
-            //                     "positionX": 0.0, // 四个小立方体的位置需要改一下,按照预设里的来
-            //                     "positionY": 0.0,
-            //                     "positionZ": 0.0,
-            //                     },
-            //             {
-                    //             "id": 1,
-            //                     "name": "minoI", 
-            //                     "type": "minoI",
-            //                     "positionX": 0.0,
-            //                     "positionY": 0.0,
-            //                     "positionZ": 0.0,
-            //                     },
-            //             {
-                    //             "id": 1,
-            //                     "name": "minoI", 
-            //                     "type": "minoI",
-            //                     "positionX": 0.0,
-            //                     "positionY": 0.0,
-            //                     "positionZ": 0.0,
-            //                     },
-            //             {
-                    //             "id": 1,
-            //                     "name": "minoI", 
-            //                     "type": "minoI",
-            //                     "positionX": 0.0,
-            //                     "positionY": 0.0,
-            //                     "positionZ": 0.0,
-            //                     }            
-            //             ]
-            //         }
+        // 因为这里暂时更多的只是在资源加载的时候的操作,并不是很频繁,暂时不考虑这些
+        // private BindableProperty<Vector3> pos = new BindableProperty<Vector3>();
+        // private BindableProperty<Vector3> rot = new BindableProperty<Vector3>();
+        // private BindableProperty<Vector3> sca = new BindableProperty<Vector3>();
+        // private SerializedTransform _serTransform = new SerializedTransform(_transform);
+        private Transform _transform = new GameObject().transform;
+        
+// 添加一个适配原游戏源码的公用方法        
+        public  SerializedTransform transform {
+            get {
+                _transform.position = new Vector3(positionX, positionY, positionZ);
+                _transform.rotation = Quaternion.Euler(rotationX, rotationY, rotationZ);
+                _transform.localScale = new Vector3(scaleX, scaleY, scaleZ);
+                return new SerializedTransform(_transform); // 不能永远这么new,写个reset方法供重用
+            }
+            set {
+                _transform.position = new Vector3(value.pos[0], value.pos[1], value.pos[2]);
+                _transform.rotation = Quaternion.Euler(value.rot[1], value.rot[2], value.rot[3]);
+                _transform.localScale = new Vector3(value.sca[0], value.sca[1], value.sca[2]);
+                // _transform.rotation = value.rotation;
+                // _transform.localScale = value.localScale;
+                positionX = _transform.position.x;
+                positionY = _transform.position.y;
+                positionZ = _transform.position.z;
+                rotationX = _transform.rotation.x;
+                rotationY = _transform.rotation.y;
+                rotationZ = _transform.rotation.z;
+                scaleX = _transform.localScale.x;
+                scaleY = _transform.localScale.y;
+                scaleZ = _transform.localScale.z;
+            }
+        }
+        private void OnValueChanged(Vector3 pre, Vector3 cur) {
+            
+        }
+// 套路的三个公用方法
+        // 反序列化: 这里需要更多的工作来维护父子关系的?下午再好好想想这个有没有必要,如何实现
         public static TetrominoData JsonToObject(string json) {
             TetrominoData data = new TetrominoData();
             JObject tetrominoItem = (JObject)JsonConvert.DeserializeObject(json);
-            data.instanceID = tetrominoItem.SelectToken("instanceID").ToString();
-            
+            data.id = (long)tetrominoItem.SelectToken("id");
+            data.name = tetrominoItem.SelectToken("name").ToString();
+            data.type = tetrominoItem.SelectToken("type").ToString();
+            data.positionX = (float)tetrominoItem.SelectToken("positionX");
+            data.positionY = (float)tetrominoItem.SelectToken("positionY");
+            data.positionZ = (float)tetrominoItem.SelectToken("positionZ");
+            data.rotationX = (float)tetrominoItem.SelectToken("rotationX");
+            data.rotationY = (float)tetrominoItem.SelectToken("rotationY");
+            data.rotationZ = (float)tetrominoItem.SelectToken("rotationZ");
+            data.scaleX = (float)tetrominoItem.SelectToken("scaleX");
+            data.scaleY = (float)tetrominoItem.SelectToken("scaleY");
+            data.scaleZ = (float)tetrominoItem.SelectToken("scaleZ");
+
             IList<JToken> children = tetrominoItem["children"].Children().ToList();
             foreach (JToken mino in children) {
                 string minoType = mino.SelectToken("type").ToString();
                 if (minoType.StartsWith("mino")) {
                     MinoData minoData = mino.ToObject<MinoData>();
-                    data.children.Add(minoData);
+                    data._children.Add(minoData);
                 }
             }
-// // 下面这里的实现方法需要改写一下: 要实现几个子立方体的反序列化成立方体对象            
-//             JsonObject jsonObject = JsonSerializer.Deserialize(json) as JsonObject;
-//             if (jsonObject != null) {
-//                 data.instanceID = jsonObject["instanceID"];
-//                 data.type = jsonObject["type"];
-//                 data.positionX = jsonObject["positionX"];
-//                 data.positionY = jsonObject["positionY"];
-//                 data.positionZ = jsonObject["positionZ"];
-//                 data.rotationX = jsonObject["rotationX"];
-//                 data.rotationY = jsonObject["rotationY"];
-//                 data.rotationZ = jsonObject["rotationZ"];
-//                 data.scaleX = jsonObject["scaleX"];
-//                 data.scaleY = jsonObject["scaleY"];
-//                 data.scaleZ = jsonObject["scaleZ"];
-//             }
             return data;
         }
 
@@ -141,7 +128,7 @@ namespace HotFix.Data {
         // 序列化
         public JsonObject ObjectToJson() {
             JsonObject jsonObject = new JsonObject();
-            jsonObject.Add("instanceID", instanceID);
+            jsonObject.Add("instanceID", id);
             jsonObject.Add("type", type);
             jsonObject.Add("positionX", positionX);
             jsonObject.Add("positionY", positionY);
@@ -156,42 +143,4 @@ namespace HotFix.Data {
             return jsonObject;
         }
     }
-
-
-    // public string name { get; set; }
-    // public string type { get; set; }
-    // public SerializedTransform transform { get; set; }
-
-
-    // 为什么我会写两三个构造器呢?
-    // public TetrominoData(Transform parentTrans, string type, string name) {
-    //     //this.name = name;
-    //     type = type;
-    //     //transform = new SerializedTransform(parentTrans);
-    //     children = new MinoDataCollection<TetrominoData, MinoData>(this);
-    //     foreach (Transform mino in parentTrans) {
-    //         if (mino.CompareTag("mino")) { 
-    //             MinoData minoDataItem = new MinoData(mino, new StringBuilder("mino" + type.Substring(5, 1)).ToString()); // shapeX ==> minoX
-    //             children.Add(minoDataItem);
-    //         }
-    //     }
-    // }
-    // public TetrominoData(Transform parentTrans) {
-    //     transform = new SerializedTransform(parentTrans);
-    //     children = new MinoDataCollection<TetrominoData, MinoData>(this);
-    //     foreach (Transform mino in parentTrans) {
-    //         if (mino.CompareTag("mino")) {
-    //             MinoData minoDataItem = new MinoData(mino);
-    //             children.Add(minoDataItem);
-    //         }
-    //     }
-    // }
-    //public void print() {
-    //        Debug.Log(TAG + ": Parent TetrominoData: "); 
-    //        // this.transform.print();
-    //        foreach (var minoData in children) {
-    //            Debug.Log(TAG + " minoData.idx: " + minoData.idx); 
-    //            minoData.print();
-    //        }
-    //    }
 }

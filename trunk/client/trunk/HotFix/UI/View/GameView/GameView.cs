@@ -230,7 +230,7 @@ namespace HotFix.UI {
             // tmpTransform = emptyGO.transform;
             // audioSource = GetComponent<AudioSource>();
             // if (!string.IsNullOrEmpty(GameMenuData.Instance.saveGamePathFolderName)) {
-            //     gameMode = GameMenuData.Instance.gameMode;
+            //     gameMode = GameMenuData.Instane.gameMode;
             //     loadSavedGame = GameMenuData.Instance.loadSavedGame;
             //     StringBuilder path = new StringBuilder("");
             //     if (gameMode > 0)
@@ -754,10 +754,14 @@ namespace HotFix.UI {
             // currentActiveTetromino: if it has NOT landed yet
             StringBuilder type = new StringBuilder("");
             Debug.Log(TAG + " (gameData.nextTetrominoData != null): " + (gameData.nextTetrominoData != null)); 
-            if (gameData.nextTetrominoData != null) {
-                nextTetromino = PoolManager.Instance.GetFromPool(type.Append(gameData.nextTetrominoData.type).ToString(),
-                                                                 DeserializedTransform.getDeserializedTransPos(gameData.nextTetrominoData.transform),
-                                                                 DeserializedTransform.getDeserializedTransRot(gameData.nextTetrominoData.transform));
+            if (gameData.nextTetrominoData != null)
+            {
+                nextTetromino = PoolManager.Instance.GetFromPool(
+                    type.Append(gameData.nextTetrominoData.type).ToString(),
+                    gameData.nextTetrominoData.transform,
+                    gameData.nextTetrominoData.transform);
+                    //DeserializedTransform.getDeserializedTransPos(gameData.nextTetrominoData.transform),
+                    //                                             DeserializedTransform.getDeserializedTransRot(gameData.nextTetrominoData.transform));
                 nextTetromino.tag = "currentActiveTetromino";
                 // if (defaultContainer == null) // 我不要再管这个东西了
                 //     defaultContainer = GameObject.FindGameObjectWithTag("defaultContainer");

@@ -1,12 +1,13 @@
 ﻿using deepwaterooo.tetris3d;
 using Framework.MVVM;
+using HotFix.Data;
 using HotFix.UI;
 using UnityEngine;
 
 namespace HotFix.Control {
 
     // 这段程序与游戏主逻辑的偶合比较重,不适合放在这里,移去热更新程序包,预设实例化的时候再动态添加
-    public class Tetromino : MonoBehaviour, IType, IEntity { 
+    public class Tetromino : TetrominoBase { 
         private static string TAG = "Tetromino";
     
         public int individualScore = 100;
@@ -38,16 +39,6 @@ namespace HotFix.Control {
         // private Vector3 previousUnitPosition = Vector3.zero; // 不受影响？
         // private Vector3 direction = Vector3.zero;
         // private bool moved = false; // this one used for android touch
-
-        public IType tetrominoType;
-        public string type {
-            get {
-                return tetrominoType.type;
-            }
-            set {
-                tetrominoType.type = value;
-            }
-        }
 
         private TetrominoLandEventInfo info;
         
@@ -344,19 +335,19 @@ namespace HotFix.Control {
             audioSource.PlayOneShot(landSound);
         }
 
-        public void MoveDelta(Vector3 delta) {     // 使用 _command_
-            //     if (delta != Vector3.zero) {
-            //         moveCommand = new MoveCommand(this, delta); // this: Tetromino as IEntity
-            //         _commandProcessor.ExecuteCommand(moveCommand);
-            //     }
-        }
+        //public void MoveDelta(Vector3 delta) {     // 使用 _command_
+        //    //     if (delta != Vector3.zero) {
+        //    //         moveCommand = new MoveCommand(this, delta); // this: Tetromino as IEntity
+        //    //         _commandProcessor.ExecuteCommand(moveCommand);
+        //    //     }
+        //}
 
-        public void RotateDelta(Vector3 delta) {
-            // if (delta != Vector3.zero) {
-            //     rotateCommand = new RotateCommand(this, delta); // this: Tetromino as IEntity
-            //     _commandProcessor.ExecuteCommand(rotateCommand);
-            // }
-        }
+        //public void RotateDelta(Vector3 delta) {
+        //    // if (delta != Vector3.zero) {
+        //    //     rotateCommand = new RotateCommand(this, delta); // this: Tetromino as IEntity
+        //    //     _commandProcessor.ExecuteCommand(rotateCommand);
+        //    // }
+        //}
         
         // public void MoveXPos() { 
         //     if (movedImmediateHorizontal) {

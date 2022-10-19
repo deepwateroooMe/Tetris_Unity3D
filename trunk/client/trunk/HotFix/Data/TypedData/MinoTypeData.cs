@@ -23,8 +23,8 @@ namespace HotFix.Data.TypedData {
 
         // 类型ID
         public int id;
-        // // GameObject名
-        // public string gameObjectName;
+        // GameObject名
+        public string gameObjectName;
         // mino名
         public string name;
         // mino类别
@@ -38,7 +38,7 @@ namespace HotFix.Data.TypedData {
             JsonObject jsonObject = JsonSerializer.Deserialize(json) as JsonObject;
             if (jsonObject != null) {
                 typeData.id = jsonObject["id"];
-                // typeData.gameObjectName = jsonObject["gameObjectName"].ToString();
+                typeData.gameObjectName = jsonObject["gameObjectName"].ToString();
                 typeData.name = jsonObject["name"].ToString();
                 typeData.type = jsonObject["type"];
                 typeData.bundleName = jsonObject["bundleName"].ToString();

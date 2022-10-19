@@ -22,7 +22,9 @@ namespace HotFix.Control {
 
     public static class Model {
 
-        public readonly static BindableProperty<Vector3> nextTetromino = new BindableProperty<Vector3>();
+        public readonly static BindableProperty<Vector3> nextTetrominoPos = new BindableProperty<Vector3>();
+        public readonly static BindableProperty<Vector3> nextTetrominoRot = new BindableProperty<Vector3>();
+        public readonly static BindableProperty<Vector3> nextTetrominoSca = new BindableProperty<Vector3>();
         
     }
 }

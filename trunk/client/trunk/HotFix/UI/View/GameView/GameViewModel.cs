@@ -123,67 +123,67 @@ namespace HotFix.UI {
             foreach (TetrominoData parentData in parentList) {
                 // Debug.Log(TAG + " parentData.name: " + parentData.name);
                 // Debug.Log(TAG + " parentData.children.Count: " + parentData.children.Count);
-// 下面这里要真正的重构:因为无法拿到子立方体的集合数据                
-                if (isThereAnyExistChild(parentData)) { // 存在
-                    if (!gridMatchesSavedParent(tmpParentGO, (List<MinoData>)(parentData.children.collection))) {  // 先删除多余的，再补全缺失的
-                        foreach (Transform trans in tmpParentGO.transform) { // 先 删除多余的
-                            // MathUtil.print(MathUtil.Round(trans.position));
-                            // Debug.Log(TAG + " (!myContains(trans, (List<MinoData>)(parentData.children.collection))): " + (!myContains(trans, (List<MinoData>)(parentData.children.collection)))); 
-                            if (!myContains(trans, (List<MinoData>)(parentData.children.collection))) {
-                                x = (int)Mathf.Round(trans.position.x);
-                                y = (int)Mathf.Round(trans.position.y);
-                                z = (int)Mathf.Round(trans.position.z);
-                                // MathUtil.print(x, y, z); // this one is right
-                                grid[x, y, z].parent = null;
-                                GameObject.Destroy(grid[x, y, z].gameObject);
-                                gridOcc[x, y, z] = 0;
-                                grid[x, y, z] = null;
-                            }
-                        }
-                        // Debug.Log(TAG + " tmpParentGO.transform.childCount (deleted unwanted): " + tmpParentGO.transform.childCount);
-                        foreach (MinoData minoData in parentData.children) {
-                            Vector3 posA = MathUtil.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform)); 
-                            MathUtil.print(posA);
-                            x = (int)Mathf.Round(posA.x);
-                            y = (int)Mathf.Round(posA.y);
-                            z = (int)Mathf.Round(posA.z);
-                            if (grid[x, y, z] == null) {
-                                // MathUtil.print(x, y, z);
-                                type.Length = 0;
-                                GameObject tmpMinoGO = PoolManager.Instance.GetFromPool(type.Append(minoData.type).ToString(), DeserializedTransform.getDeserializedTransPos(minoData.transform), 
-                                                                                        DeserializedTransform.getDeserializedTransRot(minoData.transform));
-                                grid[x, y, z] = tmpMinoGO.transform;
-                                grid[x, y, z].parent = tmpParentGO.transform;
-                                gridOcc[x, y, z] = 1;
-                            }
-                        }
-                    }
-                    // Debug.Log(TAG + " tmpParentGO.transform.childCount (filled needed -- final): " + tmpParentGO.transform.childCount);
-                } else { // 重新生成                                           // 空 shapeX Tetromino_X : Universal
-                    GameObject tmpGameObject = PoolManager.Instance.GetFromPool("shapeX", DeserializedTransform.getDeserializedTransPos(parentData.transform), 
-                                                                                DeserializedTransform.getDeserializedTransRot(parentData.transform));
-                    foreach (MinoData minoData in parentData.children) {
-                        GameObject tmpMinoGO = PoolManager.Instance.GetFromPool(minoData.type, DeserializedTransform.getDeserializedTransPos(minoData.transform), 
-                                                                                DeserializedTransform.getDeserializedTransRot(minoData.transform));
-                        tmpMinoGO.transform.parent = tmpGameObject.transform;
-                        x = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).x);
-                        y = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).y);
-                        z = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).z);
-                        // fix for bug 5: fill in a Mino into board in y where there are more minos are above the filled in one
-                        if (isColumnFromHereEmpty(x, y, z)) {
-                            grid[x, y, z] = tmpMinoGO.transform;
-                            gridOcc[x, y, z] = 1;
-                        } else {
-                            FillInMinoAtTargetPosition(x, y, z, tmpMinoGO.transform); // update grid accordingly
-                        }
-                    }
-                    tmpGameObject.GetComponent<TetrominoType>().type = parentData.type;
-                    tmpGameObject.name = parentData.name;
-                    // Debug.Log(TAG + " tmpGameObject.GetComponent<TetrominoType>().type: " + tmpGameObject.GetComponent<TetrominoType>().type); 
-                    // Debug.Log(TAG + " tmpGameObject.transform.childCount: " + tmpGameObject.transform.childCount); 
-                }
-                // Debug.Log(TAG + ": gridOcc[,,] after each deleted mino re-spawn"); 
-                // MathUtil.printBoard(gridOcc); 
+// // 下面这里要真正的重构:因为无法拿到子立方体的集合数据                
+//                 if (isThereAnyExistChild(parentData)) { // 存在
+//                     if (!gridMatchesSavedParent(tmpParentGO, (List<MinoData>)(parentData.children.collection))) {  // 先删除多余的，再补全缺失的
+//                         foreach (Transform trans in tmpParentGO.transform) { // 先 删除多余的
+//                             // MathUtil.print(MathUtil.Round(trans.position));
+//                             // Debug.Log(TAG + " (!myContains(trans, (List<MinoData>)(parentData.children.collection))): " + (!myContains(trans, (List<MinoData>)(parentData.children.collection)))); 
+//                             if (!myContains(trans, (List<MinoData>)(parentData.children.collection))) {
+//                                 x = (int)Mathf.Round(trans.position.x);
+//                                 y = (int)Mathf.Round(trans.position.y);
+//                                 z = (int)Mathf.Round(trans.position.z);
+//                                 // MathUtil.print(x, y, z); // this one is right
+//                                 grid[x, y, z].parent = null;
+//                                 GameObject.Destroy(grid[x, y, z].gameObject);
+//                                 gridOcc[x, y, z] = 0;
+//                                 grid[x, y, z] = null;
+//                             }
+//                         }
+//                         // Debug.Log(TAG + " tmpParentGO.transform.childCount (deleted unwanted): " + tmpParentGO.transform.childCount);
+//                         foreach (MinoData minoData in parentData.children) {
+//                             Vector3 posA = MathUtil.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform)); 
+//                             MathUtil.print(posA);
+//                             x = (int)Mathf.Round(posA.x);
+//                             y = (int)Mathf.Round(posA.y);
+//                             z = (int)Mathf.Round(posA.z);
+//                             if (grid[x, y, z] == null) {
+//                                 // MathUtil.print(x, y, z);
+//                                 type.Length = 0;
+//                                 GameObject tmpMinoGO = PoolManager.Instance.GetFromPool(type.Append(minoData.type).ToString(), DeserializedTransform.getDeserializedTransPos(minoData.transform), 
+//                                                                                         DeserializedTransform.getDeserializedTransRot(minoData.transform));
+//                                 grid[x, y, z] = tmpMinoGO.transform;
+//                                 grid[x, y, z].parent = tmpParentGO.transform;
+//                                 gridOcc[x, y, z] = 1;
+//                             }
+//                         }
+//                     }
+//                     // Debug.Log(TAG + " tmpParentGO.transform.childCount (filled needed -- final): " + tmpParentGO.transform.childCount);
+//                 } else { // 重新生成                                           // 空 shapeX Tetromino_X : Universal
+//                     GameObject tmpGameObject = PoolManager.Instance.GetFromPool("shapeX", DeserializedTransform.getDeserializedTransPos(parentData.transform), 
+//                                                                                 DeserializedTransform.getDeserializedTransRot(parentData.transform));
+//                     foreach (MinoData minoData in parentData.children) {
+//                         GameObject tmpMinoGO = PoolManager.Instance.GetFromPool(minoData.type, DeserializedTransform.getDeserializedTransPos(minoData.transform), 
+//                                                                                 DeserializedTransform.getDeserializedTransRot(minoData.transform));
+//                         tmpMinoGO.transform.parent = tmpGameObject.transform;
+//                         x = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).x);
+//                         y = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).y);
+//                         z = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).z);
+//                         // fix for bug 5: fill in a Mino into board in y where there are more minos are above the filled in one
+//                         if (isColumnFromHereEmpty(x, y, z)) {
+//                             grid[x, y, z] = tmpMinoGO.transform;
+//                             gridOcc[x, y, z] = 1;
+//                         } else {
+//                             FillInMinoAtTargetPosition(x, y, z, tmpMinoGO.transform); // update grid accordingly
+//                         }
+//                     }
+//                     tmpGameObject.GetComponent<TetrominoType>().type = parentData.type;
+//                     tmpGameObject.name = parentData.name;
+//                     // Debug.Log(TAG + " tmpGameObject.GetComponent<TetrominoType>().type: " + tmpGameObject.GetComponent<TetrominoType>().type); 
+//                     // Debug.Log(TAG + " tmpGameObject.transform.childCount: " + tmpGameObject.transform.childCount); 
+//                 }
+//                 // Debug.Log(TAG + ": gridOcc[,,] after each deleted mino re-spawn"); 
+//                 // MathUtil.printBoard(gridOcc); 
             }
         }
 
@@ -538,15 +538,15 @@ namespace HotFix.UI {
                     tmpParent.rotation == DeserializedTransform.getDeserializedTransRot(parent.transform));
         }
 
-        public bool existInChildren(Transform transform, MinoDataCollection<TetrominoData, MinoData> children) {
-            foreach (MinoData data in children) {
-                if (transform.position == DeserializedTransform.getDeserializedTransPos(data.transform) &&
-                    transform.rotation == DeserializedTransform.getDeserializedTransRot(data.transform)) {
-                    return true;
-                }
-            }
-            return false;
-        }
+        // public bool existInChildren(Transform transform, MinoDataCollection<TetrominoData, MinoData> children) {
+        //     foreach (MinoData data in children) {
+        //         if (transform.position == DeserializedTransform.getDeserializedTransPos(data.transform) &&
+        //             transform.rotation == DeserializedTransform.getDeserializedTransRot(data.transform)) {
+        //             return true;
+        //         }
+        //     }
+        //     return false;
+        // }
 
         // public void moveRotatecanvasPrepare() {
         //     // Debug.Log(TAG + ": moveRotatecanvasPrepare()"); 
@@ -924,6 +924,4 @@ namespace HotFix.UI {
         }
     }
 }
-
-
 

@@ -6,6 +6,6 @@ using System.Text;
 namespace HotFix.Data {
 
     public interface IType {
-        string Type { get; set; }
+        string type { get; set; }
     }    
 }

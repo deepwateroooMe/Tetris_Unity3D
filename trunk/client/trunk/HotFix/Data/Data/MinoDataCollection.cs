@@ -15,8 +15,9 @@ namespace HotFix.Data {
         where MinoData : IMinoData<TetrominoData>
     {
 
+        // 相比于普通集合链表,这里的优点:维护了每个小立方体与父控件的父子关系,方便游戏过程中使用
         private TetrominoData parent;
-    
+
         private IList<MinoData> collection;
         // public IList<MinoData> collection; // 这个改得很不好，再考虑一下
  
@@ -36,7 +37,7 @@ namespace HotFix.Data {
         }
         public void Insert(int index, MinoData item) {
             if (item != null)
-                item.Parent = parent;
+                item.Parent = parent; // 每个子控件,设置它的父控件
             collection.Insert(index, item);
         }
         public void RemoveAt(int index) {

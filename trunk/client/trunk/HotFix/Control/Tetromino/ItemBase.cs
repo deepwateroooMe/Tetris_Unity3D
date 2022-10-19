@@ -52,7 +52,7 @@ namespace HotFix.UI {
         //     set;
         //     get;
         // }
-        public virtual string Type {
+        public virtual string type {
             get => throw new NotImplementedException();
             set => throw new NotImplementedException();
         }
