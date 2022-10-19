@@ -5,7 +5,7 @@ namespace deepwaterooo.tetris3d {
     public interface IEntity { // Tetromino : IEntity
         // InputReader: EventManager                            
 
-        Transform transform { get; }
+        Transform transform { get; set; }
         // GameObject gameObject;
 
         void MoveDelta(Vector3 delta);

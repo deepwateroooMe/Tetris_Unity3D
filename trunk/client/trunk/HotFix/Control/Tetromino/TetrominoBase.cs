@@ -12,8 +12,8 @@ using UnityEngine;
 namespace HotFix.Control {
 
     // 因为改写为根据配置文件来,不再把脚本添加到预设中,所以还是抽象出公用逻辑的部分在这个BASE里
-    // 方块砖基类
-    public abstract class TetrominoBase {
+    // 方块砖基类: 想要把方块砖的基本控制逻辑抽象提炼到这个基类里,其它类只是继写
+    public abstract class TetrominoBase : IType {
         public TetrominoData Data {
             get;
             set;
@@ -26,17 +26,17 @@ namespace HotFix.Control {
             get;
             set;
         }
-        public TetrominoBase(long type) {
+        public TetrominoBase(string type) {
             Data = new TetrominoData();
             InitializeNewData(type);
-            TypeData = TypeDataManager.GetTetrominoTypeData(Data.type);
+            TypeData = TypeDataManager.GetTetrominoTypeData(Data.instanceID);
             InitializeGameObject();
         }
         public TetrominoBase(TetrominoData data) {
             Data = data;
-            TypeData = TypeDataManager.GetTetrominoTypeData(Data.type);
+            TypeData = TypeDataManager.GetTetrominoTypeData(Data.instanceID);
         }
-        protected virtual void InitializeNewData(long type) {
+        protected virtual void InitializeNewData(string type) {
             Data.instanceID = SceneManager.Instance.currentSelectGameObjectInstanceID++;
             Data.type = type;
             Data.positionX = 0.0f;

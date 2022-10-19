@@ -8,18 +8,25 @@ using UnityEngine;
 
 namespace HotFix.Control {
 
+    // 忘记了：它为什么没有类型之分呢？
     public class GhostTetromino : MonoBehaviour {
         private const string TAG = "GhostTetromino";
 
-        private Transform currentActiveTransform;
-    
+        // 这里定义成观察者模式,观察模型中当前currentActiveTetromino 的位置
+        private Transform currentActiveTransform; 
+        // private Vector3 prevPos = Vector3.zero;
+        
         void Start () {
             tag = "currentGhostTetromino";
+            Model.nextTetromino.OnValueChanged += MyUpdate;
         } 
 
-        void Update () { 
-            FollowActiveTetromino();
-            MoveDown();  
+        void MyUpdate (Vector3 pre, Vector3 cur) {
+            if (pre.x != cur.x || pre.y != cur.y) {
+                FollowActiveTetromino();
+                MoveDown();  
+            }
+            // void Update () { 
         }
 
         void FollowActiveTetromino() {

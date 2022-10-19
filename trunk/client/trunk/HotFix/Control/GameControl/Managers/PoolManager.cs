@@ -12,21 +12,22 @@ namespace HotFix.Control {
     // 需要更改的是热更新里实例化预设的方式
     // 继续使用自己简易版的资源池,等项目能够真正运行起来之后,才再按照原框架的架构从一个更高的层面来管理资源    
 
-    public class PoolInfo { // 3 行代码需要修改
+    public class PoolInfo { 
 
         public string type;
-        public int amount;
+        public int amount = 10;
         public GameObject prefab;
         public GameObject container;
         [HideInInspector]
         public List<GameObject> pool = new List<GameObject>();
     }
 
-    public class PoolManager : Singleton<PoolManager> { // 单例模式
+    // 这个管理器类:  执行效率太低,可以简化,可以整合到ViewManager中去
+    public class PoolManager : SingletonMono<PoolManager> { // 单例模式
         private const string TAG = "PoolManager";
 
         private Vector3 defaultPos = new Vector3(-100, -100, -100); // 不同类型的起始位置不一样(可否设置在预设里呢>??)
-        public List<PoolInfo> listOfPool; 
+        public List<PoolInfo> listOfPool; // 为什么使用链表呢,查询效率不是太低了吗? 怎么也得用个字典才对的呀?
 
         public GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3? localScale = null) {
             PoolInfo selected = GetPoolByType(type);
@@ -37,7 +38,7 @@ namespace HotFix.Control {
                 pool.RemoveAt(pool.Count - 1);
             }
             // else // tmp commented out
-            //     objInstance = GameObject.Instantiate(Resources.Load(GetRandomTetromino(type), typeof(GameObject))); // <<<<<<<<<<<<<<<<<<<< 
+            //     objInstance = GameObject.Instantiate(Resources.Load(GetRandomTetrominoPath(type), typeof(GameObject))); // <<<<<<<<<<<<<<<<<<<< 
             objInstance.transform.position = pos;
             objInstance.transform.rotation = rotation;
             if (localScale == null)
@@ -87,7 +88,7 @@ namespace HotFix.Control {
                 pool.Remove(objInstance);
             }
             // else  // tmp commented out
-            //     objInstance = (GameObject)Instantiate(Resources.Load(GetRandomTetromino(type), typeof(GameObject))); // <<<<<<<<<<<<<<<<<<<< 
+            //     objInstance = (GameObject)Instantiate(Resources.Load(GetRandomTetrominoPath(type), typeof(GameObject))); // <<<<<<<<<<<<<<<<<<<< 
             objInstance.SetActive(true);
             return objInstance;
         }
@@ -109,7 +110,7 @@ namespace HotFix.Control {
         }
 
         private PoolInfo GetPoolByType(string type) {
-            for (int i = 0; i < listOfPool.Count; i++) {
+            for (int i = 0; i < listOfPool.Count; i++) { // 这里用了个链表,查询效率太低,字典快很多
                 if (type == listOfPool[i].type) {
                     return listOfPool[i];
                 }
@@ -117,34 +118,35 @@ namespace HotFix.Control {
             return null;
         }
 
-        private string GetRandomTetromino(string type) {
-            StringBuilder randomTetrominoName = new StringBuilder("Prefabs/");
-            switch(type) {            
-            case "shapeT": randomTetrominoName.Append("Tetromino_T"); break;
-            case "shapeI": randomTetrominoName.Append("Tetromino_I"); break;
-            case "shapeJ": randomTetrominoName.Append("Tetromino_J"); break;
-            case "shapeL": randomTetrominoName.Append("Tetromino_L"); break;
-            case "shapeO": randomTetrominoName.Append("Tetromino_O"); break;
-            case "shapeS": randomTetrominoName.Append("Tetromino_S"); break;
-            case "shapeZ": randomTetrominoName.Append("Tetromino_Z"); break; 
-            case "shapeX": randomTetrominoName.Append("Tetromino_X"); break; 
-            case "shadowT": randomTetrominoName.Append("shadow_T"); break;
-            case "shadowI": randomTetrominoName.Append("shadow_I"); break;
-            case "shadowJ": randomTetrominoName.Append("shadow_J"); break;
-            case "shadowL": randomTetrominoName.Append("shadow_L"); break;
-            case "shadowO": randomTetrominoName.Append("shadow_O"); break;
-            case "shadowS": randomTetrominoName.Append("shadow_S"); break;
-            case "shadowZ": randomTetrominoName.Append("shadow_Z"); break;
-            case "minoJ": randomTetrominoName.Append("minoJ"); break;
-            case "minoZ": randomTetrominoName.Append("minoZ"); break;
-            case "minoL": randomTetrominoName.Append("minoL"); break;
-            case "minoS": randomTetrominoName.Append("minoS"); break;
-            case "minoO": randomTetrominoName.Append("minoO"); break;
-            case "minoT": randomTetrominoName.Append("minoT"); break;
-            case "minoI": randomTetrominoName.Append("minoI"); break;
-            case "particles": randomTetrominoName.Append("ExplosionParticles"); break;
-            }
-            return randomTetrominoName.ToString();
-        }
+// // 原逻辑: 根据方块砖的类型来确定不同方块砖的预设的系统存放位置,以便实例化,但热更新的加载逻辑显然不是这样的了        
+//         private string GetRandomTetrominoPath(string type) {
+//             StringBuilder randomTetrominoName = new StringBuilder("Prefabs/");
+//             switch(type) {            
+//             case "shapeT": randomTetrominoName.Append("Tetromino_T"); break;
+//             case "shapeI": randomTetrominoName.Append("Tetromino_I"); break;
+//             case "shapeJ": randomTetrominoName.Append("Tetromino_J"); break;
+//             case "shapeL": randomTetrominoName.Append("Tetromino_L"); break;
+//             case "shapeO": randomTetrominoName.Append("Tetromino_O"); break;
+//             case "shapeS": randomTetrominoName.Append("Tetromino_S"); break;
+//             case "shapeZ": randomTetrominoName.Append("Tetromino_Z"); break; 
+//             case "shapeX": randomTetrominoName.Append("Tetromino_X"); break; 
+//             case "shadowT": randomTetrominoName.Append("shadow_T"); break;
+//             case "shadowI": randomTetrominoName.Append("shadow_I"); break;
+//             case "shadowJ": randomTetrominoName.Append("shadow_J"); break;
+//             case "shadowL": randomTetrominoName.Append("shadow_L"); break;
+//             case "shadowO": randomTetrominoName.Append("shadow_O"); break;
+//             case "shadowS": randomTetrominoName.Append("shadow_S"); break;
+//             case "shadowZ": randomTetrominoName.Append("shadow_Z"); break;
+//             case "minoJ": randomTetrominoName.Append("minoJ"); break;
+//             case "minoZ": randomTetrominoName.Append("minoZ"); break;
+//             case "minoL": randomTetrominoName.Append("minoL"); break;
+//             case "minoS": randomTetrominoName.Append("minoS"); break;
+//             case "minoO": randomTetrominoName.Append("minoO"); break;
+//             case "minoT": randomTetrominoName.Append("minoT"); break;
+//             case "minoI": randomTetrominoName.Append("minoI"); break;
+//             case "particles": randomTetrominoName.Append("ExplosionParticles"); break;
+//             }
+//             return randomTetrominoName.ToString();
+//         }
     }
 }

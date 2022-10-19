@@ -10,9 +10,10 @@ namespace HotFix.Data {
     // 但同时也把问题复杂化了,它所需要知道的只是几个子方块的位置信息而已;
     // 需要考虑到消除的时候移除单个立方体:所以什么样的设计,既可以简化序列化,同样方便添减操作
     // 同样需要考虑到以后的扩展,比如某个方块砖会出现5个小立方体等
-    public class MinoDataCollection <TetrominoData, MinoData> : IList <MinoData>
+    public class MinoDataCollection <TetrominoData, MinoData> : IList<MinoData>
         where TetrominoData : class
-        where MinoData : IMinoData<TetrominoData> {
+        where MinoData : IMinoData<TetrominoData>
+    {
 
         private TetrominoData parent;
     

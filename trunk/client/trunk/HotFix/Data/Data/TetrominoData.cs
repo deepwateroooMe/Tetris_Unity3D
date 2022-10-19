@@ -1,5 +1,9 @@
-﻿using System.Json;
+﻿using System.Collections.Generic;
+using System.Json;
+using System.Text;
+using Framework.MVVM;
 using Framework.Util;
+using HotFix.Data;
 using UnityEngine;
 
 namespace HotFix.Data {
@@ -13,6 +17,17 @@ namespace HotFix.Data {
         // 类型
         // public long type;
         public string type;
+
+        
+// 大致的设计思路: 这个序列化,反序列化等
+        // GameView/Items: 一个文件列出所有的 IType 一个.json文件 
+        // ViewManager.cs: parse 出三四种不同的类型，用三四个不同的字典来管理
+        // 过程中将资源池整合到ViewManager中去
+       // 定义ItemControlBase抽象基类公用控制逻辑，继承出三四种不同的实现，
+        // 资源池根据类型激活或是失活脚本
+// 这里不能把自定义类型的MinoData当作简单字段类型来集合类序列化,必须自定义序列化(可序列化的简单字段类型的 List<T>,这里不适用)
+        public List<MinoData> children; 
+        
 
         // 忘记了原游戏中旋转的逻辑是如何处理的了,需要回头再回去查看一下
         // 方块砖: 位置,与旋转方向都很重要;缩放有两种模式(游戏大方格中的正常比例,与预览中的小尺寸预览)
@@ -36,8 +51,8 @@ namespace HotFix.Data {
         // ScaleZ
         public float scaleZ;
 
-// 方块砖所特有的
-        public MinoDataCollection<TetrominoData, MinoData> children { get; private set; } 
+// 方块砖所特有的: 这里的这层父子们的嵌套逻辑会把序列化给搞昏的,所以必须得自定义序列化,比现项目中的序列化要稍微复杂那么一点点儿
+        // public MinoDataCollection<TetrominoData, MinoData> children { get; private set; } 
 #endregion
 
         // 套路的三个公用方法
@@ -87,13 +102,13 @@ namespace HotFix.Data {
     // public string name { get; set; }
     // public string type { get; set; }
     // public SerializedTransform transform { get; set; }
-    // // 这个公用方法不能这么写
-    // //public MinoDataCollection<TetrominoData, MinoData> children { get; private set; } 
+
+
     // 为什么我会写两三个构造器呢?
     // public TetrominoData(Transform parentTrans, string type, string name) {
-    //     this.name = name;
-    //     this.type = type;
-    //     transform = new SerializedTransform(parentTrans);
+    //     //this.name = name;
+    //     type = type;
+    //     //transform = new SerializedTransform(parentTrans);
     //     children = new MinoDataCollection<TetrominoData, MinoData>(this);
     //     foreach (Transform mino in parentTrans) {
     //         if (mino.CompareTag("mino")) { 

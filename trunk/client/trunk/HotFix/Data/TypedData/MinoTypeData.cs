@@ -5,16 +5,16 @@ using System.Linq;
 using System.Text;
 using Framework.Util;
 
-// 补做7个mino预设
-public enum MinoType {
-    minoI = 0,
-    minoJ = 1,
-    minoL = 2,
-    minoO = 3,
-    minoS = 4,
-    minoT = 5,
-    minoZ = 6,
-}
+// // 补做7个mino预设
+// public enum MinoType {
+//     minoI = 0,
+//     minoJ = 1,
+//     minoL = 2,
+//     minoO = 3,
+//     minoS = 4,
+//     minoT = 5,
+//     minoZ = 6,
+// }
 
 namespace HotFix.Data.TypedData {
 
@@ -23,12 +23,12 @@ namespace HotFix.Data.TypedData {
 
         // 类型ID
         public int id;
-        // GameObject名
-        public string gameObjectName;
+        // // GameObject名
+        // public string gameObjectName;
         // mino名
         public string name;
         // mino类别
-        public int minoType;
+        public string type;
 
         public string bundleName;
         public string assetName;
@@ -38,9 +38,9 @@ namespace HotFix.Data.TypedData {
             JsonObject jsonObject = JsonSerializer.Deserialize(json) as JsonObject;
             if (jsonObject != null) {
                 typeData.id = jsonObject["id"];
-                typeData.gameObjectName = jsonObject["gameObjectName"].ToString();
+                // typeData.gameObjectName = jsonObject["gameObjectName"].ToString();
                 typeData.name = jsonObject["name"].ToString();
-                typeData.minoType = jsonObject["minoType"];
+                typeData.type = jsonObject["type"];
                 typeData.bundleName = jsonObject["bundleName"].ToString();
                 typeData.assetName = jsonObject["assetName"].ToString();
             }
@@ -49,7 +49,7 @@ namespace HotFix.Data.TypedData {
         
         public override string ToString() {
             return "id: " + id + " gameObjectName: " + gameObjectName + " name: " + name
-            + " minoType: " + minoType
+            + " type: " + type
                 + " bundleName: " + bundleName
                 + " assetName: " + assetName;
         }
