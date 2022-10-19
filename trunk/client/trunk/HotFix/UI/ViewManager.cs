@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using Framework.MVVM;
 using Framework.Util;
 using System.Collections;
+using System.Json;
 using HotFix.Control;
+using HotFix.Data;
 using HotFix.UI.View.MidMenuView;
 using UnityEngine.EventSystems;
 using HotFix.UI.View.SettingsView;
@@ -188,79 +190,79 @@ namespace HotFix.UI {
         // 教育模式下的粒子系统(1种?)
         // 延伸扩展的可以包括游戏中使用到的不同层级的BUTTON: 主页面的三个按钮可以是一种类型;游戏主界面的各个调控按钮(swap, undo, fallfast, pause, toggleBtn)? 但是因为目前已经本身是在热更新程序集,这个思路可能又会抽象出一层更为高层的架构,暂时就只是想想算了,但可以考虑和收集思路
     // 那么就需要使用至少三个?四个字典来管理这些个不同类型的数据,以便实时实例化
-// #region ItemDatas
-//         public static void InitializeItemDatas() {
-//             string planItemJson = ResourceHelper.LoadTextAsset("ui/config/planitem", "planitem", EAssetBundleUnloadLevel.LoadOver).text;
-//             //Debug.Log("planItemJson: " + planItemJson);
-//             if (!string.IsNullOrEmpty(planItemJson)) {
-//                 InitializePlanItemData(planItemJson);
-//             }
-//             string chapterItemJson = ResourceHelper.LoadTextAsset("ui/config/chapteritem", "chapteritem", EAssetBundleUnloadLevel.LoadOver).text;
-//             //Debug.Log("chapterItemJson: " + chapterItemJson);
-//             if (!string.IsNullOrEmpty(chapterItemJson)) {
-//                 InitializeChapterItemData(chapterItemJson);
-//             }
-//         }
-//         static Dictionary<int, PlanItemData> planItemDatas;
-//         static Dictionary<int, ChapterItemData> chapterItemDatas;
+#region ItemDatas
+        public static void InitializeItemDatas() {
+            string minoitemJson = ResourceHelper.LoadTextAsset("ui/config/minoitem", "minoitem", EAssetBundleUnloadLevel.LoadOver).text;
+            //Debug.Log("minoitemJson: " + minoitemJson);
+            if (!string.IsNullOrEmpty(minoitemJson)) {
+                InitializeMinoData(minoitemJson);
+            }
+            string tetrominoitemJson = ResourceHelper.LoadTextAsset("ui/config/tetrominoitem", "tetrominoitem", EAssetBundleUnloadLevel.LoadOver).text;
+            //Debug.Log("tetrominoitemJson: " + tetrominoitemJson);
+            if (!string.IsNullOrEmpty(tetrominoitemJson)) {
+                InitializeTetrominoData(tetrominoitemJson);
+            }
+        }
+        static Dictionary<int, MinoData> minoDatas;
+        static Dictionary<string, TetrominoData> tetrominoDatas;
         
-//         public static Dictionary<int, PlanItemData> GetPlanItemDatas() {
-//             return planItemDatas;
-//         }
-//         public static Dictionary<int, ChapterItemData> GetChapterItemDatas() {
-//             return chapterItemDatas;
-//         }
-//         public static PlanItemData GetPlanItemData(int id) {
-//             if (planItemDatas.ContainsKey(id)) {
-//                 return planItemDatas[id];
-//             } else {
-//                 return null;
-//             }
-//         }
-//         public static ChapterItemData GetChapterItemData(int id) {
-//             if (chapterItemDatas.ContainsKey(id)) {
-//                 return chapterItemDatas[id];
-//             } else {
-//                 return null;
-//             }
-//         }
-//         static void InitializePlanItemData(string jsonStr) {
-//             if (jsonStr != null) {
-//                 planItemDatas = new Dictionary<int, PlanItemData>();
-//                 JsonArray jsonArray = JsonSerializer.Deserialize(jsonStr) as JsonArray;
-//                 if (jsonArray != null) {
-//                     foreach (JsonValue jsonValue in jsonArray) {
-//                         PlanItemData data = PlanItemData.JsonToObject(jsonValue.ToString());
-//                         if (!planItemDatas.ContainsKey(data.id)) {
-//                             planItemDatas.Add(data.id, data);
-//                         } else {
-//                             Debug.LogError("planItemDatas contains key: " + data.id);
-//                         }
-//                     }
-//                 } else {
-//                     Debug.LogError("planItemData jsonArray is null");
-//                 }
-//             }
-//         }
-//         static void InitializeChapterItemData(string jsonStr) {
-//             if (jsonStr != null) {
-//                 chapterItemDatas = new Dictionary<int, ChapterItemData>();
-//                 JsonArray jsonArray = JsonSerializer.Deserialize(jsonStr) as JsonArray;
-//                 if (jsonArray != null) {
-//                     foreach (JsonValue jsonValue in jsonArray) {
-//                         ChapterItemData data = ChapterItemData.JsonToObject(jsonValue.ToString());
-//                         if (!chapterItemDatas.ContainsKey(data.type)) {
-//                             chapterItemDatas.Add(data.type, data);
-//                         } else {
-//                             Debug.LogError("chapterItemDatas contains key: " + data.type);
-//                         }
-//                     }
-//                 } else {
-//                     Debug.LogError("chapterItemData jsonArray is null");
-//                 }
-//             }
-//         }
-// #endregion
+        public static Dictionary<int, MinoData> GetMinoDatas() {
+            return minoDatas;
+        }
+        public static Dictionary<string, TetrominoData> GetTetrominoDatas() {
+            return tetrominoDatas;
+        }
+        public static MinoData GetMinoData(int id) {
+            if (minoDatas.ContainsKey(id)) {
+                return minoDatas[id];
+            } else {
+                return null;
+            }
+        }
+        public static TetrominoData GetTetrominoData(string type) {
+            if (tetrominoDatas.ContainsKey(type)) {
+                return tetrominoDatas[type];
+            } else {
+                return null;
+            }
+        }
+        static void InitializeMinoData(string jsonStr) {
+            if (jsonStr != null) {
+                minoDatas = new Dictionary<int, MinoData>();
+                JsonArray jsonArray = JsonSerializer.Deserialize(jsonStr) as JsonArray;
+                if (jsonArray != null) {
+                    foreach (JsonValue jsonValue in jsonArray) {
+                        MinoData data = MinoData.JsonToObject(jsonValue.ToString());
+                        if (!minoDatas.ContainsKey(data.instanceID)) {
+                            minoDatas.Add(data.instanceID, data);
+                        } else {
+                            Debug.LogError("minoDatas contains key: " + data.instanceID);
+                        }
+                    }
+                } else {
+                    Debug.LogError("minoitemData jsonArray is null");
+                }
+            }
+        }
+        static void InitializeTetrominoData(string jsonStr) {
+            if (jsonStr != null) {
+                tetrominoDatas = new Dictionary<string, TetrominoData>();
+                JsonArray jsonArray = JsonSerializer.Deserialize(jsonStr) as JsonArray;
+                if (jsonArray != null) {
+                    foreach (JsonValue jsonValue in jsonArray) {
+                        TetrominoData data = TetrominoData.JsonToObject(jsonValue.ToString());
+                        if (!tetrominoDatas.ContainsKey(data.type)) {
+                            tetrominoDatas.Add(data.type, data);
+                        } else {
+                            Debug.LogError("tetrominoDatas contains key: " + data.type);
+                        }
+                    }
+                } else {
+                    Debug.LogError("tetrominoitemData jsonArray is null");
+                }
+            }
+        }
+#endregion
 
 #region Other
          static bool isOverUI = false;
@@ -498,5 +500,3 @@ namespace HotFix.UI {
 #endregion
     }
 }
-
-

@@ -1,0 +1,297 @@
+[
+    {
+        "id": 7,
+        "name": "tetrominoI", 
+        "type": "tetrominoI",
+        "positionX": 0.0,
+        "positionY": 0.0,
+        "positionZ": 0.0,
+        "children": [
+            {
+                "id": 1,
+                "name": "minoI", 
+                "type": "minoI",
+                "positionX": 0.0,
+                "positionY": 0.0,
+                "positionZ": 0.0,
+            },
+            {
+                "id": 1,
+                "name": "minoI", 
+                "type": "minoI",
+                "positionX": 1.0,
+                "positionY": 0.0,
+                "positionZ": 0.0,
+            },
+            {
+                "id": 1,
+                "name": "minoI", 
+                "type": "minoI",
+                "positionX": 2.0,
+                "positionY": 0.0,
+                "positionZ": 0.0,
+            },
+            {
+                "id": 1,
+                "name": "minoI", 
+                "type": "minoI",
+                "positionX": -1.0,
+                "positionY": 0.0,
+                "positionZ": 0.0,
+            }            
+        ]
+    },
+    {
+        "id": 8,
+        "name": "tetrominoJ", 
+        "type": "tetrominoJ",
+        "positionX": 0.0,
+        "positionY": 0.0,
+        "positionZ": 0.0,
+        "children": [
+            {
+                "id": 1,
+                "name": "minoJ", 
+                "type": "minoJ",
+                "positionX": -1.0,
+                "positionY": 0.0,
+                "positionZ": 0.0,
+            },
+            {
+                "id": 1,
+                "name": "minoJ", 
+                "type": "minoJ",
+                "positionX": 0.0,
+                "positionY": 0.0,
+                "positionZ": 0.0,
+            },
+            {
+                "id": 1,
+                "name": "minoJ", 
+                "type": "minoJ",
+                "positionX": 1.0,
+                "positionY": 0.0,
+                "positionZ": 0.0,
+            },
+            {
+                "id": 1,
+                "name": "minoJ", 
+                "type": "minoJ",
+                "positionX": 1.0,
+                "positionY": 0.0,
+                "positionZ": -1.0,
+            }            
+        ]
+    },
+    {
+        "id": 9,
+        "name": "tetrominoL", 
+        "type": "tetrominoL",
+        "positionX": 0.0,
+        "positionY": 0.0,
+        "positionZ": 0.0,
+        "children": [
+            {
+                "id": 1,
+                "name": "minoL", 
+                "type": "minoL",
+                "positionX": -1.0,
+                "positionY": 0.0,
+                "positionZ": -1.0,
+            },
+            {
+                "id": 1,
+                "name": "minoL", 
+                "type": "minoL",
+                "positionX": -1.0,
+                "positionY": 0.0,
+                "positionZ": 0.0,
+            },
+            {
+                "id": 1,
+                "name": "minoL", 
+                "type": "minoL",
+                "positionX": 0.0,
+                "positionY": 0.0,
+                "positionZ": 0.0,
+            },
+            {
+                "id": 1,
+                "name": "minoL", 
+                "type": "minoL",
+                "positionX": 1.0,
+                "positionY": 0.0,
+                "positionZ": 0.0,
+            }            
+        ]
+    },
+    {
+        "id": 10,
+        "name": "tetrominoO", 
+        "type": "tetrominoO",
+        "positionX": 0.0,
+        "positionY": 0.0,
+        "positionZ": 0.0,
+        "children": [
+            {
+                "id": 1,
+                "name": "minoO", 
+                "type": "minoO",
+                "positionX": 0.0,
+                "positionY": 0.0,
+                "positionZ": -1.0,
+            },
+            {
+                "id": 1,
+                "name": "minoO", 
+                "type": "minoO",
+                "positionX": 0.0,
+                "positionY": 0.0,
+                "positionZ": 0.0,
+            },
+            {
+                "id": 1,
+                "name": "minoO", 
+                "type": "minoO",
+                "positionX": 1.0,
+                "positionY": 0.0,
+                "positionZ": 0.0,
+            },
+            {
+                "id": 1,
+                "name": "minoO", 
+                "type": "minoO",
+                "positionX": 1.0,
+                "positionY": 0.0,
+                "positionZ": -1.0,
+            }            
+        ]
+    },
+    {
+        "id": 11,
+        "name": "tetrominoS", 
+        "type": "tetrominoS",
+        "positionX": 0.0,
+        "positionY": 0.0,
+        "positionZ": 0.0,
+        "children": [
+            {
+                "id": 1,
+                "name": "minoS", 
+                "type": "minoS",
+                "positionX": -1.0,
+                "positionY": 0.0,
+                "positionZ": -1.0,
+            },
+            {
+                "id": 1,
+                "name": "minoS", 
+                "type": "minoS",
+                "positionX": 0.0,
+                "positionY": 0.0,
+                "positionZ": -1.0,
+            },
+            {
+                "id": 1,
+                "name": "minoS", 
+                "type": "minoS",
+                "positionX": 0.0,
+                "positionY": 0.0,
+                "positionZ": 0.0,
+            },
+            {
+                "id": 1,
+                "name": "minoS", 
+                "type": "minoS",
+                "positionX": 1.0,
+                "positionY": 0.0,
+                "positionZ": 0.0,
+            }            
+        ]
+    },
+    {
+        "id": 12,
+        "name": "tetrominoT", 
+        "type": "tetrominoT",
+        "positionX": 0.0,
+        "positionY": 0.0,
+        "positionZ": 0.0,
+        "children": [
+            {
+                "id": 1,
+                "name": "minoT", 
+                "type": "minoT",
+                "positionX": -1.0,
+                "positionY": 0.0,
+                "positionZ": 0.0,
+            },
+            {
+                "id": 1,
+                "name": "minoT", 
+                "type": "minoT",
+                "positionX": 0.0,
+                "positionY": 0.0,
+                "positionZ": 0.0,
+            },
+            {
+                "id": 1,
+                "name": "minoT", 
+                "type": "minoT",
+                "positionX": 0.0,
+                "positionY": 0.0,
+                "positionZ": -1.0,
+            },
+            {
+                "id": 1,
+                "name": "minoT", 
+                "type": "minoT",
+                "positionX": 1.0,
+                "positionY": 0.0,
+                "positionZ": 0.0,
+            }            
+        ]
+    },
+    {
+        "id": 13,
+        "name": "tetrominoZ", 
+        "type": "tetrominoZ",
+        "positionX": 0.0,
+        "positionY": 0.0,
+        "positionZ": 0.0,
+        "children": [
+            {
+                "id": 1,
+                "name": "minoZ", 
+                "type": "minoZ",
+                "positionX": -1.0,
+                "positionY": 0.0,
+                "positionZ": 0.0,
+            },
+            {
+                "id": 1,
+                "name": "minoZ", 
+                "type": "minoZ",
+                "positionX": 0.0, 
+                "positionY": 0.0,
+                "positionZ": 0.0,
+            },
+            {
+                "id": 1,
+                "name": "minoZ", 
+                "type": "minoZ",
+                "positionX": 0.0,
+                "positionY": 0.0,
+                "positionZ": -1.0,
+            },
+            {
+                "id": 1,
+                "name": "minoZ", 
+                "type": "minoZ",
+                "positionX": 1.0,
+                "positionY": 0.0,
+                "positionZ": -1.0,
+            }            
+        ]
+    }
+]
+

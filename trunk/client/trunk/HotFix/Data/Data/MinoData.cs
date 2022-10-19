@@ -9,18 +9,19 @@ using UnityEngine;
 
 namespace HotFix.Data {
 
-    // https:// thomaslevesque.com/2009/06/12/c-parentchild-relationship-and-xml-serialization/ 很详细的解释
-    public interface IMinoData<P> where P : class { // Defines the contract for an object that has a parent object
-        P Parent { get; set; }  
-    }
+    // // https:// thomaslevesque.com/2009/06/12/c-parentchild-relationship-and-xml-serialization/ 很详细的解释
+    // public interface IMinoData<P> where P : class { // Defines the contract for an object that has a parent object
+    //     P Parent { get; set; }  
+    // }
 
-    public class MinoData : IMinoData<TetrominoData> {
+    // public class MinoData : IMinoData<TetrominoData> {
+    public class MinoData {
         private const string TAG = "MinoData";
 
         public int instanceID;
-        public long type;
+        public string type;
 
-        public TetrominoData parentData; 
+        // public TetrominoData parentData; 
 
 #region Transform
         // PositionX
@@ -29,6 +30,7 @@ namespace HotFix.Data {
         public float positionY;
         // PositionZ
         public float positionZ;
+        
 // 对于小Mino来说,因为它是一个立方体,其实它只需要知道一个位置信息就可以了
         // // EulerAngleX
         // public float rotationX;
@@ -44,16 +46,16 @@ namespace HotFix.Data {
         // public float scaleZ;
 #endregion
 
-#region IMinoItem<TetrominoData> Members
-        TetrominoData IMinoData<TetrominoData>.Parent {
-            get {
-                return this.parentData;
-            }
-            set {
-                this.parentData = value;
-            }
-        }
-#endregion
+// #region IMinoItem<TetrominoData> Members
+//         TetrominoData IMinoData<TetrominoData>.Parent {
+//             get {
+//                 return this.parentData;
+//             }
+//             set {
+//                 this.parentData = value;
+//             }
+//         }
+// #endregion
 
         // 反序列化
         public static MinoData JsonToObject(string json) {
@@ -133,3 +135,4 @@ namespace HotFix.Data {
     //     }
     // }
 }
+

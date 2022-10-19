@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Json;
+using System.Linq;
 using System.Text;
 using Framework.MVVM;
 using Framework.Util;
 using HotFix.Data;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 namespace HotFix.Data {
@@ -12,8 +15,9 @@ namespace HotFix.Data {
     // follow examples, that only difference is that it has children components, which can also be serialized objects
     public class TetrominoData {
         private const string TAG = "TetrominoData";
+
         // 实例ID
-        public int instanceID;
+        public string instanceID;
         // 类型
         // public long type;
         public string type;
@@ -57,22 +61,76 @@ namespace HotFix.Data {
 
         // 套路的三个公用方法
         // 反序列化
+            // {
+                    // "id": 8,
+            //         "name": "tetrominoI", instanceID
+            //         "type": "tetrominoI",
+            //         "positionX": 0.0,
+            //         "positionY": 0.0,
+            //         "positionZ": 0.0,
+            //         "children": [
+            //             {
+                    //             "id": 1,
+            //                     "name": "minoI", 
+            //                     "type": "minoI",
+            //                     "positionX": 0.0, // 四个小立方体的位置需要改一下,按照预设里的来
+            //                     "positionY": 0.0,
+            //                     "positionZ": 0.0,
+            //                     },
+            //             {
+                    //             "id": 1,
+            //                     "name": "minoI", 
+            //                     "type": "minoI",
+            //                     "positionX": 0.0,
+            //                     "positionY": 0.0,
+            //                     "positionZ": 0.0,
+            //                     },
+            //             {
+                    //             "id": 1,
+            //                     "name": "minoI", 
+            //                     "type": "minoI",
+            //                     "positionX": 0.0,
+            //                     "positionY": 0.0,
+            //                     "positionZ": 0.0,
+            //                     },
+            //             {
+                    //             "id": 1,
+            //                     "name": "minoI", 
+            //                     "type": "minoI",
+            //                     "positionX": 0.0,
+            //                     "positionY": 0.0,
+            //                     "positionZ": 0.0,
+            //                     }            
+            //             ]
+            //         }
         public static TetrominoData JsonToObject(string json) {
             TetrominoData data = new TetrominoData();
-            JsonObject jsonObject = JsonSerializer.Deserialize(json) as JsonObject;
-            if (jsonObject != null) {
-                data.instanceID = jsonObject["instanceID"];
-                data.type = jsonObject["type"];
-                data.positionX = jsonObject["positionX"];
-                data.positionY = jsonObject["positionY"];
-                data.positionZ = jsonObject["positionZ"];
-                data.rotationX = jsonObject["rotationX"];
-                data.rotationY = jsonObject["rotationY"];
-                data.rotationZ = jsonObject["rotationZ"];
-                data.scaleX = jsonObject["scaleX"];
-                data.scaleY = jsonObject["scaleY"];
-                data.scaleZ = jsonObject["scaleZ"];
+            JObject tetrominoItem = (JObject)JsonConvert.DeserializeObject(json);
+            data.instanceID = tetrominoItem.SelectToken("instanceID").ToString();
+            
+            IList<JToken> children = tetrominoItem["children"].Children().ToList();
+            foreach (JToken mino in children) {
+                string minoType = mino.SelectToken("type").ToString();
+                if (minoType.StartsWith("mino")) {
+                    MinoData minoData = mino.ToObject<MinoData>();
+                    data.children.Add(minoData);
+                }
             }
+// // 下面这里的实现方法需要改写一下: 要实现几个子立方体的反序列化成立方体对象            
+//             JsonObject jsonObject = JsonSerializer.Deserialize(json) as JsonObject;
+//             if (jsonObject != null) {
+//                 data.instanceID = jsonObject["instanceID"];
+//                 data.type = jsonObject["type"];
+//                 data.positionX = jsonObject["positionX"];
+//                 data.positionY = jsonObject["positionY"];
+//                 data.positionZ = jsonObject["positionZ"];
+//                 data.rotationX = jsonObject["rotationX"];
+//                 data.rotationY = jsonObject["rotationY"];
+//                 data.rotationZ = jsonObject["rotationZ"];
+//                 data.scaleX = jsonObject["scaleX"];
+//                 data.scaleY = jsonObject["scaleY"];
+//                 data.scaleZ = jsonObject["scaleZ"];
+//             }
             return data;
         }
 
@@ -94,6 +152,7 @@ namespace HotFix.Data {
             jsonObject.Add("scaleX", scaleX);
             jsonObject.Add("scaleY", scaleY);
             jsonObject.Add("scaleZ", scaleZ);
+            jsonObject.Add("children", JsonConvert.SerializeObject(children));
             return jsonObject;
         }
     }

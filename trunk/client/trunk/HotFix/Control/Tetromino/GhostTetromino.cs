@@ -12,9 +12,8 @@ namespace HotFix.Control {
     public class GhostTetromino : MonoBehaviour {
         private const string TAG = "GhostTetromino";
 
-        // 这里定义成观察者模式,观察模型中当前currentActiveTetromino 的位置
+// 这里定义成观察者模式,观察模型中当前currentActiveTetromino 的位置
         private Transform currentActiveTransform; 
-        // private Vector3 prevPos = Vector3.zero;
         
         void Start () {
             tag = "currentGhostTetromino";
