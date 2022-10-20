@@ -77,7 +77,9 @@ namespace HotFix.UI {
             this.ParentViewModel = (MenuViewModel)ViewManager.MenuView.BindingContext; // 父视图模型: 菜单视图模型
             gridWidth = ((MenuViewModel)ParentViewModel).gridWidth;
 
-            grid = new Transform[5, gridHeight, 5];
+// 这里好像是需要解决一下多维数组在ILRuntime热更新程序域中的适配问题???
+            grid = new Transform[5, gridHeight, 5]; // BUGGY BUGGY BUGGY multidimensional array.....
+            
             gridOcc = new int[5, gridHeight, 5];
             fallSpeed = 3.0f;
             saveForUndo = true;
@@ -93,7 +95,7 @@ namespace HotFix.UI {
         }
 
 // 我的那些先前的歪歪斜斜的写法
-        // enable disable these buttons work slight better than this, could modify this part later
+        // enable disable these button3s work slight better than this, could modify this part later
         public int [] buttonInteractableList = new int[7]{ 1, 1, 1, 1, 1, 1, 1};
         // previewSelectionButton     0
         // previewSelectionButton2    1

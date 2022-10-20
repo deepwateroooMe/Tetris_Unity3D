@@ -4,13 +4,11 @@ using Framework.MVVM;
 using Framework.Util;
 using System.Collections;
 using System.Json;
-using HotFix.Control;
 using HotFix.Data;
 using HotFix.UI.View.MidMenuView;
 using UnityEngine.EventSystems;
 using HotFix.UI.View.SettingsView;
 using HotFix.UI.View.TestView;
-using UnityEngine.UI;
 
 namespace HotFix.UI {
 
@@ -111,8 +109,51 @@ namespace HotFix.UI {
 
                         ShowStartPanel();
                     }, EAssetBundleUnloadLevel.Never);
+// 不知道该如何调整两个画布：MoveCanvas RotateCanvas, 暂时把它们直接放在世界坐标系下
+            ResourceHelper
+                .LoadCloneAsyn(
+                    "ui/view/btnscanvasview",
+                    "BtnsCanvasView", // 这里是有预设的包，读出资源就可以加载
+                    (go) => {
+                        go.name = "BtnsCanvasView";
+                        GameObject.DontDestroyOnLoad(go); // 以此为父节点的所有子节点都不会被销毁,包括各种管理类
+                        moveCanvas = go.FindChildByName("moveCanvas");
+                        rotateCanvas = go.FindChildByName("rotateCanvas");
+                        Debug.Log("(moveCanvas != null): " + (moveCanvas != null));
+                        moveCanvas.SetActive(false);
+                        rotateCanvas.SetActive(false);
+//                         CoroutineHelper.StartCoroutine(GetRectSize(go.GetComponent<RectTransform>()));
+//                         UI2DRoot = go.GetComponent<Canvas>();
+//                         var viewRoot = new GameObject("ViewRoot"); // 实例化一个新空控件当作是视图层的根节点
+//                         viewRoot.layer = LayerMask.NameToLayer("UI");
+//                         var viewRect = viewRoot.AddComponent<RectTransform>();
+//                         viewRect.SetParent(UI2DRoot.transform, false); // ori
+//                         // // viewRect.SetParent(UI2DRoot.transform, true);
+//                         viewRect.sizeDelta = new Vector2(0, 0);
+//                         viewRect.anchorMin = Vector2.zero;
+//                         viewRect.anchorMax = Vector2.one; // ori
+//                         // viewRect.anchorMax = Vector2.zero;
+//                         viewRect.pivot = new Vector2(0.5f, 0.5f);
+// // all the managers: Event, Audio, Pool etc
+//                         Transform managersRoot = new GameObject("ManagersRoot").transform;
+//                         managersRoot.SetParent(UI2DRoot.transform, false);
+//                         poolRoot = new GameObject("PoolRoot").transform;
+//                         // poolRoot.SetParent(UI2DRoot.transform, false);
+//                         poolRoot.SetParent(managersRoot, false);
+//                         poolRoot.gameObject.SetActive(false);
+//                         eventRoot = new GameObject("EventRoot").transform;
+//                         eventRoot.SetParent(managersRoot.transform, false);
+//                         eventRoot.gameObject.SetActive(false);
+//                         ShowStartPanel();
+                    }, EAssetBundleUnloadLevel.Never);
         }
 
+#region BtnsCanvasView
+        public static GameObject moveCanvas = null;
+        public static GameObject rotateCanvas = null;
+        
+#endregion
+        
         static IEnumerator GetRectSize(RectTransform rt) { // 自己添加到这里的
 //             //RectTransform rt = go.GetComponent<RectTransform>();
 //             float obj_width = rt.rect.size.x;
@@ -266,7 +307,7 @@ namespace HotFix.UI {
 #endregion
 
 #region Other
-         static bool isOverUI = false;
+        static bool isOverUI = false;
         static bool isCheckedOverUI = false;
         static List<RaycastResult> raycastResults = new List<RaycastResult>();
         // 是否触摸到UI控件
@@ -311,6 +352,17 @@ namespace HotFix.UI {
         //         return _menuView;
         //     }
         // }
+        static BtnsCanvasView _btnscanvasView;
+        public static BtnsCanvasView BtnsCanvasView {
+            get {
+                if (_btnscanvasView == null) {
+                    _btnscanvasView = new BtnsCanvasView();
+                    _btnscanvasView.BindingContext = new BtnsCanvasViewModel();
+                    views.Add(_btnscanvasView.ViewName, _btnscanvasView);
+                }
+                return _btnscanvasView;
+            }
+        }
         static GameView _GameView;
         public static GameView GameView {
             get {

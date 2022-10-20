@@ -42,8 +42,6 @@ namespace HotFix.UI {
             ViewManager.CloseOtherRootViews("MenuView");
         }
 
-// TODO:　需要把这3个按钮放在一个panel里,方便隐藏(教育模式下选方格时需要隐藏它)
-// todo: unity gameobjects, 只在代码里整合了,unity控件里还没能合并在一个视图里
         GameObject menuViewPanel;
         Button eduButton; // Education
         Button claButton; // Classic

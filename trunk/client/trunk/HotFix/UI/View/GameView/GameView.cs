@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 namespace HotFix.UI {
     
-    // 还有两个世界坐标系的视图：MoveCanvasView 和RotateCanvasView供其调控
+    // 还有两个世界坐标系的视图：MoveCanvasView 和RotateCanvasView供其调控,但是他们位于世界坐标系下，区别于其它任何视图
     public class GameView : UnityGuiView {
         private const string TAG = "GameView"; 
 
@@ -86,8 +86,6 @@ namespace HotFix.UI {
         AudioSource audioSource;
         AudioSource m_ExplosionAudio;
 
-        public GameObject moveCanvas;    // public ?
-        public GameObject rotateCanvas;
         public GameObject nextTetromino; // 这里把原本的静态标志STATIC给移掉了
         public GameObject ghostTetromino; 
 
@@ -149,26 +147,30 @@ namespace HotFix.UI {
         public override void OnRevealed() {
             base.OnRevealed();
             // 当当前视图显示结束之后,还是应该之前开始显示的时候呢,调用游戏开始的初始化等相关配置
-            Start();
+            Start(); // ???
         }
 
         // 需要有来自ViewModel的数据变化来刷新UI: 观察者模式观察视图模型中数据的变体
         protected override void OnInitialize() {
             base.OnInitialize();
+
             baseBoard5 = GameObject.FindChildByName("BaseBoard5");
-            
-            setAllBaseBoardInactive(); // 重置全部隐藏
-            switch (((EducaModesViewModel)BindingContext.ParentViewModel).GridWidth) { // 大方格的类型
+            Debug.Log("(baseBoard5 != null): " + (baseBoard5 != null));
+            setAllBaseBoardInactive(); // 重置全部隐藏 comm for tmp 为什么这里会找不到控件呢
+            switch (((MenuViewModel)BindingContext.ParentViewModel).gridWidth) { // 大方格的类型
             case 3:
-            //     baseBoard3.SetActive(true);
-            //     break;
+                //     baseBoard3.SetActive(true);
+                //     break;
             case 4:
-            //     baseBoard4.SetActive(true);
-            //     break;
+                //     baseBoard4.SetActive(true);
+                //     break;
             case 5:
                 baseBoard5.SetActive(true);
                 break;
             }
+            // 测试 moveCanvas rotateCanvas SetActive(true);
+            // ViewManager.moveCanvas.SetActive(true);
+            // ViewManager.rotateCanvas.SetActive(true);
             
             scoText = GameObject.FindChildByName("scoTxt").GetComponent<Text>();
             lvlText = GameObject.FindChildByName("lvlTxt").GetComponent<Text>();
@@ -205,8 +207,8 @@ namespace HotFix.UI {
             creBtn = GameObject.FindChildByName("creBtn").GetComponent<Button>();
             creBtn.onClick.AddListener(OnClickCreButton);
 
-            moveCanvas = GameObject.FindChildByName("moveCanvas");
-            rotateCanvas = GameObject.FindChildByName("rotateCanvas");
+            ViewManager.moveCanvas = ViewManager.ViewManager.moveCanvas;
+            ViewManager.rotateCanvas = ViewManager.ViewManager.rotateCanvas;
         }
 
 // 新的热更新框架里,游戏是如何开始的呢?
@@ -482,7 +484,7 @@ namespace HotFix.UI {
                 swapPreviewTetrominoButton.SetActive(false);
                 undoButton.SetActive(false);
             }
-            rotateCanvas.SetActive(false);
+            ViewManager.rotateCanvas.SetActive(false);
         }
         void OnDisable() {
             Debug.Log(TAG + ": OnDisable()");
@@ -644,7 +646,7 @@ namespace HotFix.UI {
                         new Vector3(2.0f, ViewModel.gridHeight - 1f, 2.0f),
                         Quaternion.identity);
                     currentActiveTetrominoPrepare();
-                    moveCanvas.gameObject.SetActive(true);  
+                    ViewManager.moveCanvas.gameObject.SetActive(true);  
                     SpawnGhostTetromino();
                     SpawnPreviewTetromino();
                 }
@@ -714,8 +716,8 @@ namespace HotFix.UI {
                 GameObject.FindGameObjectWithTag("MainCamera").transform.position = DeserializedTransform.getDeserializedTransPos(gameData.cameraData); // MainCamera
                 GameObject.FindGameObjectWithTag("MainCamera").transform.rotation = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
             }
-            moveCanvas.gameObject.SetActive(false);   // moveCanvas rotateCanvas: SetActive(false)
-            rotateCanvas.gameObject.SetActive(false);
+            ViewManager.moveCanvas.gameObject.SetActive(false);   // ViewManager.moveCanvas ViewManager.rotateCanvas: SetActive(false)
+            ViewManager.rotateCanvas.gameObject.SetActive(false);
             if (ViewModel.prevPreview != null) { // previewTetromino previewTetromino2
                 type.Length = 0;
                 string type2 = ViewModel.prevPreview2;
@@ -771,9 +773,9 @@ namespace HotFix.UI {
                 nextTetromino.GetComponent<Tetromino>().enabled = !nextTetromino.GetComponent<Tetromino>().enabled; 
                 ViewModel.nextTetrominoType = nextTetromino.GetComponent<TetrominoType>().type;
 
-                moveCanvas.gameObject.SetActive(true);
-                moveCanvas.transform.position = new Vector3(moveCanvas.transform.position.x, nextTetromino.transform.position.y, moveCanvas.transform.position.z);
-                // 也需要重新设置 rotateCanvas 的位置
+                ViewManager.moveCanvas.gameObject.SetActive(true);
+                ViewManager.moveCanvas.transform.position = new Vector3(ViewManager.moveCanvas.transform.position.x, nextTetromino.transform.position.y, ViewManager.moveCanvas.transform.position.z);
+                // 也需要重新设置 ViewManager.rotateCanvas 的位置
                 SpawnGhostTetromino();
             }
 
@@ -818,9 +820,9 @@ namespace HotFix.UI {
         public void onActiveTetrominoMove(TetrominoMoveEventInfo info) { 
             Debug.Log(TAG + ": onTetrominoMove()");
             if (nextTetromino.GetComponent<Tetromino>().IsMoveValid) {
-                moveCanvas.transform.position += info.delta;
+                ViewManager.moveCanvas.transform.position += info.delta;
                 if ((int)info.delta.y != 0) {
-                    rotateCanvas.transform.position += new Vector3(0, info.delta.y, 0);
+                    ViewManager.rotateCanvas.transform.position += new Vector3(0, info.delta.y, 0);
                 }
                 ViewModel.UpdateGrid(nextTetromino);
             }
@@ -855,8 +857,8 @@ namespace HotFix.UI {
     
         private void moveRotatecanvasPrepare() { // 暂时放在视图,仍然应该是在视图模型中的
             // Debug.Log(TAG + ": moveRotatecanvasPrepare()"); 
-            moveCanvas.transform.localPosition = new Vector3(2.1f, ViewModel.gridHeight - 1f, 2.1f);     
-            rotateCanvas.transform.localPosition = new Vector3(2.1f, ViewModel.gridHeight - 1f, 2.1f);
+            ViewManager.moveCanvas.transform.localPosition = new Vector3(2.1f, ViewModel.gridHeight - 1f, 2.1f);     
+            ViewManager.rotateCanvas.transform.localPosition = new Vector3(2.1f, ViewModel.gridHeight - 1f, 2.1f);
             ViewModel.isMovement = false;
             ViewModel.toggleButtons(1);
         }
@@ -880,8 +882,8 @@ namespace HotFix.UI {
 
         public void DisableMoveRotationCanvas() {
             Debug.Log(TAG + ": DisableMoveRotationCanvas()"); 
-            moveCanvas.gameObject.SetActive(false);
-            rotateCanvas.SetActive(false);
+            ViewManager.moveCanvas.gameObject.SetActive(false);
+            ViewManager.rotateCanvas.SetActive(false);
         }
     
         public void SpawnGhostTetromino() {
@@ -916,20 +918,19 @@ namespace HotFix.UI {
         }
 
         // 平移与旋转两套按钮的上下移动: 应该是放在视图里的吧;最好是写成观察者模式,UI观察数据的变化,UI事件触发下发更新数据指令
-       public void MoveDown() {
-            moveCanvas.transform.position += new Vector3(0, -1, 0);
-            rotateCanvas.transform.position += new Vector3(0, -1, 0);
+        public void MoveDown() {
+            ViewManager.moveCanvas.transform.position += new Vector3(0, -1, 0);
+            ViewManager.rotateCanvas.transform.position += new Vector3(0, -1, 0);
         }
         public void MoveUp() {
             Debug.Log(TAG + ": MoveUp()");
             MathUtil.print(nextTetromino.transform.position);
             
-            moveCanvas.transform.position += new Vector3(0, 1, 0);
-            rotateCanvas.transform.position += new Vector3(0, 1, 0);
+            ViewManager.moveCanvas.transform.position += new Vector3(0, 1, 0);
+            ViewManager.rotateCanvas.transform.position += new Vector3(0, 1, 0);
         }
-   }
+    }
 }
-
 
 
 
