@@ -63,7 +63,10 @@ namespace HotFix.UI {
         public bool hasDeletedMinos = false;
         public bool loadSavedGame = false;
         public bool isDuringUndo = false;
-        
+
+    // 不知道临时拿了这个作了什么用,一定要用上这个?
+        private GameObject tmpParentGO;
+
         protected override void OnInitialize() {
             base.OnInitialize();
             Initialization();
@@ -649,10 +652,11 @@ namespace HotFix.UI {
 
         public bool IsFullRowAt(int y) {
             for (int x = 0; x < gridWidth; x++)
-                for (int j = 0; j < gridWidth; j++) 
+                for (int j = 0; j < gridWidth; j++)
+// 下面的两句话:临时先写成ViewManager.GameView.ghostTetromino.transform ,之后再重构                    
                     if (grid[x, y, j] == null ||      // modified here for ghostTetromino
-                        (grid[x, y, j].parent == ghostTetromino.transform
-                         && grid[x, y, j].parent != nextTetromino.transform)) 
+                        (grid[x, y, j].parent == ViewManager.GameView.ghostTetromino.transform
+                         && grid[x, y, j].parent != ViewManager.GameView.nextTetromino.transform)) 
                         return false;
             numberOfRowsThisTurn++;
             return true;

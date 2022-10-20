@@ -1,10 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Json;
 using System.Linq;
-using System.Text;
 using Framework.MVVM;
-using Framework.Util;
-using HotFix.Data;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
@@ -122,6 +119,7 @@ namespace HotFix.Data {
         }
 
         public override string ToString() {
+            // 因为嵌套关系,这里还能够这么简单地写吗?大概不可以,暂时好像没有发现用它的地方
             return ObjectToJson().ToString();
         }
 

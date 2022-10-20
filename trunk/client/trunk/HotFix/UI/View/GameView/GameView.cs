@@ -131,7 +131,7 @@ namespace HotFix.UI {
 
         private SaveGameEventInfo saveGameInfo;
 
-        private GameObject tmpParentGO;
+        // private GameObject tmpParentGO;
 
         public GameObject previewSelectionButton;
         public GameObject previewSelectionButton2;
@@ -758,10 +758,10 @@ namespace HotFix.UI {
             {
                 nextTetromino = PoolManager.Instance.GetFromPool(
                     type.Append(gameData.nextTetrominoData.type).ToString(),
-                    gameData.nextTetrominoData.transform,
-                    gameData.nextTetrominoData.transform);
-                    //DeserializedTransform.getDeserializedTransPos(gameData.nextTetrominoData.transform),
-                    //                                             DeserializedTransform.getDeserializedTransRot(gameData.nextTetrominoData.transform));
+                    // gameData.nextTetrominoData.transform,
+                    // gameData.nextTetrominoData.transform);
+                    DeserializedTransform.getDeserializedTransPos(gameData.nextTetrominoData.transform),
+                    DeserializedTransform.getDeserializedTransRot(gameData.nextTetrominoData.transform));
                 nextTetromino.tag = "currentActiveTetromino";
                 // if (defaultContainer == null) // 我不要再管这个东西了
                 //     defaultContainer = GameObject.FindGameObjectWithTag("defaultContainer");

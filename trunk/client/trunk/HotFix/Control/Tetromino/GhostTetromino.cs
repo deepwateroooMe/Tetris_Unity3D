@@ -17,7 +17,7 @@ namespace HotFix.Control {
         
         void Start () {
             tag = "currentGhostTetromino";
-            Model.nextTetromino.OnValueChanged += MyUpdate;
+            //Model.nextTetromino.OnValueChanged += MyUpdate;
         } 
 
         void MyUpdate (Vector3 pre, Vector3 cur) {

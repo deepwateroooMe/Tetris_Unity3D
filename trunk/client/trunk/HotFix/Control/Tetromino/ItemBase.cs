@@ -47,7 +47,7 @@ namespace HotFix.UI {
 // }
 
     // control logics base
-    public abstract class ItemBase : IType {
+    public abstract class ItemBase {
         // string Type {
         //     set;
         //     get;

@@ -1,6 +1,6 @@
 ﻿namespace deepwaterooo.tetris3d {
 
-    public class GhostTetrominoType {
+    public class GhostTetrominoType : IType {
         private string ghostTetrominoType;
 
         public string type {
