@@ -1,4 +1,4 @@
-% Created 2022-10-16 Sun 17:00
+% Created 2022-10-20 Thu 11:02
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -33,13 +33,55 @@
 \tableofcontents
 
 
-\section{大致进展计划}
+\section{游戏基本场景设计}
 \label{sec-1}
 \begin{itemize}
+\item debugging game flow, 现游戏的主场景如下:
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221020_115827.png}
+
+\begin{itemize}
+\item 热更新里重新实现在的游戏主场景如下:
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221011_201317.png} 
+\begin{itemize}
+\item 主游戏菜单与游戏过程中选择菜单: 最右为Educational has 3 choices:
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221007_192732.png}
+\begin{itemize}
+\item 启蒙模式原本是想给小盆友玩儿的，有无限撤销方块功能，和粒子消除行与列。但是这具模式有可能最终被我砍掉，相关功能改加到其它模块　
+\item 启蒙模式下的由易到难三种选择：Educational mode的三种不同界面
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20222007_193727.png}
+
+\begin{itemize}
+\item 传统游戏界面视图:(挑战模式下的界面丢了，到时候再补吧，或者可能只做7级，剩余热更新)
+\item 两组共10个对各小方块砖方块砖平移与旋转的操纵:　 \textbf{平移与旋转按钮都太丑，的摆放与位置需要优化}
+\item load new game or saved games: 保存游戏数据的地址需要再改变一下,改变到应用的内部,而不是要存到什么其它的盘
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221007_195217.png}
+\begin{itemize}
+\item 现在是热更新的框架到上个周末就搭好了,这一两天忙点儿,必要的游戏场景视图基本搭配到位: 场景的搭建没有任何复杂的地方,只是相机的使用相对不够熟练,所有的都只是场景搭建基本功
+\end{itemize}
+
+\section{大致进展计划}
+\label{sec-2}
+\begin{itemize}
+\item 不管是什么方法,适配原源码也好,基本也解决了现热更新程序域里的所有编译错误,现在就是解决运行游戏过程中可能会遇到的所有问题,让游戏在热更新框架下能够顺利运行起来
+\begin{itemize}
+\item 处理立方体与方块砖资源包的打包与读取到视图中作必要的准备,供运行时实时实例化,ViewManager.cs整合资源池
+\item 必要的预设都做好了,要再理解一下从文本读取脚本资源,运行中与预设是如何结合起来生成实例的,把这部分的逻辑连通
+\end{itemize}
+\item 重构把代码搬过来的编译错误也比较多,就严格按照游戏的逻辑来,一步一步地添加使之运行,解决重构过程中可能会遇到的所有问题.比如现在,就先让教育模式下的两个供选择方块砖在游戏主视图加载的时候能够显示出来
+\item 暂时不处理摄像机与场景相关,摄像机视角的热更新等游戏的主要逻辑完成后作为高级附加功能再添加整合模块;因为方块砖游戏中只涉及到一个场景,所以暂时不处理场景的热更新打包与加载等,使用框架但细节略过,因为场景中基本没有多的逻辑需要处理.
 \item \textbf{框架搭好测试运行好了}, \textbf{必要的游戏场景资源建好了};接下来 \textbf{会侧重游戏逻辑MVVM设计模式,视图与视图数据的分离与监听通知等}
 \item 要上手就来一个怎样很好的设计,对于目前来说还是相对庞大的游戏来说,可以也并不是一样容易的事.
 \item 游戏几年前的实现逻辑大部分还能够回想得起来, \textbf{比较可行的办法是按照游戏的执行逻辑,在热更新程序包里先一步一步链接好,能够使游戏先运行起来,在功能模块的不断的添加过程中,一再优化这里面的数据或是热更新程序包里的游戏逻辑架构设计}
-\item 早上只是稍微更为深入地理解了一下ILRuntime各个模块的理论概念,没怎么来实现什么;一个小时后中午下午搬家,下午有可能没有网络会整理新房间,尽快整理好; \textbf{会希望傍晚有网络后今天晚上几个小时的时间,和明天白天一整天的时间能够让最基本的游戏逻辑运行起来,比如当前基本视图已经准备好的教育模式下游戏的基本运行}
 \item 现手上的资源项目没有使用View与ViewModel的数据双向传递(或者是说ViewModel部分的逻辑根本就没有或是没有实现),会再检查一遍.这里就需要仔细地去想,怎么模块化管理自己游戏中的数据(MVVM, 为什么网络上他们会用MVC或是MCP呢)
 \item View和ViewModel,在创建视图的时候就自然绑定视图模型了.那么相应的视图模型就以观察某些数据(是视图观察视图模型中的数据变化--自下向上传递;视图中的按钮点击又下发更改相关数据等的逻辑,自上向下传递)
 \item 搭桥: 怎么把单个视图层数据转变成为全局可访问数据,接触到过的方法有写入Settings.Global ContentProvider, 用SharedPreference写入配置文件等.这里考虑在热更新程序域里的特殊性
@@ -124,35 +166,6 @@ public class Enemy {
 \item 所有可能我还是需要把场景的热更新再理透一点儿,分场景加载应该是更有利于内存的(就是还没有使用的资源的有效的释放,但也还是看情况)
 
 \item 以后有想法会再补这里
-\end{itemize}
-\section{游戏基本场景设计}
-\label{sec-2}
-\begin{itemize}
-\item 热更新里重新实现在的游戏主场景如下:
-\end{itemize}
-
-\includegraphics[width=.9\linewidth]{./pic/readme_20221011_201317.png} 
-\begin{itemize}
-\item 主游戏菜单与游戏过程中选择菜单: 最右为Educational has 3 choices:
-\end{itemize}
-
-\includegraphics[width=.9\linewidth]{./pic/readme_20221007_192732.png}
-\begin{itemize}
-\item 启蒙模式原本是想给小盆友玩儿的，有无限撤销方块功能，和粒子消除行与列。但是这具模式有可能最终被我砍掉，相关功能改加到其它模块　
-\item 启蒙模式下的由易到难三种选择：Educational mode的三种不同界面
-\end{itemize}
-
-\includegraphics[width=.9\linewidth]{./pic/readme_20222007_193727.png}
-
-\begin{itemize}
-\item 传统游戏界面视图:(挑战模式下的界面丢了，到时候再补吧，或者可能只做7级，剩余热更新)
-\item 两组共10个对各小方块砖方块砖平移与旋转的操纵:　 \textbf{平移与旋转按钮都太丑，的摆放与位置需要优化}
-\item load new game or saved games: 保存游戏数据的地址需要再改变一下,改变到应用的内部,而不是要存到什么其它的盘
-\end{itemize}
-
-\includegraphics[width=.9\linewidth]{./pic/readme_20221007_195217.png}
-\begin{itemize}
-\item 现在是热更新的框架到上个周末就搭好了,这一两天忙点儿,必要的游戏场景视图基本搭配到位: 场景的搭建没有任何复杂的地方,只是相机的使用相对不够熟练,所有的都只是场景搭建基本功
 \end{itemize}
 
 \section{进展过程与基本问题}
