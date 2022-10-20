@@ -1,4 +1,5 @@
 ﻿using Framework.MVVM;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace HotFix.UI {
@@ -41,10 +42,14 @@ namespace HotFix.UI {
             ViewManager.CloseOtherRootViews("MenuView");
         }
 
+// TODO:　需要把这3个按钮放在一个panel里,方便隐藏(教育模式下选方格时需要隐藏它)
+// todo: unity gameobjects, 只在代码里整合了,unity控件里还没能合并在一个视图里
+        GameObject menuViewPanel;
         Button eduButton; // Education
         Button claButton; // Classic
         Button chaButton; // Challenge
 // 把EducaModesView整合进来
+        GameObject educamodesviewPanel;
         Toggle thrToggle;
         Toggle furToggle;
         Toggle fivToggle;
@@ -52,6 +57,8 @@ namespace HotFix.UI {
 
         protected override void OnInitialize() {
             base.OnInitialize();
+
+            menuViewPanel = GameObject.FindChildByName("MenuViewPanel");
 
             eduButton = GameObject.FindChildByName("eduBtn").GetComponent<Button>();
             eduButton.onClick.AddListener(OnClickEduButton);
@@ -61,6 +68,9 @@ namespace HotFix.UI {
 
             chaButton = GameObject.FindChildByName("chaBtn").GetComponent<Button>();
             chaButton.onClick.AddListener(OnClickChaButton);
+
+
+            educamodesviewPanel = GameObject.FindChildByName("EducaModesPanel");
 
             thrToggle = GameObject.FindChildByName("Toggle3").GetComponent<Toggle>();
             furToggle = GameObject.FindChildByName("Toggle4").GetComponent<Toggle>();
@@ -74,9 +84,11 @@ namespace HotFix.UI {
         // }
 
         void OnClickEduButton() {
-            ViewManager.EducaModesView.Reveal();
+            // ViewManager.EducaModesView.Reveal();
+            menuViewPanel.SetActive(false);
+            educamodesviewPanel.SetActive(true);
             ViewModel.gameMode = 0; // UI点击事件触发视图模型的数据变更, 通过视图模型为桥梁传给子视图模型使用数据
-            Hide();
+            // Hide();
         }
         void OnClickClaButton() {
                 ViewModel.gameMode = 1;

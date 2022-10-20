@@ -98,11 +98,12 @@ namespace HotFix.UI {
                         poolRoot.SetParent(managersRoot, false);
                         poolRoot.gameObject.SetActive(false);
 
-                        audioRoot = new GameObject("AudioRoot").transform;
-                        audioRoot.SetParent(managersRoot.transform, false);
-                        audioRoot.gameObject.SetActive(false);
-                        audioRoot.gameObject.AddComponent<AudioSource>(); 
-                        audioRoot.gameObject.AddComponent<AudioManager>(); // AudioManager : SingletonMono<AudioManager>
+// 它说这里找不到AudioManager热更新程序域的适配器                        
+                        // audioRoot = new GameObject("AudioRoot").transform;
+                        // audioRoot.SetParent(managersRoot.transform, false);
+                        // audioRoot.gameObject.SetActive(false);
+                        // audioRoot.gameObject.AddComponent<AudioSource>(); 
+                        // audioRoot.gameObject.AddComponent<AudioManager>(); // AudioManager : SingletonMono<AudioManager>
                         
                         eventRoot = new GameObject("EventRoot").transform;
                         eventRoot.SetParent(managersRoot.transform, false);

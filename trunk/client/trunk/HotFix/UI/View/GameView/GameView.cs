@@ -18,7 +18,7 @@ namespace HotFix.UI {
 
         public override string BundleName {
             get {
-                return "/view/gameview";
+                return "ui/view/gameview";
             }
         }
         public override string AssetName {
@@ -49,8 +49,8 @@ namespace HotFix.UI {
 
 // Five Four ThreeGridView
         // 因为整合到一个大的视图,那么要同时有三种格子,只显示其中的一种,并隐藏剩余的两种而已
-        GameObject baseBoard3;
-        GameObject baseBoard4;
+        // GameObject baseBoard3;
+        // GameObject baseBoard4;
         GameObject baseBoard5;
 // DesView 里的个文本框基本不变，不用管它们        
 // ScoreDataView
@@ -155,14 +155,16 @@ namespace HotFix.UI {
         // 需要有来自ViewModel的数据变化来刷新UI: 观察者模式观察视图模型中数据的变体
         protected override void OnInitialize() {
             base.OnInitialize();
+            baseBoard5 = GameObject.FindChildByName("BaseBoard5");
+            
             setAllBaseBoardInactive(); // 重置全部隐藏
             switch (((EducaModesViewModel)BindingContext.ParentViewModel).GridWidth) { // 大方格的类型
             case 3:
-                baseBoard3.SetActive(true);
-                break;
+            //     baseBoard3.SetActive(true);
+            //     break;
             case 4:
-                baseBoard4.SetActive(true);
-                break;
+            //     baseBoard4.SetActive(true);
+            //     break;
             case 5:
                 baseBoard5.SetActive(true);
                 break;
@@ -388,8 +390,8 @@ namespace HotFix.UI {
         }
 
         void setAllBaseBoardInactive() {
-            baseBoard3.SetActive(false);
-            baseBoard4.SetActive(false);
+            // baseBoard3.SetActive(false);
+            // baseBoard4.SetActive(false);
             baseBoard5.SetActive(false);
         }
         IEnumerator asyncLoadScene() {

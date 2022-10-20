@@ -19,7 +19,8 @@ namespace HotFix.Control {
         public GameObject prefab;
         public GameObject container;
         [HideInInspector]
-        public List<GameObject> pool = new List<GameObject>();
+        // public Stack<GameObject> pool = new Stack<GameObject>(); // 换成栈,好像unity的内存特性里栈比较方便? 
+        public List<GameObject> pool = new List<GameObject>(); // 换成栈,好像unity的内存特性里栈比较方便? 
     }
 
     // 这个管理器类:  执行效率太低,可以简化,可以整合到ViewManager中去
@@ -27,11 +28,14 @@ namespace HotFix.Control {
         private const string TAG = "PoolManager";
 
         private Vector3 defaultPos = new Vector3(-100, -100, -100); // 不同类型的起始位置不一样(可否设置在预设里呢>??)
-        public List<PoolInfo> listOfPool; // 为什么使用链表呢,查询效率不是太低了吗? 怎么也得用个字典才对的呀?
 
+        public List<PoolInfo> dic; // 为什么使用链表呢,查询效率不是太低了吗? 怎么也得用个字典才对的呀?
+        // public Dictionary<string, PoolInfo> dic = new Dictionary<string, PoolInfo>();
+        
         public GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3? localScale = null) {
             PoolInfo selected = GetPoolByType(type);
             List<GameObject> pool = selected.pool;
+            // Stack<GameObject> pool = dic.get(type).pool;
             GameObject objInstance = null;
             if (pool.Count > 0) {
                 objInstance = pool[pool.Count - 1];
@@ -65,8 +69,8 @@ namespace HotFix.Control {
             InitPool();
         }
         public void InitPool() {
-            for (int i = 0; i < listOfPool.Count; ++i) {
-                FillPool(listOfPool[i]);
+            for (int i = 0; i < dic.Count; ++i) {
+                FillPool(dic[i]);
             }
         }
         private void FillPool(PoolInfo info) {
@@ -110,9 +114,9 @@ namespace HotFix.Control {
         }
 
         private PoolInfo GetPoolByType(string type) {
-            for (int i = 0; i < listOfPool.Count; i++) { // 这里用了个链表,查询效率太低,字典快很多
-                if (type == listOfPool[i].type) {
-                    return listOfPool[i];
+            for (int i = 0; i < dic.Count; i++) { // 这里用了个链表,查询效率太低,字典快很多
+                if (type == dic[i].type) {
+                    return dic[i];
                 }
             }
             return null;
