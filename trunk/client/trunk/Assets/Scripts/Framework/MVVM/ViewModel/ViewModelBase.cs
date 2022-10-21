@@ -1,4 +1,6 @@
-﻿namespace Framework.MVVM {
+﻿using UnityEngine;
+
+namespace Framework.MVVM {
 
     public class ViewModelBase {
 
@@ -44,9 +46,8 @@
 
         // 两个虚拟方法,等待子类去实现
         public virtual void OnDestory() { }
-        protected virtual void OnInitialize() { }
+        protected virtual void OnInitialize() {
+            Debug.Log("OnInitialize ViewModelBase virtual");
+        }
     }
 }
-
-
-

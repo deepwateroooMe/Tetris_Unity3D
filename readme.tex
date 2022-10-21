@@ -1,4 +1,4 @@
-% Created 2022-10-20 Thu 11:02
+% Created 2022-10-20 Thu 18:00
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -40,8 +40,18 @@
 \end{itemize}
 
 \includegraphics[width=.9\linewidth]{./pic/readme_20221020_115827.png}
-
 \begin{itemize}
+\item 现两个主要的小问题:多维数组在ILRuntime热更新程序域里的适配,两个预览方块砖的生成并画到视图上去
+\item trying to link all necessary game logics and make game to run again in ILRuntime HotFix 程序域里.
+\item 多维数组,稍微改动了一下就可以了,但里面还是有点儿小机关的
+\begin{itemize}
+\item AOT不能使用二维数组（多维数组）例如bool[,]
+\item 使用时报System.Boolean[,]::Get没有生成AOT代码
+\item 改用bool[][]是OK的
+\item ILRuntime Version
+\item 1.6.7
+\item 答案是: 需要正确生成clr绑定
+\end{itemize}
 \item 热更新里重新实现在的游戏主场景如下:
 \end{itemize}
 

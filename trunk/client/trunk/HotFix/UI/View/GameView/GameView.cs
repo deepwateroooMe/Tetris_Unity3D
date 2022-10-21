@@ -147,7 +147,7 @@ namespace HotFix.UI {
         public override void OnRevealed() {
             base.OnRevealed();
             // 当当前视图显示结束之后,还是应该之前开始显示的时候呢,调用游戏开始的初始化等相关配置
-            Start(); // ???
+            // Start(); // ??? 这里还藏着一个好大的BUG.....
         }
 
         // 需要有来自ViewModel的数据变化来刷新UI: 观察者模式观察视图模型中数据的变体
@@ -156,18 +156,18 @@ namespace HotFix.UI {
 
             baseBoard5 = GameObject.FindChildByName("BaseBoard5");
             Debug.Log("(baseBoard5 != null): " + (baseBoard5 != null));
-            setAllBaseBoardInactive(); // 重置全部隐藏 comm for tmp 为什么这里会找不到控件呢
-            switch (((MenuViewModel)BindingContext.ParentViewModel).gridWidth) { // 大方格的类型
-            case 3:
-                //     baseBoard3.SetActive(true);
-                //     break;
-            case 4:
-                //     baseBoard4.SetActive(true);
-                //     break;
-            case 5:
-                baseBoard5.SetActive(true);
-                break;
-            }
+            // setAllBaseBoardInactive(); // 重置全部隐藏 comm for tmp 为什么这里会找不到控件呢
+            // switch (((MenuViewModel)BindingContext.ParentViewModel).gridWidth) { // 大方格的类型
+            // case 3:
+            //     //     baseBoard3.SetActive(true);
+            //     //     break;
+            // case 4:
+            //     //     baseBoard4.SetActive(true);
+            //     //     break;
+            // case 5:
+            //     baseBoard5.SetActive(true);
+            //     break;
+            // }
             // 测试 moveCanvas rotateCanvas SetActive(true);
             // ViewManager.moveCanvas.SetActive(true);
             // ViewManager.rotateCanvas.SetActive(true);
@@ -206,9 +206,6 @@ namespace HotFix.UI {
             manBtn.onClick.AddListener(OnClickManButton);
             creBtn = GameObject.FindChildByName("creBtn").GetComponent<Button>();
             creBtn.onClick.AddListener(OnClickCreButton);
-
-            ViewManager.moveCanvas = ViewManager.ViewManager.moveCanvas;
-            ViewManager.rotateCanvas = ViewManager.ViewManager.rotateCanvas;
         }
 
 // 新的热更新框架里,游戏是如何开始的呢?

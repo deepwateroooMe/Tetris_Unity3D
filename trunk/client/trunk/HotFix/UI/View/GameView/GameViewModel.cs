@@ -24,8 +24,9 @@ namespace HotFix.UI {
         public int gridHeight = 12; 
         public int gridWidth;
 
-        public static Transform[,,] grid; //= new Transform[gridWidth, gridHeight, gridWidth];
-        public static int [,,] gridOcc; //= new int[gridWidth, gridHeight, gridWidth];
+        public static Transform [][] tmpTest;
+        public static Transform [][][] grid; //= new Transform[gridWidth, gridHeight, gridWidth];
+        public static int [][][] gridOcc; //= new int[gridWidth, gridHeight, gridWidth];
         public int scoreOneLine = 40;
         public int scoreTwoLine = 100;
         public int scoreThreeLine = 300;
@@ -77,10 +78,31 @@ namespace HotFix.UI {
             this.ParentViewModel = (MenuViewModel)ViewManager.MenuView.BindingContext; // 父视图模型: 菜单视图模型
             gridWidth = ((MenuViewModel)ParentViewModel).gridWidth;
 
+            Debug.Log("Initialization bef arrays");
+            tmpTest = new Transform [5][];
+            for (int i = 0; i < 5; i++) 
+                tmpTest[i] = new Transform[5];
+                
+            Debug.Log("Initialization after [] arrays");
+
 // 这里好像是需要解决一下多维数组在ILRuntime热更新程序域中的适配问题???
-            grid = new Transform[5, gridHeight, 5]; // BUGGY BUGGY BUGGY multidimensional array.....
+            // grid = new Transform[5, gridHeight, 5]; // BUGGY BUGGY BUGGY multidimensional array.....
+            grid = new Transform [5][][]; // BUGGY BUGGY BUGGY multidimensional array.....
+            for (int i = 0; i < 5; i++) {
+                grid[i] = new Transform[gridHeight][];
+                for (int j = 0; j < gridHeight; j++) 
+                    grid[i][j] = new Transform[5];
+            }
+                
+            // gridOcc = new int[5, gridHeight, 5];
+            gridOcc = new int[5][][];
+            for (int i = 0; i < 5; i++) {
+                gridOcc[i] = new int[gridHeight][];
+                for (int j = 0; j < gridHeight; j++) 
+                    gridOcc[i][j] = new int[5];
+            }
             
-            gridOcc = new int[5, gridHeight, 5];
+            Debug.Log("Initialization aft arrays");
             fallSpeed = 3.0f;
             saveForUndo = true;
         }
@@ -245,15 +267,15 @@ namespace HotFix.UI {
             for (int y = 0; y < gridHeight; y++) 
                 for (int z = 0; z < gridWidth; z++) 
                     for (int x = 0; x < gridWidth; x++)
-                        if (grid[x, y, z] != null && grid[x, y, z].parent == tetromino.transform) {
-                            grid[x, y, z] = null; 
-                            gridOcc[x, y, z]= 0; 
+                        if (grid[x][y][z] != null && grid[x][y][z].parent == tetromino.transform) {
+                            grid[x][y][z] = null; 
+                            gridOcc[x][y][z]= 0; 
                         }
             foreach (Transform mino in tetromino.transform) {
                 Vector3 pos = MathUtil.Round(mino.position);
                 if (pos.y >= 0 && pos.y < gridHeight && pos.x >= 0 && pos.x < gridWidth && pos.z >= 0 && pos.z < gridWidth) { 
-                    grid[(int)pos.x, (int)pos.y, (int)pos.z] = mino;
-                    gridOcc[(int)pos.x, (int)pos.y, (int)pos.z] = 1;
+                    grid[(int)pos.x][(int)pos.y][(int)pos.z] = mino;
+                    gridOcc[(int)pos.x][(int)pos.y][(int)pos.z] = 1;
                 }
             }
             Debug.Log(TAG + " tetromino.name: " + tetromino.name);
@@ -263,8 +285,8 @@ namespace HotFix.UI {
             foreach (Transform mino in tetromino.transform) {
                 Vector3 pos = MathUtil.Round(mino.position);
                 if ((int)pos.y >= 0 && (int)pos.y < gridHeight && (int)pos.x >= 0 && (int)pos.x < gridWidth && (int)pos.z >= 0 && (int)pos.z < gridWidth) { 
-                    grid[(int)pos.x, (int)pos.y, (int)pos.z] = null;
-                    gridOcc[(int)pos.x, (int)pos.y, (int)pos.z] = 0;
+                    grid[(int)pos.x][(int)pos.y][(int)pos.z] = null;
+                    gridOcc[(int)pos.x][(int)pos.y][(int)pos.z] = 0;
                 }
             }
         }
@@ -344,33 +366,33 @@ namespace HotFix.UI {
             for (int i = 0; i < gridWidth; i++) {
                 for (int j = 0; j < gridHeight; j++) {
                     for (int k = 0; k < gridWidth; k++) {
-                        if (grid[i, j, k] != null) {
-                            if (grid[i, j, k].parent != null && grid[i, j, k].parent.childCount == 4) {
-                                if (grid[i, j, k].parent.gameObject.CompareTag("currentActiveTetromino")) 
-                                    grid[i, j, k].parent.gameObject.GetComponent<Tetromino>().enabled = false;
-                                Transform tmpParentTransform = grid[i, j, k].parent;
-                                foreach (Transform transform in grid[i, j, k].parent) {
+                        if (grid[i][j][k] != null) {
+                            if (grid[i][j][k].parent != null && grid[i][j][k].parent.childCount == 4) {
+                                if (grid[i][j][k].parent.gameObject.CompareTag("currentActiveTetromino")) 
+                                    grid[i][j][k].parent.gameObject.GetComponent<Tetromino>().enabled = false;
+                                Transform tmpParentTransform = grid[i][j][k].parent;
+                                foreach (Transform transform in grid[i][j][k].parent) {
                                     x = (int)Mathf.Round(transform.position.x);
                                     y = (int)Mathf.Round(transform.position.y);
                                     z = (int)Mathf.Round(transform.position.z);
                                     if (y >= 0 && y < gridHeight && x >= 0 && x < gridWidth && z >= 0 && z < gridWidth) {
-                                        grid[x, y, z] = null;
-                                        gridOcc[x, y, z] = 0;
+                                        grid[x][y][z] = null;
+                                        gridOcc[x][y][z] = 0;
                                     }
                                 }
                                 PoolManager.Instance.ReturnToPool(tmpParentTransform.gameObject, tmpParentTransform.gameObject.GetComponent<TetrominoType>().type);
-                            } else if (grid[i, j, k].parent != null && grid[i, j, k].parent.childCount < 4) { // parent != null && childCount < 4
-                                foreach (Transform transform in grid[i, j, k].parent) {
+                            } else if (grid[i][j][k].parent != null && grid[i][j][k].parent.childCount < 4) { // parent != null && childCount < 4
+                                foreach (Transform transform in grid[i][j][k].parent) {
                                     string type = transform.gameObject.GetComponent<MinoType>() == null ?
-                                        new StringBuilder("mino").Append(grid[i, j, k].parent.gameObject.GetComponent<TetrominoType>().type.Substring(5, 1)).ToString()
+                                        new StringBuilder("mino").Append(grid[i][j][k].parent.gameObject.GetComponent<TetrominoType>().type.Substring(5, 1)).ToString()
                                         : transform.gameObject.GetComponent<MinoType>().type;
                                     // grid[(int)Mathf.Round(transform.position.x), (int)Mathf.Round(transform.position.y), (int)Mathf.Round(transform.position.z)] = null;
                                     x = (int)Mathf.Round(transform.position.x);
                                     y = (int)Mathf.Round(transform.position.y);
                                     z = (int)Mathf.Round(transform.position.z);
                                     if (y >= 0 && y < gridHeight && x >= 0 && x < gridWidth && z >= 0 && z < gridWidth) {
-                                        grid[x, y, z] = null;
-                                        gridOcc[x, y, z] = 0;
+                                        grid[x][y][z] = null;
+                                        gridOcc[x][y][z] = 0;
                                     }
                                     PoolManager.Instance.ReturnToPool(transform.gameObject, type);
                                 }
@@ -481,12 +503,12 @@ namespace HotFix.UI {
                 y = (int)Mathf.Round(pos.y);
                 z = (int)Mathf.Round(pos.z);
                 MathUtil.print(x, y, z);
-                if (grid[x, y, z] != null && grid[x, y, z].parent != null) { // // make sure parent matches first !
-                    if (grid[x, y, z].parent.gameObject.name == parentData.name &&
-                        MathUtil.Round(grid[x, y, z].parent.position) == MathUtil.Round(DeserializedTransform.getDeserializedTransPos(parentData.transform)) && 
-                        MathUtil.Round(grid[x, y, z].parent.rotation) == MathUtil.Round(DeserializedTransform.getDeserializedTransRot(parentData.transform))) {
+                if (grid[x][y][z] != null && grid[x][y][z].parent != null) { // // make sure parent matches first !
+                    if (grid[x][y][z].parent.gameObject.name == parentData.name &&
+                        MathUtil.Round(grid[x][y][z].parent.position) == MathUtil.Round(DeserializedTransform.getDeserializedTransPos(parentData.transform)) && 
+                        MathUtil.Round(grid[x][y][z].parent.rotation) == MathUtil.Round(DeserializedTransform.getDeserializedTransRot(parentData.transform))) {
 // 这么写是不通的,所以要用观察者模式,视图观察视图模型里的TRANSFORM变化                        
-                        // ViewManager.GameView.tmpParentGO = grid[x, y, z].parent.gameObject;  // for tmp
+                        // ViewManager.GameView.tmpParentGO = grid[x][y][z].parent.gameObject;  // for tmp
                         return true;
                     }
                 }
@@ -497,23 +519,23 @@ namespace HotFix.UI {
         public void FillInMinoAtTargetPosition(int x, int y, int z, Transform minoTrans) {
             int o = gridHeight - 1;
             // grid[x, o, z] = 0, otherwose gameover
-            while (grid[x, o-1, z] == null) o--;
-            for (int i = o; i > y; i--) { // y // if (grid[x, i - 1, z] != null) {
-                grid[x, i, z] = grid[x, i-1, z];
-                gridOcc[x, i, z] = gridOcc[x, i-1, z];
-                if (grid[x, i-1, z] != null) {
-                    grid[x, i-1, z] = null;
-                    gridOcc[x, i-1, z] = 0;
-                    grid[x, i, z].position += new Vector3(0, 1, 0);
+            while (grid[x][o-1][z] == null) o--;
+            for (int i = o; i > y; i--) { // y // if (grid[x] i - 1,[z] != null) {
+                grid[x][i][z] = grid[x][i-1][z];
+                gridOcc[x][i][z] = gridOcc[x][i-1][z];
+                if (grid[x][i-1][z] != null) {
+                    grid[x][i-1][z] = null;
+                    gridOcc[x][i-1][z] = 0;
+                    grid[x][i][z].position += new Vector3(0, 1, 0);
                 }
             }
-            grid[x, y, z] = minoTrans;
-            gridOcc[x, y, z] = 1;
+            grid[x][y][z] = minoTrans;
+            gridOcc[x][y][z] = 1;
         }
         public bool isColumnFromHereEmpty(int x, int y, int z) {
             bool isColumnAboveEmpty = true;
             for (int i = y; i < gridHeight; i++) {
-                if (grid[x, y, z] != null)
+                if (grid[x][y][z] != null)
                     isColumnAboveEmpty = false;
             }
             return isColumnAboveEmpty;
@@ -623,7 +645,7 @@ namespace HotFix.UI {
             for (int y = 0; y < gridHeight; y++) {
                 for (int x = 0; x < gridWidth; x++) {
                     for (int z = 0; z < gridWidth; z++) {
-                        gridOcc[x, y, z] = 0;
+                        gridOcc[x][y][z] = 0;
                     }
                 }
             }
@@ -656,9 +678,9 @@ namespace HotFix.UI {
             for (int x = 0; x < gridWidth; x++)
                 for (int j = 0; j < gridWidth; j++)
 // 下面的两句话:临时先写成ViewManager.GameView.ghostTetromino.transform ,之后再重构                    
-                    if (grid[x, y, j] == null ||      // modified here for ghostTetromino
-                        (grid[x, y, j].parent == ViewManager.GameView.ghostTetromino.transform
-                         && grid[x, y, j].parent != ViewManager.GameView.nextTetromino.transform)) 
+                    if (grid[x][y][j] == null ||      // modified here for ghostTetromino
+                        (grid[x][y][j].parent == ViewManager.GameView.ghostTetromino.transform
+                         && grid[x][y][j].parent != ViewManager.GameView.nextTetromino.transform)) 
                         return false;
             numberOfRowsThisTurn++;
             return true;
@@ -703,9 +725,9 @@ namespace HotFix.UI {
                 for (int o = gridHeight - 1; o >= 0; o--) {
                     for (int x = 0; x < gridWidth; x++) {
                         for (int z = 0; z < gridWidth; z++) {
-                            if (gridOcc[x, o, z] == 2) {
-                                if (o == gridHeight - 1 ||  gridOcc[x, o+1, z] == 0) // this statement ???
-                                    gridOcc[x, o, z] = 0;
+                            if (gridOcc[x][o][z] == 2) {
+                                if (o == gridHeight - 1 ||  gridOcc[x][o+1][z] == 0) // this statement ???
+                                    gridOcc[x][o][z] = 0;
                             }
                         }
                     }
@@ -721,26 +743,26 @@ namespace HotFix.UI {
             for (int x = 0; x < gridWidth; x++) {
                 tmpSum = 0;
                 for (int z = 0; z < gridWidth; z++) {
-                    tmpSum += gridOcc[x, y, z] == 0 ? 0 : 1; 
+                    tmpSum += gridOcc[x][y][z] == 0 ? 0 : 1; 
                 }
                 if (tmpSum == gridWidth) {
                     numberOfRowsThisTurn++;
                     result = true;
                     for (int z = 0; z < gridWidth; z++) {
-                        gridOcc[x, y, z] += gridOcc[x, y, z] == 1 ? 1 : 0; 
+                        gridOcc[x][y][z] += gridOcc[x][y][z] == 1 ? 1 : 0; 
                     }
                 }
             } // 数完5列
             for (int z = 0; z < gridWidth; z++) { // 数5行
                 tmpSum = 0;
                 for (int x = 0; x < gridWidth; x++) {
-                    tmpSum += gridOcc[x, y, z] == 2 ? 1 : gridOcc[x, y, z]; // 2
+                    tmpSum += gridOcc[x][y][z] == 2 ? 1 : gridOcc[x][y][z]; // 2
                 }
                 if (tmpSum == gridWidth) {
                     numberOfRowsThisTurn++;
                     result = true;
                     for (int x = 0; x < gridWidth; x++) {
-                        gridOcc[x, y, z] += gridOcc[x, y, z] == 1 ? 1 : 0; 
+                        gridOcc[x][y][z] += gridOcc[x][y][z] == 1 ? 1 : 0; 
                     }
                 }
             } // 数完5行
@@ -748,7 +770,7 @@ namespace HotFix.UI {
             for (int x = 0; x < gridWidth; x++) { // 数2对角线
                 for (int z = 0; z < gridWidth; z++) {
                     if (x == z) {
-                        tmpSum += gridOcc[x, y, z] == 2 ? 1 : gridOcc[x, y, z]; // 2
+                        tmpSum += gridOcc[x][y][z] == 2 ? 1 : gridOcc[x][y][z]; // 2
                     }
                 }
             }
@@ -758,7 +780,7 @@ namespace HotFix.UI {
                 for (int x = 0; x < gridWidth; x++) { // 数2对角线
                     for (int o = 0; o < gridWidth; o++) {
                         if (x == o) {
-                            gridOcc[x, y, o] += gridOcc[x, y, o] == 1 ? 1 : 0;  
+                            gridOcc[x][y][o] += gridOcc[x][y][o] == 1 ? 1 : 0;  
                         }
                     }
                 }
@@ -767,7 +789,7 @@ namespace HotFix.UI {
             for (int x = 0; x < gridWidth; x++) {
                 for (int z = 0; z < gridWidth; z++) {
                     if (z == gridWidth - 1 - x) {
-                        tmpSum += gridOcc[x, y, z] == 2 ? 1 : gridOcc[x, y, z]; // 2
+                        tmpSum += gridOcc[x][y][z] == 2 ? 1 : gridOcc[x][y][z]; // 2
                     }
                 }
             }
@@ -777,7 +799,7 @@ namespace HotFix.UI {
                 for (int x = 0; x < gridWidth; x++) {
                     for (int o = 0; o < gridWidth; o++) {
                         if (o == gridWidth - 1 - x) {
-                            gridOcc[x, y, o] += gridOcc[x, y, o] == 1 ? 1 : 0; 
+                            gridOcc[x][y][o] += gridOcc[x][y][o] == 1 ? 1 : 0; 
                         }
                     }
                 }
@@ -794,39 +816,39 @@ namespace HotFix.UI {
             for (int x = 0; x < gridWidth; x++) 
                 for (int  z = 0;  z < gridWidth;  z++) {
                     if (gameMode == 0) { // 只删除合格 行 列 对角线 占有的格
-                        if (gridOcc != null && gridOcc[x, y, z] == 2) {
-                            Debug.Log("(x,y,z): [" + x + "," + y + "," + z +"]: " + gridOcc[x, y, z]); 
-                            if (grid[x,y,z] != null && grid[x,y,z].gameObject != null) {
-                                // Debug.Log(TAG + " (grid[x, y, z].parent != null): " + (grid[x, y, z].parent != null)); 
-                                if (grid[x, y, z].parent != null) {
-                                    Debug.Log(TAG + " grid[x, y, z].parent.name: " + grid[x, y, z].parent.name);
-                                    Debug.Log(TAG + " grid[x, y, z].parent.childCount: " + grid[x, y, z].parent.childCount); 
-                                    if (grid[x, y, z].parent.childCount == 1) {
-                                        Transform tmp = grid[x, y, z].parent;
+                        if (gridOcc != null && gridOcc[x][y][z] == 2) {
+                            Debug.Log("(x,y,z): [" + x + "," + y + "," + z +"]: " + gridOcc[x][y][z]); 
+                            if (grid[x][y][z] != null && grid[x][y][z].gameObject != null) {
+                                // Debug.Log(TAG + " (grid[x][y][z].parent != null): " + (grid[x][y][z].parent != null)); 
+                                if (grid[x][y][z].parent != null) {
+                                    Debug.Log(TAG + " grid[x][y][z].parent.name: " + grid[x][y][z].parent.name);
+                                    Debug.Log(TAG + " grid[x][y][z].parent.childCount: " + grid[x][y][z].parent.childCount); 
+                                    if (grid[x][y][z].parent.childCount == 1) {
+                                        Transform tmp = grid[x][y][z].parent;
                                         tmp.GetChild(0).parent = null;
-                                        GameObject.Destroy(grid[x, y, z].gameObject);
+                                        GameObject.Destroy(grid[x][y][z].gameObject);
                                         GameObject.Destroy(tmp.gameObject);
                                     } else {
-                                        grid[x, y, z].parent = null;
-                                        GameObject.Destroy(grid[x, y, z].gameObject);
+                                        grid[x][y][z].parent = null;
+                                        GameObject.Destroy(grid[x][y][z].gameObject);
                                     }
-                                    grid[x, y, z] = null;
-                                    // gridOcc[x, y, z] = 0;
+                                    grid[x][y][z] = null;
+                                    // gridOcc[x][y][z] = 0;
                                 } else {
-                                    // PoolManager.Instance.ReturnToPool(grid[x, y, z].gameObject, GetSpecificPrefabMinoType(grid[x, y, z].gameObject));
-                                    GameObject.Destroy(grid[x, y, z].gameObject);
-                                    // gridOcc[x, y, z] = 0; // 暂时还不更新，等要删除的时候才更新
-                                    grid[x, y, z] = null; // x ==> z
+                                    // PoolManager.Instance.ReturnToPool(grid[x][y][z].gameObject, GetSpecificPrefabMinoType(grid[x][y][z].gameObject));
+                                    GameObject.Destroy(grid[x][y][z].gameObject);
+                                    // gridOcc[x][y][z] = 0; // 暂时还不更新，等要删除的时候才更新
+                                    grid[x][y][z] = null; // x ==> z
                                 }
                             }
-                        } else if (grid[x, y, z] == null && gridOcc[x, y, z] == 2) { // grid[x, y, z] = null
-                            // gridOcc[x, y, z] = 0;
+                        } else if (grid[x][y][z] == null && gridOcc[x][y][z] == 2) { // grid[x][y][z] = null
+                            // gridOcc[x][y][z] = 0;
                         }
                     } else {
-                        GameObject.Destroy(grid[x, y, z].gameObject);
-                        // PoolManager.Instance.ReturnToPool(grid[x, y, z].gameObject, GetSpecificPrefabMinoType(grid[x, y, z].gameObject));
-                        grid[x, y, z] = null;
-                        gridOcc[x, y, z] = 0; // 其它 mode 好像也不需要这个东西
+                        GameObject.Destroy(grid[x][y][z].gameObject);
+                        // PoolManager.Instance.ReturnToPool(grid[x][y][z].gameObject, GetSpecificPrefabMinoType(grid[x][y][z].gameObject));
+                        grid[x][y][z] = null;
+                        gridOcc[x][y][z] = 0; // 其它 mode 好像也不需要这个东西
                     }
                 }
         }
@@ -834,24 +856,24 @@ namespace HotFix.UI {
             if (gameMode > 0) {
                 for (int j = 0; j < gridWidth; j++)    
                     for (int x = 0; x < gridWidth; x++) {
-                        if (grid[x, y, j] != null) {
-                            grid[x, y - 1, j] = grid[x, y, j];
-                            grid[x, y, j] = null;
-                            grid[x, y - 1, j].position += new Vector3(0, -1, 0);
+                        if (grid[x][y][j] != null) {
+                            grid[x][y-1][j] = grid[x][y][j];
+                            grid[x][y][j] = null;
+                            grid[x][y-1][j].position += new Vector3(0, -1, 0);
                         }
                     }
             } else { // gameMode == 0
                 for (int x = 0; x < gridWidth; x++) {
                     for (int z = 0; z < gridWidth; z++) {
-                        if (gridOcc[x, y-1, z] == 2) { // 下面是消毁掉了的，压下去
-                            gridOcc[x, y-1, z] = gridOcc[x, y, z];
+                        if (gridOcc[x][y-1][z] == 2) { // 下面是消毁掉了的，压下去
+                            gridOcc[x][y-1][z] = gridOcc[x][y][z];
 
-                            if (grid[x, y, z] != null) {
-                                grid[x, y - 1, z] = grid[x, y, z];
-                                grid[x, y, z] = null;
-                                grid[x, y - 1, z].position += new Vector3(0, -1, 0);
+                            if (grid[x][y][z] != null) {
+                                grid[x][y-1][z] = grid[x][y][z];
+                                grid[x][y][z] = null;
+                                grid[x][y-1][z].position += new Vector3(0, -1, 0);
                             }
-                            gridOcc[x, y, z] = y == gridHeight - 1 ? 0 : 2;
+                            gridOcc[x][y][z] = y == gridHeight - 1 ? 0 : 2;
                         }
                     }   
                 }
@@ -873,7 +895,7 @@ namespace HotFix.UI {
             if (pos.y > gridHeight - 1) 
                 return null;
             else
-                return grid[(int)pos.x, (int)pos.y, (int)pos.z];
+                return grid[(int)pos.x][(int)pos.y][(int)pos.z];
         }
 
         public void UpdateScore() {

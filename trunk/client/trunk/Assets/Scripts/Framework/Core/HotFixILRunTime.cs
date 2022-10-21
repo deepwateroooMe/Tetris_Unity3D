@@ -35,8 +35,10 @@ namespace Framework.Core {
                 appDomain.LoadAssembly(msDll, null, new Mono.Cecil.Mdb.MdbReaderProvider());
                 StartApplication();
             }
+            ILRuntime.Runtime.Generated.CLRBindings.Initialize(appDomain);
+
         }
-        
+
         void StartApplication() {
             InitializeILRunTimeHotFixSetting();
             DoStaticMethod("HotFix.HotFixMain", "Start");
