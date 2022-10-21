@@ -5,15 +5,16 @@
 * 游戏基本场景设计
 - debugging game flow, 现游戏的主场景如下:
   
-[[./pic/readme_20221020_115827.png]]
+[[./pic/readme_20221020_195727.png]]
+  - 现在游戏显示都没有问题了,开始debug 游戏逻辑以及功能模块等
+  - trying to link all necessary game logics and make game to run again in ILRuntime HotFix 程序域里.
+- TODO: 
+  - AudioManager,EventManager可能需要适配,就需要自己把原理都弄明白了
   - 两个预览方块砖的生成并画到视图上去: 现在解决这个问题
     - 原理很简: 将两个预览放在不会出现在主相机的两个固定的位置上;再用两个不同的相机分别照在两个预览上,并分别投射到一块渲染媒介,显示在屏幕的固定投影位置上就可以了
     - 大致原理如此,但运行时存在:场景里各不同视图会被某些不确定的因素旋转某些角度,以及放大缩小位数的问题.
     - 运行时可能涉及这块投影渲染媒介的实例化(不知道目前不能很好地渲染是否是因为我打包时没有打包它?还是说因为他们出现在两个不同视图的原因呢?)
     - 就是因为如上的目前我还不太理解的不确定性,给这个游戏的unity视图显示造成一定的困难,但也不是都解决不了的,需要花时间来慢慢解决这些小问题
-  - trying to link all necessary game logics and make game to run again in ILRuntime HotFix 程序域里.
-- TODO: 
-  - AudioManager,EventManager可能需要适配,就需要自己把原理都弄明白了
 - at least temporatorily passed inital running 
   - 现两个主要的小问题:多维数组在ILRuntime热更新程序域里的适配,
   - 多维数组,稍微改动了一下就可以了,但里面还是有点儿小机关的

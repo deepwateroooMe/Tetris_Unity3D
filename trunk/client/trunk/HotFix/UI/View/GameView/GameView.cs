@@ -201,7 +201,7 @@ namespace HotFix.UI {
             creBtn = GameObject.FindChildByName("creBtn").GetComponent<Button>();
             creBtn.onClick.AddListener(OnClickCreButton);
 
-            // 对于启蒙模式下,这里的游戏逻辑就是说,在加载视图的时候就需要实例化两个方块砖,并在显示视图的时候显示出来给看
+            // 对于启蒙模式下,这里的游戏逻辑就是说,在加载视图的时候就需要去实例化两个方块砖,并在显示视图的时候显示出来给看
             
         }
 
