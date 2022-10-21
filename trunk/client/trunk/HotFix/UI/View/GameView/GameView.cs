@@ -143,12 +143,6 @@ namespace HotFix.UI {
         public bool saveForUndo = true;
 
         // private GameObject baseBoard;
-        
-        public override void OnRevealed() {
-            base.OnRevealed();
-            // 当当前视图显示结束之后,还是应该之前开始显示的时候呢,调用游戏开始的初始化等相关配置
-            // Start(); // ??? 这里还藏着一个好大的BUG.....
-        }
 
         // 需要有来自ViewModel的数据变化来刷新UI: 观察者模式观察视图模型中数据的变体
         protected override void OnInitialize() {
@@ -206,6 +200,9 @@ namespace HotFix.UI {
             manBtn.onClick.AddListener(OnClickManButton);
             creBtn = GameObject.FindChildByName("creBtn").GetComponent<Button>();
             creBtn.onClick.AddListener(OnClickCreButton);
+
+            // 对于启蒙模式下,这里的游戏逻辑就是说,在加载视图的时候就需要实例化两个方块砖,并在显示视图的时候显示出来给看
+            
         }
 
 // 新的热更新框架里,游戏是如何开始的呢?

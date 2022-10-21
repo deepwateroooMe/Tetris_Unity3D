@@ -46,8 +46,6 @@ namespace Framework.MVVM {
 
         // 两个虚拟方法,等待子类去实现
         public virtual void OnDestory() { }
-        protected virtual void OnInitialize() {
-            Debug.Log("OnInitialize ViewModelBase virtual");
-        }
+        protected virtual void OnInitialize() { }
     }
 }
