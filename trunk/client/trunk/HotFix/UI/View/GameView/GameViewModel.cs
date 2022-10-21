@@ -19,7 +19,6 @@ namespace HotFix.UI {
         public bool hasSavedGameAlready { set; get; }
         public bool gameStarted { set; get; }
         public float fallSpeed { set; get; }
-        public int currentScore { set; get; }
 
         public int gridHeight = 12; 
         public int gridWidth;
@@ -32,7 +31,15 @@ namespace HotFix.UI {
         public int scoreThreeLine = 300;
         public int scoreFourLine = 1200;
     
-        public int currentLevel = 0;  
+        // public int currentScore { set; get; }
+        // public int currentLevel = 0;  
+        // public int numLinesCleared = 0;
+        // public int gameMode = 0; 
+        public BindableProperty<int> currentScore = new BindableProperty<int>();
+        public BindableProperty<int> currentLevel = new BindableProperty<int>();
+        public BindableProperty<int> numLinesCleared = new BindableProperty<int>();
+        public BindableProperty<int> gameMode = new BindableProperty<int>();
+
         public static bool startingAtLevelZero;
         public static int startingLevel;
     
@@ -41,7 +48,6 @@ namespace HotFix.UI {
         // private Vector3 previewTetrominoPosition = new Vector3(-17f, -5f, -9.81f); 
         // private Vector3 previewTetromino2Position = new Vector3(-68.3f, 19.6f, 32.4f); // (-56.3f, -0.1f, 32.4f) (-24.8f, -0.1f, 32.4f);
     
-        public int numLinesCleared = 0;
 
         private int startingHighScore;
         private int startingHighScore2;
@@ -52,7 +58,6 @@ namespace HotFix.UI {
     
         public Vector3 previewTetrominoScale = new Vector3(6f, 6f, 6f);
 
-        public int gameMode = 0; 
 
         public string prevPreview; // to remember previous spawned choices
         public string prevPreview2;
@@ -107,10 +112,116 @@ namespace HotFix.UI {
             saveForUndo = true;
         }
 
-        void DelegateSubscribe() { // 这里怎么写成是观察者模式呢?
-            
+        public void Start() {
+            // if (!string.IsNullOrEmpty(((MenuViewModel)ParentViewModel).saveGamePathFolderName)) {
+            //     gameMode = ((MenuViewModel)ParentViewModel).gameMode;
+            //     loadSavedGame = ((MenuViewModel)ParentViewModel).loadSavedGame;
+            //     StringBuilder path = new StringBuilder("");
+            //     if (gameMode > 0)
+            //         path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName + "/game.save");
+            //     else 
+            //         path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName + "/grid" + gridWidth + "/game.save");
+            //     if (loadSavedGame) {
+            //         LoadGame(path.ToString());
+            //     } else {
+            //         LoadNewGame();
+            //     }
+            // } else {
+                LoadNewGame();
+            // }
+            currentLevel.Value = startingLevel;
+            startingHighScore = PlayerPrefs.GetInt("highscore");
+            startingHighScore2 = PlayerPrefs.GetInt("highscore2");
+            startingHighScore3 = PlayerPrefs.GetInt("highscore3");
         }
 
+        public void InitializationForNewGame() {
+            gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
+            fallSpeed = 3.0f; // should be recorded too, here
+            if (gameMode.Value == 0)
+                resetGridOccBoard();
+            currentScore.Value = 0;
+            currentLevel.Value = startingLevel;
+        }
+        
+        public void LoadGame(string path) {  // when load Scene load game: according to gameMode
+            Debug.Log(TAG + ": LoadGame()");
+            if (gameMode.Value  == 0)
+                resetGridOccBoard(); 
+            GameData gameData = SaveSystem.LoadGame(path);
+            gameMode.Value  = gameData.gameMode;
+            
+            currentScore.Value  = gameData.score;
+            currentLevel.Value  = gameData.level;
+            numLinesCleared.Value  = gameData.lines;
+            
+            Debug.Log(TAG + " gameData.parentList.Count: " + gameData.parentList.Count); 
+            LoadDataFromParentList(gameData.parentList);
+// 下面这部分被自己跳过去了,暂时没再读
+            // // currentActiveTetromino: if it has NOT landed yet
+            // StringBuilder type = new StringBuilder("");
+            // Debug.Log(TAG + " (gameData.nextTetrominoData != null): " + (gameData.nextTetrominoData != null)); 
+            // if (gameData.nextTetrominoData != null) {
+            //     nextTetromino = PoolManager.Instance.GetFromPool(
+            //         type.Append(gameData.nextTetrominoData.type).ToString(),
+            //         // gameData.nextTetrominoData.transform,
+            //         // gameData.nextTetrominoData.transform);
+            //         DeserializedTransform.getDeserializedTransPos(gameData.nextTetrominoData.transform),
+            //         DeserializedTransform.getDeserializedTransRot(gameData.nextTetrominoData.transform));
+            //     nextTetromino.tag = "currentActiveTetromino";
+            //     // if (defaultContainer == null) // 我不要再管这个东西了
+            //     //     defaultContainer = GameObject.FindGameObjectWithTag("defaultContainer");
+            //     // nextTetromino.transform.SetParent(defaultContainer.transform, false);
+            //     nextTetromino.GetComponent<Tetromino>().enabled = !nextTetromino.GetComponent<Tetromino>().enabled; 
+            //     nextTetrominoType = nextTetromino.GetComponent<TetrominoType>().type;
+
+            //     ViewManager.moveCanvas.gameObject.SetActive(true);
+            //     ViewManager.moveCanvas.transform.position = new Vector3(ViewManager.moveCanvas.transform.position.x, nextTetromino.transform.position.y, ViewManager.moveCanvas.transform.position.z);
+            //     // 也需要重新设置 ViewManager.rotateCanvas 的位置
+            //     SpawnGhostTetromino();
+            // }
+
+            // // previewTetromino previewTetromino2
+            // type.Length = 0;
+            // string type2 = previewTetromino2Type;
+            // SpawnPreviewTetromino(type.Append(previewTetrominoType).ToString(), type2);
+            // if (prevPreview != null) {
+            //     prevPreview = prevPreview;
+            //     prevPreview2 = prevPreview2;
+            // } 
+            // // MainCamera rotation
+            // GameObject.FindGameObjectWithTag("MainCamera").transform.position = DeserializedTransform.getDeserializedTransPos(gameData.cameraData);
+            // GameObject.FindGameObjectWithTag("MainCamera").transform.rotation = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
+            
+            // if (nextTetromino != null && nextTetromino.CompareTag("currentActiveTetromino")) // Performance Bug: CompareTag()
+            //     gameStarted = true;
+            // loadSavedGame = false;
+            // loadSavedGame = false;
+        }    
+
+        private void LoadNewGame() {
+            Debug.Log(TAG + ": LoadNewGame()");
+            gameMode.Value  = ((MenuViewModel)ParentViewModel).gameMode;
+            fallSpeed = 3.0f; // should be recorded too, here
+
+            if (gameMode.Value  == 0)
+                resetGridOccBoard();
+            // SpawnnextTetromino();  
+
+            currentScore.Value  = 0;
+            currentLevel.Value  = startingLevel;
+
+            // if (gameMode.Value  > 0) { // disable some components
+            //     previewSelectionButton.SetActive(false);
+            //     previewSelectionButton2.SetActive(false);
+            //     swapPreviewTetrominoButton.SetActive(false);
+            //     undoButton.SetActive(false);
+            // }
+            // rotateCanvas.SetActive(false);
+        }
+        
+        void DelegateSubscribe() { // 这里怎么写成是观察者模式呢?
+        }
         // 最开始的三种大方格的状态都应该是隐藏着的
         void InitializeGrid() { // 这是里是指初始化数据管理,而不是视图层面
 
@@ -342,7 +453,7 @@ namespace HotFix.UI {
             }            
             // DisableMoveRotationCanvas();
             Array.Clear(buttonInteractableList, 0, buttonInteractableList.Length);
-            if (gameMode == 0) {
+            if (gameMode.Value  == 0) {
                 buttonInteractableList[0] = 1;
                 buttonInteractableList[1] = 1;
                 buttonInteractableList[2] = 1;
@@ -403,15 +514,6 @@ namespace HotFix.UI {
             }
         }
         
-        public void InitializationForNewGame() {
-            gameMode = ((MenuViewModel)ParentViewModel).gameMode;
-            fallSpeed = 3.0f; // should be recorded too, here
-            if (gameMode == 0)
-                resetGridOccBoard();
-            currentScore = 0;
-            currentLevel = startingLevel;
-        }
-        
         public void printbuttonInteractableList() {
             for (int i = 0; i < 6; i++) 
                 Debug.Log(TAG + " buttonInteractableList[i]: i : " + i + ", " + buttonInteractableList[i]); 
@@ -438,7 +540,7 @@ namespace HotFix.UI {
             
             // disables: previewSelectionButton previewSelectionButton2 swapPreviewTetrominoButton
             // enables: undoButton toggleButton fallButton
-            if (gameMode == 0) {
+            if (gameMode.Value  == 0) {
                 buttonInteractableList[0] = 0;
                 buttonInteractableList[1] = 0;
                 buttonInteractableList[2] = 0;
@@ -463,12 +565,9 @@ namespace HotFix.UI {
             GameData gameData = SaveSystem.LoadGame(path.ToString());
             StringBuilder type = new StringBuilder("");
             if (hasDeletedMinos) {
-                currentScore = gameData.score;
-                currentLevel = gameData.level;
-                numLinesCleared = gameData.lines;
-                // hud_score.text = currentScore.ToString();
-                // hud_level.text = currentLevel.ToString(); // 这不希望变的
-                // hud_lines.text = numLinesCleared.ToString();
+                currentScore.Value  = gameData.score;
+                currentLevel.Value  = gameData.level;
+                numLinesCleared.Value  = gameData.lines;
 
                 // Debug.Log(TAG + ": onUndoGame() current board before respawn"); 
                 // MathUtil.printBoard(gridOcc); 
@@ -585,7 +684,7 @@ namespace HotFix.UI {
 
         public string GetRandomTetromino() { // active Tetromino
             Debug.Log(TAG + ": GetRandomTetromino()"); 
-            if (gameMode == 0 && gridWidth == 3)
+            if (gameMode.Value  == 0 && gridWidth == 3)
                 randomTetromino = UnityEngine.Random.Range(1, 7);
             else 
                 randomTetromino = UnityEngine.Random.Range(1, 8);
@@ -625,8 +724,8 @@ namespace HotFix.UI {
             Debug.Log(TAG + ": toggleButtons()");
             Debug.Log(TAG + " buttonInteractableList[4]: " + buttonInteractableList[4]);
             Debug.Log(TAG + " indicator: " + indicator); 
-            if (gameMode == 0 && buttonInteractableList[4] == 0 && indicator == 0) return;
-            if (gameMode > 0 || indicator == 1 || buttonInteractableList[4] == 1) {
+            if (gameMode.Value  == 0 && buttonInteractableList[4] == 0 && indicator == 0) return;
+            if (gameMode.Value  > 0 || indicator == 1 || buttonInteractableList[4] == 1) {
                 if (isMovement) { 
                     isMovement = false;
                     // invertButton.image.overrideSprite = prevImg; // rotation img 这两个图像还需要处理一下
@@ -652,12 +751,12 @@ namespace HotFix.UI {
         }
 
         public void UpdateLevel() {
-            if (startingAtLevelZero || (!startingAtLevelZero && numLinesCleared / 10 > startingLevel)) 
-                currentLevel = numLinesCleared / 10;
+            if (startingAtLevelZero || (!startingAtLevelZero && numLinesCleared.Value  / 10 > startingLevel)) 
+                currentLevel.Value  = numLinesCleared.Value  / 10;
         }
 
         public void UpdateSpeed() { 
-            fallSpeed = 1.0f - (float)currentLevel * 0.1f;
+            fallSpeed = 1.0f - (float)currentLevel.Value  * 0.1f;
         }
     
         public bool CheckIsAboveGrid(Tetromino tetromino) {
@@ -689,7 +788,7 @@ namespace HotFix.UI {
             Debug.Log(TAG + ": DeleteRow() start");
             hasDeletedMinos = false;
             for (int y = 0; y < gridHeight; y++) {
-                if (gameMode > 0) {
+                if (gameMode.Value  > 0) {
                     if (IsFullRowAt(y)) {
                         // 一定要控制同屏幕同时播放的粒子数量
                         // 1.同屏的粒子数量一定要控制在200以内，每个粒子的发射数量不要超过50个。
@@ -720,7 +819,7 @@ namespace HotFix.UI {
                     }
                 }
             }
-            if (gameMode == 0) {
+            if (gameMode.Value  == 0) {
                 // clean top layer 2 out: all 2s to be 0s
                 for (int o = gridHeight - 1; o >= 0; o--) {
                     for (int x = 0; x < gridWidth; x++) {
@@ -815,7 +914,7 @@ namespace HotFix.UI {
             Debug.Log(TAG + ": DeleteMinoAt() start"); 
             for (int x = 0; x < gridWidth; x++) 
                 for (int  z = 0;  z < gridWidth;  z++) {
-                    if (gameMode == 0) { // 只删除合格 行 列 对角线 占有的格
+                    if (gameMode.Value  == 0) { // 只删除合格 行 列 对角线 占有的格
                         if (gridOcc != null && gridOcc[x][y][z] == 2) {
                             Debug.Log("(x,y,z): [" + x + "," + y + "," + z +"]: " + gridOcc[x][y][z]); 
                             if (grid[x][y][z] != null && grid[x][y][z].gameObject != null) {
@@ -853,7 +952,7 @@ namespace HotFix.UI {
                 }
         }
         public void MoveRowDown(int y) {
-            if (gameMode > 0) {
+            if (gameMode.Value  > 0) {
                 for (int j = 0; j < gridWidth; j++)    
                     for (int x = 0; x < gridWidth; x++) {
                         if (grid[x][y][j] != null) {
@@ -862,7 +961,7 @@ namespace HotFix.UI {
                             grid[x][y-1][j].position += new Vector3(0, -1, 0);
                         }
                     }
-            } else { // gameMode == 0
+            } else { // gameMode.Value  == 0
                 for (int x = 0; x < gridWidth; x++) {
                     for (int z = 0; z < gridWidth; z++) {
                         if (gridOcc[x][y-1][z] == 2) { // 下面是消毁掉了的，压下去
@@ -877,7 +976,7 @@ namespace HotFix.UI {
                         }
                     }   
                 }
-            } // gameMode == 0
+            } // gameMode.Value  == 0
         } 
 
         public void MoveAllRowsDown(int y) {
@@ -919,20 +1018,20 @@ namespace HotFix.UI {
         }
 
         public void ClearedOneLine() {
-            currentScore += scoreOneLine + (currentLevel + 20);
-            numLinesCleared += 1;
+            currentScore.Value  += scoreOneLine + (currentLevel.Value  + 20);
+            numLinesCleared.Value  += 1;
         }
         public void ClearedTwoLine() {
-            currentScore += scoreTwoLine + (currentLevel + 25);
-            numLinesCleared += 2;
+            currentScore.Value  += scoreTwoLine + (currentLevel.Value  + 25);
+            numLinesCleared.Value  += 2;
         }
         public void ClearedThreeLine() {
-            currentScore += scoreThreeLine + (currentLevel + 30);
-            numLinesCleared += 3;
+            currentScore.Value  += scoreThreeLine + (currentLevel.Value  + 30);
+            numLinesCleared.Value  += 3;
         }
         public void ClearedFourLine() {
-            currentScore += scoreFourLine + (currentLevel + 40);
-            numLinesCleared += 4;
+            currentScore.Value  += scoreFourLine + (currentLevel.Value  + 40);
+            numLinesCleared.Value  += 4;
         }
 
         public void PlayLineClearedSound() {
@@ -940,15 +1039,15 @@ namespace HotFix.UI {
         }
 
         public void UpdateHighScore() {
-            if (currentScore > startingHighScore) {
+            if (currentScore.Value  > startingHighScore) {
                 PlayerPrefs.SetInt("highscore3", startingHighScore2);
                 PlayerPrefs.SetInt("highscore2", startingHighScore);
-                PlayerPrefs.SetInt("highscore", currentScore);
-            } else if (currentScore > startingHighScore2) {
+                PlayerPrefs.SetInt("highscore", currentScore.Value);
+            } else if (currentScore.Value  > startingHighScore2) {
                 PlayerPrefs.SetInt("highscore3", startingHighScore2);
-                PlayerPrefs.SetInt("highscore2", currentScore);
-            } else if (currentScore > startingHighScore3) 
-                PlayerPrefs.SetInt("highscore3", currentScore);
+                PlayerPrefs.SetInt("highscore2", currentScore.Value);
+            } else if (currentScore.Value  > startingHighScore3) 
+                PlayerPrefs.SetInt("highscore3", currentScore.Value);
         }
     }
 }

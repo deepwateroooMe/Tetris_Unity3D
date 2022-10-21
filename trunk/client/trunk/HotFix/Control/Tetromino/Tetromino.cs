@@ -133,7 +133,7 @@ namespace HotFix.Control {
             PlayLandAudio();
             ViewManager.GameView.nextTetromino.tag = "Untagged";
             ViewManager.GameView.nextTetromino.GetComponent<Tetromino>().enabled = false;
-            ViewManager.GameView.ViewModel.currentScore += individualScore;            
+            ViewManager.GameView.ViewModel.currentScore.Value += individualScore;            
         }
         
         public void MoveDown() {

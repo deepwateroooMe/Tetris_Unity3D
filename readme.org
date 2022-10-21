@@ -3,10 +3,11 @@
 #+author: deepwaterooo 
 
 * 游戏基本场景设计
-- debugging game flow, 现游戏的主场景如下:
+- debugging game flow, 现游戏的主场景如下(看起来很丑,但它运行!!!):
   
 [[./pic/readme_20221020_195727.png]]
-  - 现在游戏显示都没有问题了,开始debug 游戏逻辑以及功能模块等
+- 预设都做好了,现在要将预设打资源包,并从资源包读出来供视图实例化等
+- 现在游戏显示都没有问题了,开始debug 游戏逻辑以及功能模块等(现在只是运行了可模拟测试版的,需要在热更新程序域里将这些逻辑重构到运行出这种效果来,明天写,明天下午写?还是什么时候来写这点儿呢?)
   - trying to link all necessary game logics and make game to run again in ILRuntime HotFix 程序域里.
 - TODO: 
   - AudioManager,EventManager可能需要适配,就需要自己把原理都弄明白了
