@@ -17,7 +17,7 @@ namespace HotFix.UI {
         private int _gridWidth; //= 5;
 
         // 以前自己不怎么懂得使用设计模式,所以更的是用公用API提供给需要使用的调用者,但实际上就可以实现成观察者模式,数据变更自动通知
-        // 改写为观察者模式
+        // 改写为观察者模式: 好像这里不方便呀,是UI事件驱动, 不是视图模型的数据驱动UI
         public bool loadSavedGame {
             get {
                 return _loadSavedGame;
@@ -70,8 +70,8 @@ namespace HotFix.UI {
             case 2:
                 _saveGamePathFolderName = "challenge";
                 break;
-            // default:
-            //     return                
+                // default:
+                //     return                
             }
         }
         
@@ -146,3 +146,6 @@ namespace HotFix.UI {
         }
     }
 }
+
+
+

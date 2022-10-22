@@ -21,7 +21,7 @@ public class AssetBundleTool : MonoBehaviour {
         }
     }
     // 增量打包
-    [MenuItem("Assets/BuildChangedBundle")]
+    [MenuItem("Assets/BuildChangedBundle %m")]
     static void BuildChangedBundle() {
         BuildTarget buildTarget = GetBuildTarget();
         var root = GetBundleRoot(buildTarget);
@@ -37,8 +37,8 @@ public class AssetBundleTool : MonoBehaviour {
 #endregion
     
 #region BuildDll
-    // [MenuItem("Assets/BuildHotFixDllBundle")]
-    [MenuItem("Assets/BuildHotFixDllBundle")]
+    // [MenuItem("Assets/BuildHotFixDllBundle F5")]
+    [MenuItem("Assets/BuildHotFixDllBundle %j")]
     public static void BuildHotFixDllBundle() {
         BuildTarget buildTarget = GetBuildTarget();
         AssetBundleBuild dll = new AssetBundleBuild() {

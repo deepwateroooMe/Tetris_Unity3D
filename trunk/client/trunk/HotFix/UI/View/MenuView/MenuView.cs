@@ -4,7 +4,9 @@ using UnityEngine.UI;
 
 namespace HotFix.UI {
 
-    // 这里类似GameView,将MenuView与EducaModesView合并成一个视图，方便其共同的视图模型数据作为ParentViewModel提供给其子视图游戏主视图使用
+    // 游戏中会用到比较多的预设,其加载时机,
+    // 我认为是在这个游戏菜单视图会比较有停顿,所以把游戏主视图里需要用到的预设资源读取准备工作放在这进而进行
+
     public class MenuView : UnityGuiView {
         public override string BundleName {
             get {

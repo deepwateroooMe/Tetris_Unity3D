@@ -530,8 +530,13 @@ namespace HotFix.UI {
             // fallSpeed = 3.0f; // should be recorded too, here
             // if (gameMode == 0)
             //     resetGridOccBoard();
-            ViewModel.InitializationForNewGame();
-            SpawnnextTetromino();  
+
+// 感觉这里好鬼魅呀:视图里已经进行这时在了,可是视图模型因为反射调用还没有启动完?!!!
+// 这里的问题:应该是用IEnumerator去解决,但暂时这样; 在自己不断修改整理这些重构的代码的过程中,会对这些忘记了的相对陌生的一点点儿捡回来的
+            // ViewModel.InitializationForNewGame(); // 这里不要视图层调用,视图模型自己处理
+
+// 现在这里要做的就是:打预设的资源包(很简单),从资源包里将不是的预设读出来,存在字典里,供游戏需要的时候来用            
+            // SpawnnextTetromino();   // cmp for tmp
 
             // if (ViewModel.gameMode > 0) { // disable some components
             //     previewSelectionButton.SetActive(false);
@@ -789,7 +794,7 @@ namespace HotFix.UI {
         void LoadGame(string path) {  // when load Scene load game: according to gameMode
             Debug.Log(TAG + ": LoadGame()");
 
-            ViewModel.InitializationForNewGame();
+            //ViewModel.InitializationForNewGame(); // com for tmp
             // if (ViewModel.gameMode == 0)
             //     ViewModel.resetGridOccBoard(); 
             GameData gameData = SaveSystem.LoadGame(path);

@@ -23,7 +23,6 @@ namespace HotFix.UI {
         public int gridHeight = 12; 
         public int gridWidth;
 
-        public static Transform [][] tmpTest;
         public static Transform [][][] grid; //= new Transform[gridWidth, gridHeight, gridWidth];
         public static int [][][] gridOcc; //= new int[gridWidth, gridHeight, gridWidth];
         public int scoreOneLine = 40;
@@ -47,7 +46,6 @@ namespace HotFix.UI {
 
         // private Vector3 previewTetrominoPosition = new Vector3(-17f, -5f, -9.81f); 
         // private Vector3 previewTetromino2Position = new Vector3(-68.3f, 19.6f, 32.4f); // (-56.3f, -0.1f, 32.4f) (-24.8f, -0.1f, 32.4f);
-    
 
         private int startingHighScore;
         private int startingHighScore2;
@@ -76,19 +74,12 @@ namespace HotFix.UI {
         protected override void OnInitialize() {
             base.OnInitialize();
             Initialization();
-            DelegateSubscribe(); //
+            DelegateSubscribe(); 
         }
 
         void Initialization() {
             this.ParentViewModel = (MenuViewModel)ViewManager.MenuView.BindingContext; // 父视图模型: 菜单视图模型
             gridWidth = ((MenuViewModel)ParentViewModel).gridWidth;
-
-            Debug.Log("Initialization bef arrays");
-            tmpTest = new Transform [5][];
-            for (int i = 0; i < 5; i++) 
-                tmpTest[i] = new Transform[5];
-                
-            Debug.Log("Initialization after [] arrays");
 
 // 这里好像是需要解决一下多维数组在ILRuntime热更新程序域中的适配问题???
             // grid = new Transform[5, gridHeight, 5]; // BUGGY BUGGY BUGGY multidimensional array.....
@@ -106,8 +97,7 @@ namespace HotFix.UI {
                 for (int j = 0; j < gridHeight; j++) 
                     gridOcc[i][j] = new int[5];
             }
-            
-            Debug.Log("Initialization aft arrays");
+            gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
             fallSpeed = 3.0f;
             saveForUndo = true;
         }
@@ -135,10 +125,11 @@ namespace HotFix.UI {
             startingHighScore3 = PlayerPrefs.GetInt("highscore3");
         }
 
-        public void InitializationForNewGame() {
-            Debug.Log("InitializationForNewGame ");
+// Coroutine: 才是真正解决问题的办法,暂时如此        
+        // public void InitializationForNewGame() {
+        public void OnFinishReveal() {
+            Debug.Log(TAG + " OnFinishReveal");
             gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
-            Debug.Log("gameMode.Value: " + gameMode.Value);
             fallSpeed = 3.0f; // should be recorded too, here
             if (gameMode.Value == 0)
                 resetGridOccBoard();
