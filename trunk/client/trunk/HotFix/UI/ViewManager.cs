@@ -5,10 +5,8 @@ using Framework.Util;
 using System.Collections;
 using System.Json;
 using HotFix.Data;
-using HotFix.UI.View.MidMenuView;
 using UnityEngine.EventSystems;
 using HotFix.UI.View.SettingsView;
-using HotFix.UI.View.TestView;
 
 namespace HotFix.UI {
 
@@ -148,10 +146,10 @@ namespace HotFix.UI {
                     }, EAssetBundleUnloadLevel.Never);
         }
 
+// 两块不同按钮的画布,两架相机,以及游戏过程中生成的所有的方块砖都位于这个视图下        
 #region BtnsCanvasView
         public static GameObject moveCanvas = null;
         public static GameObject rotateCanvas = null;
-        
 #endregion
         
         static IEnumerator GetRectSize(RectTransform rt) { // 自己添加到这里的
@@ -173,7 +171,7 @@ namespace HotFix.UI {
             // obj_height = rt.rect.size.y;
             // Debug.Log($"宽 = {obj_width}  高 = {obj_height}");
             // Debug.Log("rt.anchoredPosition3D: x: " + rt.anchoredPosition3D.x + ", y: " + rt.anchoredPosition3D.y + ", z: " + rt.anchoredPosition3D.z);
-            Debug.Log("rt.rotation: x: " + rt.rotation.x + ", y: " + rt.rotation.y + ", z: " + rt.rotation.z);
+            // Debug.Log("rt.rotation: x: " + rt.rotation.x + ", y: " + rt.rotation.y + ", z: " + rt.rotation.z);
             yield return null;
         }
 
@@ -200,27 +198,26 @@ namespace HotFix.UI {
 // 此区域目前只作参考 
 // 这个过于简单的资源池 理解参考:在视图层面的某个视图中,对视图中可能会出现的各元素使用了资源池.
 // 希望方块砖游戏中要用到的资源池能够设计得再好一点儿,不同类型的缓存资源需要有缓存上限
-#region GridItemPool
+// #region GridItemPool
         public static Transform poolRoot; // 固定的视图层面资源池根节点
-// 资源池：每种不同类型使用一个栈来保存缓存的该类型资源,FIFO
-// 这里就当是一个资源缓存池,每种类型的资源使用栈来保存,以最大限度地优化进出栈内存性能?
-        public static Dictionary<string, Stack<GameObject>> gridItemPool = new Dictionary<string, Stack<GameObject>>(); // 栈
-
-        public static GameObject GetGridItemFromPool(string name) {
-            if (gridItemPool.ContainsKey(name) && gridItemPool[name].Count > 0) {
-                var gridItem = gridItemPool[name].Pop();
-                return gridItem;
-            }
-            return null; // 如果没有返回空,得保证需要的时候,资源池拿不到,也得从加工厂里加工一个出来
-        }
-        public static void CacheGridItemToPool(string name, GameObject go) { // 将某种类型的元件缓存到资源池中去
-            if (!gridItemPool.ContainsKey(name)) 
-                gridItemPool[name] = new Stack<GameObject>();
-            Stack<GameObject> goList = gridItemPool[name];
-            go.transform.SetParent(poolRoot, false); // 所有需要缓存的资源对象均以此poolRoot为根节点
-            goList.Push(go);
-        }
-#endregion
+// // 资源池：每种不同类型使用一个栈来保存缓存的该类型资源,FIFO
+// // 这里就当是一个资源缓存池,每种类型的资源使用栈来保存,以最大限度地优化进出栈内存性能?
+//         public static Dictionary<string, Stack<GameObject>> gridItemPool = new Dictionary<string, Stack<GameObject>>(); // 栈
+//         public static GameObject GetGridItemFromPool(string name) {
+//             if (gridItemPool.ContainsKey(name) && gridItemPool[name].Count > 0) {
+//                 var gridItem = gridItemPool[name].Pop();
+//                 return gridItem;
+//             }
+//             return null; // 如果没有返回空,得保证需要的时候,资源池拿不到,也得从加工厂里加工一个出来
+//         }
+//         public static void CacheGridItemToPool(string name, GameObject go) { // 将某种类型的元件缓存到资源池中去
+//             if (!gridItemPool.ContainsKey(name)) 
+//                 gridItemPool[name] = new Stack<GameObject>();
+//             Stack<GameObject> goList = gridItemPool[name];
+//             go.transform.SetParent(poolRoot, false); // 所有需要缓存的资源对象均以此poolRoot为根节点
+//             goList.Push(go);
+//         }
+// #endregion
     
 // 视图里的小物件管理:　视图中需要可能会用到的运行时需要实例化的小物件(比如各种不同类型的方块砖/阴影砖,粒子系统等)管理
 // 与此部分相关联的是UI csharp项目中这些不同类型方块砖(以及不同类型的小MINO,粒子系统)的预设制作,相关数据导入? 与那个项目(UI相关逻辑)的设计与资源打包相关联
@@ -374,116 +371,6 @@ namespace HotFix.UI {
                 return _GameView;
             }
         }
-        static ThreeGridView _threegridView;
-        public static ThreeGridView ThreeGridView {
-            get {
-                if (_threegridView == null) {
-                    _threegridView = new ThreeGridView();
-                    _threegridView.BindingContext = new ThreeGridViewModel();
-                    views.Add(_threegridView.ViewName, _threegridView);
-                }
-                return _threegridView;
-            }
-        }
-        static FourGridView _fourgridView;
-        public static FourGridView FourGridView {
-            get {
-                if (_fourgridView == null) {
-                    _fourgridView = new FourGridView();
-                    _fourgridView.BindingContext = new FourGridViewModel();
-                    views.Add(_fourgridView.ViewName, _fourgridView);
-                }
-                return _fourgridView;
-            }
-        }
-        static FiveGridView _fivegridView;
-        public static FiveGridView FiveGridView {
-            get {
-                if (_fivegridView == null) {
-                    _fivegridView = new FiveGridView();
-                    _fivegridView.BindingContext = new FiveGridViewModel();
-                    views.Add(_fivegridView.ViewName, _fivegridView);
-                }
-                return _fivegridView;
-            }
-        }
-        static ComTetroView _comtetroView;
-        public static ComTetroView ComTetroView {
-            get {
-                if (_comtetroView == null) {
-                    _comtetroView = new ComTetroView();
-                    _comtetroView.BindingContext = new ComTetroViewModel();
-                    views.Add(_comtetroView.ViewName, _comtetroView);
-                }
-                return _comtetroView;
-            }
-        }
-        static DesView _desView;
-        public static DesView DesView {
-            get {
-                if (_desView == null) {
-                    _desView = new DesView();
-                    _desView.BindingContext = new DesViewModel();
-                    views.Add(_desView.ViewName, _desView);
-                }
-                return _desView;
-            }
-        }
-        static EduBtnsView _edubtnsView;
-        public static EduBtnsView EduBtnsView {
-            get {
-                if (_edubtnsView == null) {
-                    _edubtnsView = new EduBtnsView();
-                    _edubtnsView.BindingContext = new EduBtnsViewModel();
-                    views.Add(_edubtnsView.ViewName, _edubtnsView);
-                }
-                return _edubtnsView;
-            }
-        }
-        static EduTetroView _edutetroView;
-        public static EduTetroView EduTetroView {
-            get {
-                if (_edutetroView == null) {
-                    _edutetroView = new EduTetroView();
-                    _edutetroView.BindingContext = new EduTetroViewModel();
-                    views.Add(_edutetroView.ViewName, _edutetroView);
-                }
-                return _edutetroView;
-            }
-        }
-        static ScoreDataView _scoredataView;
-        public static ScoreDataView ScoreDataView {
-            get {
-                if (_scoredataView == null) {
-                    _scoredataView = new ScoreDataView();
-                    _scoredataView.BindingContext = new ScoreDataViewModel();
-                    views.Add(_scoredataView.ViewName, _scoredataView);
-                }
-                return _scoredataView;
-            }
-        }
-        static StaticBtnsView _staticbtnsView;
-        public static StaticBtnsView StaticBtnsView {
-            get {
-                if (_staticbtnsView == null) {
-                    _staticbtnsView = new StaticBtnsView();
-                    _staticbtnsView.BindingContext = new StaticBtnsViewModel();
-                    views.Add(_staticbtnsView.ViewName, _staticbtnsView);
-                }
-                return _staticbtnsView;
-            }
-        }
-        static ToggleBtnView _togglebtnView;
-        public static ToggleBtnView ToggleBtnView {
-            get {
-                if (_togglebtnView == null) {
-                    _togglebtnView = new ToggleBtnView();
-                    _togglebtnView.BindingContext = new ToggleBtnViewModel();
-                    views.Add(_togglebtnView.ViewName, _togglebtnView);
-                }
-                return _togglebtnView;
-            }
-        }
         static BgnNewContinueView _bgnnewcontinueView;
         public static BgnNewContinueView BgnNewContinueView {
             get {
@@ -493,17 +380,6 @@ namespace HotFix.UI {
                     views.Add(_bgnnewcontinueView.ViewName, _bgnnewcontinueView);
                 }
                 return _bgnnewcontinueView;
-            }
-        }
-        static EducaModesView _educamodesView;
-        public static EducaModesView EducaModesView {
-            get {
-                if (_educamodesView == null) {
-                    _educamodesView = new EducaModesView();
-                    _educamodesView.BindingContext = new EducaModesViewModel();
-                    views.Add(_educamodesView.ViewName, _educamodesView);
-                }
-                return _educamodesView;
             }
         }
         static MenuView _menuView;
@@ -517,17 +393,6 @@ namespace HotFix.UI {
                 return _menuView;
             }
         }
-        static MidMenuView _midmenuView;
-        public static MidMenuView MidMenuView {
-            get {
-                if (_midmenuView == null) {
-                    _midmenuView = new MidMenuView();
-                    _midmenuView.BindingContext = new MidMenuViewModel();
-                    views.Add(_midmenuView.ViewName, _midmenuView);
-                }
-                return _midmenuView;
-            }
-        }
         static SettingsView _settingsView;
         public static SettingsView SettingsView {
            get {
@@ -539,17 +404,8 @@ namespace HotFix.UI {
                return _settingsView;
            }
         }
-        static TestView _testView;
-        public static TestView TestView {
-            get {
-                if (_testView == null) {
-                    _testView = new TestView();
-                    _testView.BindingContext = new TestViewModel();
-                    views.Add(_testView.ViewName, _testView);
-                }
-                return _testView;
-            }
-        }
 #endregion
     }
 }
+
+

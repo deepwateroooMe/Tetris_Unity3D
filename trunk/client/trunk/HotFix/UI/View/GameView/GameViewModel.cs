@@ -136,7 +136,9 @@ namespace HotFix.UI {
         }
 
         public void InitializationForNewGame() {
+            Debug.Log("InitializationForNewGame ");
             gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
+            Debug.Log("gameMode.Value: " + gameMode.Value);
             fallSpeed = 3.0f; // should be recorded too, here
             if (gameMode.Value == 0)
                 resetGridOccBoard();

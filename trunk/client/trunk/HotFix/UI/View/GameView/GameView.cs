@@ -12,63 +12,93 @@ using UnityEngine.UI;
 
 namespace HotFix.UI {
     
-    // 还有两个世界坐标系的视图：MoveCanvasView 和RotateCanvasView供其调控,但是他们位于世界坐标系下，区别于其它任何视图
-    public class GameView : UnityGuiView {
-        private const string TAG = "GameView"; 
+    // 世界坐标系视图BtnsCanvasView：
+    // MoveCanvasView 和RotateCanvasView供其调控,但是他们位于世界坐标系下，区别于其它任何视图
+    // ComTetroCamera, EduTetroCamera: 用来照两个预览的相机,也摆在世界坐标系下,与当前视图GameView交互
+// 这是目前的设计下: 游戏过程中的所有的方块砖也将位于世界坐标系下
+// 游戏视图里需要测一个更为重要的逻辑就是Update()函数,因为经典模式下的自动更新,需要把这个连通测一下
+    // 因为架构中已经有了MonoBehaviourAdapter,适配了Update()方法,应该是没有问题的.但是要连通后测一下确保主要逻辑没问题
+    public class GameView : UnityGuiView
+    {
+        private const string TAG = "GameView";
 
-        public override string BundleName {
-            get {
+        public override string BundleName
+        {
+            get
+            {
                 return "ui/view/gameview";
             }
         }
-        public override string AssetName {
-            get {
+
+        public override string AssetName
+        {
+            get
+            {
                 return "GameView";
             }
         }
-        public override string ViewName {
-            get {
+
+        public override string ViewName
+        {
+            get
+            {
                 return "GameView";
             }
         }
-        public override string ViewModelTypeName {
-            get {
+
+        public override string ViewModelTypeName
+        {
+            get
+            {
                 return typeof(GameViewModel).FullName;
             }
         }
-        public GameViewModel ViewModel {
-            get {
+
+        public GameViewModel ViewModel
+        {
+            get
+            {
                 return (GameViewModel)BindingContext;
             }
         }
-        public override bool IsRoot { // 方便调控显示与隐藏
-            get {
+
+        public override bool IsRoot
+        {
+            // 方便调控显示与隐藏
+            get
+            {
                 return true;
             }
         }
 
-// Five Four ThreeGridView
-        // 因为整合到一个大的视图,那么要同时有三种格子,只显示其中的一种,并隐藏剩余的两种而已
         // GameObject baseBoard3; // 这些控件还没有做,哪天头脑昏昏的时候才再去做
         // GameObject baseBoard4;
         GameObject baseBoard5;
+
 // DesView 里的个文本框基本不变，不用管它们        
 // ScoreDataView
         Text scoText; // Score Text
         Text lvlText; // Level Text
+
         Text linText; // Line Text
+
 // StaticBtnsView
         Button pauButton; // pause Game
+
         Button falButton; // fall fast button
+
 // ToggleBtnView
         int type = 0;
+
         Button togButton; // Togcation
+
 // EduBtnsView
         Button swaButton; // swap current tetrominos to be a newly generating(it's coming after click) tetromino set
         Button undButton; // undo last selected tetromino landing, revert it back
 
 // ComTetroView
         Button ptoButton; // preview Tetromino Button COMMON BUTTON
+
         //  这里有个方块砖需要显示出来，但是视图上好像不用做什么？逻辑层负责生产一个
 // EduTetroView
         Button pteButton; // preview Tetromino Button COMMON BUTTON
@@ -87,7 +117,7 @@ namespace HotFix.UI {
         AudioSource m_ExplosionAudio;
 
         public GameObject nextTetromino; // 这里把原本的静态标志STATIC给移掉了
-        public GameObject ghostTetromino; 
+        public GameObject ghostTetromino;
 
         public AudioClip clearLineSound;
 
@@ -99,20 +129,23 @@ namespace HotFix.UI {
         public GameObject m_ExplosionPrefab;
 
         public Button invertButton;
-        public Sprite newImg; 
+        public Sprite newImg;
         public Sprite prevImg;
         public GameObject previewSet;
         public GameObject previewSet2;
         public GameObject defaultContainer;
-    
+
         // private int numberOfRowsThisTurn = 0;
         private GameObject cycledPreviewTetromino;
-    
+
         private bool gameStarted = false;
 
-        private Vector3 previewTetrominoPosition = new Vector3(-17f, -5f, -9.81f); 
-        private Vector3 previewTetromino2Position = new Vector3(-68.3f, 19.6f, 32.4f); // (-56.3f, -0.1f, 32.4f) (-24.8f, -0.1f, 32.4f);
-    
+        private Vector3 previewTetrominoPosition = new Vector3(-17f, -5f, -9.81f);
+
+        private Vector3
+            previewTetromino2Position =
+                new Vector3(-68.3f, 19.6f, 32.4f); // (-56.3f, -0.1f, 32.4f) (-24.8f, -0.1f, 32.4f);
+
         public int numLinesCleared = 0;
 
         public GameObject emptyGO;
@@ -135,7 +168,7 @@ namespace HotFix.UI {
         public GameObject previewSelectionButton2;
         public GameObject swapPreviewTetrominoButton;
         public GameObject undoButton;
-        
+
         public GameObject savedGamePanel;
         public GameObject saveGameReminderPanel;
 
@@ -145,31 +178,32 @@ namespace HotFix.UI {
         // private GameObject baseBoard;
 
         // 需要有来自ViewModel的数据变化来刷新UI: 观察者模式观察视图模型中数据的变体
-        protected override void OnInitialize() {
+        protected override void OnInitialize()
+        {
             base.OnInitialize();
 
             baseBoard5 = GameObject.FindChildByName("BaseBoard5");
-            Debug.Log("(baseBoard5 != null): " + (baseBoard5 != null));
-
             setAllBaseBoardInactive();
-// 这里的问题是: 当视图想要通过视图模型来获取父视图模型的数据时,实际上当前视图模型还没能启动好,还没有设置好其父视图模型,所以会得到空,要换种写法
+// 当视图想要通过视图模型来获取父视图模型的数据时,实际上当前视图模型还没能启动好,还没有设置好其父视图模型,所以会得到空,要换种写法
             // switch (((MenuViewModel)BindingContext.ParentViewModel).gridWidth) { // 大方格的类型
-            switch (((MenuViewModel)ViewManager.MenuView.BindingContext).gridWidth) { // 大方格的类型
-            case 3:
+            switch (((MenuViewModel)ViewManager.MenuView.BindingContext).gridWidth)
+            {
+                // 大方格的类型
+                case 3:
                 //     baseBoard3.SetActive(true);
                 //     break;
-            case 4:
+                case 4:
                 //     baseBoard4.SetActive(true);
                 //     break;
-            case 5:
-                baseBoard5.SetActive(true);
-                break;
+                case 5:
+                    baseBoard5.SetActive(true);
+                    break;
             }
 
             // 测试 moveCanvas rotateCanvas SetActive(true);
             // ViewManager.moveCanvas.SetActive(true);
             // ViewManager.rotateCanvas.SetActive(true);
-            
+
             scoText = GameObject.FindChildByName("scoTxt").GetComponent<Text>();
             lvlText = GameObject.FindChildByName("lvlTxt").GetComponent<Text>();
             linText = GameObject.FindChildByName("linTxt").GetComponent<Text>();
@@ -205,14 +239,19 @@ namespace HotFix.UI {
             creBtn = GameObject.FindChildByName("creBtn").GetComponent<Button>();
             creBtn.onClick.AddListener(OnClickCreButton);
 
+            // 对于启蒙模式下,这里的游戏逻辑就是说,在加载视图的时候就需要去实例化两个方块砖,并在显示视图的时候显示出来给看
+            Start();
+        }
+
+        // 想找一个更为合适的地方来写上面的观察者模式监听回调
+        public void OnRevealed() {
+            base.OnRevealed();
+
             // 注册对视图模型数据的监听观察回调等
             ViewModel.currentScore.OnValueChanged += onCurrentScoreChanged;
             ViewModel.currentLevel.OnValueChanged += onCurrentLevelChanged;
             ViewModel.numLinesCleared.OnValueChanged += onNumLinesCleared;
-            ViewModel.gameMode.OnValueChanged += onGameModeChanged; // 运行时仍为空抛异常
-            
-            // 对于启蒙模式下,这里的游戏逻辑就是说,在加载视图的时候就需要去实例化两个方块砖,并在显示视图的时候显示出来给看
-            Start();
+            // ViewModel.gameMode.OnValueChanged += onGameModeChanged; // 运行时仍为空抛异常,因为它的初始化的过程会相对复杂那么一点点儿
         }
         void onGameModeChanged(int pre, int cur) {
 // 非启蒙模式, 这里需要添加
@@ -245,7 +284,7 @@ namespace HotFix.UI {
             // }
             // // if (gameMode == 0) {
             // // EventManager.Instance.RegisterListener<SwapPreviewsEventInfo>(onSwapPreviewTetrominos); 
-            // // EventManager.Instance.RegisterListener<UndoGameEventInfo>(onUndoGame); 
+            // // EventManager.Instance.RegisterListener<UendoGameEventInfo>(onUndoGame); 
             // // EventManager.UndoButtonClicked += onUndoGame;
             // // EventManager.SwapButtonClicked += onSwapPreviewTetrominos;
             // // }
@@ -254,7 +293,8 @@ namespace HotFix.UI {
             // EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
             // EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); // 自己重构时commented out for tmp
 
-            tmpTransform = emptyGO.transform;
+            // tmpTransform = emptyGO.transform; //  原本的
+            tmpTransform = new GameObject().transform; // 这里暂时这么写,容易生成很多个控件,暂时这么写
             // audioSource = GetComponent<AudioSource>();
 
             // if (!string.IsNullOrEmpty(((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName)) {
@@ -299,8 +339,6 @@ namespace HotFix.UI {
 
             // Bug: disable all Hud canvas buttons: swap
             pausePanel.SetActive(true);
-            ViewManager.MidMenuView.Reveal();
-            // Hide(); // 若是隐藏,这里也只会隐藏当前视图- StaticBtnsView一个视图,而不是游戏场景里的所有小视图
         }
 
         void OnClickFalButton() {
