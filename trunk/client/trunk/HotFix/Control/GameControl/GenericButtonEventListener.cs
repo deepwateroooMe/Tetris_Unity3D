@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using deepwaterooo.tetris3d;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -21,7 +22,7 @@ namespace HotFix.Control {
             info = new GenericButtonClickEventInfo();
             info.unitGO = this.gameObject;
             Debug.Log(TAG + " info.unitGO.name: " + info.unitGO.name); 
-            EventManager.Instance.FireEvent(info);
+            //EventManager.Instance.FireEvent(info);
         }
 
     }

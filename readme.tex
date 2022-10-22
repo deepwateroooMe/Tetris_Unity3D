@@ -1,4 +1,4 @@
-% Created 2022-10-20 Thu 19:47
+% Created 2022-10-22 Sat 11:06
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -36,13 +36,19 @@
 \section{游戏基本场景设计}
 \label{sec-1}
 \begin{itemize}
-\item debugging game flow, 现游戏的主场景如下:
+\item debugging game flow, 现游戏的主场景如下(看起来很丑,但它运行!!!):
 \end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221022_110626.png}
 
 \includegraphics[width=.9\linewidth]{./pic/readme_20221020_195727.png}
 \begin{itemize}
-\item 现在游戏显示都没有问题了,开始debug 游戏逻辑以及功能模块等
+\item 预设都做好了,现在要将预设打资源包,并从资源包读出来供视图实例化等
+\item finding the easist way to refactor yet still be able to hotfix after app installed already.
+\item 现在游戏显示都没有问题了,开始debug 游戏逻辑以及功能模块等(现在只是运行了可模拟测试版的,需要在热更新程序域里将这些逻辑重构到运行出这种效果来,明天写,明天下午写?还是什么时候来写这点儿呢?)
+\begin{itemize}
 \item trying to link all necessary game logics and make game to run again in ILRuntime HotFix 程序域里.
+\end{itemize}
 \item TODO: 
 \begin{itemize}
 \item AudioManager,EventManager可能需要适配,就需要自己把原理都弄明白了
@@ -59,7 +65,7 @@
 \item 现两个主要的小问题:多维数组在ILRuntime热更新程序域里的适配,
 \item 多维数组,稍微改动了一下就可以了,但里面还是有点儿小机关的
 \begin{itemize}
-\item AOT不能使用二维数组（多维数组）例如bool[,]
+\item AOT不能使用二维数组（多维数组）例如bool[,]e
 \item 使用时报System.Boolean[,]::Get没有生成AOT代码
 \item 改用bool[][]是OK的
 \item ILRuntime Version
@@ -93,7 +99,7 @@
 \begin{itemize}
 \item 现在是热更新的框架到上个周末就搭好了,这一两天忙点儿,必要的游戏场景视图基本搭配到位: 场景的搭建没有任何复杂的地方,只是相机的使用相对不够熟练,所有的都只是场景搭建基本功
 \end{itemize}
-
+m
 \section{大致进展计划}
 \label{sec-2}
 \begin{itemize}

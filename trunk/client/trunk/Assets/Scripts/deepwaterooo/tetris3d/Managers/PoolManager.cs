@@ -1,24 +1,17 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Framework.Util;
 using UnityEngine;
 
-namespace HotFix.Control {
-    // 对每种类型的预设,建立一个池,每种类型设定他们自己的缓存个数大小
-    // 对于热更新程序域来说,没有了面板上可序列化的随时编辑,有代码里随时更改各种不同预设个数的随时编辑,仍然可以直接放到热更新程序域里去使用
-    // 需要更改的是热更新里实例化预设的方式
-    // 继续使用自己简易版的资源池,等项目能够真正运行起来之后,才再按照原框架的架构从一个更高的层面来管理资源    
+namespace deepwaterooo.tetris3d {
 
-    public class PoolInfo { 
-
+    public class PoolInfo { // 不需要弄得太复杂,反正就每个存10个备用就行了 
         public string type;
         public int amount = 10;
         public GameObject prefab;
         public GameObject container;
-        [HideInInspector]
+        // [HideInInspector]
         // public Stack<GameObject> pool = new Stack<GameObject>(); // 换成栈,好像unity的内存特性里栈比较方便? 
         public List<GameObject> pool = new List<GameObject>(); // 换成栈,好像unity的内存特性里栈比较方便? 
     }

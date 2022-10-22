@@ -166,7 +166,8 @@ namespace HotFix.Control {
                 if (info == null)
                     info = new TetrominoLandEventInfo();
                 info.unitGO = gameObject;
-                EventManager.Instance.FireEvent(info);
+// cannot convert from Hotfix.control.eventinfo to System.Reflection.EventInfo: 就是把事件管理器放到主工程后,与热更新工程之间交通需要适配一下
+                //EventManager.Instance.FireEvent(info);
             }
             fall = Time.time; 
         }
@@ -186,9 +187,10 @@ namespace HotFix.Control {
                 if (info == null)
                     info = new TetrominoLandEventInfo();
                 info.unitGO = gameObject;
-                EventManager.Instance.FireEvent(info);
-            }
-        }
+                // cannot convert from Hotfix.control.eventinfo to System.Reflection.EventInfo: 就是把事件管理器放到主工程后,与热更新工程之间交通需要适配一下
+                //EventManager.Instance.FireEvent(info);
+			}
+		}
 
         public bool CheckIsValidPosition() { 
             foreach (Transform mino in ViewManager.GameView.nextTetromino.transform) {
