@@ -103,17 +103,29 @@ namespace HotFix.UI {
 // 我先试图在这里把预设都先整理一下?
                         // minosDic = new Dictionary<IType, GameObject>();
                         minosDic = new Dictionary<string, GameObject>();
+                        pool = new Dictionary<string, Stack<GameObject>>();
+                        tetroParent = go.FindChildByName("TetrominosContainer");
                         GameObject parent = go.FindChildByName("Prefabs");
                         Debug.Log(TAG + " (parent != null): " + (parent != null));
                         foreach (Transform child in go.transform) {
                             // IType type;
                             string name = child.gameObject.name;
+                            Debug.Log(TAG + " name: " + name);
+
                             // if (child.gameObject.name.StartsWith("mino"))
                             //     type = child.GetComponent<MinoType>();
                             // else type = child.GetComponent<TetrominoType>();
                             minosDic.Add(name, child.gameObject);
+                            Stack<GameObject> stack = new Stack<GameObject>();
+                            for (int i = 0; i < 10; i++) {
+                                GameObject tmp = GameObject.Instantiate(child.gameObject);
+                                tmp.name = name;
+                                tmp.SetActive(false);
+                                stack.Push(tmp);
+                            }
+                            pool.Add(name, stack);
                         }
-                        parent.SetActive(false);
+                        // parent.SetActive(false);
                         GameObject.DontDestroyOnLoad(go); // 以此为父节点的所有子节点都不会被销毁,包括各种管理类
                     }, EAssetBundleUnloadLevel.Never);
         }
@@ -122,9 +134,129 @@ namespace HotFix.UI {
 #region BtnsCanvasView
         public static GameObject moveCanvas = null;
         public static GameObject rotateCanvas = null;
-        // public static Dictionary<IType, GameObject> minosDic = null;
         public static Dictionary<string, GameObject> minosDic = null;
+        public static Dictionary<string, Stack<GameObject>> pool = null;
+        public static GameObject tetroParent = null;
+        private static Vector3 defaultPos = new Vector3(-100, -100, -100); // 不同类型的起始位置不一样(可否设置在预设里呢>??)
+
+// // 预览方块砖的: 类型,位置,旋转,缩放
+//         public BindableProperty<string> tetroType { get; set; }
+//         public BindableProperty<Vector3> tetroPos { get; set; }
+//         public BindableProperty<Quaternion> tetroRot { get; set; }
+//         public BindableProperty<Vector3> tetroSca { get; set; }
+
+        // public List<PoolInfo> dic; // 为什么使用链表呢,查询效率不是太低了吗? 怎么也得用个字典才对的呀?
+        // public Dictionary<string, PoolInfo> dic = new Dictionary<string, PoolInfo>();
+        //public Dictionary<string, Stack<GameObject>> dic {
+        //    get;
+        //    set;
+        //}
+
+        // public Material [] materials; // [red, green, blue, yellow]
+        // public Material [] colors;
         
+        public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3? localScale = null) {
+            // PoolInfo selected = GetPoolByType(type);
+            // List<GameObject> pool = selected.pool;
+            Stack<GameObject> st = pool[type];
+            GameObject objInstance = null;
+            if (st.Count > 0) 
+                objInstance = st.Pop();
+            else // tmp commented out
+                objInstance = GameObject.Instantiate(ViewManager.minosDic[type]); 
+            objInstance.transform.position = pos;
+            objInstance.transform.rotation = rotation;
+            if (localScale == null)
+                objInstance.transform.localScale = Vector3.one;
+            else
+                objInstance.transform.localScale = (Vector3)localScale;
+            objInstance.SetActive(true);
+            objInstance.transform.SetParent(ViewManager.tetroParent.transform, false); // default set here 吧
+            return objInstance;
+        }
+    
+        public static void ReturnToPool(GameObject gameObject, string type) {
+            if (gameObject.activeSelf) {
+                gameObject.SetActive(false);
+                if (pool[type].Count < 10) {
+                    gameObject.transform.position = defaultPos;
+                    pool[type].Push(gameObject);
+                } else GameObject.DestroyImmediate(gameObject);
+                // PoolInfo selected = GetPoolByType(type);
+                // gameObject.transform.SetParent(ViewManager.tetroParent, false);
+                // List<GameObject> pool = selected.pool;
+                // pool.Add(gameObject);
+            } 
+        }
+
+// // 那不该是下面就不需要做什么了吗?        
+//         private Dictionary<BindableProperty<string>, HashSet<Action<string, string>>> callbackDic;
+// // 提供两个公用接口方便注册与回调
+//         public void registerObserver(BindableProperty<string> property, Action<string, string> callback) {
+//             HashSet<Action<string, string>> set = callbackDic.Get(property);
+//             if (set == null) {
+//                 set = new HashSet<Action<string, string>>();
+//                 callbackDic.Add(property, set);
+//             }
+//             set.Add(callback);
+//         }
+//        void Start() {
+//            // InitPool();
+//            // dic = new Dictionary<string, Stack<GameObject>>();
+//            dic = ViewManager.pool;
+//// 注册观察者回调
+//// 不想要视图来观察,要对象池来观察            
+//// 预览中的两个方块砖类型变了:要生成实例并刷新: 下面写理这么偶合,没法用吧?
+//            // ViewManager.GameView.comTetroTyep.OnValueChanged += onComTetroTypeChanged;
+//            // ViewModel.eduTetroTyep.OnValueChanged += onEduTetroTypeChanged;
+
+//        }
+        // void onComTetroTypeChanged(string pre, string cur) {
+        // }
+        // public void InitPool() {
+        //     //if (dic == null) 
+        //     //    dic = new ArrayList<>();
+        //     for (int i = 0; i < dic.Count; ++i) {
+	    //         FillPool(pool[i]);
+        //     }
+        // }
+        // private void FillPool(PoolInfo info) {
+        //     for (int i = 0; i < info.amount; i++) {
+        //         GameObject objInstance = null;
+        //         objInstance = GameObject.Instantiate(info.prefab, info.container.transform);
+        //         objInstance.gameObject.SetActive(false);
+        //         objInstance.transform.position = defaultPos;
+        //         info.pool.Add(objInstance);
+        //     }
+        // }
+
+        public static GameObject GetFromPool(string type) {
+            // PoolInfo selected = GetPoolByType(type);
+            // List<GameObject> pool = selected.pool;
+            GameObject objInstance = null;
+            if (pool.ContainsKey(type) && pool[type].Count > 0) {
+                objInstance = pool[type].Pop();
+                objInstance.SetActive(true);
+            } else  // tmp commented out
+                objInstance = GameObject.Instantiate(minosDic[type]);
+            return objInstance;
+        }
+
+        //public static void ReturnToPool(GameObject gameObject, string type, float delay) {
+        //    CoroutineHelper.StartCoroutine(DelayedReturnToPool(gameObject, type, delay));
+        //}
+
+        // IEnumerator DelayedReturnToPool(GameObject gameObject, string type, float delayTime) {
+        //     while (delayTime > 0f) {
+        //         yield return null;
+        //         // If the instance was deactivated while waiting here, just quit
+        //         if (!gameObject.activeInHierarchy) {
+        //             yield break;
+        //         }
+        //         delayTime -= Time.deltaTime;
+        //     }
+        //     ReturnToPool(gameObject, type);
+        // }
 #endregion
         
         static IEnumerator GetRectSize(RectTransform rt) { // 自己添加到这里的

@@ -173,4 +173,3 @@ namespace Framework.MVVM {
         }
     }
 }
-

@@ -37,7 +37,7 @@ public class AssetBundleTool : MonoBehaviour {
 #endregion
     
 #region BuildDll
-    // [MenuItem("Assets/BuildHotFixDllBundle F5")]
+    // [MenuItem("Assets/BuildHotFixDllBundle")]
     [MenuItem("Assets/BuildHotFixDllBundle %j")]
     public static void BuildHotFixDllBundle() {
         BuildTarget buildTarget = GetBuildTarget();
