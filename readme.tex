@@ -1,4 +1,4 @@
-% Created 2022-10-22 Sat 22:42
+% Created 2022-10-23 Sun 11:16
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -43,17 +43,24 @@
 \begin{itemize}
 \item 预设都做好了,现在要将预设打资源包,并从资源包读出来供视图实例化等
 \item finding the easist way to refactor yet still be able to hotfix after app installed already.
-\end{itemize}
-
-\includegraphics[width=.9\linewidth]{./pic/readme_20221020_195727.png}
-\begin{itemize}
 \item 现在游戏显示都没有问题了,开始debug 游戏逻辑以及功能模块等(现在只是运行了可模拟测试版的,需要在热更新程序域里将这些逻辑重构到运行出这种效果来,明天写,明天下午写?还是什么时候来写这点儿呢?)
 \begin{itemize}
 \item trying to link all necessary game logics and make game to run again in ILRuntime HotFix 程序域里.
 \end{itemize}
-\item TODO: 
+\item \textbf{TODO:}
 \begin{itemize}
+\item <Tetromino> <GhostTetromino> 继承自MonoBehaviour的脚本在运行时添加适配过程中出意外: instance总是空,也可以说是我的AddComponent<T>方法没有适配?这个类型的适配有点儿没有做好(这个应该是目前最重要的问题,但不是不能解决的问题)把官方DEMO中的例子好好运行好研究透彻再来试图解决自己目前遇到的问题(两个项目可以参考)
 \item AudioManager,EventManager可能需要适配,就需要自己把原理都弄明白了
+\item 先前的PoolManager的解决是采用ViewManager里静态管理的方法,可以如期运行,有待优化
+\item 那么上面两个如果一时半会儿找不到更好的办法,就可以参照上面的方法解决
+\end{itemize}
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221020_195727.png}
+\begin{itemize}
+\item \textbf{已经解决了的先前的}
+\begin{itemize}
+\item moveCanvas rotateCanvas上点击事件,事件系统的传递.如果上面的问题一时半会儿解决不了,可以先试图解决这个并测试一下,给上面最难的BUG一点儿网络搜索和解决问题的时间 (狠好解决)
 \item 两个预览方块砖的生成并画到视图上去: 现在解决这个问题
 \begin{itemize}
 \item 原理很简: 将两个预览放在不会出现在主相机的两个固定的位置上;再用两个不同的相机分别照在两个预览上,并分别投射到一块渲染媒介,显示在屏幕的固定投影位置上就可以了
@@ -1053,13 +1060,12 @@ protected override void ReadModule() {
 }
 \end{minted}
 \end{itemize}
-\end{enumerate}
-\end{enumerate}
-\subsection{基于LoadedTypes来实现反射方法的调用}
-\label{sec-9-2}
+\textbf{p} 基于LoadedTypes来实现反射方法的调用
 \begin{itemize}
 \item 这些，方法学会了就自己去追一追源码，把它们看懂
 \end{itemize}
+\end{enumerate}
+\end{enumerate}
 
 \section{热更新资源加载的过程}
 \label{sec-10}

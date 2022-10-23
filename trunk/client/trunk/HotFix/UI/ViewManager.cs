@@ -11,6 +11,7 @@ using HotFix.Control;
 using HotFix.Data;
 using UnityEngine.EventSystems;
 using HotFix.UI.View.SettingsView;
+using UnityEngine.UI;
 
 namespace HotFix.UI {
 
@@ -74,10 +75,10 @@ namespace HotFix.UI {
                         // audioRoot.gameObject.SetActive(false);
                         // audioRoot.gameObject.AddComponent<AudioSource>(); 
                         // audioRoot.gameObject.AddComponent<AudioManager>(); // AudioManager : SingletonMono<AudioManager>
-                        
-                        eventRoot = new GameObject("EventRoot").transform;
-                        eventRoot.SetParent(managersRoot.transform, false);
-                        eventRoot.gameObject.SetActive(false);
+// 因为也还没有适配,调试过程中不想多一个物件来打扰,comment for tmp                        
+                        // eventRoot = new GameObject("EventRoot").transform;
+                        // eventRoot.SetParent(managersRoot.transform, false);
+                        // eventRoot.gameObject.SetActive(false);
 
                         ShowStartPanel();
                     }, EAssetBundleUnloadLevel.Never);
@@ -91,7 +92,12 @@ namespace HotFix.UI {
                         GameObject.DontDestroyOnLoad(go); // 以此为父节点的所有子节点都不会被销毁,包括各种管理类
                         moveCanvas = go.FindChildByName("moveCanvas");
                         rotateCanvas = go.FindChildByName("rotateCanvas");
-                        Debug.Log("(moveCanvas != null): " + (moveCanvas != null));
+
+                        leftBtn = go.FindChildByName("leftBtn").GetComponent<Button>();
+                        rightBtn = go.FindChildByName("rightBtn").GetComponent<Button>();
+                        upBtn = go.FindChildByName("upBtn").GetComponent<Button>();
+                        downBtn = go.FindChildByName("downBtn").GetComponent<Button>();
+
                         moveCanvas.SetActive(false);
                         rotateCanvas.SetActive(false);
 // 我先试图在这里把预设都先整理一下?
@@ -115,16 +121,16 @@ namespace HotFix.UI {
                                 tmp.name = name;
 // 这里报错,好像enabled 方法不能适配 ?                                
                                 if (isTetro) {
-                                    // Debug.Log(TAG + " (name.StartsWith('Tetromino')): " + (name.StartsWith("Tetromino")));
-                                    // if (name.StartsWith("Tetromino")) {
-                                    //     tmp.GetOrAddComponent<Tetromino>();
-                                    //     Tetromino tetromino = tmp.GetComponent<Tetromino>();
-                                    //     Debug.Log(TAG + " (tetromino == null): " + (tetromino == null)); // 总是空,反射调用是需要霎时间来完成的,要用协程
-                                    //     // tmp.GetComponent<Tetromino>().enabled = false;
-                                    // } else {
-                                    //     tmp.GetOrAddComponent<GhostTetromino>();
-                                    //     tmp.GetComponent<GhostTetromino>().enabled = false;
-                                    // }
+                                    Debug.Log(TAG + " (name.StartsWith('Tetromino')): " + (name.StartsWith("Tetromino")));
+                                    if (name.StartsWith("Tetromino")) {
+                                        tmp.AddComponent<Tetromino>();
+                                        Tetromino tetromino = tmp.GetComponent<Tetromino>();
+                                        Debug.Log(TAG + " (tetromino == null): " + (tetromino == null)); // 总是空,反射调用是需要霎时间来完成的,要用协程
+                                        // tmp.GetComponent<Tetromino>().enabled = false;
+                                    } else {
+                                        tmp.AddComponent<GhostTetromino>();
+                                        // tmp.GetComponent<GhostTetromino>().enabled = false;
+                                    }
                                 }
                                 tmp.transform.SetParent(tetrosPool.transform, true); // 把它们放在一个容器下面,免得弄得游戏界面乱七八糟的
                                 tmp.SetActive(false);
@@ -145,6 +151,11 @@ namespace HotFix.UI {
         public static GameObject tetrosPool = null;
         public static GameObject tetroParent = null;
         private static Vector3 defaultPos = new Vector3(-100, -100, -100); // 不同类型的起始位置不一样(可否设置在预设里呢>??)
+
+        public static Button leftBtn;
+        public static Button rightBtn;
+        public static Button upBtn;
+        public static Button downBtn;
 
 // // 预览方块砖的: 类型,位置,旋转,缩放
 //         public BindableProperty<string> tetroType { get; set; }

@@ -89,6 +89,7 @@ namespace HotFix.UI {
         public GameObject previewTetromino;
         public GameObject previewTetromino2;
 
+// 这组移去模型里去了        
         // public string prevPreview; // to remember previous spawned choices
         // public string prevPreview2;
         // public string nextTetrominoType;  
@@ -102,6 +103,7 @@ namespace HotFix.UI {
         private GameObject eduTetroView;
         private Button pvBtnOne; // 这两个就指里面的按钮组件
         private Button pvBtnTwo;
+        
 		// swapPreviewTetrominoButton;        
 		//public GameObject swaBtn;
 		public GameObject undoButton;
@@ -109,6 +111,11 @@ namespace HotFix.UI {
         public GameObject saveGameReminderPanel;
         private bool isDuringUndo = false;
         public bool saveForUndo = true;
+
+        Button leftBtn;
+        Button rightBtn;
+        Button upBtn;
+        Button downBtn;
 
         void onGameModeChanged(int pre, int cur) {
             Debug.Log(TAG + " onGameModeChanged");
@@ -861,8 +868,29 @@ namespace HotFix.UI {
             creBtn = GameObject.FindChildByName("creBtn").GetComponent<Button>();
             creBtn.onClick.AddListener(OnClickCreButton);
 
-            cycledPreviewTetromino = new GameObject();
+            // cycledPreviewTetromino = new GameObject();
+
+            // leftBtn = ViewManager. GameObject.FindChildByName("leftBtn").GetComponent<Button>();
+            // leftBtn.onClick.AddListener(OnClickLeftButton);
+            ViewManager.leftBtn.onClick.AddListener(OnClickLeftButton);
+            ViewManager.rightBtn.onClick.AddListener(OnClickRightButton);
+            ViewManager.upBtn.onClick.AddListener(OnClickUpButton);
+            ViewManager.downBtn.onClick.AddListener(OnClickDownButton);
+            
         }
+        void OnClickLeftButton() {
+            ViewModel.nextTetroPos.Value -= new Vector3(1, 0, 0);
+        }
+        void OnClickRightButton() {
+            ViewModel.nextTetroPos.Value += new Vector3(1, 0, 0);
+        }
+        void OnClickUpButton() {
+            ViewModel.nextTetroPos.Value -= new Vector3(0, 1, 0);
+        }
+        void OnClickDownButton() {
+            ViewModel.nextTetroPos.Value -= new Vector3(0, 1, 0);
+        }
+        
         // 想找一个更为合适的地方来写上面的观察者模式监听回调
         public void OnRevealed() {
             base.OnRevealed();

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Framework.MVVM;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace HotFix.UI
 {
@@ -51,15 +52,23 @@ namespace HotFix.UI
 //         }
 //         void CloseOtherRootViews() { 
 //         }
-
-// public: 方便游戏视图调用它        
-        public GameObject moveCanvas;
-
-// 实际运行时,需要做多组至少3组ROTATE CANVAS,目的是当用户转动相机的时候,必要的背后视图组会隐藏,但用户前端的方便点击的会显示,
-// 平衡组没有这个需求　        
-        public GameObject rotateCanvas;
+        public GameViewModel GameViewModel {
+            get {
+                return (GameViewModel)ViewManager.GameView.BindingContext;
+            }
+        }
+        
+// // public: 方便游戏视图调用它        
+//         public GameObject moveCanvas;
+// // 实际运行时,需要做多组至少3组ROTATE CANVAS,目的是当用户转动相机的时候,必要的背后视图组会隐藏,但用户前端的方便点击的会显示,
+// // 平衡组没有这个需求　        
+//         public GameObject rotateCanvas;
         // 接下来会有　4　＋　6　共10个按键
-
+        Button leftBtn;
+        Button rightBtn;
+        Button upBtn;
+        Button downBtn;
+        
 //         GameObject menuViewPanel;
 //         Button eduButton; // Education
 //         Button claButton; // Classic
@@ -75,9 +84,11 @@ namespace HotFix.UI
         {
             base.OnInitialize();
 
-            moveCanvas = GameObject.FindChildByName("moveCanvas");
-            rotateCanvas = GameObject.FindChildByName("rotateCanvas");
-
+            //moveCanvas = GameObject.FindChildByName("moveCanvas");
+            //rotateCanvas = GameObject.FindChildByName("rotateCanvas");
+            leftBtn = GameObject.FindChildByName("leftBtn").GetComponent<Button>();
+            leftBtn.onClick.AddListener(OnClickLeftButton);
+            
 // 可以测试一下是否可隐藏
 
             // menuViewPanel = GameObject.FindChildByName("MenuViewPanel");
@@ -93,6 +104,10 @@ namespace HotFix.UI
             // fivToggle = GameObject.FindChildByName("Toggle5").GetComponent<Toggle>();
             // conBtn = GameObject.FindChildByName("conBtn").GetComponent<Button>();
             // conBtn.onClick.AddListener(OnClickConButton);
+        }
+        void OnClickLeftButton() {
+            Debug.Log(TAG + " OnClickLeftButton");
+            GameViewModel.nextTetroPos.Value -= new Vector3(1, 0, 0);
         }
     }
 }

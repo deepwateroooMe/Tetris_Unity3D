@@ -12,24 +12,12 @@ namespace HotFix.Control {
     public class GhostTetromino : MonoBehaviour {
         private const string TAG = "GhostTetromino";
 
-// 这里定义成观察者模式,观察模型中当前currentActiveTetromino 的位置
-        private Transform currentActiveTransform; 
-
-        void Awake() {
-            Debug.Log(TAG + " Awake");
-        }
-
+        private Transform currentActiveTransform;
+    
         void Start () {
-            tag = "currentGhostTetromino"; // 标注当前心理阴影
-            //Model.nextTetromino.OnValueChanged += MyUpdate;
+            tag = "currentGhostTetromino";
         } 
 
-        // void MyUpdate (Vector3 pre, Vector3 cur) {
-        //     if (pre.x != cur.x || pre.y != cur.y) {
-        //         FollowActiveTetromino();
-        //         MoveDown();  
-        //     }
-        // }
         void Update () { 
             FollowActiveTetromino();
             MoveDown();  
@@ -59,14 +47,14 @@ namespace HotFix.Control {
         bool CheckIsValidPosition() {
             foreach (Transform mino in transform) {
                 Vector3 pos = MathUtil.Round(mino.position);
-                if (!ViewManager.GameView.ViewModel.CheckIsInsideGrid(pos))
+                if (((GameViewModel)ViewManager.GameView.BindingContext).CheckIsInsideGrid(pos))
                     return false;
 
-                if (ViewManager.GameView.ViewModel.GetTransformAtGridPosition(pos) != null &&
-                    ViewManager.GameView.ViewModel.GetTransformAtGridPosition(pos).parent.CompareTag("currentActiveTetromino"))
+                 if (((GameViewModel)ViewManager.GameView.BindingContext).GetTransformAtGridPosition(pos) != null &&
+                     ((GameViewModel)ViewManager.GameView.BindingContext).GetTransformAtGridPosition(pos).parent.CompareTag("currentActiveTetromino"))
                     return true;
-                if (ViewManager.GameView.ViewModel.GetTransformAtGridPosition(pos) != null &&
-                    ViewManager.GameView.ViewModel.GetTransformAtGridPosition(pos).parent != transform) {
+                if (((GameViewModel)ViewManager.GameView.BindingContext).GetTransformAtGridPosition(pos) != null &&
+                    ((GameViewModel)ViewManager.GameView.BindingContext).GetTransformAtGridPosition(pos).parent != transform) {
                     return false;
                 }
             }
