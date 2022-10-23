@@ -35,10 +35,6 @@ namespace HotFix.UI {
             CreateBaseUI();
         }
 
-        //public MinoTypeWrap { get; set; }
-        //public TetrominoTypeWrap { get; set; }
-        //public PoolManagerWrap { get; set; }
-
         public static Transform eventRoot; // 固定的视图层面资源池根节点
         public static Transform audioRoot; // 固定的视图层面资源池根节点
 // 仔细看这个方法：不是从热更新程序集里加载出unity里运行所需要的东西了吗？    
@@ -65,12 +61,10 @@ namespace HotFix.UI {
                         viewRect.anchorMax = Vector2.one; // ori
                         viewRect.pivot = new Vector2(0.5f, 0.5f);
 
-// all the managers: Event, Audio, Pool etc
+// all the managers: Event, Audio etc
                         Transform managersRoot = new GameObject("ManagersRoot").transform;
                         managersRoot.SetParent(UI2DRoot.transform, false);
                         poolRoot = new GameObject("PoolRoot").transform;
-// // 这里有个BUG:加脚本加不进去,没有适配?
-//                         poolRoot.gameObject.AddComponent<PoolManager>(); 
                         poolRoot.SetParent(managersRoot, false);
                         poolRoot.gameObject.SetActive(false);
 
@@ -94,39 +88,43 @@ namespace HotFix.UI {
                     "BtnsCanvasView", // 这里是有预设的包，读出资源就可以加载
                     (go) => {
                         go.name = "BtnsCanvasView";
-                        // GameObject.DontDestroyOnLoad(go); // 以此为父节点的所有子节点都不会被销毁,包括各种管理类
+                        GameObject.DontDestroyOnLoad(go); // 以此为父节点的所有子节点都不会被销毁,包括各种管理类
                         moveCanvas = go.FindChildByName("moveCanvas");
                         rotateCanvas = go.FindChildByName("rotateCanvas");
                         Debug.Log("(moveCanvas != null): " + (moveCanvas != null));
                         moveCanvas.SetActive(false);
                         rotateCanvas.SetActive(false);
 // 我先试图在这里把预设都先整理一下?
-                        // minosDic = new Dictionary<IType, GameObject>();
                         minosDic = new Dictionary<string, GameObject>();
                         pool = new Dictionary<string, Stack<GameObject>>();
+                        tetrosPool = go.FindChildByName("tetrosPool");
                         tetroParent = go.FindChildByName("TetrominosContainer");
                         GameObject parent = go.FindChildByName("Prefabs");
-                        Debug.Log(TAG + " (parent != null): " + (parent != null));
-                        foreach (Transform child in go.transform) {
-                            // IType type;
+                        foreach (Transform child in parent.transform) { // go ==> parent 这个破BUG让我找了好久.....只仅仅是实现的时候手误.....
                             string name = child.gameObject.name;
-                            Debug.Log(TAG + " name: " + name);
-
                             // if (child.gameObject.name.StartsWith("mino"))
                             //     type = child.GetComponent<MinoType>();
                             // else type = child.GetComponent<TetrominoType>();
                             minosDic.Add(name, child.gameObject);
                             Stack<GameObject> stack = new Stack<GameObject>();
+// 这里我写的是手动生成对象池里的缓存对象:并在这里根据不同的类型添加相应的脚本
+                            bool isTetro = name.StartsWith("Tetromino");
+                            Debug.Log(TAG + " isTetro: " + isTetro);
                             for (int i = 0; i < 10; i++) {
                                 GameObject tmp = GameObject.Instantiate(child.gameObject);
                                 tmp.name = name;
+// 这里报错,好像enabled 方法不能适配 ?                                
+                                // if (isTetro) {
+                                //     tmp.GetOrAddComponent<Tetromino>();
+                                //     tmp.GetComponent<Tetromino>().enabled = false;
+                                // }
+                                tmp.transform.SetParent(tetrosPool.transform, true); // 把它们放在一个容器下面,免得弄得游戏界面乱七八糟的
                                 tmp.SetActive(false);
                                 stack.Push(tmp);
                             }
                             pool.Add(name, stack);
                         }
-                        // parent.SetActive(false);
-                        GameObject.DontDestroyOnLoad(go); // 以此为父节点的所有子节点都不会被销毁,包括各种管理类
+                        parent.SetActive(false);
                     }, EAssetBundleUnloadLevel.Never);
         }
 
@@ -136,6 +134,7 @@ namespace HotFix.UI {
         public static GameObject rotateCanvas = null;
         public static Dictionary<string, GameObject> minosDic = null;
         public static Dictionary<string, Stack<GameObject>> pool = null;
+        public static GameObject tetrosPool = null;
         public static GameObject tetroParent = null;
         private static Vector3 defaultPos = new Vector3(-100, -100, -100); // 不同类型的起始位置不一样(可否设置在预设里呢>??)
 
@@ -145,24 +144,14 @@ namespace HotFix.UI {
 //         public BindableProperty<Quaternion> tetroRot { get; set; }
 //         public BindableProperty<Vector3> tetroSca { get; set; }
 
-        // public List<PoolInfo> dic; // 为什么使用链表呢,查询效率不是太低了吗? 怎么也得用个字典才对的呀?
-        // public Dictionary<string, PoolInfo> dic = new Dictionary<string, PoolInfo>();
-        //public Dictionary<string, Stack<GameObject>> dic {
-        //    get;
-        //    set;
-        //}
-
         // public Material [] materials; // [red, green, blue, yellow]
         // public Material [] colors;
-        
         public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3? localScale = null) {
-            // PoolInfo selected = GetPoolByType(type);
-            // List<GameObject> pool = selected.pool;
             Stack<GameObject> st = pool[type];
             GameObject objInstance = null;
             if (st.Count > 0) 
                 objInstance = st.Pop();
-            else // tmp commented out
+            else 
                 objInstance = GameObject.Instantiate(ViewManager.minosDic[type]); 
             objInstance.transform.position = pos;
             objInstance.transform.rotation = rotation;
@@ -172,6 +161,8 @@ namespace HotFix.UI {
                 objInstance.transform.localScale = (Vector3)localScale;
             objInstance.SetActive(true);
             objInstance.transform.SetParent(ViewManager.tetroParent.transform, false); // default set here 吧
+            // if (type.StartsWith("Tetromino"))
+            //     objInstance.GetComponent<Tetromino>().enabled = true;
             return objInstance;
         }
     
@@ -182,10 +173,6 @@ namespace HotFix.UI {
                     gameObject.transform.position = defaultPos;
                     pool[type].Push(gameObject);
                 } else GameObject.DestroyImmediate(gameObject);
-                // PoolInfo selected = GetPoolByType(type);
-                // gameObject.transform.SetParent(ViewManager.tetroParent, false);
-                // List<GameObject> pool = selected.pool;
-                // pool.Add(gameObject);
             } 
         }
 

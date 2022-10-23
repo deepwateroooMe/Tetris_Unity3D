@@ -35,8 +35,9 @@ namespace HotFix.UI {
         public BindableProperty<int> numLinesCleared = new BindableProperty<int>();
         public BindableProperty<int> gameMode = new BindableProperty<int>();
 // // comTetroType, eduTetroType
-//         public BindableProperty<string> comTetroType = new BindableProperty<string>();
-//         public BindableProperty<string> eduTetroType = new BindableProperty<string>();
+        public BindableProperty<string> comTetroType = new BindableProperty<string>();
+        public BindableProperty<string> eduTetroType = new BindableProperty<string>();
+        public BindableProperty<string> nextTetrominoType = new BindableProperty<string>(); // 这个好像是用来给别人观察的,保存系统 ?
 // GameView: nextTetromino position, rotation, localScale        
         public BindableProperty<Vector3> nextTetroPos = new BindableProperty<Vector3>();
         public BindableProperty<Quaternion> nextTetroRot = new BindableProperty<Quaternion>();
@@ -61,7 +62,7 @@ namespace HotFix.UI {
 
         public string prevPreview; // to remember previous spawned choices
         public string prevPreview2;
-        public string nextTetrominoType;  
+        // public string nextTetrominoType;  
         public string previewTetrominoType; 
         public string previewTetromino2Type;
 
@@ -600,9 +601,14 @@ namespace HotFix.UI {
         public void playSecondTetromino(GameObject previewTetromino,
                                         GameObject previewTetromino2,
                                         GameObject cycledPreviewTetromino) {
-            prevPreview = previewTetromino.GetComponent<TetrominoType>().type;   
-            prevPreview2 = previewTetromino2.GetComponent<TetrominoType>().type;
             preparePreviewTetrominoRecycle(previewTetromino);
+            cycledPreviewTetromino = previewTetromino;
+            nextTetrominoType.Value = comTetroType.Value;
+            Debug.Log(TAG + " (cycledPreviewTetromino.GetComponent<TetrominoType>() != null): " + (cycledPreviewTetromino.GetComponent<TetrominoType>() != null));
+            if (cycledPreviewTetromino.GetComponent<TetrominoType>() != null) {
+                string type = cycledPreviewTetromino.GetComponent<TetrominoType>().type;
+                Debug.Log(TAG + " type: " + type);
+            }
             ViewManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
             previewTetromino2.transform.localScale -= previewTetrominoScale;
             // previewTetromino2.layer = LayerMask.NameToLayer("Default");
