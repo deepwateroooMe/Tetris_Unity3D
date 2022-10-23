@@ -14,18 +14,25 @@ namespace HotFix.Control {
 
 // 这里定义成观察者模式,观察模型中当前currentActiveTetromino 的位置
         private Transform currentActiveTransform; 
-        
+
+        void Awake() {
+            Debug.Log(TAG + " Awake");
+        }
+
         void Start () {
-            tag = "currentGhostTetromino";
+            tag = "currentGhostTetromino"; // 标注当前心理阴影
             //Model.nextTetromino.OnValueChanged += MyUpdate;
         } 
 
-        void MyUpdate (Vector3 pre, Vector3 cur) {
-            if (pre.x != cur.x || pre.y != cur.y) {
-                FollowActiveTetromino();
-                MoveDown();  
-            }
-            // void Update () { 
+        // void MyUpdate (Vector3 pre, Vector3 cur) {
+        //     if (pre.x != cur.x || pre.y != cur.y) {
+        //         FollowActiveTetromino();
+        //         MoveDown();  
+        //     }
+        // }
+        void Update () { 
+            FollowActiveTetromino();
+            MoveDown();  
         }
 
         void FollowActiveTetromino() {

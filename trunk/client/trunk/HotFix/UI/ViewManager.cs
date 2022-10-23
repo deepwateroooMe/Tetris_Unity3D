@@ -61,12 +61,12 @@ namespace HotFix.UI {
                         viewRect.anchorMax = Vector2.one; // ori
                         viewRect.pivot = new Vector2(0.5f, 0.5f);
 
-// all the managers: Event, Audio etc
-                        Transform managersRoot = new GameObject("ManagersRoot").transform;
-                        managersRoot.SetParent(UI2DRoot.transform, false);
-                        poolRoot = new GameObject("PoolRoot").transform;
-                        poolRoot.SetParent(managersRoot, false);
-                        poolRoot.gameObject.SetActive(false);
+// // all the managers: Event, Audio etc 我暂时不是示它,UI上面操作不是很方便,必要时再显示
+//                         Transform managersRoot = new GameObject("ManagersRoot").transform;
+//                         managersRoot.SetParent(UI2DRoot.transform, false);
+//                         poolRoot = new GameObject("PoolRoot").transform;
+//                         poolRoot.SetParent(managersRoot, false);
+//                         poolRoot.gameObject.SetActive(false);
 
 // 它说这里找不到AudioManager热更新程序域的适配器                        
                         // audioRoot = new GameObject("AudioRoot").transform;
@@ -109,15 +109,23 @@ namespace HotFix.UI {
                             Stack<GameObject> stack = new Stack<GameObject>();
 // 这里我写的是手动生成对象池里的缓存对象:并在这里根据不同的类型添加相应的脚本
                             bool isTetro = name.StartsWith("Tetromino");
-                            Debug.Log(TAG + " isTetro: " + isTetro);
+                            // Debug.Log(TAG + " isTetro: " + isTetro);
                             for (int i = 0; i < 10; i++) {
                                 GameObject tmp = GameObject.Instantiate(child.gameObject);
                                 tmp.name = name;
 // 这里报错,好像enabled 方法不能适配 ?                                
-                                // if (isTetro) {
-                                //     tmp.GetOrAddComponent<Tetromino>();
-                                //     tmp.GetComponent<Tetromino>().enabled = false;
-                                // }
+                                if (isTetro) {
+                                    // Debug.Log(TAG + " (name.StartsWith('Tetromino')): " + (name.StartsWith("Tetromino")));
+                                    // if (name.StartsWith("Tetromino")) {
+                                    //     tmp.GetOrAddComponent<Tetromino>();
+                                    //     Tetromino tetromino = tmp.GetComponent<Tetromino>();
+                                    //     Debug.Log(TAG + " (tetromino == null): " + (tetromino == null)); // 总是空,反射调用是需要霎时间来完成的,要用协程
+                                    //     // tmp.GetComponent<Tetromino>().enabled = false;
+                                    // } else {
+                                    //     tmp.GetOrAddComponent<GhostTetromino>();
+                                    //     tmp.GetComponent<GhostTetromino>().enabled = false;
+                                    // }
+                                }
                                 tmp.transform.SetParent(tetrosPool.transform, true); // 把它们放在一个容器下面,免得弄得游戏界面乱七八糟的
                                 tmp.SetActive(false);
                                 stack.Push(tmp);
@@ -146,7 +154,7 @@ namespace HotFix.UI {
 
         // public Material [] materials; // [red, green, blue, yellow]
         // public Material [] colors;
-        public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3? localScale = null) {
+        public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3 localScale) {
             Stack<GameObject> st = pool[type];
             GameObject objInstance = null;
             if (st.Count > 0) 

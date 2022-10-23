@@ -109,6 +109,10 @@ public static class Extension {
         return ret;
     }
 
+    //public static bool enabled<T>(bool val) where T : Component
+    //{
+	   // return val;
+    //}
     // 转换时间戳
     public static DateTime ConvertFromTimeStamp(long timeStamp) {
         return new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(timeStamp).ToLocalTime();

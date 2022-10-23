@@ -54,9 +54,9 @@ namespace Framework.Core {
             appDomain.DelegateManager.RegisterFunctionDelegate<int, string>();
             appDomain.DelegateManager.RegisterMethodDelegate<string>();
             appDomain.DelegateManager.RegisterMethodDelegate<int, int>();
-// 感觉这一步的加虽然消除了一个运行时错误,但内存的运行效率有可能是降低了            
-            appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Vector3, UnityEngine.Vector3>();
-            appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Quaternion, UnityEngine.Quaternion>();
+// 感觉这一步的加虽然消除了一个运行时错误,但内存的运行效率有可能是降低了: 还是必要的,至少是它不再报错了            
+           appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Vector3, UnityEngine.Vector3>();
+           appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Quaternion, UnityEngine.Quaternion>();
             appDomain.DelegateManager.RegisterMethodDelegate<List<int>, List<int>>();
             appDomain.DelegateManager.RegisterMethodDelegate<string, string>();
             appDomain.DelegateManager.RegisterMethodDelegate<object, MessageArgs<object>>();
@@ -161,10 +161,10 @@ namespace Framework.Core {
             appDomain.RegisterCrossBindingAdaptor(new UnityGuiViewAdapter());
             appDomain.RegisterCrossBindingAdaptor(new ModuleBaseAdapter());
             appDomain.RegisterCrossBindingAdaptor(new IEnumeratorObjectAdaptor());
-            appDomain.RegisterCrossBindingAdaptor(new MonoBehaviourAdapter());
             appDomain.RegisterCrossBindingAdaptor(new InterfaceCrossBindingAdaptor()); // <<<<<<<<<<<<<<<<<<<< 
+            appDomain.RegisterCrossBindingAdaptor(new MonoBehaviourAdapter());
         }
-        void InitializeValueTypeSetting() {
+		void InitializeValueTypeSetting() {
             appDomain.RegisterValueTypeBinder(typeof(Vector3), new Vector3Binder());
             appDomain.RegisterValueTypeBinder(typeof(Vector2), new Vector2Binder());
             appDomain.RegisterValueTypeBinder(typeof(Quaternion), new QuaternionBinder());

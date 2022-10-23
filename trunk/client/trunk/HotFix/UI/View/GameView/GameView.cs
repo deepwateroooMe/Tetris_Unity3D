@@ -134,7 +134,7 @@ namespace HotFix.UI {
                    nextTetromino = ViewManager.GetFromPool(
                        ViewModel.GetRandomTetromino(),
                        new Vector3(2.0f, ViewModel.gridHeight - 1f, 2.0f),
-                       Quaternion.identity);
+                       Quaternion.identity, Vector3.one);
                    currentActiveTetrominoPrepare();
                    ViewManager.moveCanvas.gameObject.SetActive(true);  
                    SpawnGhostTetromino();
@@ -142,7 +142,7 @@ namespace HotFix.UI {
                }
             } else {
                previewTetromino.transform.localScale -= ViewModel.previewTetrominoScale;
-               // previewTetromino.GetComponent<Rotate>().enabled = !previewTetromino.GetComponent<Rotate>().enabled;
+               // previewTetromino.GetComponent<Rotate>().enabled = !previewTetromino.GetComponent<Rotate>().enabled; // 忘记了这里为什么需要旋转一下了
                nextTetromino = previewTetromino;
                currentActiveTetrominoPrepare();
                 
@@ -200,7 +200,7 @@ namespace HotFix.UI {
                 //     previewTetromino2.GetComponent<Rotate>().enabled = !previewTetromino2.GetComponent<Rotate>().enabled;
                 // else
                 //     previewTetromino2.AddComponent<Rotate>();
-                ViewModel.previewTetromino2Type = previewTetromino2.GetComponent<TetrominoType>().type;
+                // ViewModel.previewTetromino2Type = previewTetromino2.GetComponent<TetrominoType>().type; // 这些都不需要了
             }
             ViewModel.buttonInteractableList[3] = 1; // undoButton
         }
@@ -476,16 +476,13 @@ namespace HotFix.UI {
             Debug.Log(TAG + ": playFirstTetromino()");
             Debug.Log(TAG + " ViewModel.buttonInteractableList[0]: " + ViewModel.buttonInteractableList[0]); 
             if (ViewModel.buttonInteractableList[0] == 0) return;
-            ViewModel.prevPreview = previewTetromino.GetComponent<TetrominoType>().type;   
-            ViewModel.prevPreview2 = previewTetromino2.GetComponent<TetrominoType>().type;
-            ViewModel.preparePreviewTetrominoRecycle(previewTetromino2);
-            ViewManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+            ViewModel.playFirstTetromino(previewTetromino, previewTetromino2, cycledPreviewTetromino);
             previewTetromino.transform.localScale -= ViewModel.previewTetrominoScale;
             // previewTetromino.GetComponent<Rotate>().enabled = !previewTetromino.GetComponent<Rotate>().enabled;
             
             nextTetromino = previewTetromino;
             currentActiveTetrominoPrepare();
-            gameStarted = true;
+            // gameStarted = true;
             
             SpawnGhostTetromino();  
             moveRotatecanvasPrepare();
@@ -508,7 +505,7 @@ namespace HotFix.UI {
         // }
         public void playSecondTetromino() {
             Debug.Log(TAG + ": playSecondTetromino()"); 
-            Debug.Log(TAG + " ViewModel.buttonInteractableList[1]: " + ViewModel.buttonInteractableList[1]); 
+            // Debug.Log(TAG + " ViewModel.buttonInteractableList[1]: " + ViewModel.buttonInteractableList[1]); 
             if (ViewModel.buttonInteractableList[1] == 0) return;
             ViewModel.playSecondTetromino(previewTetromino, previewTetromino2, cycledPreviewTetromino);
 
@@ -636,7 +633,7 @@ namespace HotFix.UI {
                     // gameData.nextTetrominoData.transform,
                     // gameData.nextTetrominoData.transform);
                     DeserializedTransform.getDeserializedTransPos(gameData.nextTetrominoData.transform),
-                    DeserializedTransform.getDeserializedTransRot(gameData.nextTetrominoData.transform));
+                    DeserializedTransform.getDeserializedTransRot(gameData.nextTetrominoData.transform), Vector3.one);
                 nextTetromino.tag = "currentActiveTetromino";
                 // if (defaultContainer == null) // 我不要再管这个东西了
                 //     defaultContainer = GameObject.FindGameObjectWithTag("defaultContainer");
@@ -735,7 +732,7 @@ namespace HotFix.UI {
             Debug.Log(TAG + ": GetGhostTetrominoType()"); 
             StringBuilder type = new StringBuilder("");
             Debug.Log(TAG + " gameObject.name: " + gameObject.name); 
-            string tmp = gameObject.name.Substring(10, 1);
+            string tmp = gameObject.name.Substring(9, 1);
             switch(tmp) {
             case "T" : type.Append("shadowT"); break;
             case "I" : type.Append("shadowI"); break;
@@ -757,8 +754,10 @@ namespace HotFix.UI {
             // Debug.Log(TAG + ": SpawnGhostTetromino() nextTetromino.tag: " + nextTetromino.tag); 
             GameObject tmpTetromino = GameObject.FindGameObjectWithTag("currentActiveTetromino");
             // Debug.Log(TAG + ": SpawnGhostTetromino() (tmpTetromino == null): " + (tmpTetromino == null)); 
-            ghostTetromino = ViewManager.GetFromPool(GetGhostTetrominoType(nextTetromino), nextTetromino.transform.position, nextTetromino.transform.rotation);
-            ghostTetromino.GetComponent<GhostTetromino>().enabled = true;
+            ghostTetromino = ViewManager.GetFromPool(GetGhostTetrominoType(nextTetromino), nextTetromino.transform.position, nextTetromino.transform.rotation, Vector3.one);
+// 因为暂时还不想写协程相关的代码,这里先现加再载载,绕道,晚点儿重构时再一一改回来
+            // ghostTetromino.GetComponent<GhostTetromino>().enabled = true;
+            ghostTetromino.AddComponent<GhostTetromino>();
         }
         void Update() {
             ViewModel.UpdateScore();

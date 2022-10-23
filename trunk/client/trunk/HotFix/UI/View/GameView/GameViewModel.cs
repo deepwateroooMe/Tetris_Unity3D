@@ -598,17 +598,54 @@ namespace HotFix.UI {
                 Debug.Log(TAG + " buttonInteractableList[i]: i : " + i + ", " + buttonInteractableList[i]); 
         }
 
+        public void playFirstTetromino(GameObject previewTetromino,
+                                        GameObject previewTetromino2,
+                                        GameObject cycledPreviewTetromino) {
+            Debug.Log(TAG + ": playFirstTetromino()");
+            Debug.Log(TAG + " buttonInteractableList[0]: " + buttonInteractableList[0]); 
+            // if (buttonInteractableList[0] == 0) return;
+
+            // prevPreview = previewTetromino.GetComponent<TetrominoType>().type;   
+            // prevPreview2 = previewTetromino2.GetComponent<TetrominoType>().type;
+            nextTetrominoType.Value = eduTetroType.Value; // 记忆功能
+// 这里的这些乱代码可以再整理一下
+            preparePreviewTetrominoRecycle(previewTetromino2);
+            cycledPreviewTetromino = previewTetromino2;
+            ViewManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+            
+            // nextTetromino = previewTetromino;
+            // currentActiveTetrominoPrepare();
+            gameStarted = true;
+            
+            // SpawnGhostTetromino();  
+            // moveRotatecanvasPrepare();
+            // SpawnPreviewTetromino();
+
+            // disables: comTetroView eduTetroView swaBtn
+            // enables: undoButton toggleButton fallButton
+            if (gameMode.Value == 0) {
+                buttonInteractableList[0] = 0;
+                buttonInteractableList[1] = 0;
+                buttonInteractableList[2] = 0;
+                buttonInteractableList[3] = 1;
+                buttonInteractableList[4] = 1;
+                buttonInteractableList[5] = 1;
+            }
+            // printViewModel.buttonInteractableList();
+        }
+
         public void playSecondTetromino(GameObject previewTetromino,
                                         GameObject previewTetromino2,
                                         GameObject cycledPreviewTetromino) {
             preparePreviewTetrominoRecycle(previewTetromino);
             cycledPreviewTetromino = previewTetromino;
-            nextTetrominoType.Value = comTetroType.Value;
-            Debug.Log(TAG + " (cycledPreviewTetromino.GetComponent<TetrominoType>() != null): " + (cycledPreviewTetromino.GetComponent<TetrominoType>() != null));
-            if (cycledPreviewTetromino.GetComponent<TetrominoType>() != null) {
-                string type = cycledPreviewTetromino.GetComponent<TetrominoType>().type;
-                Debug.Log(TAG + " type: " + type);
-            }
+            nextTetrominoType.Value = eduTetroType.Value; // 记忆功能
+// DEBUGGING INFO
+            // Debug.Log(TAG + " (cycledPreviewTetromino.GetComponent<TetrominoType>() != null): " + (cycledPreviewTetromino.GetComponent<TetrominoType>() != null));
+            // if (cycledPreviewTetromino.GetComponent<TetrominoType>() != null) {
+            //     string type = cycledPreviewTetromino.GetComponent<TetrominoType>().type;
+            //     Debug.Log(TAG + " type: " + type);
+            // }
             ViewManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
             previewTetromino2.transform.localScale -= previewTetrominoScale;
             // previewTetromino2.layer = LayerMask.NameToLayer("Default");
@@ -792,13 +829,13 @@ namespace HotFix.UI {
                 if (isMovement) { 
                     isMovement = false;
                     // invertButton.image.overrideSprite = prevImg; // rotation img 这两个图像还需要处理一下
-                    // moveCanvas.gameObject.SetActive(false);
-                    // rotateCanvas.SetActive(true); 
+                    ViewManager.moveCanvas.gameObject.SetActive(false);
+                    ViewManager.rotateCanvas.SetActive(true); 
                 } else {
                     isMovement = true;
                     // invertButton.image.overrideSprite = newImg;
-                    // moveCanvas.gameObject.SetActive(true);
-                    // rotateCanvas.SetActive(false);
+                    ViewManager.moveCanvas.gameObject.SetActive(true);
+                    ViewManager.rotateCanvas.SetActive(false);
                 }
             }
         }
