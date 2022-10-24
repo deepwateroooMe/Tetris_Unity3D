@@ -48,6 +48,8 @@ namespace HotFix.Control {
         private bool isRotateValid = false;
         public bool IsRotateValid { get { return isRotateValid; } }
 
+        private float timer = 1.0f;
+        
 // implement interface methods
         private IType tetrominoType; 
         public string type {
@@ -342,7 +344,10 @@ namespace HotFix.Control {
 
         void Update () {
             // Debug.Log(TAG + ": Update()");
-            // Debug.Log(TAG + " (ViewManager.GameView.ViewModel.isPaused): " + (ViewManager.GameView.ViewModel.isPaused)); 
+            // Debug.Log(TAG + " (ViewManager.GameView.ViewModel.isPaused): " + (ViewManager.GameView.ViewModel.isPaused));
+// 这个简单的时间系目前还不work,要修改            
+            timer -= Time.deltaTime;
+            
             if (!ViewManager.GameView.ViewModel.isPaused) {
                 CheckUserInput();
                 UpdateIndividualScore();
@@ -358,9 +363,15 @@ namespace HotFix.Control {
 //               else
 //               text.text = "当前没有触摸在UI上";
 //               }
+
+            if (timer > 0) return ;
+
+// 这里因为手动实现的计时器,所以需要多做一件事情就是要当前方块砖下降一格
+            ((GameViewModel)ViewManager.GameView.BindingContext).nextTetroPos.Value += new Vector3(0, -1, 0);
+            timer = 1.0f;
         }
 
-        void UpdateFallSpeed() {
+        void UpdateFallSpeed() { 
             // Debug.Log(TAG + ": UpdateFallSpeed()"); 
             fallSpeed = ViewManager.GameView.ViewModel.fallSpeed;
         }

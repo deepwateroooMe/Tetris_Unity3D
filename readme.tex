@@ -1,4 +1,4 @@
-% Created 2022-10-23 Sun 11:16
+% Created 2022-10-23 Sun 22:25
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -50,6 +50,35 @@
 \item \textbf{TODO:}
 \begin{itemize}
 \item <Tetromino> <GhostTetromino> 继承自MonoBehaviour的脚本在运行时添加适配过程中出意外: instance总是空,也可以说是我的AddComponent<T>方法没有适配?这个类型的适配有点儿没有做好(这个应该是目前最重要的问题,但不是不能解决的问题)把官方DEMO中的例子好好运行好研究透彻再来试图解决自己目前遇到的问题(两个项目可以参考)
+\item 我不知道现存的方案里其它人的项目是如何实现的.回到问题的本质,那就变成为最简单的办法, 便是自己实现一个计时系统,或是模拟一个每隔(比如说1秒钟,方块砖就下降一格就可以了,that's it!)这次重构想要达到的目标便是基本绝大部分的逻辑都可以热更新重构.那么只要我能够模拟每隔一秒更新一次就解决问题了,这个项目对于我来说80\%逻辑理顺,剩下的就是热更新的服务器了
+\item 自己实现计时器的方法大致思路:那就分section,每个小节玩5分钟,挑战模式可以加到10分钟;每个方块砖每隔两秒下降一格;需要考虑应用的离线时间,就是游戏过程中去玩别人的应用了,再回来时间连续计算一个小节5分钟
+\end{itemize}
+\item \begin{itemize}
+\item 今天下午理过思路包括:
+\begin{itemize}
+\item 刚才没有把问题想明白:因为经过了适配,本身的UnityEngine.AddComponent<T>() UnityEngine.GetComponent<T>() 在热更新工程中的正常运行是没有问题的
+\begin{itemize}
+\item 出问题的特殊之处是在: Tetromini.cs GhostTetromino.cs是在热更新工程中定义的,当游戏运行,unity工程无法得知热更新工程中Tetromino.cs GhostTetromino.cs为何物
+\item 上面说得不对,因为加component本身是在热更新工程中,它是知道自己工程中所定义的部件的
+\end{itemize}
+\item 所以得想办法把这两个类移到Unity工程中来(这个反而可能会比较繁琐,也可能逻辑不通)
+\item 按照官方建议,我们是可以重置这两个方法的,让它有办法认得热更新工程中所定义的脚本(顺着这条途径把问题理顺,那么就发现别人的控件逻辑是在Unity主工程的,也就是有主工程中的MonoBehaviour系来驱动各生命周期事件,但是我的热更新控制逻辑是在热更新工程中,并没有一个默认的游戏引擎来驱动事件的自行发生)
+\item 所以,没有设置好的原因,另一个是在热更新工程中,我没有哪个地方来调用UNITY工程的系统的自动运行;
+\begin{itemize}
+\item 前面的各种适配是适配给unity,让它认识热更新工程中的诸多类型函数等
+\item 可是按照自己游戏逻辑,感觉更像是热更新工程中需要适配unity MonoBehaviour的生命周期事件 ?
+\item 那么再回到上面,刚想过的
+\end{itemize}
+\item 所以得想办法把这两个类移到Unity工程中来(这个反而可能会比较繁琐,也可能逻辑不通)
+\begin{itemize}
+\item 那么这么试一下,倒还是有可能的,unity MonoBehaviour系能够自动驱动生命周期事件,引导必要时候游戏的进行 ??? 测试一下
+\end{itemize}
+\end{itemize}
+\end{itemize}
+
+\item 示例工程中这些劫持是,代码适配用于提供给Unity工程来加载或是获取(AddComponent<>(), GetComponent<>())热更新工程中unity所不认识的定义的类等,与自己游戏逻辑不同,不用        
+
+\begin{itemize}
 \item AudioManager,EventManager可能需要适配,就需要自己把原理都弄明白了
 \item 先前的PoolManager的解决是采用ViewManager里静态管理的方法,可以如期运行,有待优化
 \item 那么上面两个如果一时半会儿找不到更好的办法,就可以参照上面的方法解决
@@ -60,7 +89,7 @@
 \begin{itemize}
 \item \textbf{已经解决了的先前的}
 \begin{itemize}
-\item moveCanvas rotateCanvas上点击事件,事件系统的传递.如果上面的问题一时半会儿解决不了,可以先试图解决这个并测试一下,给上面最难的BUG一点儿网络搜索和解决问题的时间 (狠好解决)
+\item moveCanvas rotateCanvas上点击事件,事件系统的传递.如果上面的问题一时半会儿解决不了,可以先试图解决这个并测试一下,给上面最难的BUG一点儿网络搜索和解决问题的时间 (狠好解决)这里只是用了最基础的方法来实现,以前自己都曾实现过事件系统,现在只是测试和解决主要关键点,知道都可行可实现,会再进一步的使用适当的设计模式来优化源码
 \item 两个预览方块砖的生成并画到视图上去: 现在解决这个问题
 \begin{itemize}
 \item 原理很简: 将两个预览放在不会出现在主相机的两个固定的位置上;再用两个不同的相机分别照在两个预览上,并分别投射到一块渲染媒介,显示在屏幕的固定投影位置上就可以了

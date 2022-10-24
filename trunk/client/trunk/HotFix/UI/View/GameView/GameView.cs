@@ -143,6 +143,7 @@ namespace HotFix.UI {
                        new Vector3(2.0f, ViewModel.gridHeight - 1f, 2.0f),
                        Quaternion.identity, Vector3.one);
                    currentActiveTetrominoPrepare();
+                   ViewManager.moveCanvas.transform.rotation = Quaternion.Euler(0, 0, 0);
                    ViewManager.moveCanvas.gameObject.SetActive(true);  
                    SpawnGhostTetromino();
                    SpawnPreviewTetromino();
@@ -487,7 +488,7 @@ namespace HotFix.UI {
             previewTetromino.transform.localScale -= ViewModel.previewTetrominoScale;
             // previewTetromino.GetComponent<Rotate>().enabled = !previewTetromino.GetComponent<Rotate>().enabled;
             
-            nextTetromino = previewTetromino;
+            ViewManager.nextTetromino.Value = previewTetromino;
             currentActiveTetrominoPrepare();
             // gameStarted = true;
             
@@ -516,7 +517,9 @@ namespace HotFix.UI {
             if (ViewModel.buttonInteractableList[1] == 0) return;
             ViewModel.playSecondTetromino(previewTetromino, previewTetromino2, cycledPreviewTetromino);
 
-            nextTetromino = previewTetromino2;
+            Debug.Log(TAG + " (previewTetromino2 != null): " + (previewTetromino2 != null));
+            ViewManager.nextTetromino.Value = previewTetromino2;
+
             currentActiveTetrominoPrepare();
             gameStarted = true;
             
@@ -671,13 +674,18 @@ namespace HotFix.UI {
         }    
         private void currentActiveTetrominoPrepare() {
             Debug.Log(TAG + ": currentActiveTetrominoPrepare()");
-            nextTetromino.tag = "currentActiveTetromino";
-            nextTetromino.transform.rotation = Quaternion.identity;
+            ViewManager.nextTetromino.Value.tag = "currentActiveTetromino";
+            ViewManager.nextTetromino.Value.transform.rotation = Quaternion.identity;
+            ViewManager.nextTetromino.Value.AddComponent<Tetromino>();
             if (ViewModel.gameMode.Value == 0 && (ViewModel.gridWidth == 3 || ViewModel.gridWidth == 4)) {
-                nextTetromino.transform.localPosition = new Vector3(1.0f, ViewModel.gridHeight - 1f, 1.0f);
+                ViewManager.nextTetromino.Value.transform.localPosition = new Vector3(1.0f, ViewModel.gridHeight - 1f, 1.0f);
             } else 
-                nextTetromino.transform.localPosition = new Vector3(2.0f, ViewModel.gridHeight - 1f, 2.0f);
-            
+                ViewManager.nextTetromino.Value.transform.localPosition = new Vector3(2.0f, ViewModel.gridHeight - 1f, 2.0f);
+            Tetromino tmp = ViewManager.nextTetromino.Value.GetComponent<Tetromino>();
+            Debug.Log(TAG + " (tmp != null): " + (tmp != null));
+            if (tmp != null)
+                Debug.Log(TAG + " tmp.activeSelf: " + tmp.enabled);
+
             // Debug.Log(TAG + " (defaultContainer == null) before: " + (defaultContainer == null)); 
             // if (defaultContainer == null)
             //     defaultContainer = GameObject.FindGameObjectWithTag("defaultContainer");
@@ -685,9 +693,10 @@ namespace HotFix.UI {
             // nextTetromino.transform.SetParent(defaultContainer.transform, false);
 // 下面这里跟以前的预设做得不一样:需要对象池第一次创建的时候根据不同的类型来添加脚本            
             // nextTetromino.GetComponent<Tetromino>().enabled = !nextTetromino.GetComponent<Tetromino>().enabled; 
-            nextTetromino.AddComponent<Tetromino>();
+// // 下面这行是被我弄掉了
+//             nextTetromino.AddComponent<Tetromino>();
             // ViewModel.nextTetrominoType = nextTetromino.GetComponent<TetrominoType>().type; // 可以去掉了
-            Debug.Log(TAG + " nextTetromino.name: " + nextTetromino.name);
+            //Debug.Log(TAG + " nextTetromino.name: " + nextTetromino.name);
         }
         
         public void onActiveTetrominoMove(TetrominoMoveEventInfo info) { 
@@ -732,7 +741,10 @@ namespace HotFix.UI {
             // Debug.Log(TAG + ": moveRotatecanvasPrepare()"); 
             ViewManager.moveCanvas.transform.localPosition = new Vector3(2.1f, ViewModel.gridHeight - 1f, 2.1f);     
             ViewManager.rotateCanvas.transform.localPosition = new Vector3(2.1f, ViewModel.gridHeight - 1f, 2.1f);
-            ViewModel.isMovement = false;
+
+            ViewManager.moveCanvas.transform.rotation = Quaternion.Euler(0, 0, 0);
+
+			ViewModel.isMovement = false;
             ViewModel.toggleButtons(1);
         }
         public string GetGhostTetrominoType(GameObject gameObject) { // ghostTetromino
@@ -761,10 +773,10 @@ namespace HotFix.UI {
             // Debug.Log(TAG + ": SpawnGhostTetromino() nextTetromino.tag: " + nextTetromino.tag); 
             GameObject tmpTetromino = GameObject.FindGameObjectWithTag("currentActiveTetromino");
             // Debug.Log(TAG + ": SpawnGhostTetromino() (tmpTetromino == null): " + (tmpTetromino == null)); 
-            ghostTetromino = ViewManager.GetFromPool(GetGhostTetrominoType(nextTetromino), nextTetromino.transform.position, nextTetromino.transform.rotation, Vector3.one);
+            ViewManager.ghostTetromino.Value = ViewManager.GetFromPool(GetGhostTetrominoType(ViewManager.nextTetromino.Value), ViewManager.nextTetromino.Value.transform.position, ViewManager.nextTetromino.Value.transform.rotation, Vector3.one);
 // 因为暂时还不想写协程相关的代码,这里先现加再载载,绕道,晚点儿重构时再一一改回来
             // ghostTetromino.GetComponent<GhostTetromino>().enabled = true;
-            ghostTetromino.AddComponent<GhostTetromino>();
+            ViewManager.ghostTetromino.Value.AddComponent<GhostTetromino>();
         }
         void Update() {
             ViewModel.UpdateScore();
@@ -846,7 +858,8 @@ namespace HotFix.UI {
             falBtn = GameObject.FindChildByName("falBtn").GetComponent<Button>();
             falBtn.onClick.AddListener(OnClickFalButton);
             togBtn = GameObject.FindChildByName("togBtn").GetComponent<Button>();
-            togBtn.onClick.AddListener(OnClickTogButton);
+            // togBtn.onClick.AddListener(OnClickTogButton); // toggle moveCanvas rotateCanvas
+            togBtn.onClick.AddListener(ViewModel.toggleButtons); // toggle moveCanvas rotateCanvas
             swaBtn = GameObject.FindChildByName("swaBtn").GetComponent<Button>();
             swaBtn.onClick.AddListener(OnClickSwaButton);
             undBtn = GameObject.FindChildByName("undBtn").GetComponent<Button>();
@@ -868,33 +881,61 @@ namespace HotFix.UI {
             creBtn = GameObject.FindChildByName("creBtn").GetComponent<Button>();
             creBtn.onClick.AddListener(OnClickCreButton);
 
-            // cycledPreviewTetromino = new GameObject();
-
-            // leftBtn = ViewManager. GameObject.FindChildByName("leftBtn").GetComponent<Button>();
-            // leftBtn.onClick.AddListener(OnClickLeftButton);
+            cycledPreviewTetromino = new GameObject();
+// 四个平移方向
             ViewManager.leftBtn.onClick.AddListener(OnClickLeftButton);
             ViewManager.rightBtn.onClick.AddListener(OnClickRightButton);
             ViewManager.upBtn.onClick.AddListener(OnClickUpButton);
             ViewManager.downBtn.onClick.AddListener(OnClickDownButton);
+// 六个旋转方向
+            ViewManager.XPosBtn.onClick.AddListener(OnClickXPosButton);
+            ViewManager.XNegBtn.onClick.AddListener(OnClickXNegButton);
+            ViewManager.YPosBtn.onClick.AddListener(OnClickYPosButton);
+            ViewManager.YNegBtn.onClick.AddListener(OnClickYNegButton);
+            ViewManager.ZPosBtn.onClick.AddListener(OnClickZPosButton);
+            ViewManager.ZNegBtn.onClick.AddListener(OnClickZNegButton);
+            
+        }
+        // void OnClickTogButton() {
+        // }
+// 现在的这个四个方向都是对的了，可以如此解决其它旋转6个方向的问题
+// 要再回去研究一下方块砖的旋转是如何实现的        
+        void OnClickXPosButton() {
+            
+        }
+        void OnClickXNegButton() {
+            
+        }
+        void OnClickYPosButton() {
+            
+        }
+        void OnClickYNegButton() {
+            
+        }
+        void OnClickZPosButton() {
+            
+        }
+        void OnClickZNegButton() {
             
         }
         void OnClickLeftButton() {
-            ViewModel.nextTetroPos.Value -= new Vector3(1, 0, 0);
+            ViewModel.nextTetroPos.Value += new Vector3(-1, 0, 0);
         }
         void OnClickRightButton() {
             ViewModel.nextTetroPos.Value += new Vector3(1, 0, 0);
         }
         void OnClickUpButton() {
-            ViewModel.nextTetroPos.Value -= new Vector3(0, 1, 0);
+            ViewModel.nextTetroPos.Value += new Vector3(0, 0, 1);
         }
         void OnClickDownButton() {
-            ViewModel.nextTetroPos.Value -= new Vector3(0, 1, 0);
+            ViewModel.nextTetroPos.Value += new Vector3(0, 0, -1);
         }
         
         // 想找一个更为合适的地方来写上面的观察者模式监听回调
         public void OnRevealed() {
             base.OnRevealed();
             // 注册对视图模型数据的监听观察回调等
+// 观察监听当前方块砖的位置/平移旋转缩放的变化
             ViewModel.currentScore.OnValueChanged += onCurrentScoreChanged;
             ViewModel.currentLevel.OnValueChanged += onCurrentLevelChanged;
             ViewModel.numLinesCleared.OnValueChanged += onNumLinesCleared;
@@ -914,17 +955,18 @@ namespace HotFix.UI {
             // 对于启蒙模式下,这里的游戏逻辑就是说,在加载视图的时候就需要去实例化两个方块砖,并在显示视图的时候显示出来给看
             Start();
         }
+// TODO:不仅仅是当前方块砖的位置/旋转/缩放,还该包括阴影的相关观察
         void onNextTetroPosChanged(Vector3 pre, Vector3 cur) {
-            if (nextTetromino.activeSelf) // 必须当前有正在运行的方块砖
-                nextTetromino.transform.position = cur;
+            if (ViewManager.nextTetromino.Value.activeSelf) // 必须当前有正在运行的方块砖
+                ViewManager.nextTetromino.Value.transform.position = cur;
         }
         void onNextTetroRotChanged(Quaternion pre, Quaternion cur) {
-            if (nextTetromino.activeSelf) // 必须当前有正在运行的方块砖
-                nextTetromino.transform.rotation = cur;
+            if (ViewManager.nextTetromino.Value.activeSelf) // 必须当前有正在运行的方块砖
+                ViewManager.nextTetromino.Value.transform.rotation = cur;
         }
         void onNextTetroScaChanged(Vector3 pre, Vector3 cur) {
-            if (nextTetromino.activeSelf) // 必须当前有正在运行的方块砖
-                nextTetromino.transform.localScale = cur;
+            if (ViewManager.nextTetromino.Value.activeSelf) // 必须当前有正在运行的方块砖
+                ViewManager.nextTetromino.Value.transform.localScale = cur;
         }
         void onCurrentScoreChanged(int pre, int cur) {
             hud_score.text = cur.ToString();

@@ -129,6 +129,8 @@ namespace HotFix.UI {
             fallSpeed = 3.0f;
             saveForUndo = true;
             gameStarted = false;
+
+            nextTetroPos.Value = Vector3.zero;
         }
 
         public void Start() {
@@ -647,7 +649,15 @@ namespace HotFix.UI {
             //     Debug.Log(TAG + " type: " + type);
             // }
             ViewManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+// 配置当前方块砖的相关信息
+            ViewManager.nextTetromino.Value = previewTetromino2;
             previewTetromino2.transform.localScale -= previewTetrominoScale;
+            Debug.Log(TAG + " (nextTetroPos.Value == null): " + (nextTetroPos.Value == null));
+            Debug.Log(TAG + " (nextTetroRot.Value == null): " + (nextTetroRot.Value == null));
+            nextTetroPos.Value = new Vector3(2.0f, 12.0f, 2.0f);
+            nextTetroRot.Value = Quaternion.Euler(0, 0, 0);
+            nextTetroSca.Value = new Vector3(1, 1, 1);
+            
             // previewTetromino2.layer = LayerMask.NameToLayer("Default");
             // previewTetromino2.GetComponent<Rotate>().enabled = !previewTetromino2.GetComponent<Rotate>().enabled;
 
@@ -819,6 +829,22 @@ namespace HotFix.UI {
             }
             return type.ToString(); 
         }    
+        public void toggleButtons() {
+            Debug.Log(TAG + ": toggleButtons()");
+            Debug.Log(TAG + " buttonInteractableList[4]: " + buttonInteractableList[4]); 
+            if (buttonInteractableList[4] == 0) return;
+            if (isMovement) { 
+                isMovement = false;
+                //invertButton.image.overrideSprite = prevImg; // rotation img 这两个图像还需要处理一下
+                ViewManager.moveCanvas.gameObject.SetActive(false);
+                ViewManager.rotateCanvas.SetActive(true); 
+            } else {
+                isMovement = true;
+                //invertButton.image.overrideSprite = newImg;
+                ViewManager.moveCanvas.gameObject.SetActive(true);
+                ViewManager.rotateCanvas.SetActive(false);
+            }
+        }
 
         public void toggleButtons(int indicator) {
             Debug.Log(TAG + ": toggleButtons()");
@@ -828,6 +854,7 @@ namespace HotFix.UI {
             if (gameMode.Value  > 0 || indicator == 1 || buttonInteractableList[4] == 1) {
                 if (isMovement) { 
                     isMovement = false;
+// 那个按钮的图片切换,暂时不管                    , 空空 NULL NULL
                     // invertButton.image.overrideSprite = prevImg; // rotation img 这两个图像还需要处理一下
                     ViewManager.moveCanvas.gameObject.SetActive(false);
                     ViewManager.rotateCanvas.SetActive(true); 
@@ -1118,20 +1145,20 @@ namespace HotFix.UI {
         }
 
         public void ClearedOneLine() {
-            currentScore.Value  += scoreOneLine + (currentLevel.Value  + 20);
-            numLinesCleared.Value  += 1;
+            currentScore.Value += scoreOneLine + (currentLevel.Value  + 20);
+            numLinesCleared.Value += 1;
         }
         public void ClearedTwoLine() {
-            currentScore.Value  += scoreTwoLine + (currentLevel.Value  + 25);
-            numLinesCleared.Value  += 2;
+            currentScore.Value += scoreTwoLine + (currentLevel.Value  + 25);
+            numLinesCleared.Value += 2;
         }
         public void ClearedThreeLine() {
-            currentScore.Value  += scoreThreeLine + (currentLevel.Value  + 30);
-            numLinesCleared.Value  += 3;
+            currentScore.Value += scoreThreeLine + (currentLevel.Value  + 30);
+            numLinesCleared.Value += 3;
         }
         public void ClearedFourLine() {
-            currentScore.Value  += scoreFourLine + (currentLevel.Value  + 40);
-            numLinesCleared.Value  += 4;
+            currentScore.Value += scoreFourLine + (currentLevel.Value  + 40);
+            numLinesCleared.Value += 4;
         }
 
         public void PlayLineClearedSound() {

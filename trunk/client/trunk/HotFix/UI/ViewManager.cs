@@ -92,11 +92,18 @@ namespace HotFix.UI {
                         GameObject.DontDestroyOnLoad(go); // 以此为父节点的所有子节点都不会被销毁,包括各种管理类
                         moveCanvas = go.FindChildByName("moveCanvas");
                         rotateCanvas = go.FindChildByName("rotateCanvas");
-
+// 4 move Buttons
                         leftBtn = go.FindChildByName("leftBtn").GetComponent<Button>();
                         rightBtn = go.FindChildByName("rightBtn").GetComponent<Button>();
                         upBtn = go.FindChildByName("upBtn").GetComponent<Button>();
                         downBtn = go.FindChildByName("downBtn").GetComponent<Button>();
+// 6 rotate Buttons: 想当然地要实现至少三组不同的旋转及位置(可以不实现三组,只用一组,但需要更为精确的摆放,以便他们也可以旋转,让他们的显示与否变得聪明一些)
+                        XPosBtn = go.FindChildByName("posX").GetComponent<Button>();
+                        XNegBtn = go.FindChildByName("negX").GetComponent<Button>();
+                        YPosBtn = go.FindChildByName("posY").GetComponent<Button>();
+                        YNegBtn = go.FindChildByName("negY").GetComponent<Button>();
+                        ZPosBtn = go.FindChildByName("posZ").GetComponent<Button>();
+                        ZNegBtn = go.FindChildByName("negZ").GetComponent<Button>();
 
                         moveCanvas.SetActive(false);
                         rotateCanvas.SetActive(false);
@@ -151,11 +158,21 @@ namespace HotFix.UI {
         public static GameObject tetrosPool = null;
         public static GameObject tetroParent = null;
         private static Vector3 defaultPos = new Vector3(-100, -100, -100); // 不同类型的起始位置不一样(可否设置在预设里呢>??)
-
+// move Buttons
         public static Button leftBtn;
         public static Button rightBtn;
         public static Button upBtn;
         public static Button downBtn;
+// rotate Buttons
+        public static Button XPosBtn;
+        public static Button XNegBtn;
+        public static Button YPosBtn;
+        public static Button YNegBtn;
+        public static Button ZPosBtn;
+        public static Button ZNegBtn;
+
+        public static BindableProperty<GameObject> nextTetromino = new BindableProperty<GameObject>();
+        public static BindableProperty<GameObject> ghostTetromino = new BindableProperty<GameObject>();
 
 // // 预览方块砖的: 类型,位置,旋转,缩放
 //         public BindableProperty<string> tetroType { get; set; }

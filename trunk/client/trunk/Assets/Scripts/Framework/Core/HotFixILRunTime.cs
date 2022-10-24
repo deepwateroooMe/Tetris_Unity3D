@@ -39,9 +39,9 @@ namespace Framework.Core {
             // ILRuntime.Runtime.Generated.CLRBindings.Initialize(appDomain);
         }
 
-        public void Update() {
-	        DoStaticMethod("HotFix.HotFixMain", "Update"); // <<<<<<<<<<<<<<<<<<<< 
-		}
+        // public void Update() {
+	    //     DoStaticMethod("HotFix.HotFixMain", "Update"); // <<<<<<<<<<<<<<<<<<<< 
+		// }
         
 		void StartApplication() {
             InitializeILRunTimeHotFixSetting();
@@ -183,9 +183,9 @@ namespace Framework.Core {
         }
         object DoStaticMethod(string type, string method) {
             var hotfixType = appDomain.GetType(type);
-            IMethod staticMethod;
+            //IMethod staticMethod;
             //if (method.Equals("Start"))
-                staticMethod = hotfixType.GetMethod(method, 0);
+            var staticMethod = hotfixType.GetMethod(method, 0);
             //else 
             //    staticMethod = hotfixType.GetMethod(method, 0);
             return appDomain.Invoke(staticMethod, null, null);
@@ -241,6 +241,7 @@ namespace Framework.Core {
         //     }
         //     return null;
         // }
+        
         // public unsafe static StackObject* AddComponent(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj) {
         //     // CLR重定向的说明请看相关文档和教程，这里不多做解释
         //     ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
@@ -275,6 +276,7 @@ namespace Framework.Core {
         //     }
         //     return __esp;
         // }
+        
         // public unsafe static StackObject* GetComponent(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj) {
         //     // CLR重定向的说明请看相关文档和教程，这里不多做解释
         //     ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
@@ -311,3 +313,5 @@ namespace Framework.Core {
         // }
     }
 }
+
+

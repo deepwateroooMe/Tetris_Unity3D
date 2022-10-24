@@ -6,6 +6,6 @@ namespace Framework.Core {
         Type LoadType(string typeName);
         object CreateInstance(string typeName);
 
-        void Update();
+        // void Update();
     }
 }
