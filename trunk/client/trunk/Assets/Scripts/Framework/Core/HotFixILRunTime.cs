@@ -15,6 +15,7 @@ using UnityEngine.EventSystems;
 namespace Framework.Core {
 
     public class HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain {
+        private const string TAG = "HotFixILRunTime"; 
 
         public static ILRuntime.Runtime.Enviorment.AppDomain appDomain;
 
@@ -35,11 +36,14 @@ namespace Framework.Core {
                 appDomain.LoadAssembly(msDll, null, new Mono.Cecil.Mdb.MdbReaderProvider());
                 StartApplication();
             }
-            //ILRuntime.Runtime.Generated.CLRBindings.Initialize(appDomain);
-
+            // ILRuntime.Runtime.Generated.CLRBindings.Initialize(appDomain);
         }
 
-        void StartApplication() {
+        public void Update() {
+	        DoStaticMethod("HotFix.HotFixMain", "Update"); // <<<<<<<<<<<<<<<<<<<< 
+		}
+        
+		void StartApplication() {
             InitializeILRunTimeHotFixSetting();
             DoStaticMethod("HotFix.HotFixMain", "Start");
         }
@@ -55,8 +59,8 @@ namespace Framework.Core {
             appDomain.DelegateManager.RegisterMethodDelegate<string>();
             appDomain.DelegateManager.RegisterMethodDelegate<int, int>();
 // 感觉这一步的加虽然消除了一个运行时错误,但内存的运行效率有可能是降低了: 还是必要的,至少是它不再报错了            
-           appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Vector3, UnityEngine.Vector3>();
-           appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Quaternion, UnityEngine.Quaternion>();
+            appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Vector3, UnityEngine.Vector3>();
+            appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Quaternion, UnityEngine.Quaternion>();
             appDomain.DelegateManager.RegisterMethodDelegate<List<int>, List<int>>();
             appDomain.DelegateManager.RegisterMethodDelegate<string, string>();
             appDomain.DelegateManager.RegisterMethodDelegate<object, MessageArgs<object>>();
@@ -136,26 +140,34 @@ namespace Framework.Core {
                 });
             });
 
-            #if UNITY_IPHONE
+#if UNITY_IPHONE
             appDomain.DelegateManager.RegisterDelegateConvertor<com.mob.FinishedRecordEvent>((action) => {
                 return new com.mob.FinishedRecordEvent((ex) => {
                     ((Action<Exception>)action)(ex);
                 });
             });
-            #endif
+#endif
             appDomain.DelegateManager.RegisterDelegateConvertor<Comparison<ILTypeInstance>>((action) => {
                 return new Comparison<ILTypeInstance>((x, y) => {
                     return ((Func<ILTypeInstance, ILTypeInstance, System.Int32>)action)(x, y);
                 });
             });
         }
+// 我们先销毁掉之前创建的不合法的MonoBehaviour, 这里是销毁之前创建的不合法的 ?
         unsafe void InitializeCLRBindSetting() {
             foreach (var i in typeof(System.Activator).GetMethods()) {
                 // 找到名字为CreateInstance，并且是泛型方法的方法定义
+// 我觉得这里只定义这一类的方法可能不够用,按照网上的把AddComponent<>() GetComponent<>()也都加上                
                 if (i.Name == "CreateInstance" && i.IsGenericMethodDefinition) 
-                    appDomain.RegisterCLRMethodRedirection(i, CreateInstance); // 方法重定向 
+                    appDomain.RegisterCLRMethodRedirection(i, CreateInstance); // 方法重定向
+                // else if (i.Name == "AddComponent" && i.GetGenericArguments().Length == 1) {
+                //     appDomain.RegisterCLRMethodRedirection(i, AddComponent);
+                // } else if (i.Name == "GetComponent" && i.GetGenericArguments().Length == 1) {
+                //     appDomain.RegisterCLRMethodRedirection(i, GetComponent);
+                // }
             }
         }
+
         void InitializeAdapterSetting() {
             appDomain.RegisterCrossBindingAdaptor(new ViewModelBaseAdapter());
             appDomain.RegisterCrossBindingAdaptor(new UnityGuiViewAdapter());
@@ -164,18 +176,20 @@ namespace Framework.Core {
             appDomain.RegisterCrossBindingAdaptor(new InterfaceCrossBindingAdaptor()); // <<<<<<<<<<<<<<<<<<<< 
             appDomain.RegisterCrossBindingAdaptor(new MonoBehaviourAdapter());
         }
-		void InitializeValueTypeSetting() {
+        void InitializeValueTypeSetting() {
             appDomain.RegisterValueTypeBinder(typeof(Vector3), new Vector3Binder());
             appDomain.RegisterValueTypeBinder(typeof(Vector2), new Vector2Binder());
             appDomain.RegisterValueTypeBinder(typeof(Quaternion), new QuaternionBinder());
         }
-
         object DoStaticMethod(string type, string method) {
             var hotfixType = appDomain.GetType(type);
-            var staticMethod = hotfixType.GetMethod(method, 0);
+            IMethod staticMethod;
+            //if (method.Equals("Start"))
+                staticMethod = hotfixType.GetMethod(method, 0);
+            //else 
+            //    staticMethod = hotfixType.GetMethod(method, 0);
             return appDomain.Invoke(staticMethod, null, null);
         }
-
 // IHotFixMain 里的两个方法的实现         
 #region Override
         public Type LoadType(string typeName) {
@@ -189,9 +203,7 @@ namespace Framework.Core {
             var instance = type.Instantiate();
             return instance;
         }
-
 #endregion
-
         public unsafe static StackObject* CreateInstance(ILIntepreter intp, StackObject* esp, IList<object> mStack, CLRMethod method, bool isNewObj) {
             // 获取泛型参数<T>的实际类型
             IType[] genericArguments = method.GenericArguments;
@@ -205,5 +217,97 @@ namespace Framework.Core {
             } else
                 throw new EntryPointNotFoundException();
         }
+
+// 刚才没有把问题想明白:因为经过了适配,本身的UnityEngine.AddComponent<T>() UnityEngine.GetComponent<T>() 在热更新工程中的正常运行是没有问题的
+    // 出问题的特殊之处是在: Tetromini.cs GhostTetromino.cs是在热更新工程中定义的,当游戏运行,unity工程无法得知热更新工程中Tetromino.cs GhostTetromino.cs为何物
+    // 上面说得不对,因为加component本身是在热更新工程中,它是知道自己工程中所定义的部件的
+// 所以得想办法把这两个类移到Unity工程中来(这个反而可能会比较繁琐,也可能逻辑不通)
+// 按照官方建议,我们是可以重置这两个方法的,让它有办法认得热更新工程中所定义的脚本(顺着这条途径把问题理顺,那么就发现别人的控件逻辑是在Unity主工程的,也就是有主工程中的MonoBehaviour系来驱动各生命周期事件,但是我的热更新控制逻辑是在热更新工程中,并没有一个默认的游戏引擎来驱动事件的自行发生)
+// 所以,没有设置好的原因,另一个是在热更新工程中,我没有哪个地方来调用UNITY工程的系统的自动运行;
+        // 前面的各种适配是适配给unity,让它认识热更新工程中的诸多类型函数等
+        // 可是按照自己游戏逻辑,感觉更像是热更新工程中需要适配unity MonoBehaviour的生命周期事件 ?
+        // 那么再回到上面,刚想过的
+// 所以得想办法把这两个类移到Unity工程中来(这个反而可能会比较繁琐,也可能逻辑不通)
+        // 那么这么试一下,倒还是有可能的,unity MonoBehaviour系能够自动驱动生命周期事件,引导必要时候游戏的进行 ??? 测试一下
+
+// 示例工程中这些劫持是,代码适配用于提供给Unity工程来加载或是获取(AddComponent<>(), GetComponent<>())热更新工程中unity所不认识的定义的类等,与自己游戏逻辑不同,不用        
+        // MonoBehaviourAdapter.Adaptor GetComponent(ILType type) {
+        //     Debug.Log(TAG + " GetComponent");
+        //     var arr = GetComponents<MonoBehaviourAdapter.Adaptor>();
+        //     for(int i = 0; i < arr.Length; i++) {
+        //         var instance = arr[i];
+        //         if (instance.ILInstance != null && instance.ILInstance.Type == type) 
+        //             return instance;
+        //     }
+        //     return null;
+        // }
+        // public unsafe static StackObject* AddComponent(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj) {
+        //     // CLR重定向的说明请看相关文档和教程，这里不多做解释
+        //     ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
+        //     var ptr = __esp - 1;
+        //     // 成员方法的第一个参数为this
+        //     GameObject instance = StackObject.ToObject(ptr, __domain, __mStack) as GameObject;
+        //     if (instance == null)
+        //         throw new System.NullReferenceException();
+        //     __intp.Free(ptr);
+        //     var genericArgument = __method.GenericArguments;
+        //     // AddComponent应该有且只有1个泛型参数
+        //     if (genericArgument != null && genericArgument.Length == 1) {
+        //         var type = genericArgument[0];
+        //         object res;
+        //         if(type is CLRType) {
+        //             // Unity主工程的类不需要任何特殊处理，直接调用Unity接口
+        //             res = instance.AddComponent(type.TypeForCLR);
+        //         } else {
+        //             // 热更DLL内的类型比较麻烦。首先我们得自己手动创建实例
+        //             var ilInstance = new ILTypeInstance(type as ILType, false);// 手动创建实例是因为默认方式会new MonoBehaviour，这在Unity里不允许
+        //             // 接下来创建Adapter实例
+        //             var clrInstance = instance.AddComponent<MonoBehaviourAdapter.Adaptor>();
+        //             // unity创建的实例并没有热更DLL里面的实例，所以需要手动赋值
+        //             clrInstance.ILInstance = ilInstance;
+        //             clrInstance.AppDomain = __domain;
+        //             // 这个实例默认创建的CLRInstance不是通过AddComponent出来的有效实例，所以得手动替换
+        //             ilInstance.CLRInstance = clrInstance;
+        //             res = clrInstance.ILInstance;// 交给ILRuntime的实例应该为ILInstance
+        //             clrInstance.Awake();// 因为Unity调用这个方法时还没准备好所以这里补调一次
+        //         }
+        //         return ILIntepreter.PushObject(ptr, __mStack, res);
+        //     }
+        //     return __esp;
+        // }
+        // public unsafe static StackObject* GetComponent(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj) {
+        //     // CLR重定向的说明请看相关文档和教程，这里不多做解释
+        //     ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
+        //     var ptr = __esp - 1;
+        //     // 成员方法的第一个参数为this
+        //     GameObject instance = StackObject.ToObject(ptr, __domain, __mStack) as GameObject;
+        //     if (instance == null)
+        //         throw new System.NullReferenceException();
+        //     __intp.Free(ptr);
+        //     var genericArgument = __method.GenericArguments;
+        //     // AddComponent应该有且只有1个泛型参数
+        //     if (genericArgument != null && genericArgument.Length == 1) {
+        //         var type = genericArgument[0];
+        //         object res = null;
+        //         if (type is CLRType) {
+        //             // Unity主工程的类不需要任何特殊处理，直接调用Unity接口
+        //             res = instance.GetComponent(type.TypeForCLR);
+        //         } else {
+        //             // 因为所有DLL里面的MonoBehaviour实际都是这个Component，所以我们只能全取出来遍历查找
+        //             var clrInstances = instance.GetComponents<MonoBehaviourAdapter.Adaptor>();
+        //             for(int i = 0; i < clrInstances.Length; i++) {
+        //                 var clrInstance = clrInstances[i];
+        //                 if (clrInstance.ILInstance != null) { // ILInstance为null, 表示是无效的MonoBehaviour，要略过 
+        //                     if (clrInstance.ILInstance.Type == type) {
+        //                         res = clrInstance.ILInstance;// 交给ILRuntime的实例应该为ILInstance
+        //                         break;
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //         return ILIntepreter.PushObject(ptr, __mStack, res);
+        //     }
+        //     return __esp;
+        // }
     }
 }

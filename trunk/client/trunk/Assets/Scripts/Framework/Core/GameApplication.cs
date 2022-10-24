@@ -58,6 +58,12 @@ namespace Framework.Core {
             // GeometryManager.Instance.Test();
 #endregion
         }
+
+        void Update()
+        {
+			if (HotFix != null)
+		        HotFix.Update();
+        }
         void InitializeClientConfig() {
             var str = FileHelp.ReadString("ClientConfig.txt"); // 这此是写在用户手机的配置文件里的
             if (!string.IsNullOrEmpty(str)) {
