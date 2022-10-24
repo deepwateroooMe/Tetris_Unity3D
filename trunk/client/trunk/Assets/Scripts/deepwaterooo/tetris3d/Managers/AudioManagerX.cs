@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace deepwaterooo.tetris3d {
     // 应用中的音效播放管理器:它应该管理游戏中所有声音相关的,存有相关的音频,控制播放与停止等等,后来加上的?感觉代码不完整
-    public class AudioManager : SingletonMono<AudioManager> { // 感知Mono生命周期
+    public class AudioManagerX : SingletonMono<AudioManagerX> { // 感知Mono生命周期
         private const string TAG = "AudioManager";
 
 // 这里可能需要一个设置功能        
@@ -28,6 +28,7 @@ namespace deepwaterooo.tetris3d {
             audioSource = gameObject.GetComponent<AudioSource>(); 
 
 // com for tmp: 这里的代码写得好奇怪,明明是音频视频管理器,却搅到事件管理器里去了            
+
             // EventManager.Instance.RegisterListener<CanvasMovedEventInfo>(onCanvasMoved);
             // EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onTetrominoLand);
         }

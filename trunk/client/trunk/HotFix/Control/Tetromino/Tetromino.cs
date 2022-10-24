@@ -50,6 +50,36 @@ namespace HotFix.Control {
 
         private float timer = 1.0f;
         
+        void Update () {
+            // Debug.Log(TAG + ": Update()");
+            // Debug.Log(TAG + " (ViewManager.GameView.ViewModel.isPaused): " + (ViewManager.GameView.ViewModel.isPaused));
+// 这个简单的时间系目前还不work,要修改            
+            timer -= Time.deltaTime;
+            Debug.Log(TAG + " timer: " + timer);
+
+            if (!ViewManager.GameView.ViewModel.isPaused) {
+                CheckUserInput();
+                UpdateIndividualScore();
+                UpdateFallSpeed();       // static 1.0f
+            } 
+//             if (Input.GetMouseButtonDown(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)) {        
+// #if UNITY_ANDROID || UNITY_IPHONE
+//                 if (EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
+// #else 
+//               if (EventSystem.current.IsPointerOverGameObject())
+// #endif
+//               text.text = "当前触摸在UI上";
+//               else
+//               text.text = "当前没有触摸在UI上";
+//               }
+
+            if (timer > 0) return ;
+
+// 这里因为手动实现的计时器,所以需要多做一件事情就是要当前方块砖下降一格
+            ((GameViewModel)ViewManager.GameView.BindingContext).nextTetroPos.Value += new Vector3(0, -1, 0);
+            timer = 1.0f;
+        }
+
 // implement interface methods
         private IType tetrominoType; 
         public string type {
@@ -340,35 +370,6 @@ namespace HotFix.Control {
                 MoveDown();
             }
 // #endif
-        }
-
-        void Update () {
-            // Debug.Log(TAG + ": Update()");
-            // Debug.Log(TAG + " (ViewManager.GameView.ViewModel.isPaused): " + (ViewManager.GameView.ViewModel.isPaused));
-// 这个简单的时间系目前还不work,要修改            
-            timer -= Time.deltaTime;
-            
-            if (!ViewManager.GameView.ViewModel.isPaused) {
-                CheckUserInput();
-                UpdateIndividualScore();
-                UpdateFallSpeed();       // static 1.0f
-            } 
-//             if (Input.GetMouseButtonDown(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)) {        
-// #if UNITY_ANDROID || UNITY_IPHONE
-//                 if (EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
-// #else 
-//               if (EventSystem.current.IsPointerOverGameObject())
-// #endif
-//               text.text = "当前触摸在UI上";
-//               else
-//               text.text = "当前没有触摸在UI上";
-//               }
-
-            if (timer > 0) return ;
-
-// 这里因为手动实现的计时器,所以需要多做一件事情就是要当前方块砖下降一格
-            ((GameViewModel)ViewManager.GameView.BindingContext).nextTetroPos.Value += new Vector3(0, -1, 0);
-            timer = 1.0f;
         }
 
         void UpdateFallSpeed() { 

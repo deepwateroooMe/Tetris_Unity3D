@@ -46,6 +46,9 @@ namespace Framework.Core {
 		void StartApplication() {
             InitializeILRunTimeHotFixSetting();
             DoStaticMethod("HotFix.HotFixMain", "Start");
+// 暂时不测这个,会想办法解决问题            
+// // 不知道这里会不会报错
+//             InitializeCustomizedILTypes();
         }
         void InitializeILRunTimeHotFixSetting() {
             InitializeDelegateSetting();
@@ -53,7 +56,22 @@ namespace Framework.Core {
             InitializeAdapterSetting();
             InitializeValueTypeSetting();
         }
-        void InitializeDelegateSetting() {
+// // 自己模拟的测试, 不通.因为我把下面的自定义方法去掉了,所以这里commented for tmp
+//         void InitializeCustomizedILTypes() { // 我感觉还是那两个类不被认识 ??
+//             Debug.Log(TAG + " InitializeCustomizedILTypes");
+//             var type = appDomain.LoadedTypes["HotFix.Control.Tetromino"] as ILType; // 这个没有问题,可以认识这个类了
+//             //var type2 = appDomain.LoadedTypes["HotFix.Control.GhostTetromino"] as ILType;
+// // 这里仍然是空,会报错,             
+//             var smb = GetComponent(type);   // 这里说,现处unity主工程,劫持改造一个系统方法GetComponent,以方便去拿热更新工程中所定义的这两个类
+//             //var smb2 = GetComponent(type2); // 这里说,现处unity主工程,劫持改造一个系统方法GetComponent,以方便去拿热更新工程中所定义的这两个类
+//             Debug.Log(TAG + " (type == null): " + (type == null));
+//             Debug.Log(TAG + " (smb == null): " + (smb == null));
+//             var method = type.GetMethod("Update");
+// // 这里仍然是空,会报错            :　错会报在下面这一行
+//             appDomain.Invoke(method, smb, null);
+//         }
+
+		void InitializeDelegateSetting() {
             appDomain.DelegateManager.RegisterMethodDelegate<int>();
             appDomain.DelegateManager.RegisterFunctionDelegate<int, string>();
             appDomain.DelegateManager.RegisterMethodDelegate<string>();
@@ -154,12 +172,14 @@ namespace Framework.Core {
             });
         }
 // 我们先销毁掉之前创建的不合法的MonoBehaviour, 这里是销毁之前创建的不合法的 ?
+// 这里说,在主工程中消除游戏引擎反射系统        中的CreateInstance方法,去调用ILRuntime框架中自定义改造过的相应方法,以便劫持逻辑
         unsafe void InitializeCLRBindSetting() {
             foreach (var i in typeof(System.Activator).GetMethods()) {
                 // 找到名字为CreateInstance，并且是泛型方法的方法定义
 // 我觉得这里只定义这一类的方法可能不够用,按照网上的把AddComponent<>() GetComponent<>()也都加上                
                 if (i.Name == "CreateInstance" && i.IsGenericMethodDefinition) 
                     appDomain.RegisterCLRMethodRedirection(i, CreateInstance); // 方法重定向
+// 因为没有用,所以需要去掉                
                 // else if (i.Name == "AddComponent" && i.GetGenericArguments().Length == 1) {
                 //     appDomain.RegisterCLRMethodRedirection(i, AddComponent);
                 // } else if (i.Name == "GetComponent" && i.GetGenericArguments().Length == 1) {
@@ -181,6 +201,7 @@ namespace Framework.Core {
             appDomain.RegisterValueTypeBinder(typeof(Vector2), new Vector2Binder());
             appDomain.RegisterValueTypeBinder(typeof(Quaternion), new QuaternionBinder());
         }
+
         object DoStaticMethod(string type, string method) {
             var hotfixType = appDomain.GetType(type);
             //IMethod staticMethod;
@@ -190,6 +211,7 @@ namespace Framework.Core {
             //    staticMethod = hotfixType.GetMethod(method, 0);
             return appDomain.Invoke(staticMethod, null, null);
         }
+
 // IHotFixMain 里的两个方法的实现         
 #region Override
         public Type LoadType(string typeName) {
@@ -230,88 +252,87 @@ namespace Framework.Core {
 // 所以得想办法把这两个类移到Unity工程中来(这个反而可能会比较繁琐,也可能逻辑不通)
         // 那么这么试一下,倒还是有可能的,unity MonoBehaviour系能够自动驱动生命周期事件,引导必要时候游戏的进行 ??? 测试一下
 
-// 示例工程中这些劫持是,代码适配用于提供给Unity工程来加载或是获取(AddComponent<>(), GetComponent<>())热更新工程中unity所不认识的定义的类等,与自己游戏逻辑不同,不用        
-        // MonoBehaviourAdapter.Adaptor GetComponent(ILType type) {
-        //     Debug.Log(TAG + " GetComponent");
-        //     var arr = GetComponents<MonoBehaviourAdapter.Adaptor>();
-        //     for(int i = 0; i < arr.Length; i++) {
-        //         var instance = arr[i];
-        //         if (instance.ILInstance != null && instance.ILInstance.Type == type) 
-        //             return instance;
-        //     }
-        //     return null;
-        // }
+// // 示例工程中这些劫持是,代码适配用于提供给Unity工程来加载或是获取(AddComponent<>(), GetComponent<>())热更新工程中unity所不认识的定义的类等,与自己游戏逻辑不同,不用        
+//         MonoBehaviourAdapter.Adaptor GetComponent(ILType type) {
+//             Debug.Log(TAG + " GetComponent");
+//             var arr = GetComponents<MonoBehaviourAdapter.Adaptor>();
+//             for(int i = 0; i < arr.Length; i++) {
+//                 var instance = arr[i];
+//                 if (instance.ILInstance != null && instance.ILInstance.Type == type) 
+//                     return instance;
+//             }
+//             return null;
+//         }
         
-        // public unsafe static StackObject* AddComponent(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj) {
-        //     // CLR重定向的说明请看相关文档和教程，这里不多做解释
-        //     ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
-        //     var ptr = __esp - 1;
-        //     // 成员方法的第一个参数为this
-        //     GameObject instance = StackObject.ToObject(ptr, __domain, __mStack) as GameObject;
-        //     if (instance == null)
-        //         throw new System.NullReferenceException();
-        //     __intp.Free(ptr);
-        //     var genericArgument = __method.GenericArguments;
-        //     // AddComponent应该有且只有1个泛型参数
-        //     if (genericArgument != null && genericArgument.Length == 1) {
-        //         var type = genericArgument[0];
-        //         object res;
-        //         if(type is CLRType) {
-        //             // Unity主工程的类不需要任何特殊处理，直接调用Unity接口
-        //             res = instance.AddComponent(type.TypeForCLR);
-        //         } else {
-        //             // 热更DLL内的类型比较麻烦。首先我们得自己手动创建实例
-        //             var ilInstance = new ILTypeInstance(type as ILType, false);// 手动创建实例是因为默认方式会new MonoBehaviour，这在Unity里不允许
-        //             // 接下来创建Adapter实例
-        //             var clrInstance = instance.AddComponent<MonoBehaviourAdapter.Adaptor>();
-        //             // unity创建的实例并没有热更DLL里面的实例，所以需要手动赋值
-        //             clrInstance.ILInstance = ilInstance;
-        //             clrInstance.AppDomain = __domain;
-        //             // 这个实例默认创建的CLRInstance不是通过AddComponent出来的有效实例，所以得手动替换
-        //             ilInstance.CLRInstance = clrInstance;
-        //             res = clrInstance.ILInstance;// 交给ILRuntime的实例应该为ILInstance
-        //             clrInstance.Awake();// 因为Unity调用这个方法时还没准备好所以这里补调一次
-        //         }
-        //         return ILIntepreter.PushObject(ptr, __mStack, res);
-        //     }
-        //     return __esp;
-        // }
+//         public unsafe static StackObject* AddComponent(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj) {
+//             // CLR重定向的说明请看相关文档和教程，这里不多做解释
+//             ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
+//             var ptr = __esp - 1;
+//             // 成员方法的第一个参数为this
+//             GameObject instance = StackObject.ToObject(ptr, __domain, __mStack) as GameObject;
+//             if (instance == null)
+//                 throw new System.NullReferenceException();
+//             __intp.Free(ptr);
+//             var genericArgument = __method.GenericArguments;
+//             // AddComponent应该有且只有1个泛型参数
+//             if (genericArgument != null && genericArgument.Length == 1) {
+//                 var type = genericArgument[0];
+//                 object res;
+//                 if(type is CLRType) {
+//                     // Unity主工程的类不需要任何特殊处理，直接调用Unity接口
+//                     res = instance.AddComponent(type.TypeForCLR);
+//                 } else {
+//                     // 热更DLL内的类型比较麻烦。首先我们得自己手动创建实例
+//                     var ilInstance = new ILTypeInstance(type as ILType, false);// 手动创建实例是因为默认方式会new MonoBehaviour，这在Unity里不允许
+//                     // 接下来创建Adapter实例
+//                     var clrInstance = instance.AddComponent<MonoBehaviourAdapter.Adaptor>();
+//                     // unity创建的实例并没有热更DLL里面的实例，所以需要手动赋值
+//                     clrInstance.ILInstance = ilInstance;
+//                     clrInstance.AppDomain = __domain;
+//                     // 这个实例默认创建的CLRInstance不是通过AddComponent出来的有效实例，所以得手动替换
+//                     ilInstance.CLRInstance = clrInstance;
+//                     res = clrInstance.ILInstance;// 交给ILRuntime的实例应该为ILInstance
+//                     clrInstance.Awake();// 因为Unity调用这个方法时还没准备好所以这里补调一次
+//                 }
+//                 return ILIntepreter.PushObject(ptr, __mStack, res);
+//             }
+//             return __esp;
+//         }
         
-        // public unsafe static StackObject* GetComponent(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj) {
-        //     // CLR重定向的说明请看相关文档和教程，这里不多做解释
-        //     ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
-        //     var ptr = __esp - 1;
-        //     // 成员方法的第一个参数为this
-        //     GameObject instance = StackObject.ToObject(ptr, __domain, __mStack) as GameObject;
-        //     if (instance == null)
-        //         throw new System.NullReferenceException();
-        //     __intp.Free(ptr);
-        //     var genericArgument = __method.GenericArguments;
-        //     // AddComponent应该有且只有1个泛型参数
-        //     if (genericArgument != null && genericArgument.Length == 1) {
-        //         var type = genericArgument[0];
-        //         object res = null;
-        //         if (type is CLRType) {
-        //             // Unity主工程的类不需要任何特殊处理，直接调用Unity接口
-        //             res = instance.GetComponent(type.TypeForCLR);
-        //         } else {
-        //             // 因为所有DLL里面的MonoBehaviour实际都是这个Component，所以我们只能全取出来遍历查找
-        //             var clrInstances = instance.GetComponents<MonoBehaviourAdapter.Adaptor>();
-        //             for(int i = 0; i < clrInstances.Length; i++) {
-        //                 var clrInstance = clrInstances[i];
-        //                 if (clrInstance.ILInstance != null) { // ILInstance为null, 表示是无效的MonoBehaviour，要略过 
-        //                     if (clrInstance.ILInstance.Type == type) {
-        //                         res = clrInstance.ILInstance;// 交给ILRuntime的实例应该为ILInstance
-        //                         break;
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //         return ILIntepreter.PushObject(ptr, __mStack, res);
-        //     }
-        //     return __esp;
-        // }
+//         public unsafe static StackObject* GetComponent(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj) {
+//             // CLR重定向的说明请看相关文档和教程，这里不多做解释
+//             ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
+//             var ptr = __esp - 1;
+//             // 成员方法的第一个参数为this
+//             GameObject instance = StackObject.ToObject(ptr, __domain, __mStack) as GameObject;
+//             if (instance == null)
+//                 throw new System.NullReferenceException();
+//             __intp.Free(ptr);
+//             var genericArgument = __method.GenericArguments;
+//             // AddComponent应该有且只有1个泛型参数
+//             if (genericArgument != null && genericArgument.Length == 1) {
+//                 var type = genericArgument[0];
+//                 object res = null;
+//                 if (type is CLRType) {
+//                     // Unity主工程的类不需要任何特殊处理，直接调用Unity接口
+//                     res = instance.GetComponent(type.TypeForCLR);
+//                 } else {
+//                     // 因为所有DLL里面的MonoBehaviour实际都是这个Component，所以我们只能全取出来遍历查找
+//                     var clrInstances = instance.GetComponents<MonoBehaviourAdapter.Adaptor>();
+//                     for(int i = 0; i < clrInstances.Length; i++) {
+//                         var clrInstance = clrInstances[i];
+//                         if (clrInstance.ILInstance != null) { // ILInstance为null, 表示是无效的MonoBehaviour，要略过 
+//                             if (clrInstance.ILInstance.Type == type) {
+//                                 res = clrInstance.ILInstance;// 交给ILRuntime的实例应该为ILInstance
+//                                 break;
+//                             }
+//                         }
+//                     }
+//                 }
+//                 return ILIntepreter.PushObject(ptr, __mStack, res);
+//             }
+//             return __esp;
+//         }
     }
 }
-
 

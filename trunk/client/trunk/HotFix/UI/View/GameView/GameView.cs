@@ -26,8 +26,8 @@ namespace HotFix.UI {
         public override bool IsRoot { get { return true; } }
 
         GameObject managers;
-        //PoolManager poolManager;
-        // AudioManager audioManager;
+		//PoolManager poolManager;
+		Control.AudioManager audioManager;
         // EventManager eventManager;
         
 // 基础游戏大方格
@@ -111,11 +111,6 @@ namespace HotFix.UI {
         public GameObject saveGameReminderPanel;
         private bool isDuringUndo = false;
         public bool saveForUndo = true;
-
-        Button leftBtn;
-        Button rightBtn;
-        Button upBtn;
-        Button downBtn;
 
         void onGameModeChanged(int pre, int cur) {
             Debug.Log(TAG + " onGameModeChanged");
@@ -894,7 +889,12 @@ namespace HotFix.UI {
             ViewManager.YNegBtn.onClick.AddListener(OnClickYNegButton);
             ViewManager.ZPosBtn.onClick.AddListener(OnClickZPosButton);
             ViewManager.ZNegBtn.onClick.AddListener(OnClickZNegButton);
-            
+
+            managers = GameObject.FindChildByName("managers");
+            managers.AddComponent<AudioSource>();
+// AudioManager 单例模式
+            // audioManager = new Control.AudioManager();
+            AudioManager.Instance.audioSource = managers.GetComponent<AudioSource>();
         }
         // void OnClickTogButton() {
         // }

@@ -654,7 +654,7 @@ namespace HotFix.UI {
             previewTetromino2.transform.localScale -= previewTetrominoScale;
             Debug.Log(TAG + " (nextTetroPos.Value == null): " + (nextTetroPos.Value == null));
             Debug.Log(TAG + " (nextTetroRot.Value == null): " + (nextTetroRot.Value == null));
-            nextTetroPos.Value = new Vector3(2.0f, 12.0f, 2.0f);
+            nextTetroPos.Value = new Vector3(2.0f, 11.0f, 2.0f);
             nextTetroRot.Value = Quaternion.Euler(0, 0, 0);
             nextTetroSca.Value = new Vector3(1, 1, 1);
             
@@ -1162,7 +1162,7 @@ namespace HotFix.UI {
         }
 
         public void PlayLineClearedSound() {
-            AudioManager.Instance.PlayLineClearedSound();
+			Control.AudioManager.Instance.PlayLineClearedSound();
         }
 
         public void UpdateHighScore() {

@@ -36,6 +36,10 @@ namespace HotFix.UI {
             CreateBaseUI();
         }
 
+        public static void Update() {
+            
+        }
+        
         public static Transform eventRoot; // 固定的视图层面资源池根节点
         public static Transform audioRoot; // 固定的视图层面资源池根节点
 // 仔细看这个方法：不是从热更新程序集里加载出unity里运行所需要的东西了吗？    
@@ -63,17 +67,13 @@ namespace HotFix.UI {
                         viewRect.pivot = new Vector2(0.5f, 0.5f);
 
 // // all the managers: Event, Audio etc 我暂时不是示它,UI上面操作不是很方便,必要时再显示
-//                         Transform managersRoot = new GameObject("ManagersRoot").transform;
-//                         managersRoot.SetParent(UI2DRoot.transform, false);
-//                         poolRoot = new GameObject("PoolRoot").transform;
-//                         poolRoot.SetParent(managersRoot, false);
-//                         poolRoot.gameObject.SetActive(false);
+                        Transform managersRoot = new GameObject("ManagersRoot").transform;
+                        managersRoot.SetParent(UI2DRoot.transform, false);
 
 // 它说这里找不到AudioManager热更新程序域的适配器                        
-                        // audioRoot = new GameObject("AudioRoot").transform;
-                        // audioRoot.SetParent(managersRoot.transform, false);
-                        // audioRoot.gameObject.SetActive(false);
-                        // audioRoot.gameObject.AddComponent<AudioSource>(); 
+                        audioRoot = new GameObject("AudioManager").transform;
+                        audioRoot.SetParent(managersRoot.transform, false);
+                        audioRoot.gameObject.AddComponent<AudioSource>(); 
                         // audioRoot.gameObject.AddComponent<AudioManager>(); // AudioManager : SingletonMono<AudioManager>
 // 因为也还没有适配,调试过程中不想多一个物件来打扰,comment for tmp                        
                         // eventRoot = new GameObject("EventRoot").transform;
