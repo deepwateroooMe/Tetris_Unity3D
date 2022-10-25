@@ -132,6 +132,13 @@ namespace HotFix.Control {
             // }
         }
 
+        public void Awake() {
+            Debug.Log(TAG + " Awake");
+        }
+        public void Start() {
+            Debug.Log(TAG + " Start");
+        }
+
         void OnEnable () {
             Debug.Log(TAG + ": OnEnable()");
             Debug.Log(TAG + " gameObject.name: " + gameObject.name);

@@ -108,6 +108,9 @@ namespace Framework.Core {
             resourceMap.OnInitializeSuccess += StartHotFix;　
             ResourceConstant.Loader = resourceMap;
             yield return new WaitForEndOfFrame();
+
+            // ResourceMap resourceMap = gameObject.AddComponent<ResourceMap>();
+
         }
         public void StartHotFix() {
             if (Application.platform == RuntimePlatform.IPhonePlayer) {

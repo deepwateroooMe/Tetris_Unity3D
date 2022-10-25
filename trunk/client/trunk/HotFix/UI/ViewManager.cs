@@ -70,11 +70,10 @@ namespace HotFix.UI {
                         Transform managersRoot = new GameObject("ManagersRoot").transform;
                         managersRoot.SetParent(UI2DRoot.transform, false);
 
-// 它说这里找不到AudioManager热更新程序域的适配器                        
-                        audioRoot = new GameObject("AudioManager").transform;
-                        audioRoot.SetParent(managersRoot.transform, false);
-                        audioRoot.gameObject.AddComponent<AudioSource>(); 
-                        // audioRoot.gameObject.AddComponent<AudioManager>(); // AudioManager : SingletonMono<AudioManager>
+// // 它说这里找不到AudioManager热更新程序域的适配器                        
+//                         audioRoot = new GameObject("AudioManager").transform;
+//                         audioRoot.SetParent(managersRoot.transform, false);
+//                         audioRoot.gameObject.AddComponent<AudioManager>(); // AudioManager : SingletonMono<AudioManager>
 // 因为也还没有适配,调试过程中不想多一个物件来打扰,comment for tmp                        
                         // eventRoot = new GameObject("EventRoot").transform;
                         // eventRoot.SetParent(managersRoot.transform, false);
@@ -127,18 +126,18 @@ namespace HotFix.UI {
                                 GameObject tmp = GameObject.Instantiate(child.gameObject);
                                 tmp.name = name;
 // 这里报错,好像enabled 方法不能适配 ?                                
-                                if (isTetro) {
-                                    Debug.Log(TAG + " (name.StartsWith('Tetromino')): " + (name.StartsWith("Tetromino")));
-                                    if (name.StartsWith("Tetromino")) {
-                                        tmp.AddComponent<Tetromino>();
-                                        Tetromino tetromino = tmp.GetComponent<Tetromino>();
-                                        Debug.Log(TAG + " (tetromino == null): " + (tetromino == null)); // 总是空,反射调用是需要霎时间来完成的,要用协程
-                                        // tmp.GetComponent<Tetromino>().enabled = false;
-                                    } else {
-                                        tmp.AddComponent<GhostTetromino>();
-                                        // tmp.GetComponent<GhostTetromino>().enabled = false;
-                                    }
-                                }
+                                // if (isTetro) {
+                                //     Debug.Log(TAG + " (name.StartsWith('Tetromino')): " + (name.StartsWith("Tetromino")));
+                                //     if (name.StartsWith("Tetromino")) {
+                                //         tmp.AddComponent<Tetromino>();
+                                //         Tetromino tetromino = tmp.GetComponent<Tetromino>();
+                                //         Debug.Log(TAG + " (tetromino == null): " + (tetromino == null)); // 总是空,反射调用是需要霎时间来完成的,要用协程
+                                //         // tmp.GetComponent<Tetromino>().enabled = false;
+                                //     } else {
+                                //         tmp.AddComponent<GhostTetromino>();
+                                //         // tmp.GetComponent<GhostTetromino>().enabled = false;
+                                //     }
+                                // }
                                 tmp.transform.SetParent(tetrosPool.transform, true); // 把它们放在一个容器下面,免得弄得游戏界面乱七八糟的
                                 tmp.SetActive(false);
                                 stack.Push(tmp);
