@@ -192,21 +192,64 @@ namespace Framework.Core {
 // 我们先销毁掉之前创建的不合法的MonoBehaviour, 这里是销毁之前创建的不合法的 ?
 // 这里说,在主工程中消除游戏引擎反射系统        中的CreateInstance方法,去调用ILRuntime框架中自定义改造过的相应方法,以便劫持逻辑
         unsafe void InitializeCLRBindSetting() {
+            Debug.Log(TAG + " InitializeCLRBindSetting");
+
             foreach (var i in typeof(System.Activator).GetMethods()) {
                 // 找到名字为CreateInstance，并且是泛型方法的方法定义
 // 我觉得这里只定义这一类的方法可能不够用,按照网上的把AddComponent<>() GetComponent<>()也都加上                
-                if (i.Name == "CreateInstance" && i.IsGenericMethodDefinition) 
+                if (i.Name == "CreateInstance" && i.IsGenericMethodDefinition) {
                     appDomain.RegisterCLRMethodRedirection(i, CreateInstance); // 方法重定向
 // 因为没有用,所以需要去掉                
-                else if (i.Name == "AddComponent" && i.GetGenericArguments().Length == 1)
-                {
-	                appDomain.RegisterCLRMethodRedirection(i, AddComponent);
-                // }
-                } else if (i.Name == "GetComponent" && i.GetGenericArguments().Length == 1) {
-                    appDomain.RegisterCLRMethodRedirection(i, GetComponent);
+                    Debug.Log(TAG + " InitializeCLRBindSetting CreateInstance()");
                 }
+// // 这里想要顺手牵羊地顺承下来的代码,逻辑并不对,抄错了,两个方法没有注册成功                
+//                 else if (i.Name == "AddComponent" && i.GetGenericArguments().Length == 1) {
+// 	                appDomain.RegisterCLRMethodRedirection(i, AddComponent);
+//                     Debug.Log(TAG + " InitializeCLRBindSetting AddComponent<>()");
+//                 // }
+//                 } else if (i.Name == "GetComponent" && i.GetGenericArguments().Length == 1) {
+//                     appDomain.RegisterCLRMethodRedirection(i, GetComponent);
+//                     Debug.Log(TAG + " InitializeCLRBindSetting GetComponent<ILType>()");
+//                 }
+
+                //这里面的通常应该写在InitializeILRuntime，这里为了演示写这里
+                var arr = typeof(GameObject).GetMethods();
+                foreach (var k in arr) {
+                    if (k.Name == "AddComponent" && k.GetGenericArguments().Length == 1) {
+                        appDomain.RegisterCLRMethodRedirection(k, AddComponent);
+                        Debug.Log(TAG + " InitializeCLRBindSetting AddComponent<>()");
+                    }
+                }
+                //这里面的通常应该写在InitializeILRuntime，这里为了演示写这里
+                var arr2 = typeof(GameObject).GetMethods();
+                foreach (var j in arr2) {
+                    if (j.Name == "GetComponent" && j.GetGenericArguments().Length == 1) {
+                        appDomain.RegisterCLRMethodRedirection(j, GetComponent);
+                        Debug.Log(TAG + " InitializeCLRBindSetting GetComponent<ILType>()");
+                    }
+                }
+
             }
         }
+        // unsafe void SetupCLRAddComponentRedirection() {
+        //         //这里面的通常应该写在InitializeILRuntime，这里为了演示写这里
+        //         var arr = typeof(GameObject).GetMethods();
+        //         foreach (var i in arr) {
+        //             if (i.Name == "AddComponent" && i.GetGenericArguments().Length == 1) {
+        //                 appdomain.RegisterCLRMethodRedirection(i, AddComponent);
+        //             }
+        //         }
+        //     }
+        // unsafe void SetupCLRGetComponentRedirection() {
+        //         //这里面的通常应该写在InitializeILRuntime，这里为了演示写这里
+        //         var arr = typeof(GameObject).GetMethods();
+        //         foreach (var i in arr) {
+        //             if (i.Name == "GetComponent" && i.GetGenericArguments().Length == 1) {
+        //                 appdomain.RegisterCLRMethodRedirection(i, GetComponent);
+        //             }
+        //         }
+        //     }
+
 
         void InitializeAdapterSetting() {
             appDomain.RegisterCrossBindingAdaptor(new ViewModelBaseAdapter());
@@ -247,6 +290,7 @@ namespace Framework.Core {
         }
 #endregion
         public unsafe static StackObject* CreateInstance(ILIntepreter intp, StackObject* esp, IList<object> mStack, CLRMethod method, bool isNewObj) {
+            Debug.Log(TAG + " CreateInstance()");
             // 获取泛型参数<T>的实际类型
             IType[] genericArguments = method.GenericArguments;
             if (genericArguments != null && genericArguments.Length == 1) {
@@ -274,7 +318,7 @@ namespace Framework.Core {
 
 // 示例工程中这些劫持是,代码适配用于提供给Unity工程来加载或是获取(AddComponent<>(), GetComponent<>())热更新工程中unity所不认识的定义的类等,与自己游戏逻辑不同,不用        
         MonoBehaviourAdapter.Adaptor GetComponent(ILType type) {
-            Debug.Log(TAG + " GetComponent");
+            Debug.Log(TAG + " GetComponent<>()");
             var arr = GetComponents<MonoBehaviourAdapter.Adaptor>();
             for(int i = 0; i < arr.Length; i++) {
                 var instance = arr[i];
@@ -286,6 +330,7 @@ namespace Framework.Core {
 
 // 还可能需要再检查一下这里的控件设置      
         public unsafe static StackObject* AddComponent(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj) {
+            Debug.Log(TAG + " AddComponent<T>()");
             // CLR重定向的说明请看相关文档和教程，这里不多做解释
             ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
             var ptr = __esp - 1;
@@ -323,6 +368,7 @@ namespace Framework.Core {
         }
         
         public unsafe static StackObject* GetComponent(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj) {
+            Debug.Log(TAG + " GetComponent<>() returns StackObject*");
             // CLR重定向的说明请看相关文档和教程，这里不多做解释
             ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
             var ptr = __esp - 1;

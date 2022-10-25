@@ -133,10 +133,10 @@ namespace HotFix.Control {
         }
 
         public void Awake() {
-            Debug.Log(TAG + " Awake");
+            Debug.Log(TAG + " Awake()");
         }
         public void Start() {
-            Debug.Log(TAG + " Start");
+            Debug.Log(TAG + " Start()");
         }
 
         void OnEnable () {
