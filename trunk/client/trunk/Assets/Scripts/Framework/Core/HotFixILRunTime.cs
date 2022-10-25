@@ -14,29 +14,12 @@ using UnityEngine.EventSystems;
 
 namespace Framework.Core {
 
-    // public class HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain {
-// 现在改得丑一点儿就让它丑一点儿,先把它弄运行了再说,把它改成同样例一样   
-    public class HotFixILRunTime : MonoBehaviour, IHotFixMain { 
-
-// 现在改得丑一点儿就让它丑一点儿,先把它弄运行了再说,把它改成同样例一样   
-        static HotFixILRunTime instance;
-
+    public class HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain {
         private const string TAG = "HotFixILRunTime"; 
 
         public static ILRuntime.Runtime.Enviorment.AppDomain appDomain;
 
-        public static HotFixILRunTime Instance {
-            get {
-                if (instance == null) {
-                    GameObject obj = new GameObject();
-                    instance = obj.AddComponent<HotFixILRunTime>();
-                    obj.name = instance.GetType().Name;
-                }
-                return instance;
-            }
-        }
         void Start() {
-            instance = this;
 
             appDomain = new ILRuntime.Runtime.Enviorment.AppDomain();
 #if UNITY_EDITOR
@@ -56,47 +39,32 @@ namespace Framework.Core {
             }
             // ILRuntime.Runtime.Generated.CLRBindings.Initialize(appDomain);
         }
-
-        // public void Update() {
-	    //     DoStaticMethod("HotFix.HotFixMain", "Update"); // <<<<<<<<<<<<<<<<<<<< 
-		// }
         
 		void StartApplication() {
             InitializeILRunTimeHotFixSetting();
             DoStaticMethod("HotFix.HotFixMain", "Start");
-// 暂时不测这个,会想办法解决问题            
-// // 不知道这里会不会报错
-//             InitializeCustomizedILTypes();
         }
+
         void InitializeILRunTimeHotFixSetting() {
             InitializeDelegateSetting();
             InitializeCLRBindSetting();
             InitializeAdapterSetting();
             InitializeValueTypeSetting();
         }
-// // 自己模拟的测试, 不通.因为我把下面的自定义方法去掉了,所以这里commented for tmp
-//         void InitializeCustomizedILTypes() { // 我感觉还是那两个类不被认识 ??
-//             Debug.Log(TAG + " InitializeCustomizedILTypes");
-//             var type = appDomain.LoadedTypes["HotFix.Control.Tetromino"] as ILType; // 这个没有问题,可以认识这个类了
-//             //var type2 = appDomain.LoadedTypes["HotFix.Control.GhostTetromino"] as ILType;
-// // 这里仍然是空,会报错,             
-//             var smb = GetComponent(type);   // 这里说,现处unity主工程,劫持改造一个系统方法GetComponent,以方便去拿热更新工程中所定义的这两个类
-//             //var smb2 = GetComponent(type2); // 这里说,现处unity主工程,劫持改造一个系统方法GetComponent,以方便去拿热更新工程中所定义的这两个类
-//             Debug.Log(TAG + " (type == null): " + (type == null));
-//             Debug.Log(TAG + " (smb == null): " + (smb == null));
-//             var method = type.GetMethod("Update");
-// // 这里仍然是空,会报错            :　错会报在下面这一行
-//             appDomain.Invoke(method, smb, null);
-//         }
 
 		void InitializeDelegateSetting() {
             appDomain.DelegateManager.RegisterMethodDelegate<int>();
             appDomain.DelegateManager.RegisterFunctionDelegate<int, string>();
             appDomain.DelegateManager.RegisterMethodDelegate<string>();
             appDomain.DelegateManager.RegisterMethodDelegate<int, int>();
-// 感觉这一步的加虽然消除了一个运行时错误,但内存的运行效率有可能是降低了: 还是必要的,至少是它不再报错了            
+
+// 感觉这一步的加虽然消除了一个运行时错误,但内存的运行效率有可能是降低了: 还是必要的,至少是它不再报错了
+// 参照官方一点儿的例子,改成下面的相对高效的,原理在于不再频繁地GC Alloc
             appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Vector3, UnityEngine.Vector3>();
             appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Quaternion, UnityEngine.Quaternion>();
+            // appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Vector3, Vector3Binder>();
+            // appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Quaternion, QuaternionBinder>();
+
             appDomain.DelegateManager.RegisterMethodDelegate<List<int>, List<int>>();
             appDomain.DelegateManager.RegisterMethodDelegate<string, string>();
             appDomain.DelegateManager.RegisterMethodDelegate<object, MessageArgs<object>>();
@@ -120,6 +88,10 @@ namespace Framework.Core {
             appDomain.DelegateManager.RegisterMethodDelegate<Exception>();
             appDomain.DelegateManager.RegisterFunctionDelegate<GameObject, GameObject>();
             appDomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, ILTypeInstance, int>();
+
+            appDomain.RegisterValueTypeBinder(typeof(Vector3), new Vector3Binder());
+            appDomain.RegisterValueTypeBinder(typeof(Quaternion), new QuaternionBinder());
+            
             appDomain.DelegateManager.RegisterDelegateConvertor<UnityAction>((action) => {
                return new UnityAction(() => {
                    ((Action)action)();
@@ -189,67 +161,28 @@ namespace Framework.Core {
                 });
             });
         }
-// 我们先销毁掉之前创建的不合法的MonoBehaviour, 这里是销毁之前创建的不合法的 ?
-// 这里说,在主工程中消除游戏引擎反射系统        中的CreateInstance方法,去调用ILRuntime框架中自定义改造过的相应方法,以便劫持逻辑
-        unsafe void InitializeCLRBindSetting() {
-            Debug.Log(TAG + " InitializeCLRBindSetting");
 
+// 我们先销毁掉之前创建的不合法的MonoBehaviour, 这里是销毁之前创建的不合法的,
+        // 并用自己定义在这个文件中的同名方法来替代,就是劫持了这些不适配的方法,进行对热更新程序域的适配
+        // 这里说,在主工程中消除游戏引擎反射系统中的CreateInstance方法,去调用ILRuntime框架中自定义改造过的相应方法,以便劫持相关的逻辑
+        unsafe void InitializeCLRBindSetting() {
             foreach (var i in typeof(System.Activator).GetMethods()) {
                 // 找到名字为CreateInstance，并且是泛型方法的方法定义
+                if (i.Name == "CreateInstance" && i.IsGenericMethodDefinition) 
+                    appDomain.RegisterCLRMethodRedirection(i, CreateInstance); // 方法重定向,到下面的自定义的方法中来
+            }
 // 我觉得这里只定义这一类的方法可能不够用,按照网上的把AddComponent<>() GetComponent<>()也都加上                
-                if (i.Name == "CreateInstance" && i.IsGenericMethodDefinition) {
-                    appDomain.RegisterCLRMethodRedirection(i, CreateInstance); // 方法重定向
-// 因为没有用,所以需要去掉                
-                    Debug.Log(TAG + " InitializeCLRBindSetting CreateInstance()");
-                }
-// // 这里想要顺手牵羊地顺承下来的代码,逻辑并不对,抄错了,两个方法没有注册成功                
-//                 else if (i.Name == "AddComponent" && i.GetGenericArguments().Length == 1) {
-// 	                appDomain.RegisterCLRMethodRedirection(i, AddComponent);
-//                     Debug.Log(TAG + " InitializeCLRBindSetting AddComponent<>()");
-//                 // }
-//                 } else if (i.Name == "GetComponent" && i.GetGenericArguments().Length == 1) {
-//                     appDomain.RegisterCLRMethodRedirection(i, GetComponent);
-//                     Debug.Log(TAG + " InitializeCLRBindSetting GetComponent<ILType>()");
-//                 }
-
-                //这里面的通常应该写在InitializeILRuntime，这里为了演示写这里
-                var arr = typeof(GameObject).GetMethods();
-                foreach (var k in arr) {
-                    if (k.Name == "AddComponent" && k.GetGenericArguments().Length == 1) {
-                        appDomain.RegisterCLRMethodRedirection(k, AddComponent);
-                        Debug.Log(TAG + " InitializeCLRBindSetting AddComponent<>()");
-                    }
-                }
-                //这里面的通常应该写在InitializeILRuntime，这里为了演示写这里
-                var arr2 = typeof(GameObject).GetMethods();
-                foreach (var j in arr2) {
-                    if (j.Name == "GetComponent" && j.GetGenericArguments().Length == 1) {
-                        appDomain.RegisterCLRMethodRedirection(j, GetComponent);
-                        Debug.Log(TAG + " InitializeCLRBindSetting GetComponent<ILType>()");
-                    }
-                }
-
+            var arr = typeof(GameObject).GetMethods();
+            foreach (var k in arr) {
+                if (k.Name == "AddComponent" && k.GetGenericArguments().Length == 1) 
+                    appDomain.RegisterCLRMethodRedirection(k, AddComponent);
+            }
+            var arr2 = typeof(GameObject).GetMethods();
+            foreach (var j in arr2) {
+                if (j.Name == "GetComponent" && j.GetGenericArguments().Length == 1) 
+                    appDomain.RegisterCLRMethodRedirection(j, GetComponent);
             }
         }
-        // unsafe void SetupCLRAddComponentRedirection() {
-        //         //这里面的通常应该写在InitializeILRuntime，这里为了演示写这里
-        //         var arr = typeof(GameObject).GetMethods();
-        //         foreach (var i in arr) {
-        //             if (i.Name == "AddComponent" && i.GetGenericArguments().Length == 1) {
-        //                 appdomain.RegisterCLRMethodRedirection(i, AddComponent);
-        //             }
-        //         }
-        //     }
-        // unsafe void SetupCLRGetComponentRedirection() {
-        //         //这里面的通常应该写在InitializeILRuntime，这里为了演示写这里
-        //         var arr = typeof(GameObject).GetMethods();
-        //         foreach (var i in arr) {
-        //             if (i.Name == "GetComponent" && i.GetGenericArguments().Length == 1) {
-        //                 appdomain.RegisterCLRMethodRedirection(i, GetComponent);
-        //             }
-        //         }
-        //     }
-
 
         void InitializeAdapterSetting() {
             appDomain.RegisterCrossBindingAdaptor(new ViewModelBaseAdapter());
@@ -259,6 +192,7 @@ namespace Framework.Core {
             appDomain.RegisterCrossBindingAdaptor(new InterfaceCrossBindingAdaptor()); // <<<<<<<<<<<<<<<<<<<< 
             appDomain.RegisterCrossBindingAdaptor(new MonoBehaviourAdapter());
         }
+        
         void InitializeValueTypeSetting() {
             appDomain.RegisterValueTypeBinder(typeof(Vector3), new Vector3Binder());
             appDomain.RegisterValueTypeBinder(typeof(Vector2), new Vector2Binder());
@@ -267,11 +201,7 @@ namespace Framework.Core {
 
         object DoStaticMethod(string type, string method) {
             var hotfixType = appDomain.GetType(type);
-            //IMethod staticMethod;
-            //if (method.Equals("Start"))
             var staticMethod = hotfixType.GetMethod(method, 0);
-            //else 
-            //    staticMethod = hotfixType.GetMethod(method, 0);
             return appDomain.Invoke(staticMethod, null, null);
         }
 
@@ -289,6 +219,7 @@ namespace Framework.Core {
             return instance;
         }
 #endregion
+        
         public unsafe static StackObject* CreateInstance(ILIntepreter intp, StackObject* esp, IList<object> mStack, CLRMethod method, bool isNewObj) {
             Debug.Log(TAG + " CreateInstance()");
             // 获取泛型参数<T>的实际类型
@@ -304,19 +235,21 @@ namespace Framework.Core {
                 throw new EntryPointNotFoundException();
         }
 
-// 刚才没有把问题想明白:因为经过了适配,本身的UnityEngine.AddComponent<T>() UnityEngine.GetComponent<T>() 在热更新工程中的正常运行是没有问题的
-    // 出问题的特殊之处是在: Tetromini.cs GhostTetromino.cs是在热更新工程中定义的,当游戏运行,unity工程无法得知热更新工程中Tetromino.cs GhostTetromino.cs为何物
-    // 上面说得不对,因为加component本身是在热更新工程中,它是知道自己工程中所定义的部件的
-// 所以得想办法把这两个类移到Unity工程中来(这个反而可能会比较繁琐,也可能逻辑不通)
-// 按照官方建议,我们是可以重置这两个方法的,让它有办法认得热更新工程中所定义的脚本(顺着这条途径把问题理顺,那么就发现别人的控件逻辑是在Unity主工程的,也就是有主工程中的MonoBehaviour系来驱动各生命周期事件,但是我的热更新控制逻辑是在热更新工程中,并没有一个默认的游戏引擎来驱动事件的自行发生)
-// 所以,没有设置好的原因,另一个是在热更新工程中,我没有哪个地方来调用UNITY工程的系统的自动运行;
+// 刚才没有把问题想明白:因为经过了适配,本身的UnityEngine.AddComponent<T>() UnityEngine.GetComponent<T>() 在热更新工程中添加unityy 工程中所定义的类等,其正常运行是没有问题的(因为UnityEngine.AddComponent<T>() UnityEngine.GetComponent<T>() 认识其定义在主工程中的相关类)
+// 出问题的特殊之处是在: Tetromini.cs GhostTetromino.cs是在热更新工程中定义的,当游戏运行,unity工程无法得知热更新工程中Tetromino.cs GhostTetromino.cs为何物
+
+    // 上面说得不对,因为加component本身是在热更新工程中,它是知道自己工程中所定义的部件的{这里才叫没理解对呢!!!}
+// 所以得想办法把这两个类移到Unity工程中来(这个反而可能会比较繁琐,也可能逻辑不通); [这个想法,对某些只实现部分部分热更将的项目可能可行,但不适合自己的项目]
+        
+// 按照官方建议,我们是可以重置这两个方法的,让它有办法认得热更新工程中所定义的脚本
+        // (顺着这条途径把问题理顺,那么就发现别人的控件逻辑是在Unity主工程的,也就是有主工程中的MonoBehaviour系来驱动各生命周期事件,但是我的热更新控制逻辑是在热更新工程中,并没有一个默认的游戏引擎来驱动事件的自行发生)[这部分自己想错了,主工程借助一个热更新工程的入口,依次依照热更新里所定义的逻辑来调用各个触发了事件的函数,当然会调用到某处的AddComponent GetComponent,然后它Unity主工程,就不认识它要添加或是获得的是什么了,所以要对这两个方法进行劫持]
+    // 下面的这些,当初也都没有理解对:        
+        // 所以,没有设置好的原因,另一个是在热更新工程中,我没有哪个地方来调用UNITY工程的系统的自动运行;
         // 前面的各种适配是适配给unity,让它认识热更新工程中的诸多类型函数等
         // 可是按照自己游戏逻辑,感觉更像是热更新工程中需要适配unity MonoBehaviour的生命周期事件 ?
-        // 那么再回到上面,刚想过的
-// 所以得想办法把这两个类移到Unity工程中来(这个反而可能会比较繁琐,也可能逻辑不通)
-        // 那么这么试一下,倒还是有可能的,unity MonoBehaviour系能够自动驱动生命周期事件,引导必要时候游戏的进行 ??? 测试一下
 
-// 示例工程中这些劫持是,代码适配用于提供给Unity工程来加载或是获取(AddComponent<>(), GetComponent<>())热更新工程中unity所不认识的定义的类等,与自己游戏逻辑不同,不用        
+// 示例工程中这些劫持是,代码适配用于提供给Unity工程来加载或是获取(AddComponent<>(), GetComponent<>())热更新工程中unity所不认识的热更新程序域里所定义的类等
+        
         MonoBehaviourAdapter.Adaptor GetComponent(ILType type) {
             Debug.Log(TAG + " GetComponent<>()");
             var arr = GetComponents<MonoBehaviourAdapter.Adaptor>();
@@ -328,15 +261,12 @@ namespace Framework.Core {
             return null;
         }
 
-// 还可能需要再检查一下这里的控件设置      
         public unsafe static StackObject* AddComponent(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj) {
-            Debug.Log(TAG + " AddComponent<T>()");
             // CLR重定向的说明请看相关文档和教程，这里不多做解释
             ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
             var ptr = __esp - 1;
             // 成员方法的第一个参数为this
             GameObject instance = StackObject.ToObject(ptr, __domain, __mStack) as GameObject;
-            // GameObject instance = StackObject.ToObject(ptr, appDomain, __mStack) as GameObject;
             if (instance == null)
                 throw new System.NullReferenceException();
             __intp.Free(ptr);
@@ -366,15 +296,12 @@ namespace Framework.Core {
             }
             return __esp;
         }
-        
         public unsafe static StackObject* GetComponent(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj) {
-            Debug.Log(TAG + " GetComponent<>() returns StackObject*");
             // CLR重定向的说明请看相关文档和教程，这里不多做解释
             ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
             var ptr = __esp - 1;
             // 成员方法的第一个参数为this
             GameObject instance = StackObject.ToObject(ptr, __domain, __mStack) as GameObject;
-            // GameObject instance = StackObject.ToObject(ptr, appDomain, __mStack) as GameObject;
             if (instance == null)
                 throw new System.NullReferenceException();
             __intp.Free(ptr);
@@ -405,4 +332,3 @@ namespace Framework.Core {
         }
     }
 }
-

@@ -16,9 +16,6 @@ namespace Framework.Core {
                                                              EAssetBundleUnloadLevel.ChangeSceneOver);
         }
 
-        public void Update() { // place holder
-        }
-
         void LoadHotFixDllSuccess(TextAsset dllAsset) {
             if (GameApplication.Instance.usePDB) {
                 ResourceConstant.Loader.LoadAssetAsyn<TextAsset>("HotFix.pdb", "HotFix.pdb", (pdbAsset) => {

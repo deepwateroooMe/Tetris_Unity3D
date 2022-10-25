@@ -235,16 +235,12 @@ namespace HotFix.UI {
             // ViewManager.moveCanvas.SetActive(true);
             // ViewManager.rotateCanvas.SetActive(false);
         }
-
-
-        private static GameObject tmp;
-
         
-        static void Start () { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
-            Debug.Log(TAG + ": Start()");
-           ComponentHelper.AddTetroComponent(tmp);
-           Tetromino tetro = ComponentHelper.GetComponent(tmp);
-           tetro.Awake();
+        void Start () { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
+           //  Debug.Log(TAG + ": Start()");
+           // ComponentHelper.AddTetroComponent(tmp);
+           // Tetromino tetro = ComponentHelper.GetComponent(tmp);
+           // tetro.Awake();
            
             // // check if it is cleaned up first 这里有个热更新程序域EventManager适配的大BUG
             // Debug.Log(TAG + " (!EventManager.Instance.isCleanedUp()): " + (!EventManager.Instance.isCleanedUp())); 
@@ -262,8 +258,7 @@ namespace HotFix.UI {
             // EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
             // EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); // 自己重构时commented out for tmp
             // tmpTransform = emptyGO.transform; //  原本的
-// // klfdjfldk            
-//             tmpTransform = new GameObject().transform; // 这里暂时这么写,容易生成很多个控件,暂时这么写
+            tmpTransform = new GameObject().transform; // 这里暂时这么写,容易生成很多个控件,暂时这么写
             // audioSource = GetComponent<AudioSource>();
             // if (!string.IsNullOrEmpty(((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName)) {
             //     gameMode = ((MenuViewModel)ViewModel.ParentViewModel).gameMode;
@@ -279,8 +274,7 @@ namespace HotFix.UI {
             //         LoadNewGame();
             //     }
             // } else {
-// // dflkdjfdlkfjkk            
-//             LoadNewGame();
+            LoadNewGame();
             // }
             // currentLevel = startingLevel;
             // startingHighScore = PlayerPrefs.GetInt("highscore");
@@ -500,7 +494,7 @@ namespace HotFix.UI {
             previewTetromino.transform.localScale -= ViewModel.previewTetrominoScale;
             // previewTetromino.GetComponent<Rotate>().enabled = !previewTetromino.GetComponent<Rotate>().enabled;
             
-            ViewManager.nextTetromino.Value = previewTetromino;
+            nextTetromino = previewTetromino;
             currentActiveTetrominoPrepare();
             // gameStarted = true;
             
@@ -530,7 +524,8 @@ namespace HotFix.UI {
             ViewModel.playSecondTetromino(previewTetromino, previewTetromino2, cycledPreviewTetromino);
 
             Debug.Log(TAG + " (previewTetromino2 != null): " + (previewTetromino2 != null));
-            ViewManager.nextTetromino.Value = previewTetromino2;
+            nextTetromino = previewTetromino2;
+            Debug.Log(TAG + " (nextTetromino != null): " + (nextTetromino != null));
 
             currentActiveTetrominoPrepare();
             gameStarted = true;
@@ -684,18 +679,19 @@ namespace HotFix.UI {
             ViewModel.loadSavedGame = false;
             ViewModel.loadSavedGame = false;
         }    
-        private static void currentActiveTetrominoPrepare() {
+        private void currentActiveTetrominoPrepare() {
             Debug.Log(TAG + ": currentActiveTetrominoPrepare()");
-            ViewManager.nextTetromino.Value.tag = "currentActiveTetromino";
-            ViewManager.nextTetromino.Value.transform.rotation = Quaternion.identity;
-            ViewManager.nextTetromino.Value.AddComponent<Tetromino>();
-            Debug.Log(TAG + " (ViewManager.nextTetromino.Value.GetComponent<Tetromino>() != null): " + (ViewManager.nextTetromino.Value.GetComponent<Tetromino>() != null));
+            nextTetromino.tag = "currentActiveTetromino";
+            nextTetromino.transform.rotation = Quaternion.identity;
+            ComponentHelper.GetTetroComponent(nextTetromino).enabled = true;
+            // ComponentHelper.AddTetroComponent(nextTetromino);
+            // Debug.Log(TAG + " (nextTetromino.GetComponent<Tetromino>() != null): " + (nextTetromino.GetComponent<Tetromino>() != null));
 
             //if (ViewModel.gameMode.Value == 0 && (ViewModel.gridWidth == 3 || ViewModel.gridWidth == 4)) {
-            //    ViewManager.nextTetromino.Value.transform.localPosition = new Vector3(1.0f, ViewModel.gridHeight - 1f, 1.0f);
+            //    nextTetromino.transform.localPosition = new Vector3(1.0f, ViewModel.gridHeight - 1f, 1.0f);
             //} else 
-            //    ViewManager.nextTetromino.Value.transform.localPosition = new Vector3(2.0f, ViewModel.gridHeight - 1f, 2.0f);
-            //Tetromino tmp = ViewManager.nextTetromino.Value.GetComponent<Tetromino>();
+            //    nextTetromino.transform.localPosition = new Vector3(2.0f, ViewModel.gridHeight - 1f, 2.0f);
+            //Tetromino tmp = nextTetromino.GetComponent<Tetromino>();
             //Debug.Log(TAG + " (tmp != null): " + (tmp != null));
             //if (tmp != null)
             //    Debug.Log(TAG + " tmp.activeSelf: " + tmp.enabled);
@@ -787,10 +783,11 @@ namespace HotFix.UI {
             // Debug.Log(TAG + ": SpawnGhostTetromino() nextTetromino.tag: " + nextTetromino.tag); 
             GameObject tmpTetromino = GameObject.FindGameObjectWithTag("currentActiveTetromino");
             // Debug.Log(TAG + ": SpawnGhostTetromino() (tmpTetromino == null): " + (tmpTetromino == null)); 
-            ViewManager.ghostTetromino.Value = ViewManager.GetFromPool(GetGhostTetrominoType(ViewManager.nextTetromino.Value), ViewManager.nextTetromino.Value.transform.position, ViewManager.nextTetromino.Value.transform.rotation, Vector3.one);
+            ghostTetromino = ViewManager.GetFromPool(GetGhostTetrominoType(nextTetromino), nextTetromino.transform.position, nextTetromino.transform.rotation, Vector3.one);
 // 因为暂时还不想写协程相关的代码,这里先现加再载载,绕道,晚点儿重构时再一一改回来
+            ComponentHelper.GetGhostComponent(ghostTetromino).enabled = true;
             // ghostTetromino.GetComponent<GhostTetromino>().enabled = true;
-            ViewManager.ghostTetromino.Value.AddComponent<GhostTetromino>();
+            // ghostTetromino.AddComponent<GhostTetromino>();
         }
         void Update() {
             ViewModel.UpdateScore();
@@ -828,7 +825,7 @@ namespace HotFix.UI {
         protected override void OnInitialize() {
             base.OnInitialize();
 
-            tmp = GameObject.FindChildByName("TetrominoL");
+            //tmp = GameObject.FindChildByName("TetrominoL");
 
 			managers = GameObject.FindChildByName("managers");
             //poolManager = managers.GetComponent<PoolManager>();
@@ -980,17 +977,21 @@ namespace HotFix.UI {
             Start();
         }
 // TODO:不仅仅是当前方块砖的位置/旋转/缩放,还该包括阴影的相关观察
+        // bug to be fixed
         void onNextTetroPosChanged(Vector3 pre, Vector3 cur) {
-            if (ViewManager.nextTetromino.Value.activeSelf) // 必须当前有正在运行的方块砖
-                ViewManager.nextTetromino.Value.transform.position = cur;
+            Debug.Log(TAG + " onNextTetroPosChanged");
+            if (nextTetromino != null && nextTetromino.activeSelf) {// 必须当前有正在运行的方块砖
+                nextTetromino.transform.position = cur;
+            }
+            Utils.print(nextTetromino.gameObject.transform.position);
         }
         void onNextTetroRotChanged(Quaternion pre, Quaternion cur) {
-            if (ViewManager.nextTetromino.Value.activeSelf) // 必须当前有正在运行的方块砖
-                ViewManager.nextTetromino.Value.transform.rotation = cur;
+            if (nextTetromino != null &&nextTetromino.activeSelf) // 必须当前有正在运行的方块砖
+                nextTetromino.transform.rotation = cur;
         }
         void onNextTetroScaChanged(Vector3 pre, Vector3 cur) {
-            if (ViewManager.nextTetromino.Value.activeSelf) // 必须当前有正在运行的方块砖
-                ViewManager.nextTetromino.Value.transform.localScale = cur;
+            if (nextTetromino != null &&nextTetromino.activeSelf) // 必须当前有正在运行的方块砖
+                nextTetromino.transform.localScale = cur;
         }
         void onCurrentScoreChanged(int pre, int cur) {
             hud_score.text = cur.ToString();
@@ -1003,4 +1004,3 @@ namespace HotFix.UI {
         }
     }
 }
-

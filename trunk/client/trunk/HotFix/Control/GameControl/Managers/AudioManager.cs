@@ -2,12 +2,10 @@
 
 namespace HotFix.Control {
     // 应用中的音效播放管理器:它应该管理游戏中所有声音相关的,存有相关的音频,控制播放与停止等等,后来加上的?感觉代码不完整
-    // public class AudioManager : Singleton<AudioManager> { // 感知Mono生命周期: BUG 
-    // public class AudioManager : SingletonMono<AudioManager> { // 感知Mono生命周期
-    public class AudioManager : MonoBehaviour { // 感知Mono生命周期 
+// TODO: 这里我忘记了,为什么我必须在热更新程序域里再定义一遍一个应用类Singleton.cs来着?因为两个不同域之间需要适配吗?再测一下    
+    public class AudioManager : SingletonMono<AudioManager> { // 感知Mono生命周期
        public const string TAG = "AudioManager";
 
-// 这里可能需要一个设置功能        
         public AudioSource audioSource;
 
         private AudioClip gameLoop; 
@@ -20,25 +18,12 @@ namespace HotFix.Control {
         private AudioClip currentClip = null;
         public string currentClipName;
 
-        // 现在改得丑一点儿就让它丑一点儿,先把它弄运行了再说,把它改成同样例一样   
-        private static AudioManager instance;
-        public static AudioManager Instance {
-            get {
-                if (instance == null) {
-                    GameObject obj = new GameObject();
-                    instance = obj.AddComponent<AudioManager>();
-                    // obj.name = instance.GetType().Name;
-                    obj.name = "AudioManager";
-                }
-                return instance;
-            }
-        }
         //private EventManager eventManager;
 
-        void OnEnable () {
-            instance = this;
-            
-            Debug.Log(TAG + ": OnEnable()"); 
+        // void OnEnable () { // 这个方法暂时还没有适配
+        //     Debug.Log(TAG + ": OnEnable()"); 
+        void OnStart () {
+            Debug.Log(TAG + ": OnStart()"); 
             // Debug.Log(TAG + " gameObject.name: " + gameObject.name);
             audioSource = gameObject.GetComponent<AudioSource>(); 
 

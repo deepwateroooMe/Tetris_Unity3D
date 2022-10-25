@@ -40,6 +40,8 @@ namespace HotFix.UI {
         public BindableProperty<string> nextTetrominoType = new BindableProperty<string>(); // 这个好像是用来给别人观察的,保存系统 ?
 // GameView: nextTetromino position, rotation, localScale        
         public BindableProperty<Vector3> nextTetroPos = new BindableProperty<Vector3>();
+        // public BindableProperty<Vector3Binder> nextTetroPos = new BindableProperty<Vector3Binder>();
+            
         public BindableProperty<Quaternion> nextTetroRot = new BindableProperty<Quaternion>();
         public BindableProperty<Vector3> nextTetroSca = new BindableProperty<Vector3>();
         
@@ -650,7 +652,7 @@ namespace HotFix.UI {
             // }
             ViewManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
 // 配置当前方块砖的相关信息
-            ViewManager.nextTetromino.Value = previewTetromino2;
+            //nextTetromino = previewTetromino2;
             previewTetromino2.transform.localScale -= previewTetrominoScale;
             Debug.Log(TAG + " (nextTetroPos.Value == null): " + (nextTetroPos.Value == null));
             Debug.Log(TAG + " (nextTetroRot.Value == null): " + (nextTetroRot.Value == null));

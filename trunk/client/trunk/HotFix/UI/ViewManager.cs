@@ -36,13 +36,10 @@ namespace HotFix.UI {
             CreateBaseUI();
         }
 
-        public static void Update() {
-            
-        }
-        
+// 这些,等项目再成熟一点儿,可以都清理掉,或是整理得更有序一些        
         public static Transform eventRoot; // 固定的视图层面资源池根节点
         public static Transform audioRoot; // 固定的视图层面资源池根节点
-// 仔细看这个方法：不是从热更新程序集里加载出unity里运行所需要的东西了吗？    
+
         static void CreateBaseUI() {
             ResourceHelper
                 .LoadCloneAsyn(
@@ -121,23 +118,20 @@ namespace HotFix.UI {
                             Stack<GameObject> stack = new Stack<GameObject>();
 // 这里我写的是手动生成对象池里的缓存对象:并在这里根据不同的类型添加相应的脚本
                             bool isTetro = name.StartsWith("Tetromino");
+                            bool isGhost = name.StartsWith("shadow");
                             // Debug.Log(TAG + " isTetro: " + isTetro);
                             for (int i = 0; i < 10; i++) {
                                 GameObject tmp = GameObject.Instantiate(child.gameObject);
                                 tmp.name = name;
-// 这里报错,好像enabled 方法不能适配 ?                                
-                                // if (isTetro) {
-                                //     Debug.Log(TAG + " (name.StartsWith('Tetromino')): " + (name.StartsWith("Tetromino")));
-                                //     if (name.StartsWith("Tetromino")) {
-                                //         tmp.AddComponent<Tetromino>();
-                                //         Tetromino tetromino = tmp.GetComponent<Tetromino>();
-                                //         Debug.Log(TAG + " (tetromino == null): " + (tetromino == null)); // 总是空,反射调用是需要霎时间来完成的,要用协程
-                                //         // tmp.GetComponent<Tetromino>().enabled = false;
-                                //     } else {
-                                //         tmp.AddComponent<GhostTetromino>();
-                                //         // tmp.GetComponent<GhostTetromino>().enabled = false;
-                                //     }
-                                // }
+// 被劫持了的新的GetComponent()方法: 可能并不支持其.enabled 的属性修改?
+                                if (isTetro) {
+                                    ComponentHelper.AddTetroComponent(tmp);
+                                    Tetromino tetromino = ComponentHelper.GetTetroComponent(tmp);
+                                    ComponentHelper.GetTetroComponent(tmp).enabled = false;
+                                } else if (isGhost) {
+                                    ComponentHelper.AddGhostComponent(tmp);
+                                    ComponentHelper.GetGhostComponent(tmp).enabled = false;
+                                }
                                 tmp.transform.SetParent(tetrosPool.transform, true); // 把它们放在一个容器下面,免得弄得游戏界面乱七八糟的
                                 tmp.SetActive(false);
                                 stack.Push(tmp);
@@ -170,15 +164,6 @@ namespace HotFix.UI {
         public static Button ZPosBtn;
         public static Button ZNegBtn;
 
-        public static BindableProperty<GameObject> nextTetromino = new BindableProperty<GameObject>();
-        public static BindableProperty<GameObject> ghostTetromino = new BindableProperty<GameObject>();
-
-// // 预览方块砖的: 类型,位置,旋转,缩放
-//         public BindableProperty<string> tetroType { get; set; }
-//         public BindableProperty<Vector3> tetroPos { get; set; }
-//         public BindableProperty<Quaternion> tetroRot { get; set; }
-//         public BindableProperty<Vector3> tetroSca { get; set; }
-
         // public Material [] materials; // [red, green, blue, yellow]
         // public Material [] colors;
         public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3 localScale) {
@@ -196,8 +181,9 @@ namespace HotFix.UI {
                 objInstance.transform.localScale = (Vector3)localScale;
             objInstance.SetActive(true);
             objInstance.transform.SetParent(ViewManager.tetroParent.transform, false); // default set here 吧
+// 这里的逻辑不对,只在非启蒙模式下才立即激活,逻辑还是放游戏视图里去处理            
             // if (type.StartsWith("Tetromino"))
-            //     objInstance.GetComponent<Tetromino>().enabled = true;
+            //     ComponentHelper.GetTetroComponent(objInstance).enabled = true;
             return objInstance;
         }
     
@@ -210,47 +196,6 @@ namespace HotFix.UI {
                 } else GameObject.DestroyImmediate(gameObject);
             } 
         }
-
-// // 那不该是下面就不需要做什么了吗?        
-//         private Dictionary<BindableProperty<string>, HashSet<Action<string, string>>> callbackDic;
-// // 提供两个公用接口方便注册与回调
-//         public void registerObserver(BindableProperty<string> property, Action<string, string> callback) {
-//             HashSet<Action<string, string>> set = callbackDic.Get(property);
-//             if (set == null) {
-//                 set = new HashSet<Action<string, string>>();
-//                 callbackDic.Add(property, set);
-//             }
-//             set.Add(callback);
-//         }
-//        void Start() {
-//            // InitPool();
-//            // dic = new Dictionary<string, Stack<GameObject>>();
-//            dic = ViewManager.pool;
-//// 注册观察者回调
-//// 不想要视图来观察,要对象池来观察            
-//// 预览中的两个方块砖类型变了:要生成实例并刷新: 下面写理这么偶合,没法用吧?
-//            // ViewManager.GameView.comTetroTyep.OnValueChanged += onComTetroTypeChanged;
-//            // ViewModel.eduTetroTyep.OnValueChanged += onEduTetroTypeChanged;
-
-//        }
-        // void onComTetroTypeChanged(string pre, string cur) {
-        // }
-        // public void InitPool() {
-        //     //if (dic == null) 
-        //     //    dic = new ArrayList<>();
-        //     for (int i = 0; i < dic.Count; ++i) {
-	    //         FillPool(pool[i]);
-        //     }
-        // }
-        // private void FillPool(PoolInfo info) {
-        //     for (int i = 0; i < info.amount; i++) {
-        //         GameObject objInstance = null;
-        //         objInstance = GameObject.Instantiate(info.prefab, info.container.transform);
-        //         objInstance.gameObject.SetActive(false);
-        //         objInstance.transform.position = defaultPos;
-        //         info.pool.Add(objInstance);
-        //     }
-        // }
 
         public static GameObject GetFromPool(string type) {
             // PoolInfo selected = GetPoolByType(type);
