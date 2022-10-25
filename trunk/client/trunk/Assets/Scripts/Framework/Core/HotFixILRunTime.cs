@@ -103,9 +103,9 @@ namespace Framework.Core {
             appDomain.DelegateManager.RegisterFunctionDelegate<GameObject, GameObject>();
             appDomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, ILTypeInstance, int>();
             appDomain.DelegateManager.RegisterDelegateConvertor<UnityAction>((action) => {
-                return new UnityAction(() => {
-                    ((Action)action)();
-                });
+               return new UnityAction(() => {
+                   ((Action)action)();
+               });
             });
             appDomain.DelegateManager.RegisterDelegateConvertor<UnityAction<bool>>((action) => {
                 return new UnityAction<bool>((b) => {

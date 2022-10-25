@@ -10,12 +10,15 @@ using HotFix.Data;
 using UnityEngine;
 using UnityEngine.UI;
 namespace HotFix.UI {
+    
     // 世界坐标系视图BtnsCanvasView：
     // MoveCanvasView 和RotateCanvasView供其调控,但是他们位于世界坐标系下，区别于其它任何视图
     // ComTetroCamera, EduTetroCamera: 用来照两个预览的相机,也摆在世界坐标系下,与当前视图GameView交互
 // 这是目前的设计下: 游戏过程中的所有的方块砖也将位于世界坐标系下
 // 游戏视图里需要测一个更为重要的逻辑就是Update()函数,因为经典模式下的自动更新,需要把这个连通测一下
     // 因为架构中已经有了MonoBehaviourAdapter,适配了Update()方法,应该是没有问题的.但是要连通后测一下确保主要逻辑没问题
+
+// TODO: 当用户点击返回主菜单,如果游戏还没有保存,需要有提示窗口提醒用户,是否需要保存游戏    
     public class GameView : UnityGuiView {
         private const string TAG = "GameView";
         public override string BundleName { get { return "ui/view/gameview"; } }
@@ -320,7 +323,7 @@ namespace HotFix.UI {
             Time.timeScale = 1.0f;
             ViewModel.isPaused = false;
             pausePanel.SetActive(false);
-            audioSource.Play();
+            AudioManager.Instance.audioSource.Play();
             // Hide(); // 隐藏当前视图,游戏的其它相关逻辑呢?
         }
         void OnClickGuiButton() { // 可以视频GUIDE吗?
@@ -893,8 +896,8 @@ namespace HotFix.UI {
             managers = GameObject.FindChildByName("managers");
             managers.AddComponent<AudioSource>();
 // AudioManager 单例模式
-            // audioManager = new Control.AudioManager();
             AudioManager.Instance.audioSource = managers.GetComponent<AudioSource>();
+            AudioManager.Instance.InitializeAudioClips();
         }
         // void OnClickTogButton() {
         // }

@@ -1,25 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Framework.Util;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace HotFix.Control {
     // 应用中的音效播放管理器:它应该管理游戏中所有声音相关的,存有相关的音频,控制播放与停止等等,后来加上的?感觉代码不完整
+    // public class AudioManager : Singleton<AudioManager> { // 感知Mono生命周期: BUG 
     public class AudioManager : Singleton<AudioManager> { // 感知Mono生命周期
         public const string TAG = "AudioManager";
 
 // 这里可能需要一个设置功能        
         public AudioSource audioSource;
 
-        public AudioClip gameLoop; 
+        private AudioClip gameLoop; 
+        private AudioClip moveSound;
+        private AudioClip rotateSound;
+        private AudioClip landSound;
+        private AudioClip exploseSound;
+        private AudioClip clearLineSound;
 
-        public AudioClip moveSound;
-        public AudioClip rotateSound;
-        public AudioClip landSound;
-        public AudioClip exploseSound;
-        public AudioClip clearLineSound;
+        private AudioClip currentClip = null;
+        public string currentClipName;
         
         //private EventManager eventManager;
 
@@ -33,8 +31,45 @@ namespace HotFix.Control {
 //             // EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onTetrominoLand);
 //         }
 
+        public void InitializeAudioClips() {
+            gameLoop = ResourceHelper.LoadAudioClip("ui/view/gameview", "gameloop", EAssetBundleUnloadLevel.Never);
+            moveSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "move", EAssetBundleUnloadLevel.Never);
+            rotateSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "rotate", EAssetBundleUnloadLevel.Never);
+            landSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "land", EAssetBundleUnloadLevel.Never);
+            exploseSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "Explosion", EAssetBundleUnloadLevel.Never);
+            clearLineSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "linecleared", EAssetBundleUnloadLevel.Never);
+            currentClip = gameLoop;
+        }
+
+        public void setCurrentClip(string name) {
+            switch (name) {
+            case "move":
+                currentClip = moveSound;
+                break;
+            case "rotate":
+                currentClip = rotateSound;
+                break;
+            case "land":
+                currentClip = landSound;
+                break;
+            case "explose":
+                currentClip = exploseSound;
+                break;
+            case "clearline":
+                currentClip = clearLineSound;
+                break;
+            default:
+                currentClip = gameLoop;
+                break;
+            }
+        }
+
         public void PlayOneShotAudioClip(AudioClip clip) {
             audioSource.PlayOneShot(clip);
+        }
+        
+        public void PlayOneShotAudioClip() {
+            audioSource.PlayOneShot(currentClip);
         }
         
         public void PlayOneShotGameLoop() {
