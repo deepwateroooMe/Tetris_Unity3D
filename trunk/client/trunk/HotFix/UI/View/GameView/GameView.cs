@@ -137,7 +137,7 @@ namespace HotFix.UI {
                    SpawnPreviewTetromino();
                } else {
                    gameStarted = true;
-                   nextTetromino = ViewManager.GetFromPool(
+                   nextTetromino = PoolManager.GetFromPool(
                        ViewModel.GetRandomTetromino(),
                        new Vector3(2.0f, ViewModel.gridHeight - 1f, 2.0f),
                        Quaternion.identity, Vector3.one);
@@ -162,7 +162,7 @@ namespace HotFix.UI {
         private void SpawnPreviewTetromino() {
             Debug.Log(TAG + ": SpawnPreviewTetromino()");
 // 这里仍旧是写成观察者模式,视图观察视图模型的数据变化            
-            previewTetromino = ViewManager.GetFromPool(
+            previewTetromino = PoolManager.GetFromPool(
                 ViewModel.GetRandomTetromino(), previewTetrominoPosition,
                 Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
             previewTetromino.transform.SetParent(ViewManager.tetroParent.transform, false);
@@ -182,7 +182,7 @@ namespace HotFix.UI {
                 ViewModel.buttonInteractableList[3] = 0;
                 ViewModel.buttonInteractableList[4] = 0;
                 ViewModel.buttonInteractableList[5] = 0;
-                previewTetromino2 = ViewManager.GetFromPool(
+                previewTetromino2 = PoolManager.GetFromPool(
                     ViewModel.GetRandomTetromino(), previewTetromino2Position, 
                     Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
                 previewTetromino2.transform.SetParent(ViewManager.tetroParent.transform, false);
@@ -198,7 +198,7 @@ namespace HotFix.UI {
         }
 
         private void SpawnPreviewTetromino(string type1, string type2) {
-            previewTetromino = ViewManager.GetFromPool(type1, previewTetrominoPosition, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
+            previewTetromino = PoolManager.GetFromPool(type1, previewTetrominoPosition, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
             previewTetromino.transform.SetParent(ViewManager.tetroParent.transform, false);
             // if (previewTetromino.GetComponent<Rotate>() != null)
             //     previewTetromino.GetComponent<Rotate>().enabled = !previewTetromino.GetComponent<Rotate>().enabled;
@@ -206,7 +206,7 @@ namespace HotFix.UI {
             //     previewTetromino.AddComponent<Rotate>();
             ViewModel.previewTetrominoType = previewTetromino.GetComponent<TetrominoType>().type;
             if (ViewModel.gameMode.Value == 0) { // previewTetromino2
-                previewTetromino2 = ViewManager.GetFromPool(type2, previewTetromino2Position, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
+                previewTetromino2 = PoolManager.GetFromPool(type2, previewTetromino2Position, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
                 previewTetromino2.transform.SetParent(ViewManager.tetroParent.transform, false);
                 // if (previewTetromino2.GetComponent<Rotate>() != null)
                 //     previewTetromino2.GetComponent<Rotate>().enabled = !previewTetromino2.GetComponent<Rotate>().enabled;
@@ -237,14 +237,16 @@ namespace HotFix.UI {
             // ViewManager.moveCanvas.SetActive(true);
             // ViewManager.rotateCanvas.SetActive(false);
         }
-        
-       static void Start () { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
-            Debug.Log(TAG + ": Start()");
-            ComponentHelper.AddTetroComponent(ViewManager.tmp);
-            ViewManager.nextTetromino = ViewManager.tmp;
-            Tetromino tetro = ComponentHelper.GetTetroComponent(ViewManager.nextTetromino);
 
-            ViewManager.moveCanvas.SetActive(true);
+// just so that I don't forget STATIC        
+       // static void Start () { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
+        void Start() { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
+            Debug.Log(TAG + ": Start()");
+            // ComponentHelper.AddTetroComponent(ViewManager.tmp);
+            // ViewManager.nextTetromino = ViewManager.tmp;
+            // Tetromino tetro = ComponentHelper.GetTetroComponent(ViewManager.nextTetromino);
+            // // tetro.Awake(); // 这句是完全可以不要的
+            // ViewManager.moveCanvas.SetActive(true); // move Buttons work
             
             // // check if it is cleaned up first 这里有个热更新程序域EventManager适配的大BUG
             // Debug.Log(TAG + " (!EventManager.Instance.isCleanedUp()): " + (!EventManager.Instance.isCleanedUp())); 
@@ -262,8 +264,7 @@ namespace HotFix.UI {
             // EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
             // EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); // 自己重构时commented out for tmp
             // tmpTransform = emptyGO.transform; //  原本的
-// // dlkfjdlfkdlfjdk
-//            tmpTransform = new GameObject().transform; // 这里暂时这么写,容易生成很多个控件,暂时这么写
+           tmpTransform = new GameObject().transform; // 这里暂时这么写,容易生成很多个控件,暂时这么写
             // audioSource = GetComponent<AudioSource>();
             // if (!string.IsNullOrEmpty(((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName)) {
             //     gameMode = ((MenuViewModel)ViewModel.ParentViewModel).gameMode;
@@ -279,8 +280,7 @@ namespace HotFix.UI {
             //         LoadNewGame();
             //     }
             // } else {
-// // ldkfdjkfdk
-//             LoadNewGame();
+            LoadNewGame();
             // }
             // currentLevel = startingLevel;
             // startingHighScore = PlayerPrefs.GetInt("highscore");
@@ -294,8 +294,8 @@ namespace HotFix.UI {
             // // 出于性能考虑，其中Update内部的操作也可以移至FixedUpdate中进行以减少更新次数，但是视觉上并不会带来太大的差异
             // // // temporatorily don't consider these yet
             // // string particleType = "particles";
-            //  m_ExplosionParticles = ViewManager.GetFromPool(GetSpecificPrefabType(m_ExplosionPrefab)).GetComponent<ParticleSystem>();
-            // // m_ExplosionParticles = ViewManager.GetFromPool(particleType).GetComponent<ParticleSystem>();
+            //  m_ExplosionParticles = PoolManager.GetFromPool(GetSpecificPrefabType(m_ExplosionPrefab)).GetComponent<ParticleSystem>();
+            // // m_ExplosionParticles = PoolManager.GetFromPool(particleType).GetComponent<ParticleSystem>();
             // /m_ExplosionParticles = Instantiate(m_ExplosionPrefab).GetComponent<ParticleSystem>();
             // // m_ExplosionAudio = m_ExplosionParticles.GetComponent<AudioSource>();
             // // m_ExplosionParticles.gameObject.SetActive(false);
@@ -304,8 +304,9 @@ namespace HotFix.UI {
         
         void OnClickPauButton() { // public void PauseGame()
             ViewModel.PauseGame(); // 游戏暂停
-            // Bug: disable all Hud canvas buttons: swap
+            AudioManager.Instance.audioSource.Play();
             pausePanel.SetActive(true);
+            // Bug: disable all Hud canvas buttons: swap
         }
         void OnClickFalButton() {
         }
@@ -354,8 +355,7 @@ namespace HotFix.UI {
         }
         
         void SaveGame(SaveGameEventInfo info) {
-            Debug.Log(TAG + ": SaveGame()");
-            ViewModel.saveForUndo = false;
+            Debug.Log(TAG + ": SaveGame()");            ViewModel.saveForUndo = false;
             onGameSave();
             ViewModel.hasSavedGameAlready = true;
             // savedGamePanel.SetActive(true);
@@ -473,7 +473,7 @@ namespace HotFix.UI {
         //     // Debug.Log(TAG + " ghostTetromino.CompareTag(\"currentGhostTetromino\"): " + ghostTetromino.CompareTag("currentGhostTetromino")); 
         //     if (ghostTetromino != null) {
         //         ghostTetromino.tag = "Untagged";
-        //         ViewManager.ReturnToPool(ghostTetromino, ghostTetromino.GetComponent<TetrominoType>().type);
+        //         PoolManager.ReturnToPool(ghostTetromino, ghostTetromino.GetComponent<TetrominoType>().type);
         //     }
         // }
         
@@ -494,9 +494,11 @@ namespace HotFix.UI {
         }
         public void playFirstTetromino() {
             Debug.Log(TAG + ": playFirstTetromino()");
-            Debug.Log(TAG + " ViewModel.buttonInteractableList[0]: " + ViewModel.buttonInteractableList[0]); 
+            // Debug.Log(TAG + " ViewModel.buttonInteractableList[0]: " + ViewModel.buttonInteractableList[0]); 
             if (ViewModel.buttonInteractableList[0] == 0) return;
+
             ViewModel.playFirstTetromino(previewTetromino, previewTetromino2, cycledPreviewTetromino);
+
             previewTetromino.transform.localScale -= ViewModel.previewTetrominoScale;
             // previewTetromino.GetComponent<Rotate>().enabled = !previewTetromino.GetComponent<Rotate>().enabled;
             
@@ -567,7 +569,7 @@ namespace HotFix.UI {
         //         nextTetromino.GetComponent<Tetromino>().enabled = false;
         //         ViewModel.resetGridAfterDisappearingNextTetromino(nextTetromino);  // this one for undo click only ???? Nonono
         //         if (nextTetromino.transform.childCount == 4) {
-        //             ViewManager.ReturnToPool(nextTetromino, nextTetromino.GetComponent<TetrominoType>().type);
+        //             PoolManager.ReturnToPool(nextTetromino, nextTetromino.GetComponent<TetrominoType>().type);
         //         } else 
         //             GameObject.Destroy(nextTetromino.gameObject);
         //     }
@@ -577,9 +579,9 @@ namespace HotFix.UI {
         //     // 回收三样东西：nextTetromino previewTetromino previewTetromino2
         //     recycleNextTetromino();
         //     preparePreviewTetrominoRecycle(previewTetromino1);
-        //     ViewManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+        //     PoolManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
         //     preparePreviewTetrominoRecycle(previewTetromino2);
-        //     ViewManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+        //     PoolManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
         // }
         public void onUndoGame() { // 分一部分的逻辑到视图模型中去
             Debug.Log(TAG + ": onUndoGame()");
@@ -651,7 +653,7 @@ namespace HotFix.UI {
             StringBuilder type = new StringBuilder("");
             Debug.Log(TAG + " (gameData.nextTetrominoData != null): " + (gameData.nextTetrominoData != null)); 
             if (gameData.nextTetrominoData != null) {
-                nextTetromino = ViewManager.GetFromPool(
+                nextTetromino = PoolManager.GetFromPool(
                     type.Append(gameData.nextTetrominoData.type).ToString(),
                     // gameData.nextTetrominoData.transform,
                     // gameData.nextTetrominoData.transform);
@@ -738,9 +740,9 @@ namespace HotFix.UI {
             Debug.Log(TAG + ": swapPreviewTetrominosFunc()");
             if (ViewModel.buttonInteractableList[2] == 0) return;
             ViewModel.preparePreviewTetrominoRecycle(previewTetromino); // recycle 1st tetromino first
-           ViewManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+           PoolManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
             ViewModel.preparePreviewTetrominoRecycle(previewTetromino2); // recycle 2st tetromino then
-            ViewManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+            PoolManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
             SpawnPreviewTetromino();
         }
         
@@ -749,9 +751,9 @@ namespace HotFix.UI {
         //     if (ViewModel.buttonInteractableList[2] == 0) return;
         //     // Debug.Log(TAG + " swapInfo.tag.ToString(): " + swapInfo.tag.ToString()); 
         //     preparePreviewTetrominoRecycle(previewTetromino1); // recycle 1st tetromino first
-        //     ViewManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+        //     PoolManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
         //     preparePreviewTetrominoRecycle(previewTetromino2); // recycle 2st tetromino then
-        //     ViewManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+        //     PoolManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
         //     SpawnPreviewTetromino();
         // }
     
@@ -791,7 +793,7 @@ namespace HotFix.UI {
             // Debug.Log(TAG + ": SpawnGhostTetromino() nextTetromino.tag: " + nextTetromino.tag); 
             GameObject tmpTetromino = GameObject.FindGameObjectWithTag("currentActiveTetromino");
             // Debug.Log(TAG + ": SpawnGhostTetromino() (tmpTetromino == null): " + (tmpTetromino == null)); 
-            ghostTetromino = ViewManager.GetFromPool(GetGhostTetrominoType(nextTetromino), nextTetromino.transform.position, nextTetromino.transform.rotation, Vector3.one);
+            ghostTetromino = PoolManager.GetFromPool(GetGhostTetrominoType(nextTetromino), nextTetromino.transform.position, nextTetromino.transform.rotation, Vector3.one);
 // 因为暂时还不想写协程相关的代码,这里先现加再载载,绕道,晚点儿重构时再一一改回来
             ComponentHelper.GetGhostComponent(ghostTetromino).enabled = true;
             // ghostTetromino.GetComponent<GhostTetromino>().enabled = true;
@@ -833,16 +835,13 @@ namespace HotFix.UI {
         protected override void OnInitialize() {
             base.OnInitialize();
 
-            // tmpTetro = GameObject.FindChildByName("TetrominoI");
-
-			managers = GameObject.FindChildByName("managers");
-            //poolManager = managers.GetComponent<PoolManager>();
-            //Debug.Log(TAG + " (poolManager != null): " + (poolManager != null));
-
-// // 我并不需要真的来加空上东西,有这具脚本或是说游戏应用里有这个管理器帮助模块化管理应用就可以了,它不是必须要依附在控件上的
-            // 以另一种方式热更新:把脚本加进了预制里去了
-//             poolRoot.AddComponent<PoolManager>(); 
-
+// AudioManager: 单例模式            
+            managers = GameObject.FindChildByName("managers");
+            AudioManager.Instance.gameObject.transform.SetParent(managers.transform, false);
+// 检查是否循环,希望它循环
+            AudioManager.Instance.PlayOneShotGameLoop();
+            PoolManager.Instance.gameObject.transform.SetParent(managers.transform, false);
+            
             baseBoard5 = GameObject.FindChildByName("BaseBoard5");
             setAllBaseBoardInactive();
 // 当视图想要通过视图模型来获取父视图模型的数据时,实际上当前视图模型还没能启动好,还没有设置好其父视图模型,所以会得到空,要换种写法
@@ -918,12 +917,6 @@ namespace HotFix.UI {
             ViewManager.ZPosBtn.onClick.AddListener(OnClickZPosButton);
             ViewManager.ZNegBtn.onClick.AddListener(OnClickZNegButton);
 
-// // 这里写得有点儿牛头不对马尾,要再改            
-//             managers = GameObject.FindChildByName("managers");
-//             managers.AddComponent<AudioSource>();
-// // AudioManager 单例模式
-//             AudioManager.Instance.audioSource = managers.GetComponent<AudioSource>();
-//             AudioManager.Instance.InitializeAudioClips();
         }
         // void OnClickTogButton() {
         // }
@@ -948,16 +941,21 @@ namespace HotFix.UI {
             
         }
         void OnClickLeftButton() {
-            ViewModel.nextTetroPos.Value += new Vector3(-1, 0, 0);
+// 这套系统今天早上记得原本同Update()系统一起工作着来着,不知道为什么后来复杂的类型没有办法适配了,回来再来检查BindableProperty<T>的这套系统            
+            // ViewModel.nextTetroPos.Value += new Vector3(-1, 0, 0);
+            ViewManager.nextTetromino.gameObject.transform.position += new Vector3(-1, 0, 0);
         }
         void OnClickRightButton() {
-            ViewModel.nextTetroPos.Value += new Vector3(1, 0, 0);
+            // ViewModel.nextTetroPos.Value += new Vector3(1, 0, 0);
+            ViewManager.nextTetromino.gameObject.transform.position += new Vector3(1, 0, 0);
         }
         void OnClickUpButton() {
-            ViewModel.nextTetroPos.Value += new Vector3(0, 0, 1);
+            // ViewModel.nextTetroPos.Value += new Vector3(0, 0, 1);
+            ViewManager.nextTetromino.gameObject.transform.position += new Vector3(0, 0, 1);
         }
         void OnClickDownButton() {
-            ViewModel.nextTetroPos.Value += new Vector3(0, 0, -1);
+            // ViewModel.nextTetroPos.Value += new Vector3(0, 0, -1);
+            ViewManager.nextTetromino.gameObject.transform.position += new Vector3(0, 0, -1);
         }
         
         // 想找一个更为合适的地方来写上面的观察者模式监听回调
@@ -968,7 +966,7 @@ namespace HotFix.UI {
             ViewModel.currentScore.OnValueChanged += onCurrentScoreChanged;
             ViewModel.currentLevel.OnValueChanged += onCurrentLevelChanged;
             ViewModel.numLinesCleared.OnValueChanged += onNumLinesCleared;
-// 再测试一下这个: 还仍然是不过
+// TODO: 再测试一下这个: 还仍然是不过
             // ViewModel.gameMode.OnValueChanged += onGameModeChanged; // 运行时仍为空抛异常,因为它的初始化的过程会相对复杂那么一点点儿
 
 //// 不想要游戏视图来观察,要对象池来观察,只想游戏视图中持一个对象池的引用            
@@ -986,7 +984,17 @@ namespace HotFix.UI {
             // 对于启蒙模式下,这里的游戏逻辑就是说,在加载视图的时候就需要去实例化两个方块砖,并在显示视图的时候显示出来给看
             Start();
         }
-        
+
+// 下面,这些简单类型的绑定是没有问题的,不需要任何适配        
+        void onCurrentScoreChanged(int pre, int cur) {
+            hud_score.text = cur.ToString();
+        }
+        void onCurrentLevelChanged(int pre, int cur) {
+            hud_level.text = cur.ToString();
+        }
+        void onNumLinesCleared(int pre, int cur) {
+            hud_lines.text = cur.ToString();
+        }
 // // TODO:不仅仅是当前方块砖的位置/旋转/缩放,还该包括阴影的相关观察
 // // 这套系统不工作,太多的适配相关的问题,先把简单的系统逻辑连通
 //         // bug to be fixed: 这里的位置是变化的,但是这样的位置变化无法改变沉浸过程,所以热更新里面最好还是用热更新原生的方法
@@ -1017,16 +1025,5 @@ namespace HotFix.UI {
 //             if (nextTetromino != null &&nextTetromino.activeSelf) // 必须当前有正在运行的方块砖
 //                 nextTetromino.transform.localScale = cur;
 //         }
-
-// 下面,这些简单类型的绑定是没有问题的,不需要任何适配        
-        void onCurrentScoreChanged(int pre, int cur) {
-            hud_score.text = cur.ToString();
-        }
-        void onCurrentLevelChanged(int pre, int cur) {
-            hud_level.text = cur.ToString();
-        }
-        void onNumLinesCleared(int pre, int cur) {
-            hud_lines.text = cur.ToString();
-        }
     }
 }

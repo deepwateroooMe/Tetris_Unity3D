@@ -427,7 +427,7 @@ namespace HotFix.UI {
             // Debug.Log(TAG + " ghostTetromino.CompareTag(\"currentGhostTetromino\"): " + ghostTetromino.CompareTag("currentGhostTetromino")); 
             if (ghostTetromino != null) {
                 ghostTetromino.tag = "Untagged";
-                ViewManager.ReturnToPool(ghostTetromino, ghostTetromino.GetComponent<TetrominoType>().type);
+                PoolManager.ReturnToPool(ghostTetromino, ghostTetromino.GetComponent<TetrominoType>().type);
             }
         }
         public void recycleNextTetromino(GameObject nextTetromino) {
@@ -437,7 +437,7 @@ namespace HotFix.UI {
                 nextTetromino.GetComponent<Tetromino>().enabled = false;
                 resetGridAfterDisappearingNextTetromino(nextTetromino);  // this one for undo click only ???? Nonono
                 if (nextTetromino.transform.childCount == 4) {
-                    ViewManager.ReturnToPool(nextTetromino, nextTetromino.GetComponent<TetrominoType>().type);
+                    PoolManager.ReturnToPool(nextTetromino, nextTetromino.GetComponent<TetrominoType>().type);
                 } else
                     GameObject.Destroy(nextTetromino.gameObject);
             }
@@ -452,10 +452,10 @@ namespace HotFix.UI {
             // preparePreviewTetrominoRecycle(1);
             preparePreviewTetrominoRecycle(previewTetromino);
 // // 不知道这里的写法算是怎么回事,忘记了,回来再来检查            
-//             ViewManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+//             PoolManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
 //             // preparePreviewTetrominoRecycle(2);
 //             preparePreviewTetrominoRecycle(previewTetromino2);
-//             ViewManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+//             PoolManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
         }
 
         public void preparePreviewTetrominoRecycle(GameObject cycledPreviewTetromino) { 
@@ -582,7 +582,7 @@ namespace HotFix.UI {
                                         gridOcc[x][y][z] = 0;
                                     }
                                 }
-                                ViewManager.ReturnToPool(tmpParentTransform.gameObject, tmpParentTransform.gameObject.GetComponent<TetrominoType>().type);
+                                PoolManager.ReturnToPool(tmpParentTransform.gameObject, tmpParentTransform.gameObject.GetComponent<TetrominoType>().type);
                             } else if (grid[i][j][k].parent != null && grid[i][j][k].parent.childCount < 4) { // parent != null && childCount < 4
                                 foreach (Transform transform in grid[i][j][k].parent) {
                                     string type = transform.gameObject.GetComponent<MinoType>() == null ?
@@ -596,7 +596,7 @@ namespace HotFix.UI {
                                         grid[x][y][z] = null;
                                         gridOcc[x][y][z] = 0;
                                     }
-                                    ViewManager.ReturnToPool(transform.gameObject, type);
+                                    PoolManager.ReturnToPool(transform.gameObject, type);
                                 }
                             }
                         }
@@ -614,16 +614,18 @@ namespace HotFix.UI {
                                         GameObject previewTetromino2,
                                         GameObject cycledPreviewTetromino) {
             Debug.Log(TAG + ": playFirstTetromino()");
-            Debug.Log(TAG + " buttonInteractableList[0]: " + buttonInteractableList[0]); 
-            // if (buttonInteractableList[0] == 0) return;
 
-            // prevPreview = previewTetromino.GetComponent<TetrominoType>().type;   
-            // prevPreview2 = previewTetromino2.GetComponent<TetrominoType>().type;
-            nextTetrominoType.Value = eduTetroType.Value; // 记忆功能
-// 这里的这些乱代码可以再整理一下
-            preparePreviewTetrominoRecycle(previewTetromino2);
+            preparePreviewTetrominoRecycle(previewTetromino2); // 用第一个,回收第二个
             cycledPreviewTetromino = previewTetromino2;
-            ViewManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+            nextTetrominoType.Value = comTetroType.Value; // 记忆功能, 这不是重复了吗?
+            PoolManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+
+// 配置当前方块砖的相关信息
+            previewTetromino2.transform.localScale -= previewTetrominoScale;
+            ViewManager.nextTetromino = previewTetromino;
+            ViewManager.nextTetromino.gameObject.transform.position = new Vector3(2.0f, 12.0f, 2.0f);
+            ViewManager.nextTetromino.gameObject.transform.rotation = Quaternion.Euler(0, 0, 0);
+            ViewManager.nextTetromino.gameObject.transform.localScale = Vector3.one;
             
             // nextTetromino = previewTetromino;
             // currentActiveTetrominoPrepare();
@@ -652,40 +654,28 @@ namespace HotFix.UI {
             preparePreviewTetrominoRecycle(previewTetromino);
             cycledPreviewTetromino = previewTetromino;
             nextTetrominoType.Value = eduTetroType.Value; // 记忆功能
-// DEBUGGING INFO
-            // Debug.Log(TAG + " (cycledPreviewTetromino.GetComponent<TetrominoType>() != null): " + (cycledPreviewTetromino.GetComponent<TetrominoType>() != null));
-            // if (cycledPreviewTetromino.GetComponent<TetrominoType>() != null) {
-            //     string type = cycledPreviewTetromino.GetComponent<TetrominoType>().type;
-            //     Debug.Log(TAG + " type: " + type);
-            // }
-            ViewManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+            PoolManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type); // 回收一个方块砖
 // 配置当前方块砖的相关信息
             previewTetromino2.transform.localScale -= previewTetrominoScale;
             Debug.Log(TAG + " (nextTetroRot.Value == null): " + (nextTetroRot.Value == null));
             // Helpers.resetPos(ViewManager.GameView.nextTetromino, new Vector3(2.0f, 11.0f, 2.0f));
             // Helpers.resetRot(ViewManager.GameView.nextTetromino, Quaternion.Euler(0, 0, 0));
             // Helpers.resetSca(ViewManager.GameView.nextTetromino, Vector3.one);
-
             ViewManager.nextTetromino = previewTetromino2;
             // nextTetrominoTransform.position = new Vector3(2.0f, 11.0f, 2.0f);
             // nextTetrominoTransform.rotation = Quaternion.Euler(0, 0, 0);
             // nextTetrominoTransform.localScale = Vector3.one;
             // Helpers.resetTrans(ViewManager.nextTetromino, nextTetrominoTransform);
             // // ViewManager.nextTetromino.gameObject.transfom = nextTetrominoTransform;
-
-            nextTetroPos.Value = new Vector3(2.0f, 11.0f, 2.0f);
-            nextTetroRot.Value = Quaternion.Euler(0, 0, 0);
-            nextTetroSca.Value = new Vector3(1, 1, 1);
-
-            ViewManager.nextTetromino.gameObject.transform.position = new Vector3(2.0f, 11.0f, 2.0f);
+            // nextTetroPos.Value = new Vector3(2.0f, 11.0f, 2.0f);
+            // nextTetroRot.Value = Quaternion.Euler(0, 0, 0);
+            // nextTetroSca.Value = new Vector3(1, 1, 1);
+            ViewManager.nextTetromino.gameObject.transform.position = new Vector3(2.0f, 12.0f, 2.0f);
             ViewManager.nextTetromino.gameObject.transform.rotation = Quaternion.Euler(0, 0, 0);
             ViewManager.nextTetromino.gameObject.transform.localScale = Vector3.one;
-            
             // previewTetromino2.layer = LayerMask.NameToLayer("Default");
             // previewTetromino2.GetComponent<Rotate>().enabled = !previewTetromino2.GetComponent<Rotate>().enabled;
 
-            // nextTetromino = previewTetromino2;
-            // currentActiveTetrominoPrepare();
             gameStarted = true;
             
             // SpawnGhostTetromino();  
@@ -702,7 +692,6 @@ namespace HotFix.UI {
                 buttonInteractableList[4] = 1;
                 buttonInteractableList[5] = 1;
             }
-            // printbuttonInteractableList();
         }
         public void onUndoGame() { 
             Debug.Log(TAG + ": onUndoGame()");
@@ -1084,7 +1073,7 @@ namespace HotFix.UI {
                                     grid[x][y][z] = null;
                                     // gridOcc[x][y][z] = 0;
                                 } else {
-                                    // ViewManager.ReturnToPool(grid[x][y][z].gameObject, GetSpecificPrefabMinoType(grid[x][y][z].gameObject));
+                                    // PoolManager.ReturnToPool(grid[x][y][z].gameObject, GetSpecificPrefabMinoType(grid[x][y][z].gameObject));
                                     GameObject.Destroy(grid[x][y][z].gameObject);
                                     // gridOcc[x][y][z] = 0; // 暂时还不更新，等要删除的时候才更新
                                     grid[x][y][z] = null; // x ==> z
@@ -1095,7 +1084,7 @@ namespace HotFix.UI {
                         }
                     } else {
                         GameObject.Destroy(grid[x][y][z].gameObject);
-                        // ViewManager.ReturnToPool(grid[x][y][z].gameObject, GetSpecificPrefabMinoType(grid[x][y][z].gameObject));
+                        // PoolManager.ReturnToPool(grid[x][y][z].gameObject, GetSpecificPrefabMinoType(grid[x][y][z].gameObject));
                         grid[x][y][z] = null;
                         gridOcc[x][y][z] = 0; // 其它 mode 好像也不需要这个东西
                     }

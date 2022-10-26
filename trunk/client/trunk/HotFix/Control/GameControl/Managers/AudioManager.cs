@@ -2,11 +2,14 @@
 
 namespace HotFix.Control {
     // 应用中的音效播放管理器:它应该管理游戏中所有声音相关的,存有相关的音频,控制播放与停止等等,后来加上的?感觉代码不完整
-// TODO: 这里我忘记了,为什么我必须在热更新程序域里再定义一遍一个应用类Singleton.cs来着?因为两个不同域之间需要适配吗?再测一下    
+// TODO: 这里我忘记了,为什么我必须在热更新程序域里再定义一遍一个应用类Singleton.cs来着?因为两个不同域之间需要适配吗?再测一下(现在还不是一个很好的时间来测这个;今天中午吃撑了下午的脑袋就在打转,等原理再透一些项目再熟悉一些再回来测)    
     public class AudioManager : SingletonMono<AudioManager> { // 感知Mono生命周期
        public const string TAG = "AudioManager";
 
+        public string currentClipName;
         public AudioSource audioSource;
+
+        private AudioClip currentClip = null;
 
         private AudioClip gameLoop; 
         private AudioClip moveSound;
@@ -15,25 +18,14 @@ namespace HotFix.Control {
         private AudioClip exploseSound;
         private AudioClip clearLineSound;
 
-        private AudioClip currentClip = null;
-        public string currentClipName;
-
         //private EventManager eventManager;
 
         // void OnEnable () { // 这个方法暂时还没有适配
-        //     Debug.Log(TAG + ": OnEnable()"); 
-        void OnStart () {
-            Debug.Log(TAG + ": OnStart()"); 
-            // Debug.Log(TAG + " gameObject.name: " + gameObject.name);
-            audioSource = gameObject.GetComponent<AudioSource>(); 
-
-// com for tmp: 这里的代码写得好奇怪,明明是音频视频管理器,却搅到事件管理器里去了            
-            // EventManager.Instance.RegisterListener<CanvasMovedEventInfo>(onCanvasMoved);
-            // EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onTetrominoLand);
-        }
-
-        public void InitializeAudioClips() {
-            // instance = this;
+        //     Debug.Log(TAG + ": OnEnable()");
+        public void Awake() {
+            Debug.Log(TAG + " Awake()");
+            gameObject.AddComponent<AudioSource>();
+            audioSource = gameObject.GetComponent<AudioSource>();
             gameLoop = ResourceHelper.LoadAudioClip("ui/view/gameview", "gameloop", EAssetBundleUnloadLevel.Never);
             moveSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "move", EAssetBundleUnloadLevel.Never);
             rotateSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "rotate", EAssetBundleUnloadLevel.Never);
@@ -42,6 +34,26 @@ namespace HotFix.Control {
             clearLineSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "linecleared", EAssetBundleUnloadLevel.Never);
             currentClip = gameLoop;
         }
+
+        public void OnStart () {
+            Debug.Log(TAG + ": OnStart()"); 
+            Debug.Log(TAG + " gameObject.name: " + gameObject.name);
+
+// com for tmp: 这里的代码写得好奇怪,明明是音频视频管理器,却搅到事件管理器里去了            
+            // EventManager.Instance.RegisterListener<CanvasMovedEventInfo>(onCanvasMoved);
+            // EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onTetrominoLand);
+        }
+
+        // public void InitializeAudioClips() {
+        //     // instance = this;
+        //     gameLoop = ResourceHelper.LoadAudioClip("ui/view/gameview", "gameloop", EAssetBundleUnloadLevel.Never);
+        //     moveSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "move", EAssetBundleUnloadLevel.Never);
+        //     rotateSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "rotate", EAssetBundleUnloadLevel.Never);
+        //     landSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "land", EAssetBundleUnloadLevel.Never);
+        //     exploseSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "Explosion", EAssetBundleUnloadLevel.Never);
+        //     clearLineSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "linecleared", EAssetBundleUnloadLevel.Never);
+        //     currentClip = gameLoop;
+        // }
 
         public void setCurrentClip(string name) {
             switch (name) {
@@ -73,11 +85,16 @@ namespace HotFix.Control {
         public void PlayOneShotAudioClip() {
             audioSource.PlayOneShot(currentClip);
         }
-        
+
+// BUG: 这里好像是只播放一次,想要循环播放        
         public void PlayOneShotGameLoop() {
             audioSource.PlayOneShot(gameLoop);
         }
 
+        public void Play() {
+            audioSource.PlayOneShot(currentClip);
+        }
+        
         public void Pause() { 
             audioSource.Pause();
         }

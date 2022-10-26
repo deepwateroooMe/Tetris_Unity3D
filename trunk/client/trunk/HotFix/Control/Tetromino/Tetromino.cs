@@ -60,11 +60,11 @@ namespace HotFix.Control {
             timer -= Time.deltaTime;
             if (timer > 0) return;
             
-            //if (!ViewManager.GameView.ViewModel.isPaused) {
-            //    CheckUserInput();
-            //    UpdateIndividualScore();
-            //    UpdateFallSpeed();       // static 1.0f
-            //} 
+            if (!ViewManager.GameView.ViewModel.isPaused) {
+               CheckUserInput();
+               UpdateIndividualScore();
+               UpdateFallSpeed();       // static 1.0f
+            } 
 
 
 //             if (Input.GetMouseButtonDown(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)) {        
@@ -245,22 +245,23 @@ namespace HotFix.Control {
             // if (ViewManager.GameView.nextTetromino == null) return;
             // ViewManager.nextTetromino.transform.position += new Vector3(0, -1, 0);
             ((GameViewModel)ViewManager.GameView.BindingContext).nextTetroPos.Value += new Vector3(0, -1, 0);
-            ViewManager.GameView.MoveDown();
-            // Debug.Log(TAG + " CheckIsValidPosition(): " + CheckIsValidPosition()); 
-            if (CheckIsValidPosition()) {
-                ViewManager.GameView.ViewModel.UpdateGrid(ViewManager.GameView.nextTetromino);
-                if (Input.GetKey(KeyCode.DownArrow)) 
-                    PlayMoveAudio();
-            } else {
-                ViewManager.nextTetromino.transform.position += new Vector3(0, 1, 0);
-                ViewManager.GameView.ViewModel.recycleGhostTetromino(ViewManager.GameView.ghostTetromino); // 涉及事件的先后顺序，这里处理比较安全：确保在Tetromino之前处理
-                onTetrominoLand();
-                if (info == null)
-                    info = new TetrominoLandEventInfo();
-                info.unitGO = gameObject;
-// cannot convert from Hotfix.control.eventinfo to System.Reflection.EventInfo: 就是把事件管理器放到主工程后,与热更新工程之间交通需要适配一下
-                //EventManager.Instance.FireEvent(info);
-            }
+// // 这里写的都是些什么乱七八糟的代码?完全是牛头不对马尾            
+//             // ViewManager.GameView.MoveDown(); // 怎么会这样呢?什么时候会写出这种.....
+//             // Debug.Log(TAG + " CheckIsValidPosition(): " + CheckIsValidPosition()); 
+//             if (CheckIsValidPosition()) {
+//                 ViewManager.GameView.ViewModel.UpdateGrid(ViewManager.GameView.nextTetromino);
+//                 if (Input.GetKey(KeyCode.DownArrow)) 
+//                     PlayMoveAudio();
+//             } else {
+//                 ViewManager.nextTetromino.transform.position += new Vector3(0, 1, 0);
+//                 ViewManager.GameView.ViewModel.recycleGhostTetromino(ViewManager.GameView.ghostTetromino); // 涉及事件的先后顺序，这里处理比较安全：确保在Tetromino之前处理
+//                 onTetrominoLand();
+//                 if (info == null)
+//                     info = new TetrominoLandEventInfo();
+//                 info.unitGO = gameObject;
+// // cannot convert from Hotfix.control.eventinfo to System.Reflection.EventInfo: 就是把事件管理器放到主工程后,与热更新工程之间交通需要适配一下
+//                 //EventManager.Instance.FireEvent(info);
+//             }
             fall = Time.time; 
         }
         public void SlamDown() {
