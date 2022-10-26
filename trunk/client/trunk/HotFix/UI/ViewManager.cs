@@ -109,6 +109,9 @@ namespace HotFix.UI {
                         tetrosPool = go.FindChildByName("tetrosPool");
                         tetroParent = go.FindChildByName("TetrominosContainer");
                         GameObject parent = go.FindChildByName("Prefabs");
+                        
+                        tmp = go.FindChildByName("TetrominoI");
+
                         foreach (Transform child in parent.transform) { // go ==> parent 这个破BUG让我找了好久.....只仅仅是实现的时候手误.....
                             string name = child.gameObject.name;
                             // if (child.gameObject.name.StartsWith("mino"))
@@ -146,6 +149,8 @@ namespace HotFix.UI {
 #region BtnsCanvasView
         public static GameObject moveCanvas = null;
         public static GameObject rotateCanvas = null;
+        public static GameObject nextTetromino = null;
+        public static GameObject ghostTetromino = null;
         public static Dictionary<string, GameObject> minosDic = null;
         public static Dictionary<string, Stack<GameObject>> pool = null;
         public static GameObject tetrosPool = null;
@@ -164,6 +169,8 @@ namespace HotFix.UI {
         public static Button ZPosBtn;
         public static Button ZNegBtn;
 
+        public static GameObject tmp;
+        
         // public Material [] materials; // [red, green, blue, yellow]
         // public Material [] colors;
         public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3 localScale) {

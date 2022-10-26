@@ -38,10 +38,10 @@ namespace HotFix.UI {
         public BindableProperty<string> comTetroType = new BindableProperty<string>();
         public BindableProperty<string> eduTetroType = new BindableProperty<string>();
         public BindableProperty<string> nextTetrominoType = new BindableProperty<string>(); // 这个好像是用来给别人观察的,保存系统 ?
-// GameView: nextTetromino position, rotation, localScale        
+// GameView: nextTetromino position, rotation, localScale
+        private Transform nextTetrominoTransform = new GameObject().transform;
+        public BindableProperty<Transform> nextTetroTrans = new BindableProperty<Transform>();
         public BindableProperty<Vector3> nextTetroPos = new BindableProperty<Vector3>();
-        // public BindableProperty<Vector3Binder> nextTetroPos = new BindableProperty<Vector3Binder>();
-            
         public BindableProperty<Quaternion> nextTetroRot = new BindableProperty<Quaternion>();
         public BindableProperty<Vector3> nextTetroSca = new BindableProperty<Vector3>();
         
@@ -76,6 +76,8 @@ namespace HotFix.UI {
     // 不知道临时拿了这个作了什么用,一定要用上这个?
         private GameObject tmpParentGO;
 
+        // private Model model;
+        
         protected override void OnInitialize() {
             base.OnInitialize();
             Initialization();
@@ -132,7 +134,13 @@ namespace HotFix.UI {
             saveForUndo = true;
             gameStarted = false;
 
-            nextTetroPos.Value = Vector3.zero;
+            
+            
+            nextTetroPos.Value = new Vector3(2.0f, 11.0f, 2.0f);
+            nextTetroRot.Value = Quaternion.Euler(Vector3.zero);
+            nextTetroSca.Value = Vector3.one;
+
+            
         }
 
         public void Start() {
@@ -652,13 +660,26 @@ namespace HotFix.UI {
             // }
             ViewManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
 // 配置当前方块砖的相关信息
-            //nextTetromino = previewTetromino2;
             previewTetromino2.transform.localScale -= previewTetrominoScale;
-            Debug.Log(TAG + " (nextTetroPos.Value == null): " + (nextTetroPos.Value == null));
             Debug.Log(TAG + " (nextTetroRot.Value == null): " + (nextTetroRot.Value == null));
+            // Helpers.resetPos(ViewManager.GameView.nextTetromino, new Vector3(2.0f, 11.0f, 2.0f));
+            // Helpers.resetRot(ViewManager.GameView.nextTetromino, Quaternion.Euler(0, 0, 0));
+            // Helpers.resetSca(ViewManager.GameView.nextTetromino, Vector3.one);
+
+            ViewManager.nextTetromino = previewTetromino2;
+            // nextTetrominoTransform.position = new Vector3(2.0f, 11.0f, 2.0f);
+            // nextTetrominoTransform.rotation = Quaternion.Euler(0, 0, 0);
+            // nextTetrominoTransform.localScale = Vector3.one;
+            // Helpers.resetTrans(ViewManager.nextTetromino, nextTetrominoTransform);
+            // // ViewManager.nextTetromino.gameObject.transfom = nextTetrominoTransform;
+
             nextTetroPos.Value = new Vector3(2.0f, 11.0f, 2.0f);
             nextTetroRot.Value = Quaternion.Euler(0, 0, 0);
             nextTetroSca.Value = new Vector3(1, 1, 1);
+
+            ViewManager.nextTetromino.gameObject.transform.position = new Vector3(2.0f, 11.0f, 2.0f);
+            ViewManager.nextTetromino.gameObject.transform.rotation = Quaternion.Euler(0, 0, 0);
+            ViewManager.nextTetromino.gameObject.transform.localScale = Vector3.one;
             
             // previewTetromino2.layer = LayerMask.NameToLayer("Default");
             // previewTetromino2.GetComponent<Rotate>().enabled = !previewTetromino2.GetComponent<Rotate>().enabled;

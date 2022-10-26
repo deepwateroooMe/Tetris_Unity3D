@@ -20,7 +20,6 @@ namespace Framework.Core {
         public static ILRuntime.Runtime.Enviorment.AppDomain appDomain;
 
         void Start() {
-
             appDomain = new ILRuntime.Runtime.Enviorment.AppDomain();
 #if UNITY_EDITOR
             appDomain.UnityMainThreadID = System.Threading.Thread.CurrentThread.ManagedThreadId;
@@ -57,14 +56,11 @@ namespace Framework.Core {
             appDomain.DelegateManager.RegisterFunctionDelegate<int, string>();
             appDomain.DelegateManager.RegisterMethodDelegate<string>();
             appDomain.DelegateManager.RegisterMethodDelegate<int, int>();
-
 // 感觉这一步的加虽然消除了一个运行时错误,但内存的运行效率有可能是降低了: 还是必要的,至少是它不再报错了
 // 参照官方一点儿的例子,改成下面的相对高效的,原理在于不再频繁地GC Alloc
             appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Vector3, UnityEngine.Vector3>();
+            appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Transform, UnityEngine.Transform>();
             appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Quaternion, UnityEngine.Quaternion>();
-            // appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Vector3, Vector3Binder>();
-            // appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Quaternion, QuaternionBinder>();
-
             appDomain.DelegateManager.RegisterMethodDelegate<List<int>, List<int>>();
             appDomain.DelegateManager.RegisterMethodDelegate<string, string>();
             appDomain.DelegateManager.RegisterMethodDelegate<object, MessageArgs<object>>();
@@ -89,9 +85,6 @@ namespace Framework.Core {
             appDomain.DelegateManager.RegisterFunctionDelegate<GameObject, GameObject>();
             appDomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, ILTypeInstance, int>();
 
-            appDomain.RegisterValueTypeBinder(typeof(Vector3), new Vector3Binder());
-            appDomain.RegisterValueTypeBinder(typeof(Quaternion), new QuaternionBinder());
-            
             appDomain.DelegateManager.RegisterDelegateConvertor<UnityAction>((action) => {
                return new UnityAction(() => {
                    ((Action)action)();
@@ -162,9 +155,6 @@ namespace Framework.Core {
             });
         }
 
-// 我们先销毁掉之前创建的不合法的MonoBehaviour, 这里是销毁之前创建的不合法的,
-        // 并用自己定义在这个文件中的同名方法来替代,就是劫持了这些不适配的方法,进行对热更新程序域的适配
-        // 这里说,在主工程中消除游戏引擎反射系统中的CreateInstance方法,去调用ILRuntime框架中自定义改造过的相应方法,以便劫持相关的逻辑
         unsafe void InitializeCLRBindSetting() {
             foreach (var i in typeof(System.Activator).GetMethods()) {
                 // 找到名字为CreateInstance，并且是泛型方法的方法定义
@@ -176,11 +166,8 @@ namespace Framework.Core {
             foreach (var k in arr) {
                 if (k.Name == "AddComponent" && k.GetGenericArguments().Length == 1) 
                     appDomain.RegisterCLRMethodRedirection(k, AddComponent);
-            }
-            var arr2 = typeof(GameObject).GetMethods();
-            foreach (var j in arr2) {
-                if (j.Name == "GetComponent" && j.GetGenericArguments().Length == 1) 
-                    appDomain.RegisterCLRMethodRedirection(j, GetComponent);
+                else if (k.Name == "GetComponent" && k.GetGenericArguments().Length == 1) 
+                    appDomain.RegisterCLRMethodRedirection(k, GetComponent);
             }
         }
 
@@ -219,7 +206,6 @@ namespace Framework.Core {
             return instance;
         }
 #endregion
-        
         public unsafe static StackObject* CreateInstance(ILIntepreter intp, StackObject* esp, IList<object> mStack, CLRMethod method, bool isNewObj) {
             Debug.Log(TAG + " CreateInstance()");
             // 获取泛型参数<T>的实际类型
@@ -234,22 +220,7 @@ namespace Framework.Core {
             } else
                 throw new EntryPointNotFoundException();
         }
-
-// 刚才没有把问题想明白:因为经过了适配,本身的UnityEngine.AddComponent<T>() UnityEngine.GetComponent<T>() 在热更新工程中添加unityy 工程中所定义的类等,其正常运行是没有问题的(因为UnityEngine.AddComponent<T>() UnityEngine.GetComponent<T>() 认识其定义在主工程中的相关类)
-// 出问题的特殊之处是在: Tetromini.cs GhostTetromino.cs是在热更新工程中定义的,当游戏运行,unity工程无法得知热更新工程中Tetromino.cs GhostTetromino.cs为何物
-
-    // 上面说得不对,因为加component本身是在热更新工程中,它是知道自己工程中所定义的部件的{这里才叫没理解对呢!!!}
-// 所以得想办法把这两个类移到Unity工程中来(这个反而可能会比较繁琐,也可能逻辑不通); [这个想法,对某些只实现部分部分热更将的项目可能可行,但不适合自己的项目]
-        
-// 按照官方建议,我们是可以重置这两个方法的,让它有办法认得热更新工程中所定义的脚本
-        // (顺着这条途径把问题理顺,那么就发现别人的控件逻辑是在Unity主工程的,也就是有主工程中的MonoBehaviour系来驱动各生命周期事件,但是我的热更新控制逻辑是在热更新工程中,并没有一个默认的游戏引擎来驱动事件的自行发生)[这部分自己想错了,主工程借助一个热更新工程的入口,依次依照热更新里所定义的逻辑来调用各个触发了事件的函数,当然会调用到某处的AddComponent GetComponent,然后它Unity主工程,就不认识它要添加或是获得的是什么了,所以要对这两个方法进行劫持]
-    // 下面的这些,当初也都没有理解对:        
-        // 所以,没有设置好的原因,另一个是在热更新工程中,我没有哪个地方来调用UNITY工程的系统的自动运行;
-        // 前面的各种适配是适配给unity,让它认识热更新工程中的诸多类型函数等
-        // 可是按照自己游戏逻辑,感觉更像是热更新工程中需要适配unity MonoBehaviour的生命周期事件 ?
-
 // 示例工程中这些劫持是,代码适配用于提供给Unity工程来加载或是获取(AddComponent<>(), GetComponent<>())热更新工程中unity所不认识的热更新程序域里所定义的类等
-        
         MonoBehaviourAdapter.Adaptor GetComponent(ILType type) {
             Debug.Log(TAG + " GetComponent<>()");
             var arr = GetComponents<MonoBehaviourAdapter.Adaptor>();
@@ -260,7 +231,6 @@ namespace Framework.Core {
             }
             return null;
         }
-
         public unsafe static StackObject* AddComponent(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj) {
             // CLR重定向的说明请看相关文档和教程，这里不多做解释
             ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;
@@ -332,3 +302,6 @@ namespace Framework.Core {
         }
     }
 }
+
+
+

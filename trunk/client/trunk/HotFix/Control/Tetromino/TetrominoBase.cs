@@ -6,8 +6,8 @@ using deepwaterooo.tetris3d;
 using deepwaterooo.tetris3d.Data;
 using Framework.ResMgr;
 using HotFix.Data;
-using HotFix.Data.TypedData;
 using UnityEngine;
+
 
 namespace HotFix.Control {
 
@@ -147,3 +147,17 @@ namespace HotFix.Control {
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -18,11 +18,18 @@ namespace HotFix.Control {
             tag = "currentGhostTetromino";
         } 
 
-// 作为一个阴影,它所有需要做的就是首先找到自己的摆放位置;再监听当前方块砖的位置变化,暂时不管它
+        private float timer = 1.0f;
+
+// 作为一个阴影方块砖,它所有需要做的就是首先找到自己的摆放位置;再监听当前方块砖的位置变化,暂时不管它
 // (需要注意大方格的底层也是高低不平的,需要时上进下)
         void Update () {        
+            timer -= Time.deltaTime;
+            if (timer > 0) return;
+            
             FollowActiveTetromino();
-            // MoveDown();
+            MoveDown();
+
+            timer = 1.0f;
         }
 
         void FollowActiveTetromino() {
