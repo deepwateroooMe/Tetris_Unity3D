@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 
 namespace HotFix.Control {
-    // 应用中的音效播放管理器:它应该管理游戏中所有声音相关的,存有相关的音频,控制播放与停止等等,后来加上的?感觉代码不完整
+
+// 应用中的音效播放管理器:它应该管理游戏中所有声音相关的,存有相关的音频,控制播放与停止等等,后来加上的?感觉代码不完整
 // TODO: 这里我忘记了,为什么我必须在热更新程序域里再定义一遍一个应用类Singleton.cs来着?因为两个不同域之间需要适配吗?再测一下(现在还不是一个很好的时间来测这个;今天中午吃撑了下午的脑袋就在打转,等原理再透一些项目再熟悉一些再回来测)    
     public class AudioManager : SingletonMono<AudioManager> { // 感知Mono生命周期
        public const string TAG = "AudioManager";

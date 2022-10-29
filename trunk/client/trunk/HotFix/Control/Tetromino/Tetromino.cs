@@ -48,6 +48,7 @@ namespace HotFix.Control {
         private bool isRotateValid = false;
         public bool IsRotateValid { get { return isRotateValid; } }
 
+// 如果我不加这些,它掉得太快了,仿佛瞬间从天堂掉到了地狱.....而不是一秒一格地往下掉        
         private float timer = 1.0f;
 
         public void Awake() {

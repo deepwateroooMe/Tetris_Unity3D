@@ -103,43 +103,43 @@ namespace HotFix.UI {
 
                         moveCanvas.SetActive(false);
                         rotateCanvas.SetActive(false);
-// // 我先试图在这里把预设都先整理一下?
-//                         minosDic = new Dictionary<string, GameObject>();
-//                         pool = new Dictionary<string, Stack<GameObject>>();
-//                         tetrosPool = go.FindChildByName("tetrosPool");
-//                         tetroParent = go.FindChildByName("TetrominosContainer");
-//                         GameObject parent = go.FindChildByName("Prefabs");
-
-//                         foreach (Transform child in parent.transform) { // go ==> parent 这个破BUG让我找了好久.....只仅仅是实现的时候手误.....
-//                             string name = child.gameObject.name;
-//                             // if (child.gameObject.name.StartsWith("mino"))
-//                             //     type = child.GetComponent<MinoType>();
-//                             // else type = child.GetComponent<TetrominoType>();
-//                             minosDic.Add(name, child.gameObject);
-//                             Stack<GameObject> stack = new Stack<GameObject>();
-// // 这里我写的是手动生成对象池里的缓存对象:并在这里根据不同的类型添加相应的脚本
-//                             bool isTetro = name.StartsWith("Tetromino");
-//                             bool isGhost = name.StartsWith("shadow");
-//                             // Debug.Log(TAG + " isTetro: " + isTetro);
-//                             for (int i = 0; i < 10; i++) {
-//                                 GameObject tmp = GameObject.Instantiate(child.gameObject);
-//                                 tmp.name = name;
-// // 被劫持了的新的GetComponent()方法: 可能并不支持其.enabled 的属性修改?
-//                                 if (isTetro) {
-//                                     ComponentHelper.AddTetroComponent(tmp);
-//                                     Tetromino tetromino = ComponentHelper.GetTetroComponent(tmp);
-//                                     ComponentHelper.GetTetroComponent(tmp).enabled = false;
-//                                 } else if (isGhost) {
-//                                     ComponentHelper.AddGhostComponent(tmp);
-//                                     ComponentHelper.GetGhostComponent(tmp).enabled = false;
-//                                 }
-//                                 tmp.transform.SetParent(tetrosPool.transform, true); // 把它们放在一个容器下面,免得弄得游戏界面乱七八糟的
-//                                 tmp.SetActive(false);
-//                                 stack.Push(tmp);
-//                             }
-//                             pool.Add(name, stack);
-//                         }
-//                         parent.SetActive(false);
+// 我先试图在这里把预设都先整理一下?
+                        minosDic = new Dictionary<string, GameObject>();
+                        pool = new Dictionary<string, Stack<GameObject>>();
+                        tetrosPool = go.FindChildByName("tetrosPool");
+                        tetroParent = go.FindChildByName("TetrominosContainer");
+                        GameObject parent = go.FindChildByName("Prefabs");
+                        foreach (Transform child in parent.transform) { // go ==> parent 这个破BUG让我找了好久.....只仅仅是实现的时候手误.....
+                            string name = child.gameObject.name;
+                            Debug.Log(TAG + " name: " + name);
+                            // if (child.gameObject.name.StartsWith("mino"))
+                            //     type = child.GetComponent<MinoType>();
+                            // else type = child.GetComponent<TetrominoType>();
+                            minosDic.Add(name, child.gameObject);
+                            Stack<GameObject> stack = new Stack<GameObject>();
+// 这里我写的是手动生成对象池里的缓存对象:并在这里根据不同的类型添加相应的脚本
+                            bool isTetro = name.StartsWith("Tetromino");
+                            bool isGhost = name.StartsWith("shadow");
+                            // Debug.Log(TAG + " isTetro: " + isTetro);
+                            for (int i = 0; i < 10; i++) {
+                                GameObject tmp = GameObject.Instantiate(child.gameObject);
+                                tmp.name = name;
+// 被劫持了的新的GetComponent()方法: 可能并不支持其.enabled 的属性修改?
+                                if (isTetro) {
+                                    ComponentHelper.AddTetroComponent(tmp);
+                                    Tetromino tetromino = ComponentHelper.GetTetroComponent(tmp);
+                                    ComponentHelper.GetTetroComponent(tmp).enabled = false;
+                                } else if (isGhost) {
+                                    ComponentHelper.AddGhostComponent(tmp);
+                                    ComponentHelper.GetGhostComponent(tmp).enabled = false;
+                                }
+                                tmp.transform.SetParent(tetrosPool.transform, true); // 把它们放在一个容器下面,免得弄得游戏界面乱七八糟的
+                                tmp.SetActive(false);
+                                stack.Push(tmp);
+                            }
+                            pool.Add(name, stack);
+                        }
+                        parent.SetActive(false);
                     }, EAssetBundleUnloadLevel.Never);
         }
 
@@ -167,50 +167,50 @@ namespace HotFix.UI {
         public static Button ZPosBtn;
         public static Button ZNegBtn;
         
-//         // public Material [] materials; // [red, green, blue, yellow]
-//         // public Material [] colors;
-//         public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3 localScale) {
-//             Stack<GameObject> st = pool[type];
-//             GameObject objInstance = null;
-//             if (st.Count > 0) 
-//                 objInstance = st.Pop();
-//             else 
-//                 objInstance = GameObject.Instantiate(ViewManager.minosDic[type]); 
-//             objInstance.transform.position = pos;
-//             objInstance.transform.rotation = rotation;
-//             if (localScale == null)
-//                 objInstance.transform.localScale = Vector3.one;
-//             else
-//                 objInstance.transform.localScale = (Vector3)localScale;
-//             objInstance.SetActive(true);
-//             objInstance.transform.SetParent(ViewManager.tetroParent.transform, false); // default set here 吧
-// // 这里的逻辑不对,只在非启蒙模式下才立即激活,逻辑还是放游戏视图里去处理            
-//             // if (type.StartsWith("Tetromino"))
-//             //     ComponentHelper.GetTetroComponent(objInstance).enabled = true;
-//             return objInstance;
-//         }
+        // public Material [] materials; // [red, green, blue, yellow]
+        // public Material [] colors;
+        public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3 localScale) {
+            Debug.Log(TAG + " GetFromPool");
+            Debug.Log(TAG + " type: " + type);
+            Stack<GameObject> st = pool[type];
+            GameObject objInstance = null;
+            if (st.Count > 0) 
+                objInstance = st.Pop();
+            else 
+                objInstance = GameObject.Instantiate(ViewManager.minosDic[type]); 
+            objInstance.transform.position = pos;
+            objInstance.transform.rotation = rotation;
+            if (localScale == null)
+                objInstance.transform.localScale = Vector3.one;
+            else
+                objInstance.transform.localScale = (Vector3)localScale;
+            objInstance.SetActive(true);
+            objInstance.transform.SetParent(ViewManager.tetroParent.transform, false); // default set here 吧
+// 这里的逻辑不对,只在非启蒙模式下才立即激活,逻辑还是放游戏视图里去处理            
+            // if (type.StartsWith("Tetromino"))
+            //     ComponentHelper.GetTetroComponent(objInstance).enabled = true;
+            return objInstance;
+        }
     
-//         public static void ReturnToPool(GameObject gameObject, string type) {
-//             if (gameObject.activeSelf) {
-//                 gameObject.SetActive(false);
-//                 if (pool[type].Count < 10) {
-//                     gameObject.transform.position = defaultPos;
-//                     pool[type].Push(gameObject);
-//                 } else GameObject.DestroyImmediate(gameObject);
-//             } 
-//         }
+        public static void ReturnToPool(GameObject gameObject, string type) {
+            if (gameObject.activeSelf) {
+                gameObject.SetActive(false);
+                if (pool[type].Count < 10) {
+                    gameObject.transform.position = defaultPos;
+                    pool[type].Push(gameObject);
+                } else GameObject.DestroyImmediate(gameObject);
+            } 
+        }
 
-//         public static GameObject GetFromPool(string type) {
-//             // PoolInfo selected = GetPoolByType(type);
-//             // List<GameObject> pool = selected.pool;
-//             GameObject objInstance = null;
-//             if (pool.ContainsKey(type) && pool[type].Count > 0) {
-//                 objInstance = pool[type].Pop();
-//                 objInstance.SetActive(true);
-//             } else  // tmp commented out
-//                 objInstance = GameObject.Instantiate(minosDic[type]);
-//             return objInstance;
-//         }
+        public static GameObject GetFromPool(string type) {
+            GameObject objInstance = null;
+            if (pool.ContainsKey(type) && pool[type].Count > 0) {
+                objInstance = pool[type].Pop();
+                objInstance.SetActive(true);
+            } else  // tmp commented out
+                objInstance = GameObject.Instantiate(minosDic[type]);
+            return objInstance;
+        }
 #endregion
         
         static IEnumerator GetRectSize(RectTransform rt) { // 自己添加到这里的

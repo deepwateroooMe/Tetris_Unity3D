@@ -70,7 +70,8 @@ namespace HotFix.Control {
                         go.SetActive(false); // 或是因为前面的小错误,这里还没有设置成功
                     }, EAssetBundleUnloadLevel.Never);
         }
-
+// 这里好像是: 管理层也都需要红过两个域的适配,这里适配的过程中出了问题;
+// BUG: 把这个暂时放一下,等晚点儿再回来独立这个模块,继续放在ViewManager里面,先        
         public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3 localScale) {
             Stack<GameObject> st = pool[type];
             GameObject objInstance = null;

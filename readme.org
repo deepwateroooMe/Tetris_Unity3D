@@ -5,12 +5,11 @@
 * 游戏基本场景设计
 - debugging game flow, 现游戏的主场景如下(看起来很丑,但它运行!!!):
   
-[[./pic/readme_20221022_223927.png]]
-- 预设都做好了,现在要将预设打资源包,并从资源包读出来供视图实例化等
-- finding the easist way to refactor yet still be able to hotfix after app installed already. 
-- 现在游戏显示都没有问题了,开始debug 游戏逻辑以及功能模块等(现在只是运行了可模拟测试版的,需要在热更新程序域里将这些逻辑重构到运行出这种效果来,明天写,明天下午写?还是什么时候来写这点儿呢?)
-  - trying to link all necessary game logics and make game to run again in ILRuntime HotFix 程序域里.
+[[./pic/readme_20221029_110512.png]]
+
 - *TODO:*
+- AudioManager这个模块的实现暂时还没有遇到什么不适配的问题(BUG: 游戏音乐暂停后,当游戏恢复,背景音乐还没能恢复),PoolManager有不适配的问题,暂放一下(这个模块继续放在ViewManager里).接下来先把游戏里另一个主要的传导系统Evenet delegate的逻辑在热更新域里理通理顺,方便热更新程序域里有个比较好的架构
+- BUG:阴影方块砖最开始的位置还是对的,可是的后来的位置不对,会跑到方块砖的上面
 - 重要的逻辑基本都已经解决,剩下的就是把游戏的逻辑连通(今天中午吃多了,下午傍晚脑袋都不是很好用)
 - 接下来三天给自己放假远足到WSU的校园去看足球赛,不更新,周六会接着更新
 - 继续现在改好的逻辑,把游戏逻辑连起来.基本现在能够想到的比较难一点儿的全都连通了,狠开心,爱表哥,爱生活!!!
@@ -40,6 +39,12 @@
 
 [[./pic/readme_20221020_195727.png]]
 - *已经解决了的先前的*
+- 预设都做好了,现在要将预设打资源包,并从资源包读出来供视图实例化等
+- finding the easist way to refactor yet still be able to hotfix after app installed already. 
+- 现在游戏显示都没有问题了,开始debug 游戏逻辑以及功能模块等(现在只是运行了可模拟测试版的,需要在热更新程序域里将这些逻辑重构到运行出这种效果来,明天写,明天下午写?还是什么时候来写这点儿呢?)
+  - trying to link all necessary game logics and make game to run again in ILRuntime HotFix 程序域里.
+  
+[[./pic/readme_20221022_223927.png]]
   - moveCanvas rotateCanvas上点击事件,事件系统的传递.如果上面的问题一时半会儿解决不了,可以先试图解决这个并测试一下,给上面最难的BUG一点儿网络搜索和解决问题的时间 (狠好解决)这里只是用了最基础的方法来实现,以前自己都曾实现过事件系统,现在只是测试和解决主要关键点,知道都可行可实现,会再进一步的使用适当的设计模式来优化源码  
   - 两个预览方块砖的生成并画到视图上去: 现在解决这个问题
     - 原理很简: 将两个预览放在不会出现在主相机的两个固定的位置上;再用两个不同的相机分别照在两个预览上,并分别投射到一块渲染媒介,显示在屏幕的固定投影位置上就可以了
