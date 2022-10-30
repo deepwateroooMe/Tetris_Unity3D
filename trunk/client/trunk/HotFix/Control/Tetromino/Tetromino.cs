@@ -1,4 +1,5 @@
 ﻿using deepwaterooo.tetris3d;
+using deepwaterooo.tetris3d.Events;
 using Framework.MVVM;
 using HotFix.Data;
 using HotFix.UI;
@@ -7,7 +8,8 @@ using UnityEngine;
 namespace HotFix.Control {
 
     // 这段程序与游戏主逻辑的偶合比较重,不适合放在这里,移去热更新程序包,预设实例化的时候再动态添加
-    public class Tetromino : MonoBehaviour, IType, IEntity { 
+    // public class Tetromino : MonoBehaviour, IType, IEntity { 
+    public class Tetromino : MonoBehaviour { 
     // public class Tetromino : TetrominoBase { 
         private static string TAG = "Tetromino";
     
@@ -86,57 +88,56 @@ namespace HotFix.Control {
             timer = 1.0f;
         }
 
-// implement interface methods
-        private IType tetrominoType; 
-        public string type {
-            get {
-                return tetrominoType.type;
-            }
-            set {
-                tetrominoType.type = value;
-            }
-        }
-        private Vector3 tetroPos;
-        public Vector3 pos {
-            set {
-                tetroPos = pos;
-            }
-            get {
-                return tetroPos;
-            }
-        }
-        private Vector3 tetroRot;
-        public Vector3 rot {
-            set {
-                tetroRot = rot;
-            }
-            get {
-                return tetroRot;
-            }
-        }
-        private Vector3 tetroSca;
-        public Vector3 sca {
-            set {
-                tetroSca = sca;
-            }
-            get {
-                return tetroSca;
-            }
-        }
-// 这是两个还没能重构成功的案例方法, 想要使用命令式驱动?这里需要再想一想        
-        public void MoveDelta(Vector3 delta) {     // 使用 _command_
-            //     if (delta != Vector3.zero) {
-            //         moveCommand = new MoveCommand(this, delta); // this: Tetromino as IEntity
-            //         _commandProcessor.ExecuteCommand(moveCommand);
-            //     }
-        }
-
-        public void RotateDelta(Vector3 delta) {
-            // if (delta != Vector3.zero) {
-            //     rotateCommand = new RotateCommand(this, delta); // this: Tetromino as IEntity
-            //     _commandProcessor.ExecuteCommand(rotateCommand);
-            // }
-        }
+// // implement interface methods: 似乎用不到这些,暂时先去掉
+//         private IType tetrominoType; 
+//         public string type {
+//             get {
+//                 return tetrominoType.type;
+//             }
+//             set {
+//                 tetrominoType.type = value;
+//             }
+//         }
+//         private Vector3 tetroPos;
+//         public Vector3 pos {
+//             set {
+//                 tetroPos = pos;
+//             }
+//             get {
+//                 return tetroPos;
+//             }
+//         }
+//         private Vector3 tetroRot;
+//         public Vector3 rot {
+//             set {
+//                 tetroRot = rot;
+//             }
+//             get {
+//                 return tetroRot;
+//             }
+//         }
+//         private Vector3 tetroSca;
+//         public Vector3 sca {
+//             set {
+//                 tetroSca = sca;
+//             }
+//             get {
+//                 return tetroSca;
+//             }
+//         }
+// // 这是两个还没能重构成功的案例方法, 想要使用命令式驱动?这里需要再想一想        
+//         public void MoveDelta(Vector3 delta) {     // 使用 _command_
+//             //     if (delta != Vector3.zero) {
+//             //         moveCommand = new MoveCommand(this, delta); // this: Tetromino as IEntity
+//             //         _commandProcessor.ExecuteCommand(moveCommand);
+//             //     }
+//         }
+//         public void RotateDelta(Vector3 delta) {
+//             // if (delta != Vector3.zero) {
+//             //     rotateCommand = new RotateCommand(this, delta); // this: Tetromino as IEntity
+//             //     _commandProcessor.ExecuteCommand(rotateCommand);
+//             // }
+//         }
 
 // 这里可能会抛异常?        
         void OnEnable () {
@@ -161,32 +162,6 @@ namespace HotFix.Control {
             }
         }        
 
-        public void MoveZNeg() {  
-            // if (movedImmediateHorizontal) {
-            //     if (buttonDownWaitTimerHorizontal < buttonDownWaitMax) {
-            //         buttonDownWaitTimerHorizontal += Time.deltaTime;
-            //         return;
-            //     }
-            //     if (horizontalTimer < continuousHorizontalSpeed) {
-            //         horizontalTimer += Time.deltaTime;
-            //         return;
-            //     }
-            // }
-            // if (!movedImmediateHorizontal) 
-            //     movedImmediateHorizontal = true;
-            // horizontalTimer = 0;
-            ViewManager.nextTetromino.transform.position += new Vector3(0, 0, -1); 
-            // FindObjectOfType<Game>().MoveZNeg(); // moveCanvas moves too
-
-            if (CheckIsValidPosition()) {
-                ViewManager.GameView.ViewModel.UpdateGrid(ViewManager.GameView.nextTetromino);
-                PlayMoveAudio();
-            } else {
-                ViewManager.nextTetromino.transform.position += new Vector3(0, 0, 1);
-                // ViewManager.GameView.MoveZPos(); // moveCanvas moves too
-            }
-        }
-        
         public void onTetrominoMove(TetrominoMoveEventInfo eventInfo) { // 不使用 _command_
             // Debug.Log(TAG + ": onTetrominoMove()"); 
             isMoveValid = false;
@@ -218,7 +193,6 @@ namespace HotFix.Control {
                 ViewManager.nextTetromino.transform.Rotate(Vector3.zero - eventInfo.delta); 
             }
         }
-
         // public void onTetrominoLand(TetrominoLandEventInfo eventInfo) {
         private void onTetrominoLand() {
             Debug.Log(TAG + ": onTetrominoLand()"); 
@@ -226,6 +200,32 @@ namespace HotFix.Control {
             ViewManager.GameView.nextTetromino.tag = "Untagged";
             ViewManager.GameView.nextTetromino.GetComponent<Tetromino>().enabled = false;
             ViewManager.GameView.ViewModel.currentScore.Value += individualScore;            
+        }
+
+        public void MoveZNeg() {  
+            // if (movedImmediateHorizontal) {
+            //     if (buttonDownWaitTimerHorizontal < buttonDownWaitMax) {
+            //         buttonDownWaitTimerHorizontal += Time.deltaTime;
+            //         return;
+            //     }
+            //     if (horizontalTimer < continuousHorizontalSpeed) {
+            //         horizontalTimer += Time.deltaTime;
+            //         return;
+            //     }
+            // }
+            // if (!movedImmediateHorizontal) 
+            //     movedImmediateHorizontal = true;
+            // horizontalTimer = 0;
+            ViewManager.nextTetromino.transform.position += new Vector3(0, 0, -1); 
+            // FindObjectOfType<Game>().MoveZNeg(); // moveCanvas moves too
+
+            if (CheckIsValidPosition()) {
+                ViewManager.GameView.ViewModel.UpdateGrid(ViewManager.GameView.nextTetromino);
+                PlayMoveAudio();
+            } else {
+                ViewManager.nextTetromino.transform.position += new Vector3(0, 0, 1);
+                // ViewManager.GameView.MoveZPos(); // moveCanvas moves too
+            }
         }
         
         public void MoveDown() {

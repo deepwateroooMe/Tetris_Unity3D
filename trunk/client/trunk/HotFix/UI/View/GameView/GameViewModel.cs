@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using deepwaterooo.tetris3d;
+using deepwaterooo.tetris3d.Events;
 using Framework.MVVM;
 using HotFix.Control;
 using HotFix.Data;
@@ -841,6 +842,7 @@ namespace HotFix.UI {
             }
             return type.ToString(); 
         }    
+// 这个方法被跳过去了.....
         public void toggleButtons() {
             Debug.Log(TAG + ": toggleButtons()");
             Debug.Log(TAG + " buttonInteractableList[4]: " + buttonInteractableList[4]); 
@@ -848,12 +850,16 @@ namespace HotFix.UI {
             if (isMovement) { 
                 isMovement = false;
                 //invertButton.image.overrideSprite = prevImg; // rotation img 这两个图像还需要处理一下
+                ComponentHelper.GetMoveBtnListenerComponent(ViewManager.moveCanvas).enabled = false;
+                ComponentHelper.GetRotateBtnListenerComponent(ViewManager.rotateCanvas).enabled = true;
                 ViewManager.moveCanvas.gameObject.SetActive(false);
                 ViewManager.rotateCanvas.SetActive(true); 
             } else {
                 isMovement = true;
                 //invertButton.image.overrideSprite = newImg;
                 ViewManager.moveCanvas.gameObject.SetActive(true);
+                ComponentHelper.GetRotateBtnListenerComponent(ViewManager.rotateCanvas).enabled = false;
+                ComponentHelper.GetMoveBtnListenerComponent(ViewManager.moveCanvas).enabled = true;
                 ViewManager.rotateCanvas.SetActive(false);
             }
         }
@@ -868,11 +874,18 @@ namespace HotFix.UI {
                     isMovement = false;
 // 那个按钮的图片切换,暂时不管                    , 空空 NULL NULL
                     // invertButton.image.overrideSprite = prevImg; // rotation img 这两个图像还需要处理一下
+                    // ComponentHelper.GetMoveBtnListenerComponent(ViewManager.moveCanvas).enabled = false;
+                    // ComponentHelper.GetRotateBtnListenerComponent(ViewManager.rotateCanvas).enabled = true;
                     ViewManager.moveCanvas.gameObject.SetActive(false);
                     ViewManager.rotateCanvas.SetActive(true); 
                 } else {
                     isMovement = true;
                     // invertButton.image.overrideSprite = newImg;
+                    // ComponentHelper.GetRotateBtnListenerComponent(ViewManager.rotateCanvas).enabled = false;
+                    // MoveButtonListener listener = ComponentHelper.GetMoveBtnListenerComponent(ViewManager.moveCanvas);
+                    // Debug.Log(TAG + " (listener == null): " + (listener == null));
+                    // listener.enabled = true;
+                    // listener.InitializeButtons();
                     ViewManager.moveCanvas.gameObject.SetActive(true);
                     ViewManager.rotateCanvas.SetActive(false);
                 }

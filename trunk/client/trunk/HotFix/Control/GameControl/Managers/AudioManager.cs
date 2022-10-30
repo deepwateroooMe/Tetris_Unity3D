@@ -92,8 +92,11 @@ namespace HotFix.Control {
             audioSource.PlayOneShot(gameLoop);
         }
 
+// 它是不是容易失忆呢?        
         public void Play() {
-            audioSource.PlayOneShot(currentClip);
+            Debug.Log(TAG + " Play");
+            audioSource.PlayOneShot(currentClip); // 这就是从来开始播放,而不是继续播放
+            // audioSource.UnPause();
         }
         
         public void Pause() { 
