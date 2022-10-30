@@ -39,22 +39,21 @@ namespace HotFix.Control {
         public void OnStart () {
             Debug.Log(TAG + ": OnStart()"); 
             Debug.Log(TAG + " gameObject.name: " + gameObject.name);
-
-// com for tmp: 这里的代码写得好奇怪,明明是音频视频管理器,却搅到事件管理器里去了            
-            // EventManager.Instance.RegisterListener<CanvasMovedEventInfo>(onCanvasMoved);
-            // EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onTetrominoLand);
+// todo: 其它游戏场景的时间播放主背景音乐
+            EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onTetrominoMove);
+            EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onTetrominoRotate);
+            EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onTetrominoLand);
         }
 
-        // public void InitializeAudioClips() {
-        //     // instance = this;
-        //     gameLoop = ResourceHelper.LoadAudioClip("ui/view/gameview", "gameloop", EAssetBundleUnloadLevel.Never);
-        //     moveSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "move", EAssetBundleUnloadLevel.Never);
-        //     rotateSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "rotate", EAssetBundleUnloadLevel.Never);
-        //     landSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "land", EAssetBundleUnloadLevel.Never);
-        //     exploseSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "Explosion", EAssetBundleUnloadLevel.Never);
-        //     clearLineSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "linecleared", EAssetBundleUnloadLevel.Never);
-        //     currentClip = gameLoop;
-        // }
+        void onTetrominoMove(TetrominoMoveEventInfo info) {
+            audioSource.PlayOneShot(moveSound);
+        }
+        void onTetrominoRotate(TetrominoRotateEventInfo info) {
+            audioSource.PlayOneShot(rotateSound);
+        }
+        void onTetrominoLand(TetrominoLandEventInfo info) {
+            audioSource.PlayOneShot(landSound);
+        }
 
         public void setCurrentClip(string name) {
             switch (name) {
@@ -77,6 +76,30 @@ namespace HotFix.Control {
                 currentClip = gameLoop;
                 break;
             }
+        }
+
+        public void PlayAudio(string name) {
+            switch (name) {
+            case "move":
+                currentClip = moveSound;
+                break;
+            case "rotate":
+                currentClip = rotateSound;
+                break;
+            case "land":
+                currentClip = landSound;
+                break;
+            case "explose":
+                currentClip = exploseSound;
+                break;
+            case "clearline":
+                currentClip = clearLineSound;
+                break;
+            default:
+                currentClip = gameLoop;
+                break;
+            }
+            audioSource.PlayOneShot(currentClip);
         }
 
         public void PlayOneShotAudioClip(AudioClip clip) {
@@ -107,17 +130,6 @@ namespace HotFix.Control {
             audioSource.PlayOneShot(clearLineSound);
         }
 
-        // void onCanvasMoved(CanvasMovedEventInfo canvasMovedInfo) {
-        //     // if (canvasMovedInfo.delta.y != 0) { 
-        //     //     audioSource.PlayOneShot(rotateSound);
-        //     // } else {                            
-        //     //     audioSource.PlayOneShot(moveSound);
-        //     // }
-        // }
-
-        // void onTetrominoLand(TetrominoLandEventInfo info) {
-        //     // audioSource.PlayOneShot(landSound);
-        // }
             
         void OnDisable() {
             Debug.Log(TAG + ": OnDisable()");

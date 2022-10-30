@@ -9,22 +9,73 @@ namespace HotFix.Control {
 
     // Unity 游戏框架搭建 (五) 简易消息机制, 再深理解一下
     // https://zhuanlan.zhihu.com/p/30978365
-    // Something/reason I thought could be why I failed the first version of the EventManager
-    
+
+// 我觉得现在这个类,基本可以看懂了(当初写更多的是参考了网络上别人的代码),不懂或是想要再确认可以改天把EventInfo的继承类全加TAG再debug一遍    
     public class EventManager : SingletonMono<EventManager> { // Singleton
         private const string TAG = "EventManager";
 
-        public delegate void EventListener(EventInfo el);               // 普通代理
-        public delegate void EventListener<T>(T el) where T : EventInfo; // 泛型代理，带一个EventInfo参数
-        // Dictionary<System.Type, List<EventListener>> eventListeners;
-        
+// 普通代理: 其实是说,如果触发了el事件,回调这个EventListener(EventInfo el)方法,是触发事件之后的回调;是以参数和返回类型来区分代理之间的不同的
+        public delegate void EventListener(EventInfo el);                
+// 泛型代理，带一个EventInfo参数,这样就可以处理所有自定义事件了继承子类了
+        public delegate void EventListener<T>(T el) where T : EventInfo; 
+
+// 这里上下两个字典的键,好像被我写反了.....        
+// 字典:它的銉是以热更新工程中定义过的EventInfo的子类相区分;这个字典的键的个数会比较多,因为热更新工程中所自定义的类比较多?确认一下
         public Dictionary<System.Type, EventListener> delegatesMap;
+// 字典:是对不同类型事件代理的管理;热更新项目中定义过的不同事件代理作键(EventListener<T>)(那是这个字典的键是以代理相区分,就是不同代理方法的参数与返回类型相区分), 值为一个这样的代理EventListener<T>;这个字典键的个数会略少
         public Dictionary<System.Delegate, EventListener> delegateLookupMap;
 
-        private Vector3 moveDelta = Vector3.zero;
-        private TetrominoMoveEventInfo moveInfo = new TetrominoMoveEventInfo();
-        private TetrominoRotateEventInfo rotateInfo = new TetrominoRotateEventInfo();
-        private TetrominoLandEventInfo landInfo = new TetrominoLandEventInfo();
+        private Vector3 moveDelta;
+        private TetrominoMoveEventInfo moveInfo;
+        private TetrominoRotateEventInfo rotateInfo;
+        private TetrominoLandEventInfo landInfo;
+
+        public void Awake() {
+            Debug.Log(TAG + " Awake");
+            delegatesMap = new Dictionary<System.Type, EventListener>();  // eventListeners;     
+            delegateLookupMap = new Dictionary<System.Delegate, EventListener>();
+            
+            moveDelta = Vector3.zero;
+            moveInfo = new TetrominoMoveEventInfo();
+            rotateInfo = new TetrominoRotateEventInfo();
+            landInfo = new TetrominoLandEventInfo();
+        }
+
+        public void RegisterListener<T>(EventListener<T> listener) where T : EventInfo { 
+            Debug.Log(TAG + ": RegisterListener()");
+
+            EventListener internalDelegate = (el) => { listener((T)el); };
+
+// 代理类型(EventListener<T>)已经存在，且值(所有注册过的回调方法,唯一一个)相等，那就不需要再做什么,直接返回
+            if (delegateLookupMap.ContainsKey(listener) && delegateLookupMap[listener] == internalDelegate) 
+                return;
+// 还没有注册过这种代码的回调监听,就注册一个(唯一一个)            
+            delegateLookupMap[listener] = internalDelegate; 
+            EventListener  tmpDelegate;
+            if (delegatesMap.TryGetValue(typeof(T), out tmpDelegate)) {    // 如果存在这个类型T的键，返回true，并且值的内容写入在tmpDelegate里面
+                delegatesMap[typeof(T)] = tmpDelegate += internalDelegate; // 那么对于当前键，其值的内容再添加一个新的代理监听监听回调(注册回调方法的时候也是这么写的)
+            } else
+                delegatesMap[typeof(T)] = internalDelegate;
+
+            Debug.Log(TAG + " RegisterListener() delegatesMap.Count after: " + delegatesMap.Count + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
+        }
+        
+        public void UnregisterListener<T>(EventListener<T> listener) where T : EventInfo { // System.Action 这里并没有能真正移除掉监听，需要再理解、更改
+            Debug.Log(TAG + ": UnregisterListener()"); 
+            EventListener internalDelegate;
+            if (delegateLookupMap.TryGetValue(listener, out internalDelegate)) {
+                EventListener tmpDelegate;
+                if (delegatesMap.TryGetValue(typeof(T), out tmpDelegate)) {
+                    tmpDelegate -= internalDelegate;
+                    if (tmpDelegate == null)
+                        delegatesMap.Remove(typeof(T));
+                    else
+                        delegatesMap[typeof(T)] = tmpDelegate;
+                }
+                delegateLookupMap.Remove(listener);
+            }
+            Debug.Log(TAG + " delegatesMap.Count after: " + delegatesMap.Count + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
+        }
 
         public void FireEvent(string type, Vector3 delta) {
             Debug.Log(TAG + ": FireEvent() type + delta"); 
@@ -43,171 +94,11 @@ namespace HotFix.Control {
                 return;
             }
         }
+        
         public void FireEvent(EventInfo eventInfo) {
-            // Debug.Log(TAG + ": FireEvent()"); 
-
             EventListener tmpDelegate;
-            if (delegatesMap.TryGetValue(eventInfo.GetType(), out tmpDelegate)) {
+            if (delegatesMap.TryGetValue(eventInfo.GetType(), out tmpDelegate)) 
                 tmpDelegate.Invoke(eventInfo);
-            }
-            
-            // System.Type trueEventInfoClass = eventInfo.GetType();
-            // if (eventListeners == null || eventListeners[trueEventInfoClass] == null) { 
-            //     return;
-            // }
-            // foreach (EventListener el in eventListeners[trueEventInfoClass]) {
-            //     el(eventInfo); 
-            // }
-        }
-
-        public void Awake() {
-            Debug.Log(TAG + " Awake");
-            delegatesMap = new Dictionary<System.Type, EventListener>();  // eventListeners;     
-            delegateLookupMap = new Dictionary<System.Delegate, EventListener>();
-            
-            moveDelta = Vector3.zero;
-            moveInfo = new TetrominoMoveEventInfo();
-            rotateInfo = new TetrominoRotateEventInfo();
-            landInfo = new TetrominoLandEventInfo();
-        }
-        public bool isCleanedUp() {
-            return (delegatesMap.Count == 0 && delegateLookupMap.Count == 0);
-        }
-        public void cleanUpLists() {
-            if (delegatesMap != null && delegatesMap.Count > 0) {
-                delegatesMap.Clear();
-                // delegatesMap = new Dictionary<System.Type, EventListener>();  // eventListeners;
-            }
-            if (delegateLookupMap != null && delegateLookupMap.Count > 0) {
-                delegateLookupMap.Clear();
-                // delegateLookupMap = new Dictionary<System.Delegate, EventListener>();
-            }
-        }
-        
-        // public void RegisterListener<T>(System.Action<T> listener) where T : EventInfo { // with parameter
-// 这里面的一堆代码把自己看昏了,在ILRuntime里面用,可能是需要改写的吧        
-        public void RegisterListener<T>(EventListener<T> listener) where T : EventInfo { // 一个意思
-            Debug.Log(TAG + ": RegisterListener()");
-
-            EventListener internalDelegate = (el) => { listener((T)el); };
-
-            // Debug.Log(TAG + " delegatesMap.Count before: " + delegatesMap.Count); 
-            // Debug.Log(TAG + " delegateLookupMap.Count before: " + delegateLookupMap.Count);
-
-            if (delegateLookupMap.ContainsKey(listener) && delegateLookupMap[listener] == internalDelegate) // 已经存在，所以返回
-                return;
-            delegateLookupMap[listener] = internalDelegate;
-            EventListener  tmpDelegate;
-            if (delegatesMap.TryGetValue(typeof(T), out tmpDelegate)) {
-                delegatesMap[typeof(T)] = tmpDelegate += internalDelegate;
-            } else
-                delegatesMap[typeof(T)] = internalDelegate;
-
-            Debug.Log(TAG + " RegisterListener() delegatesMap.Count after: " + delegatesMap.Count); 
-            Debug.Log(TAG + " RegisterListener() delegateLookupMap.Count after: " + delegateLookupMap.Count);
-
-            
-            // System.Type eventType = typeof(T);
-            // if (eventListeners == null) {
-            //     eventListeners = new Dictionary<System.Type, List<EventListener>>();
-            // }
-            // List<EventListener> thisListenerList = null;
-            // EventListener wrapper = (ei) => { listener((T)ei); };     // wrapper string: tetris3d.EventManager+EventListener
-            // if (eventListeners.TryGetValue(eventType, out thisListenerList)) {
-            //     Debug.Log(TAG + " eventListeners[eventType].Count before add: " + eventListeners[eventType].Count); 
-            //     foreach (EventListener el in thisListenerList) { // 想要剔除重复
-            //         if (el == wrapper)
-            //             return;
-            //     }
-            //     thisListenerList.Add(wrapper);
-            // } else {
-            //     thisListenerList = new List<EventListener>();
-            //     thisListenerList.Add(wrapper);
-            // }
-            // eventListeners[eventType] = thisListenerList;
-            // Debug.Log(TAG + " eventListeners[eventType].Count after Add: " + eventListeners[eventType].Count); 
-            
-            // if (!eventListeners.ContainsKey(eventType) || eventListeners[eventType] == null) {
-            //     eventListeners[eventType] = new List<EventListener>();
-            // } 
-            // EventListener wrapper = (ei) => { listener((T)ei); };     // wrapper string: tetris3d.EventManager+EventListener
-            // foreach (EventListener el in eventListeners[eventType]) { // 想要剔除重复
-            //     if (el == wrapper)
-            //         return;
-            // }
-            // eventListeners[eventType].Add(wrapper); // 这里需要检查重复性
-        }
-        
-        public void UnregisterListener<T>(EventListener<T> listener) where T : EventInfo { // System.Action 这里并没有能真正移除掉监听，需要再理解、更改
-            Debug.Log(TAG + ": UnregisterListener()"); 
-            // Debug.Log(TAG + " delegatesMap.Count before: " + delegatesMap.Count); 
-            // Debug.Log(TAG + " delegateLookupMap.Count before: " + delegateLookupMap.Count);
-
-            EventListener internalDelegate;
-            if (delegateLookupMap.TryGetValue(listener, out internalDelegate)) {
-                EventListener tmpDelegate;
-                if (delegatesMap.TryGetValue(typeof(T), out tmpDelegate)) {
-                    tmpDelegate -= internalDelegate;
-                    if (tmpDelegate == null)
-                        delegatesMap.Remove(typeof(T));
-                    else
-                        delegatesMap[typeof(T)] = tmpDelegate;
-                }
-                delegateLookupMap.Remove(listener);
-            }
-
-            Debug.Log(TAG + " delegatesMap.Count after: " + delegatesMap.Count); 
-            Debug.Log(TAG + " delegateLookupMap.Count after: " + delegateLookupMap.Count);
-
-
-            // if (delegatesMap.Count > 0 || delegateLookupMap.Count > 0) {
-                
-            // }
-
-            // if (Instance == null) return;
-            // System.Type eventType = typeof(T);
-            // Debug.Log(TAG + " (eventListeners == null): " + (eventListeners == null)); 
-            // if (eventListeners != null) {
-            //     Debug.Log(TAG + " (eventListeners[eventType] == null): " + (eventListeners[eventType] == null)); 
-            // }
-            // EventListener wrapper = (ei) => { listener((T)ei); };
-            // List<EventListener> tmpDelegateList;
-            // Debug.Log(TAG + " eventListeners[eventType].Count before: " + eventListeners[eventType].Count); 
-            // if (eventListeners.TryGetValue(eventType, out tmpDelegateList)) {
-            //     foreach (EventListener el in tmpDelegateList) {  // method 1, try another one too
-            //         if (el == wrapper)
-            //             tmpDelegateList.Remove(el);
-            //     }
-            //     if (tmpDelegateList == null)
-            //         eventListeners.Remove(eventType);
-            //     else
-            //         eventListeners[eventType] = tmpDelegateList;
-            // } 
-            // Debug.Log(TAG + " eventListeners[eventType].Count after: " + eventListeners[eventType].Count); 
-
-            
-            // System.Type eventType = typeof(T);
-            // EventListener wrapper = (ei) => { listener((T)ei); };
-            
-            // Debug.Log(TAG + " (eventListeners == null): " + (eventListeners == null)); 
-            // if (eventListeners != null) {
-            //     Debug.Log(TAG + " (eventListeners[eventType] == null): " + (eventListeners[eventType] == null)); 
-            // }
-
-            // if (eventListeners != null && eventListeners[eventType] != null) {
-            //     Debug.Log(TAG + " eventListeners[eventType].Count before: " + eventListeners[eventType].Count); 
-            //     // eventListeners[eventType].Remove(wrapper);
-            //     eventListeners[eventType].Remove((ei) => {listener((T)ei); } );
-            //     Debug.Log(TAG + " eventListeners[eventType].Count after: " + eventListeners[eventType].Count); 
-            // }
-
-            // Debug.Log(TAG + " (eventType == null): " + (eventType == null));
-            // Debug.Log(TAG + " (eventListeners == null): " + (eventListeners == null));
-            // if (eventListeners != null)
-            //     Debug.Log(TAG + " eventListeners.ContainsKey(eventType): " + eventListeners.ContainsKey(eventType));
-            // if (eventListeners.ContainsKey(eventType)) {
-            //     Debug.Log(TAG + " eventListeners[eventType].Count: " + eventListeners[eventType].Count);
-            // }
         }
         
         public delegate void onSwapButtonClickedDelegate(); // for swapping preview Tetrominos
@@ -226,6 +117,17 @@ namespace HotFix.Control {
             if (UndoButtonClicked != null) {
                 UndoButtonClicked();
             }
+        }
+
+        public bool isCleanedUp() {
+            return (delegatesMap.Count == 0 && delegateLookupMap.Count == 0);
+        }
+        public void cleanUpLists() {
+// TODO: 在必要的时候,作必要的清理,这里是不需要再作检查的            
+            if (delegatesMap != null && delegatesMap.Count > 0) 
+                delegatesMap.Clear();
+            if (delegateLookupMap != null && delegateLookupMap.Count > 0) 
+                delegateLookupMap.Clear();
         }
     }
 }

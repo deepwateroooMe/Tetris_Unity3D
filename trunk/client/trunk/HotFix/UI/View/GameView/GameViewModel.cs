@@ -114,6 +114,7 @@ namespace HotFix.UI {
         void Initialization() {
             this.ParentViewModel = (MenuViewModel)ViewManager.MenuView.BindingContext; // 父视图模型: 菜单视图模型
             gridWidth = ((MenuViewModel)ParentViewModel).gridWidth;
+            Debug.Log(TAG + " gridWidth: " + gridWidth);
 
 // 这里好像是需要解决一下多维数组在ILRuntime热更新程序域中的适配问题???
             // grid = new Transform[5, gridHeight, 5]; // BUGGY BUGGY BUGGY multidimensional array.....
@@ -625,7 +626,7 @@ namespace HotFix.UI {
 // 配置当前方块砖的相关信息
             previewTetromino2.transform.localScale -= previewTetrominoScale;
             ViewManager.nextTetromino = previewTetromino;
-            ViewManager.nextTetromino.gameObject.transform.position = new Vector3(2.0f, 12.0f, 2.0f);
+            ViewManager.nextTetromino.gameObject.transform.position = new Vector3(2.0f, 11.0f, 2.0f);
             ViewManager.nextTetromino.gameObject.transform.rotation = Quaternion.Euler(0, 0, 0);
             ViewManager.nextTetromino.gameObject.transform.localScale = Vector3.one;
             
@@ -672,13 +673,13 @@ namespace HotFix.UI {
             // nextTetroPos.Value = new Vector3(2.0f, 11.0f, 2.0f);
             // nextTetroRot.Value = Quaternion.Euler(0, 0, 0);
             // nextTetroSca.Value = new Vector3(1, 1, 1);
-            ViewManager.nextTetromino.gameObject.transform.position = new Vector3(2.0f, 12.0f, 2.0f);
+            ViewManager.nextTetromino.gameObject.transform.position = new Vector3(2.0f, 11.0f, 2.0f);
             ViewManager.nextTetromino.gameObject.transform.rotation = Quaternion.Euler(0, 0, 0);
             ViewManager.nextTetromino.gameObject.transform.localScale = Vector3.one;
             // previewTetromino2.layer = LayerMask.NameToLayer("Default");
             // previewTetromino2.GetComponent<Rotate>().enabled = !previewTetromino2.GetComponent<Rotate>().enabled;
 
-            gameStarted = true;
+            gameStarted = true; 
             
             // SpawnGhostTetromino();  
             // moveRotatecanvasPrepare();
