@@ -89,14 +89,14 @@ namespace HotFix.UI {
                         moveCanvas = go.FindChildByName("moveCanvas");
                         rotateCanvas = go.FindChildByName("rotateCanvas");
 // 4 move Buttons
-                        // leftBtn = go.FindChildByName("leftBtn").GetComponent<Button>();
-                        // rightBtn = go.FindChildByName("rightBtn").GetComponent<Button>();
-                        // upBtn = go.FindChildByName("upBtn").GetComponent<Button>();
-                        // downBtn = go.FindChildByName("downBtn").GetComponent<Button>();
-                        leftBtn = go.FindChildByName("leftBtn");
-                        rightBtn = go.FindChildByName("rightBtn");
-                        upBtn = go.FindChildByName("upBtn");
-                        downBtn = go.FindChildByName("downBtn");
+                        leftBtn = go.FindChildByName("leftBtn").GetComponent<Button>();
+                        rightBtn = go.FindChildByName("rightBtn").GetComponent<Button>();
+                        upBtn = go.FindChildByName("upBtn").GetComponent<Button>();
+                        downBtn = go.FindChildByName("downBtn").GetComponent<Button>();
+                        // leftBtn = go.FindChildByName("leftBtn");
+                        // rightBtn = go.FindChildByName("rightBtn");
+                        // upBtn = go.FindChildByName("upBtn");
+                        // downBtn = go.FindChildByName("downBtn");
 // 6 rotate Buttons: 想当然地要实现至少三组不同的旋转及位置(可以不实现三组,只用一组,但需要更为精确的摆放,以便他们也可以旋转,让他们的显示与否变得聪明一些)
                         XPosBtn = go.FindChildByName("posX").GetComponent<Button>();
                         XNegBtn = go.FindChildByName("negX").GetComponent<Button>();
@@ -107,19 +107,23 @@ namespace HotFix.UI {
 
                         // ComponentHelper.AddMoveBtnListenerComponent(moveCanvas);
                         // MoveButtonListener listener = ComponentHelper.GetMoveBtnListenerComponent(moveCanvas);
-                        // listener.InitializeButtons();
                         // listener.enabled = false;
+                        ComponentHelper.AddMoveCanvasComponent(moveCanvas);
+                        MoveCanvas listener = ComponentHelper.GetMoveCanvasComponent(moveCanvas);
+                        listener.enabled = false;
                         moveCanvas.SetActive(false);
-                        // ComponentHelper.AddRotateBtnListenerComponent(rotateCanvas);
-                        // ComponentHelper.GetRotateBtnListenerComponent(rotateCanvas).enabled = false;
+                        ComponentHelper.AddRotateCanvasComponent(rotateCanvas);
+                        ComponentHelper.GetRotateCanvasComponent(rotateCanvas).enabled = false;
                         rotateCanvas.SetActive(false);
 // 我先试图在这里把预设都先整理一下?
                         minosDic = new Dictionary<string, GameObject>();
                         pool = new Dictionary<string, Stack<GameObject>>();
+                        // PoolManager.Initialize();
                         tetrosPool = go.FindChildByName("tetrosPool");
                         tetroParent = go.FindChildByName("TetrominosContainer");
                         GameObject parent = go.FindChildByName("Prefabs");
                         foreach (Transform child in parent.transform) { // go ==> parent 这个破BUG让我找了好久.....只仅仅是实现的时候手误.....
+                            // PoolManager.fillPool(child);
                             string name = child.gameObject.name;
                             Debug.Log(TAG + " name: " + name);
                             // if (child.gameObject.name.StartsWith("mino"))
@@ -155,6 +159,19 @@ namespace HotFix.UI {
 
 // 两块不同按钮的画布,两架相机,以及游戏过程中生成的所有的方块砖都位于这个视图下        
 #region BtnsCanvasView
+// move Buttons
+        public static Button leftBtn;
+        public static Button rightBtn;
+        public static Button upBtn;
+        public static Button downBtn;
+// rotate Buttons
+        public static Button XPosBtn;
+        public static Button XNegBtn;
+        public static Button YPosBtn;
+        public static Button YNegBtn;
+        public static Button ZPosBtn;
+        public static Button ZNegBtn;
+
         public static GameObject moveCanvas = null;
         public static GameObject rotateCanvas = null;
         public static GameObject nextTetromino = null; // 放这里,主要是方便GameViewModel和Tetromino GhostTetromino来拿到reference
@@ -164,24 +181,12 @@ namespace HotFix.UI {
         public static GameObject tetrosPool = null;
         public static GameObject tetroParent = null;
         private static Vector3 defaultPos = new Vector3(-100, -100, -100); // 不同类型的起始位置不一样(可否设置在预设里呢>??)
-// move Buttons
-        public static GameObject leftBtn;
-        public static GameObject rightBtn;
-        public static GameObject upBtn;
-        public static GameObject downBtn;
-// rotate Buttons
-        public static Button XPosBtn;
-        public static Button XNegBtn;
-        public static Button YPosBtn;
-        public static Button YNegBtn;
-        public static Button ZPosBtn;
-        public static Button ZNegBtn;
         
         // public Material [] materials; // [red, green, blue, yellow]
         // public Material [] colors;
         public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3 localScale) {
             Debug.Log(TAG + " GetFromPool");
-            Debug.Log(TAG + " type: " + type);
+            Debug.Log(TAG + " type: " + type); 
             Stack<GameObject> st = pool[type];
             GameObject objInstance = null;
             if (st.Count > 0) 

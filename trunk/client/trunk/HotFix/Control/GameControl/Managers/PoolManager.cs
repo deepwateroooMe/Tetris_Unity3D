@@ -12,14 +12,14 @@ namespace HotFix.Control {
 // 晚点儿项目快结束时,再试着将这一部分的逻辑分出来,统一管理    
 
 // 还有一点儿小问题,接下来三天放假不更新,周六会接着更新    
-    public class PoolManager : SingletonMono<PoolManager> {
+    public class PoolManager : Singleton<PoolManager> {
         private const string TAG = "PoolManager";
 
         public static Dictionary<string, GameObject> minosDic = null; // [type, prefab gameObject]
         public static Dictionary<string, Stack<GameObject>> pool = null;
 
-        public static GameObject tetrosPool = null;
-        public static GameObject tetroParent = null;
+        private static GameObject tetrosPool = null;
+        private static GameObject tetroParent = null;
 
         private static Vector3 defaultPos = new Vector3(-100, -100, -100); // 不同类型的起始位置不一样(可否设置在预设里呢>??)
 
@@ -27,49 +27,80 @@ namespace HotFix.Control {
         // public Material [] materials; // [red, green, blue, yellow]
         // public Material [] colors;
 
-        public void Awake() {
-            Debug.Log(TAG + " Awake()");
-
+        // public void Awake() {
+        //     Debug.Log(TAG + " Awake()");
+        public static void Initialize() {
             minosDic = new Dictionary<string, GameObject>();
             pool = new Dictionary<string, Stack<GameObject>>();
-
-// 从必要的资源包加载预设资源:既然把这个模块独立管理,那么最好就把预设单独打一个资源包ui/view/gameview/prefabs
-            ResourceHelper
-                .LoadCloneAsyn(
-                    "ui/view/gameview/prefabs",
-                    "Prefabs", // 这里是有预设的包，读出资源就可以加载
-                    (go) => {
-                        go.name = "Prefabs";
-                        GameObject.DontDestroyOnLoad(go); // 以此为父节点的所有子节点都不会被销毁,包括各种管理类
-
-                        foreach (Transform child in go.transform) { // go ==> parent 这个破BUG让我找了好久.....只仅仅是实现的时候手误.....
-// 这里顺承从前的用名字代替了类型,但有时候可能会出错了,要再改一下
-                            string name = child.gameObject.name;
-                            minosDic.Add(name, child.gameObject);
-
-                            Stack<GameObject> stack = new Stack<GameObject>();
-                            bool isTetro = name.StartsWith("Tetromino");
-                            bool isGhost = name.StartsWith("shadow");
-                            for (int i = 0; i < 10; i++) {
-                                GameObject tmp = GameObject.Instantiate(child.gameObject);
-                                tmp.name = name;
-                                if (isTetro) {
-                                    ComponentHelper.AddTetroComponent(tmp);
-                                    Tetromino tetromino = ComponentHelper.GetTetroComponent(tmp);
-                                    ComponentHelper.GetTetroComponent(tmp).enabled = false;
-                                } else if (isGhost) {
-                                    ComponentHelper.AddGhostComponent(tmp);
-                                    ComponentHelper.GetGhostComponent(tmp).enabled = false;
-                                }
-                                tmp.transform.SetParent(tetrosPool.transform, true); // 把它们放在一个容器下面,免得弄得游戏界面乱七八糟的
-                                tmp.SetActive(false);
-                                stack.Push(tmp);
-                            }
-                            pool.Add(name, stack);
-                        }
-                        go.SetActive(false); // 或是因为前面的小错误,这里还没有设置成功
-                    }, EAssetBundleUnloadLevel.Never);
         }
+
+        public static void fillPool(Transform prefab) {
+            string name = prefab.gameObject.name;
+            // Debug.Log(TAG + " name: " + name);
+            // if (child.gameObject.name.StartsWith("mino"))
+            //     type = child.GetComponent<MinoType>();
+            // else type = child.GetComponent<TetrominoType>();
+            minosDic.Add(name, prefab.gameObject);
+            Stack<GameObject> stack = new Stack<GameObject>();
+// 这里我写的是手动生成对象池里的缓存对象:并在这里根据不同的类型添加相应的脚本
+            bool isTetro = name.StartsWith("Tetromino");
+            bool isGhost = name.StartsWith("shadow");
+            // Debug.Log(TAG + " isTetro: " + isTetro);
+            for (int i = 0; i < 10; i++) {
+				GameObject tmp = GameObject.Instantiate(prefab.gameObject);
+                tmp.name = name;
+// 被劫持了的新的GetComponent()方法: 可能并不支持其.enabled 的属性修改?
+                if (isTetro) {
+                    ComponentHelper.AddTetroComponent(tmp);
+                    Tetromino tetromino = ComponentHelper.GetTetroComponent(tmp);
+                    ComponentHelper.GetTetroComponent(tmp).enabled = false;
+                } else if (isGhost) {
+                    ComponentHelper.AddGhostComponent(tmp);
+                    ComponentHelper.GetGhostComponent(tmp).enabled = false;
+                }
+                tmp.transform.SetParent(tetrosPool.transform, true); // <<<<<<<<<<<<<<<<<<<<  BUG TO BE FIXED
+                tmp.SetActive(false);
+                stack.Push(tmp);
+            }
+            pool.Add(name, stack);
+        }
+// // 从必要的资源包加载预设资源:既然把这个模块独立管理,那么最好就把预设单独打一个资源包ui/view/gameview/prefabs
+//             ResourceHelper
+//                 .LoadCloneAsyn(
+//                     "ui/view/btnscanvasview/prefabs",
+//                     "Prefabs", // 这里是有预设的包，读出资源就可以加载
+//                     (go) => {
+//                         go.name = "Prefabs";
+//                         GameObject.DontDestroyOnLoad(go); // 以此为父节点的所有子节点都不会被销毁,包括各种管理类
+
+//                         foreach (Transform child in go.transform) { // go ==> parent 这个破BUG让我找了好久.....只仅仅是实现的时候手误.....
+// // 这里顺承从前的用名字代替了类型,但有时候可能会出错了,要再改一下
+//                             string name = child.gameObject.name;
+//                             minosDic.Add(name, child.gameObject);
+
+//                             Stack<GameObject> stack = new Stack<GameObject>();
+//                             bool isTetro = name.StartsWith("Tetromino");
+//                             bool isGhost = name.StartsWith("shadow");
+//                             for (int i = 0; i < 10; i++) {
+//                                 GameObject tmp = GameObject.Instantiate(child.gameObject);
+//                                 tmp.name = name;
+//                                 if (isTetro) {
+//                                     ComponentHelper.AddTetroComponent(tmp);
+//                                     Tetromino tetromino = ComponentHelper.GetTetroComponent(tmp);
+//                                     ComponentHelper.GetTetroComponent(tmp).enabled = false;
+//                                 } else if (isGhost) {
+//                                     ComponentHelper.AddGhostComponent(tmp);
+//                                     ComponentHelper.GetGhostComponent(tmp).enabled = false;
+//                                 }
+//                                 tmp.transform.SetParent(tetrosPool.transform, true); // 把它们放在一个容器下面,免得弄得游戏界面乱七八糟的
+//                                 tmp.SetActive(false);
+//                                 stack.Push(tmp);
+//                             }
+//                             pool.Add(name, stack);
+//                         }
+//                         go.SetActive(false); // 或是因为前面的小错误,这里还没有设置成功
+//                     }, EAssetBundleUnloadLevel.Never);
+//         }
 // 这里好像是: 管理层也都需要红过两个域的适配,这里适配的过程中出了问题;
 // BUG: 把这个暂时放一下,等晚点儿再回来独立这个模块,继续放在ViewManager里面,先        
         public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3 localScale) {
@@ -78,7 +109,7 @@ namespace HotFix.Control {
             if (st.Count > 0) 
                 objInstance = st.Pop();
             else 
-                objInstance = GameObject.Instantiate(ViewManager.minosDic[type]); 
+                objInstance = GameObject.Instantiate(minosDic[type]); 
             objInstance.transform.position = pos;
             objInstance.transform.rotation = rotation;
             if (localScale == null)

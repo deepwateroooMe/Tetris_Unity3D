@@ -3,13 +3,14 @@ using System.Collections;
 using System.IO;
 using System.Text;
 using deepwaterooo.tetris3d;
-using deepwaterooo.tetris3d.Events;
 using Framework.MVVM;
-using Framework.Util;
 using HotFix.Control;
 using HotFix.Data;
+using tetris3d;
 using UnityEngine;
 using UnityEngine.UI;
+using SaveSystem = HotFix.Control.SaveSystem;
+
 namespace HotFix.UI {
     
     // 世界坐标系视图BtnsCanvasView：
@@ -30,16 +31,13 @@ namespace HotFix.UI {
         public override bool IsRoot { get { return true; } }
 
         GameObject managers;
-		//PoolManager poolManager;
-		Control.AudioManager audioManager;
-        // EventManager eventManager;
         
 // 基础游戏大方格
         // GameObject baseBoard3; // 这些控件还没有做,哪天头脑昏昏的时候才再去做
         // GameObject baseBoard4;
         GameObject baseBoard5;
 // DesView 里的个文本框基本不变，不用管它们        
-// ScoreDataView
+// ScoreDataView 
         Text scoText; // Score Text
         Text lvlText; // Level Text
         Text linText; // Line Text
@@ -241,7 +239,7 @@ namespace HotFix.UI {
 
 // just so that I don't forget STATIC        
        // static void Start () { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
-        void Start() { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
+        public void Start() { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
             Debug.Log(TAG + ": Start()");
             // ComponentHelper.AddTetroComponent(ViewManager.tmp);
             // ViewManager.nextTetromino = ViewManager.tmp;
@@ -254,6 +252,7 @@ namespace HotFix.UI {
             // if (!EventManager.Instance.isCleanedUp()) {
             //     EventManager.Instance.cleanUpLists();
             // }
+// 转到相对较早的地方调用            
             // // if (gameMode == 0) {
             // // EventManager.Instance.RegisterListener<SwapPreviewsEventInfo>(onSwapPreviewTetrominos); 
             // // EventManager.Instance.RegisterListener<UendoGameEventInfo>(onUndoGame); 
@@ -835,6 +834,7 @@ namespace HotFix.UI {
             // PoolManager.Instance.gameObject.transform.SetParent(managers.transform, false);
 // EventManager: 这里是已经创建了单例实例           
             EventManager.Instance.gameObject.transform.SetParent(managers.transform, false);
+            RegisterListeners();
             
             baseBoard5 = GameObject.FindChildByName("BaseBoard5");
             setAllBaseBoardInactive();
@@ -899,13 +899,11 @@ namespace HotFix.UI {
 
             cycledPreviewTetromino = new GameObject();
 // // 四个平移方向
-//             ViewManager.leftBtn.onClick.AddListener(OnClickLeftButton);
-            ViewManager.rightBtn.GetComponent<Button>().onClick.AddListener(OnClickRightButton);
-//             ViewManager.upBtn.onClick.AddListener(OnClickUpButton);
-            ViewManager.downBtn.GetComponent<Button>().onClick.AddListener(OnClickDownButton);
+            ViewManager.leftBtn.onClick.AddListener(OnClickLeftButton);
+            ViewManager.rightBtn.onClick.AddListener(OnClickRightButton);
+            ViewManager.upBtn.onClick.AddListener(OnClickUpButton);
+            ViewManager.downBtn.onClick.AddListener(OnClickDownButton);
 
-            // RegisterListeners();
-            // 
 // 六个旋转方向
             ViewManager.XPosBtn.onClick.AddListener(OnClickXPosButton);
             ViewManager.XNegBtn.onClick.AddListener(OnClickXNegButton);
@@ -956,16 +954,16 @@ namespace HotFix.UI {
         void OnClickZNegButton() {
             
         }
-// 模块化管理: 平移画布四个按钮的回调
+// 模块化管理: 平移画布四个按钮的回调,放到视图模型里去处理
         void onActiveTetrominoMove(TetrominoMoveEventInfo info) { 
             Debug.Log(TAG + " onActiveTetrominoMove");
 // TODO: 这里牵线搭桥的写法是对性能的极大浪费,可以简化步骤,直接放入GameViewModel中管理,省去来回调用
-            if (ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).IsMoveValid) {
+            if (ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).IsMoveValid) { // TODO
             // if (ViewManager.nextTetromino.GetComponent<Tetromino>().IsMoveValid) {
-                ViewManager.moveCanvas.transform.position += info.delta;
-                if ((int)info.delta.y != 0) {
-                    ViewManager.rotateCanvas.transform.position += new Vector3(0, info.delta.y, 0);
-                }
+// 不希望这里面再处理按钮画布相关的逻辑
+                // ViewManager.moveCanvas.transform.position += info.delta;
+                // if ((int)info.delta.y != 0) 
+                //     ViewManager.rotateCanvas.transform.position += new Vector3(0, info.delta.y, 0);
                 ViewModel.UpdateGrid(ViewManager.nextTetromino);
             }
         }
@@ -976,24 +974,25 @@ namespace HotFix.UI {
             }
         }
         
+// [阴影会自动跟随;] 游戏视图模型会需要更新表格; 方块砖需要移动; 音频管理器需要操作背景音乐
+        private Vector3 moveDelta = Vector3.zero;
         void OnClickLeftButton() {
-// 这套系统今天早上记得原本同Update()系统一起工作着来着,不知道为什么后来复杂的类型没有办法适配了,回来再来检查BindableProperty<T>的这套系统            
-            // ViewModel.nextTetroPos.Value += new Vector3(-1, 0, 0);
-            ViewManager.nextTetromino.gameObject.transform.position += new Vector3(-1, 0, 0);
+            moveDelta = new Vector3(-1, 0, 0);
+            EventManager.Instance.FireEvent("move", moveDelta);
         }
         void OnClickRightButton() {
-            // ViewModel.nextTetroPos.Value += new Vector3(1, 0, 0);
-            ViewManager.nextTetromino.gameObject.transform.position += new Vector3(1, 0, 0);
+            moveDelta = new Vector3(1, 0, 0);
+            EventManager.Instance.FireEvent("move", moveDelta);
         }
         void OnClickUpButton() {
-            // ViewModel.nextTetroPos.Value += new Vector3(0, 0, 1);
-            ViewManager.nextTetromino.gameObject.transform.position += new Vector3(0, 0, 1);
+            moveDelta = new Vector3(0, 0, 1);
+            EventManager.Instance.FireEvent("move", moveDelta);
         }
         void OnClickDownButton() {
-            // ViewModel.nextTetroPos.Value += new Vector3(0, 0, -1);
-            ViewManager.nextTetromino.gameObject.transform.position += new Vector3(0, 0, -1);
+            moveDelta = new Vector3(0, 0, -1);
+            EventManager.Instance.FireEvent("move", moveDelta);
         }
-        
+
         // 想找一个更为合适的地方来写上面的观察者模式监听回调
         public void OnRevealed() {
             base.OnRevealed();
@@ -1005,8 +1004,6 @@ namespace HotFix.UI {
             ViewModel.numLinesCleared.OnValueChanged += onNumLinesCleared;
 // TODO: 再测试一下这个: 还仍然是不过
             // ViewModel.gameMode.OnValueChanged += onGameModeChanged; // 运行时仍为空抛异常,因为它的初始化的过程会相对复杂那么一点点儿
-
-            RegisterListeners();
 
 //// 不想要游戏视图来观察,要对象池来观察,只想游戏视图中持一个对象池的引用            
 //// 预览中的两个方块砖类型变了:要生成实例并刷新

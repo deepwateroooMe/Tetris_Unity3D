@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using deepwaterooo.tetris3d.Events;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace HotFix.Control {
 
@@ -15,11 +10,11 @@ namespace HotFix.Control {
 		public static void AddGhostComponent(GameObject go) {
 			go.AddComponent<GhostTetromino>();
 		}
-		public static void AddMoveBtnListenerComponent(GameObject go) {
-			go.AddComponent<MoveButtonListener>();
+		public static void AddMoveCanvasComponent(GameObject go) {
+			go.AddComponent<MoveCanvas>();
 		}
-		public static void AddRotateBtnListenerComponent(GameObject go) {
-			go.AddComponent<RotateButtonListener>();
+		public static void AddRotateCanvasComponent(GameObject go) {
+			go.AddComponent<RotateCanvas>();
 		}
 
 		public static Tetromino GetTetroComponent(GameObject go) {
@@ -28,11 +23,11 @@ namespace HotFix.Control {
 		public static GhostTetromino GetGhostComponent(GameObject go) {
             return go.GetComponent<GhostTetromino>();
 		}
-		public static MoveButtonListener GetMoveBtnListenerComponent(GameObject go) {
-			return go.GetComponent<MoveButtonListener>();
+		public static MoveCanvas GetMoveCanvasComponent(GameObject go) {
+			return go.GetComponent<MoveCanvas>();
 		}
-		public static RotateButtonListener GetRotateBtnListenerComponent(GameObject go) {
-			return go.GetComponent<RotateButtonListener>();
+		public static RotateCanvas GetRotateCanvasComponent(GameObject go) {
+			return go.GetComponent<RotateCanvas>();
 		}
 	}
 }

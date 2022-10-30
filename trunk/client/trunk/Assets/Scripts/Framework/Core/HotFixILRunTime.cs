@@ -63,8 +63,8 @@ namespace Framework.Core {
             appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Quaternion, UnityEngine.Quaternion>();
 
             appDomain.DelegateManager.RegisterMethodDelegate<ILRuntime.Runtime.Intepreter.ILTypeInstance>();
-            appDomain.DelegateManager.RegisterMethodDelegate<deepwaterooo.tetris3d.Events.TetrominoMoveEventInfo>();
-            appDomain.DelegateManager.RegisterMethodDelegate<deepwaterooo.tetris3d.Events.TetrominoRotateEventInfo>();
+            //appDomain.DelegateManager.RegisterMethodDelegate<deepwaterooo.tetris3d.Events.TetrominoMoveEventInfo>();
+            //appDomain.DelegateManager.RegisterMethodDelegate<deepwaterooo.tetris3d.Events.TetrominoRotateEventInfo>();
 
             appDomain.DelegateManager.RegisterMethodDelegate<List<int>, List<int>>();
             appDomain.DelegateManager.RegisterMethodDelegate<string, string>();
@@ -90,20 +90,16 @@ namespace Framework.Core {
             appDomain.DelegateManager.RegisterFunctionDelegate<GameObject, GameObject>();
             appDomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, ILTypeInstance, int>();
 
-            appDomain.DelegateManager.RegisterDelegateConvertor<deepwaterooo.tetris3d.Events.EventManager.EventListener<deepwaterooo.tetris3d.Events.TetrominoRotateEventInfo>>((act) =>
-                {
-                    return new deepwaterooo.tetris3d.Events.EventManager.EventListener<deepwaterooo.tetris3d.Events.TetrominoRotateEventInfo>((el) =>
-                        {
-                            ((Action<deepwaterooo.tetris3d.Events.TetrominoRotateEventInfo>)act)(el);
-                        });
-                });
-            appDomain.DelegateManager.RegisterDelegateConvertor<deepwaterooo.tetris3d.Events.EventManager.EventListener<deepwaterooo.tetris3d.Events.TetrominoMoveEventInfo>>((act) =>
-                {
-                    return new deepwaterooo.tetris3d.Events.EventManager.EventListener<deepwaterooo.tetris3d.Events.TetrominoMoveEventInfo>((el) =>
-                        {
-                            ((Action<deepwaterooo.tetris3d.Events.TetrominoMoveEventInfo>)act)(el);
-                        });
-                });
+            //appDomain.DelegateManager.RegisterDelegateConvertor<deepwaterooo.tetris3d.Events.EventManager.EventListener<deepwaterooo.tetris3d.Events.TetrominoRotateEventInfo>>((act) => {
+            //       return new deepwaterooo.tetris3d.Events.EventManager.EventListener<deepwaterooo.tetris3d.Events.TetrominoRotateEventInfo>((el) => {
+            //               ((Action<deepwaterooo.tetris3d.Events.TetrominoRotateEventInfo>)act)(el);
+            //           });
+            //   });
+            //appDomain.DelegateManager.RegisterDelegateConvertor<deepwaterooo.tetris3d.Events.EventManager.EventListener<deepwaterooo.tetris3d.Events.TetrominoMoveEventInfo>>((act) => {
+            //       return new deepwaterooo.tetris3d.Events.EventManager.EventListener<deepwaterooo.tetris3d.Events.TetrominoMoveEventInfo>((el) => {
+            //               ((Action<deepwaterooo.tetris3d.Events.TetrominoMoveEventInfo>)act)(el);
+            //           });
+            //   });
             
             appDomain.DelegateManager.RegisterDelegateConvertor<UnityAction>((action) => {
                return new UnityAction(() => {

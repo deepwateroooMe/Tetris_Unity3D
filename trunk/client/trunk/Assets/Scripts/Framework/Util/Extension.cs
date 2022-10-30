@@ -61,6 +61,11 @@ public static class Extension {
         }
     }
 
+    // 得到Transform
+    public static Transform transform(this GameObject go) {
+        return go.gameObject.transform;
+    }
+
     // 查找child物体
     public static GameObject FindChildByName(this GameObject parent, string name, bool logNotFound = true) {
         Transform result = parent.transform.Find(name);

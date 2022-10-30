@@ -1,8 +1,6 @@
-﻿using deepwaterooo.tetris3d;
-using deepwaterooo.tetris3d.Events;
-using Framework.MVVM;
-using HotFix.Data;
+﻿using Framework.MVVM;
 using HotFix.UI;
+using tetris3d;
 using UnityEngine;
 
 namespace HotFix.Control {
@@ -55,7 +53,15 @@ namespace HotFix.Control {
 
         public void Awake() {
             Debug.Log(TAG + " Awake");
+            moveDelta = Vector3.zero;
+// 放这里面的问题是:Awake的调用次数可能会很多,可是EventManager有检测机制才对呀?            
+            // info = new TetrominoLandEventInfo();
+            // Debug.Log(TAG + " Awake() : registering TetrominoMoveEventInfo + TetrominoRotateEventInfo");
+            // EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onTetrominoMove); 
+            // EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onTetrominoRotate);
+            // // EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onTetrominoLand);
         }
+        
         public void Update () {
             timer -= Time.deltaTime;
             if (timer > 0) return;
@@ -65,7 +71,6 @@ namespace HotFix.Control {
                UpdateIndividualScore();
                UpdateFallSpeed();       // static 1.0f
             } 
-
 
 //             if (Input.GetMouseButtonDown(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)) {        
 // #if UNITY_ANDROID || UNITY_IPHONE
@@ -80,19 +85,22 @@ namespace HotFix.Control {
 
             // Vector3 cur = ((GameViewModel)ViewManager.GameView.BindingContext).nextTetroPos.Value;
             // ((GameViewModel)ViewManager.GameView.BindingContext).nextTetroPos.Value = cur + new Vector3(0, -1, 0);
-            ViewManager.nextTetromino.gameObject.transform.position += new Vector3(0, -1, 0);
+            moveDelta = new Vector3(0, -1, 0);
+            EventManager.Instance.FireEvent("move", moveDelta);
+            // ViewManager.nextTetromino.gameObject.transform.position += new Vector3(0, -1, 0);
 
             timer = 1.0f;
         }
-
+        private Vector3 moveDelta;
+        
         public void Start () {
             Debug.Log(TAG + ": Start()");
             Debug.Log(TAG + " gameObject.name: " + gameObject.name);
             
-            audioSource = GetComponent<AudioSource>();
+            // audioSource = GetComponent<AudioSource>();
             fallSpeed = ViewManager.GameView.ViewModel.fallSpeed;
+// 我觉得它的调用需要时间,放这里可能会太晚了,移前面去了
             info = new TetrominoLandEventInfo();
-
             EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onTetrominoMove); 
             EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onTetrominoRotate);
             // EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onTetrominoLand);
@@ -111,7 +119,7 @@ namespace HotFix.Control {
             Debug.Log(TAG + ": onTetrominoMove()"); 
             isMoveValid = false;
             ViewManager.nextTetromino.transform.position += eventInfo.delta;
-            if (CheckIsValidPosition()) {
+            if (CheckIsValidPosition()) { // 这里下移相比于平移可以再简化优化一下?
                 isMoveValid = true;
                 PlayMoveAudio();
             } else {
@@ -225,7 +233,7 @@ namespace HotFix.Control {
                 onTetrominoLand();
                 if (info == null)
                     info = new TetrominoLandEventInfo();
-                info.unitGO = gameObject;
+                //info.unitGO = gameObject;
                 // cannot convert from Hotfix.control.eventinfo to System.Reflection.EventInfo: 就是把事件管理器放到主工程后,与热更新工程之间交通需要适配一下
                 //EventManager.Instance.FireEvent(info);
 			}

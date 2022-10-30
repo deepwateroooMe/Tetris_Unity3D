@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using deepwaterooo.tetris3d.Events;
-using HotFix.UI;
+﻿using HotFix.UI;
+using tetris3d;
 using UnityEngine;
 
 namespace HotFix.Control {
@@ -40,7 +36,7 @@ namespace HotFix.Control {
 
             rotateInfo = new TetrominoRotateEventInfo();
             rotateInfo.delta = delta;
-            rotateInfo.unitGO = ViewManager.GameView.nextTetromino;
+            //rotateInfo.unitGO = ViewManager.GameView.nextTetromino;
             EventManager.Instance.FireEvent(rotateInfo);
         }
         
