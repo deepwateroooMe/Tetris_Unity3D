@@ -56,9 +56,6 @@ namespace HotFix.Control {
         public void Awake() {
             Debug.Log(TAG + " Awake");
         }
-        public void Start() {
-            Debug.Log(TAG + " Start");
-        }
         public void Update () {
             timer -= Time.deltaTime;
             if (timer > 0) return;
@@ -88,60 +85,8 @@ namespace HotFix.Control {
             timer = 1.0f;
         }
 
-// // implement interface methods: 似乎用不到这些,暂时先去掉
-//         private IType tetrominoType; 
-//         public string type {
-//             get {
-//                 return tetrominoType.type;
-//             }
-//             set {
-//                 tetrominoType.type = value;
-//             }
-//         }
-//         private Vector3 tetroPos;
-//         public Vector3 pos {
-//             set {
-//                 tetroPos = pos;
-//             }
-//             get {
-//                 return tetroPos;
-//             }
-//         }
-//         private Vector3 tetroRot;
-//         public Vector3 rot {
-//             set {
-//                 tetroRot = rot;
-//             }
-//             get {
-//                 return tetroRot;
-//             }
-//         }
-//         private Vector3 tetroSca;
-//         public Vector3 sca {
-//             set {
-//                 tetroSca = sca;
-//             }
-//             get {
-//                 return tetroSca;
-//             }
-//         }
-// // 这是两个还没能重构成功的案例方法, 想要使用命令式驱动?这里需要再想一想        
-//         public void MoveDelta(Vector3 delta) {     // 使用 _command_
-//             //     if (delta != Vector3.zero) {
-//             //         moveCommand = new MoveCommand(this, delta); // this: Tetromino as IEntity
-//             //         _commandProcessor.ExecuteCommand(moveCommand);
-//             //     }
-//         }
-//         public void RotateDelta(Vector3 delta) {
-//             // if (delta != Vector3.zero) {
-//             //     rotateCommand = new RotateCommand(this, delta); // this: Tetromino as IEntity
-//             //     _commandProcessor.ExecuteCommand(rotateCommand);
-//             // }
-//         }
-
-// 这里可能会抛异常?        
-        void OnEnable () {
-            Debug.Log(TAG + ": OnEnable()");
+        public void Start () {
+            Debug.Log(TAG + ": Start()");
             Debug.Log(TAG + " gameObject.name: " + gameObject.name);
             
             audioSource = GetComponent<AudioSource>();
@@ -163,7 +108,7 @@ namespace HotFix.Control {
         }        
 
         public void onTetrominoMove(TetrominoMoveEventInfo eventInfo) { // 不使用 _command_
-            // Debug.Log(TAG + ": onTetrominoMove()"); 
+            Debug.Log(TAG + ": onTetrominoMove()"); 
             isMoveValid = false;
             ViewManager.nextTetromino.transform.position += eventInfo.delta;
             if (CheckIsValidPosition()) {
