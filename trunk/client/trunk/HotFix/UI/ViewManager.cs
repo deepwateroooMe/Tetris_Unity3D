@@ -62,21 +62,7 @@ namespace HotFix.UI {
                         viewRect.anchorMin = Vector2.zero;
                         viewRect.anchorMax = Vector2.one; // ori
                         viewRect.pivot = new Vector2(0.5f, 0.5f);
-
-// // all the managers: Event, Audio etc 我暂时不是示它,UI上面操作不是很方便,必要时再显示
-// // 直接放在游戏视图下管理更为方便,这里不要了                        
-//                         Transform managersRoot = new GameObject("ManagersRoot").transform;
-//                         managersRoot.SetParent(UI2DRoot.transform, false);
-// // 它说这里找不到AudioManager热更新程序域的适配器                        
-//                         audioRoot = new GameObject("AudioManager").transform;
-//                         audioRoot.SetParent(managersRoot.transform, false);
-//                         audioRoot.gameObject.AddComponent<AudioManager>(); // AudioManager : SingletonMono<AudioManager>
-// 因为也还没有适配,调试过程中不想多一个物件来打扰,comment for tmp                        
-                        // eventRoot = new GameObject("EventRoot").transform;
-                        // eventRoot.SetParent(managersRoot.transform, false);
-                        // eventRoot.gameObject.SetActive(false);
-
-                        ShowStartPanel();
+                        ShowStartPanel(); // <<<<<<<<<<<<<<<<<<<< 
                     }, EAssetBundleUnloadLevel.Never);
 // 不知道该如何调整两个画布：MoveCanvas RotateCanvas, 暂时把它们直接放在世界坐标系下
             ResourceHelper
@@ -93,10 +79,6 @@ namespace HotFix.UI {
                         rightBtn = go.FindChildByName("rightBtn").GetComponent<Button>();
                         upBtn = go.FindChildByName("upBtn").GetComponent<Button>();
                         downBtn = go.FindChildByName("downBtn").GetComponent<Button>();
-                        // leftBtn = go.FindChildByName("leftBtn");
-                        // rightBtn = go.FindChildByName("rightBtn");
-                        // upBtn = go.FindChildByName("upBtn");
-                        // downBtn = go.FindChildByName("downBtn");
 // 6 rotate Buttons: 想当然地要实现至少三组不同的旋转及位置(可以不实现三组,只用一组,但需要更为精确的摆放,以便他们也可以旋转,让他们的显示与否变得聪明一些)
                         XPosBtn = go.FindChildByName("posX").GetComponent<Button>();
                         XNegBtn = go.FindChildByName("negX").GetComponent<Button>();
@@ -105,15 +87,12 @@ namespace HotFix.UI {
                         ZPosBtn = go.FindChildByName("posZ").GetComponent<Button>();
                         ZNegBtn = go.FindChildByName("negZ").GetComponent<Button>();
 
-                        // ComponentHelper.AddMoveBtnListenerComponent(moveCanvas);
-                        // MoveButtonListener listener = ComponentHelper.GetMoveBtnListenerComponent(moveCanvas);
-                        // listener.enabled = false;
                         ComponentHelper.AddMoveCanvasComponent(moveCanvas);
-                        MoveCanvas listener = ComponentHelper.GetMoveCanvasComponent(moveCanvas);
-                        listener.enabled = false;
-                        moveCanvas.SetActive(false);
-                        ComponentHelper.AddRotateCanvasComponent(rotateCanvas);
-                        ComponentHelper.GetRotateCanvasComponent(rotateCanvas).enabled = false;
+                        // MoveCanvas listener = ComponentHelper.GetMoveCanvasComponent(moveCanvas);
+                        // listener.enabled = false;
+                        moveCanvas.SetActive(false); // 从主控件失活就可以了,不必控制这单个的元件
+                        // ComponentHelper.AddRotateCanvasComponent(rotateCanvas);
+                        // ComponentHelper.GetRotateCanvasComponent(rotateCanvas).enabled = false;
                         rotateCanvas.SetActive(false);
 // 我先试图在这里把预设都先整理一下?
                         minosDic = new Dictionary<string, GameObject>();

@@ -519,7 +519,7 @@ namespace HotFix.UI {
 
         public void PauseGame() {
             Time.timeScale = 0f;	    
-            AudioManager.Instance.Pause();
+            // AudioManager.Instance.Pause();
             isPaused = true;
             // Bug cleaning: when paused game, if game has NOT started yet, disable Save Button
         }
@@ -843,8 +843,9 @@ namespace HotFix.UI {
             case "Z" : type.Append("shadowZ"); break;
             }
             return type.ToString(); 
-        }    
-// 这个方法被跳过去了.....
+        }
+        
+// 这里是设置了一个空方法供调用
         public void toggleButtons() {
             Debug.Log(TAG + ": toggleButtons()");
             Debug.Log(TAG + " buttonInteractableList[4]: " + buttonInteractableList[4]); 
@@ -883,8 +884,8 @@ namespace HotFix.UI {
                 } else {
                     isMovement = true;
                     // invertButton.image.overrideSprite = newImg;
-                    ComponentHelper.GetRotateCanvasComponent(ViewManager.rotateCanvas).enabled = false;
-                    ComponentHelper.GetMoveCanvasComponent(ViewManager.moveCanvas).enabled = true;
+                    // ComponentHelper.GetRotateCanvasComponent(ViewManager.rotateCanvas).enabled = false;
+                    // ComponentHelper.GetMoveCanvasComponent(ViewManager.moveCanvas).enabled = true;
                     // ComponentHelper.GetRotateCanvasComponent(ViewManager.rotateCanvas).enabled = false;
                     // ComponentHelper.GetMoveCanvasComponent(ViewManager.moveCanvas).enabled = true;
                     ViewManager.moveCanvas.gameObject.SetActive(true);
@@ -1161,14 +1162,14 @@ namespace HotFix.UI {
                 else if (numberOfRowsThisTurn == 4) 
                     ClearedFourLine();
                 numberOfRowsThisTurn = 0;
-                PlayLineClearedSound();
-// 考虑粒子系统是否像是声频管理器一样的统一管理,只在教育模式下使用到粒子系统,但其它模式可以扩展                
-                //particles = GetComponent<ParticleSystem>();
-                //emissionModule = particles.emission;
-                //emissionModule.enabled = true;
-                //particles.Play();
-            }
-        }
+				// 考虑粒子系统是否像是声频管理器一样的统一管理,只在教育模式下使用到粒子系统,但其它模式可以扩展                
+				//PlayLineClearedSound();
+				//particles = GetComponent<ParticleSystem>();
+				//emissionModule = particles.emission;
+				//emissionModule.enabled = true;
+				//particles.Play();
+			}
+		}
 
         public void ClearedOneLine() {
             currentScore.Value += scoreOneLine + (currentLevel.Value  + 20);
@@ -1187,10 +1188,6 @@ namespace HotFix.UI {
             numLinesCleared.Value += 4;
         }
 
-        public void PlayLineClearedSound() {
-			Control.AudioManager.Instance.PlayLineClearedSound();
-        }
-
         public void UpdateHighScore() {
             if (currentScore.Value  > startingHighScore) {
                 PlayerPrefs.SetInt("highscore3", startingHighScore2);
@@ -1204,4 +1201,3 @@ namespace HotFix.UI {
         }
     }
 }
-

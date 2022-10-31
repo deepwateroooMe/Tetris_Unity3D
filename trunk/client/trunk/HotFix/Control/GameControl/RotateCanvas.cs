@@ -18,7 +18,9 @@ namespace HotFix.Control {
             Debug.Log(TAG + " Start");
             EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
 // 暂时不管,将来可能可以旋转
-            // EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate); 
+            EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate); 
+// Canvas: Toggled
+            EventManager.Instance.RegisterListener<CanvasToggledEventInfo>(onCanvasToggled); 
         }
 
         void onActiveTetrominoMove(TetrominoMoveEventInfo info) {
@@ -26,6 +28,15 @@ namespace HotFix.Control {
 // 平移画布只上下移动            
             if ((int)info.delta.y != 0) 
                 ViewManager.rotateCanvas.gameObject.transform.position += new Vector3(0, info.delta.y, 0);
+        }
+
+        void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
+            Debug.Log(TAG + " onActiveTetrominoRotate");
+        }
+
+        void onCanvasToggled(CanvasToggledEventInfo info) {
+            Debug.Log(TAG + " CanvasToggledEventInfo");
+            ViewManager.rotateCanvas.SetActive(!ViewManager.rotateCanvas.activeSelf);
         }
 
 // TODO: 适配器适配的方法太少,会导致一堆的资源泄露?        

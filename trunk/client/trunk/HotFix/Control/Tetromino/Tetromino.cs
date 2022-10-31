@@ -111,7 +111,7 @@ namespace HotFix.Control {
             ViewManager.nextTetromino.transform.position += eventInfo.delta;
             if (CheckIsValidPosition()) { // 这里下移相比于平移可以再简化优化一下?
                 isMoveValid = true;
-				AudioManager.Instance.PlayAudio("move");
+				// AudioManager.Instance.PlayAudio("move");
             } else {
                 ViewManager.nextTetromino.transform.position -= eventInfo.delta;
             }
@@ -131,7 +131,7 @@ namespace HotFix.Control {
             isRotateValid = false;
             if (CheckIsValidPosition()) {
                 isRotateValid = true;
-                AudioManager.Instance.PlayAudio("rotate");
+                // AudioManager.Instance.PlayAudio("rotate");
             } else { 
                 ViewManager.nextTetromino.transform.Rotate(Vector3.zero - eventInfo.delta); 
             }
@@ -139,7 +139,7 @@ namespace HotFix.Control {
         // public void onTetrominoLand(TetrominoLandEventInfo eventInfo) {
         private void onTetrominoLand() {
             Debug.Log(TAG + ": onTetrominoLand()");
-			AudioManager.Instance.PlayAudio("land");
+			// AudioManager.Instance.PlayAudio("land");
             ViewManager.GameView.nextTetromino.tag = "Untagged";
             ViewManager.GameView.nextTetromino.GetComponent<Tetromino>().enabled = false;
             ViewManager.GameView.ViewModel.currentScore.Value += individualScore;            
@@ -170,8 +170,8 @@ namespace HotFix.Control {
             // Debug.Log(TAG + " CheckIsValidPosition(): " + CheckIsValidPosition()); 
             if (CheckIsValidPosition()) {
                 ViewManager.GameView.ViewModel.UpdateGrid(ViewManager.GameView.nextTetromino);
-                if (Input.GetKey(KeyCode.DownArrow)) 
-                    AudioManager.Instance.PlayAudio("move");
+				if (Input.GetKey(KeyCode.DownArrow)) ; 
+                    // AudioManager.Instance.PlayAudio("move");
             } else {
                 ViewManager.nextTetromino.transform.position += new Vector3(0, 1, 0);
                 ViewManager.GameView.ViewModel.recycleGhostTetromino(ViewManager.GameView.ghostTetromino); // 涉及事件的先后顺序，这里处理比较安全：确保在Tetromino之前处理
@@ -340,7 +340,7 @@ namespace HotFix.Control {
 
             if (CheckIsValidPosition()) {
                 ViewManager.GameView.ViewModel.UpdateGrid(ViewManager.GameView.nextTetromino);
-                AudioManager.Instance.PlayAudio("move");
+                // AudioManager.Instance.PlayAudio("move");
             } else {
                 ViewManager.nextTetromino.transform.position += new Vector3(0, 0, 1);
                 // ViewManager.GameView.MoveZPos(); // moveCanvas moves too

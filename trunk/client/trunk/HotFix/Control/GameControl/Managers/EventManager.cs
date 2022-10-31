@@ -7,11 +7,9 @@ using HotFix.Control;
 
 namespace HotFix.Control {
 
-    // Unity 游戏框架搭建 (五) 简易消息机制, 再深理解一下
-    // https://zhuanlan.zhihu.com/p/30978365
-
-// 我觉得现在这个类,基本可以看懂了(当初写更多的是参考了网络上别人的代码),不懂或是想要再确认可以改天把EventInfo的继承类全加TAG再debug一遍    
-    public class EventManager : SingletonMono<EventManager> { // Singleton
+// TOGO: 对MoveCanvas RotateCanvas中两组按钮共十个的管理设计不够理想;
+// 因热更新中的游戏框架依赖于这个管理器,暂且如此运行,过程中会试图优化对那两三组按钮的管理    
+    public class EventManager : SingletonMono<EventManager> { 
         private const string TAG = "EventManager";
 
 // 普通代理: 其实是说,如果触发了el事件,回调这个EventListener(EventInfo el)方法,是触发事件之后的回调;是以参数和返回类型来区分代理之间的不同的
@@ -25,20 +23,23 @@ namespace HotFix.Control {
 // 字典:是对不同类型事件代理的管理;热更新项目中定义过的不同事件代理作键(EventListener<T>)(那是这个字典的键是以代理相区分,就是不同代理方法的参数与返回类型相区分), 值为一个这样的代理EventListener<T>;这个字典键的个数会略少
         public Dictionary<System.Delegate, EventListener> delegateLookupMap;
 
-        private Vector3 moveDelta;
+        private Vector3 delta;
+        private TetrominoSpawnedEventInfo spawnedInfo;
         private TetrominoMoveEventInfo moveInfo;
         private TetrominoRotateEventInfo rotateInfo;
         private TetrominoLandEventInfo landInfo;
-
+        private CanvasToggledEventInfo canvasInfo;
+        
         public void Awake() {
             Debug.Log(TAG + " Awake");
             delegatesMap = new Dictionary<System.Type, EventListener>();  // eventListeners;     
             delegateLookupMap = new Dictionary<System.Delegate, EventListener>();
-            
-            moveDelta = Vector3.zero;
+            delta = Vector3.zero;
+            spawnedInfo = new TetrominoSpawnedEventInfo();
             moveInfo = new TetrominoMoveEventInfo();
             rotateInfo = new TetrominoRotateEventInfo();
             landInfo = new TetrominoLandEventInfo();
+            canvasInfo = new CanvasToggledEventInfo();
         }
 
         public void RegisterListener<T>(EventListener<T> listener) where T : EventInfo { 
@@ -76,10 +77,28 @@ namespace HotFix.Control {
             }
             Debug.Log(TAG + " delegatesMap.Count after: " + delegatesMap.Count + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
         }
+// 事件:不带任何增量信息的
+        public void FireEvent(string type) {
+            Debug.Log(TAG + ": FireEvent() type"); 
+            switch (type) {
+            case "spawned":
+                FireEvent(spawnedInfo);
+                return;
+            case "land":
+                FireEvent(landInfo);
+                return;
+            case "canvas":
+                FireEvent(canvasInfo);
+                return;
+            }
+        }
 
         public void FireEvent(string type, Vector3 delta) {
             Debug.Log(TAG + ": FireEvent() type + delta"); 
             switch (type) {
+            case "spawned":
+                FireEvent(spawnedInfo);
+                return;
             case "move":
                 moveInfo.delta = delta;
                 FireEvent(moveInfo);
@@ -89,8 +108,10 @@ namespace HotFix.Control {
                 FireEvent(rotateInfo);
                 return;
             case "land":
-                //landInfo.delta = delta;
                 FireEvent(landInfo);
+                return;
+            case "canvas":
+                FireEvent(canvasInfo);
                 return;
             }
         }
@@ -122,8 +143,9 @@ namespace HotFix.Control {
         public bool isCleanedUp() {
             return (delegatesMap.Count == 0 && delegateLookupMap.Count == 0);
         }
-        public void cleanUpLists() {
+        
 // TODO: 在必要的时候,作必要的清理,这里是不需要再作检查的            
+        public void cleanUpLists() {
             if (delegatesMap != null && delegatesMap.Count > 0) 
                 delegatesMap.Clear();
             if (delegateLookupMap != null && delegateLookupMap.Count > 0) 

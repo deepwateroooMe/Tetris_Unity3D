@@ -65,8 +65,6 @@ namespace HotFix.UI {
         Button creBtn; // CREDIT
 
 // 私有的当前视图的元件? 暂时添加上AudioSouce元件顺承原混作一团的逻辑(感觉它不该是被AudioManager管才对吗?)
-        AudioSource audioSource;
-        AudioSource m_ExplosionAudio;
         public GameObject nextTetromino; // 这里把原本的静态标志STATIC给移掉了
         public GameObject ghostTetromino;
         public AudioClip clearLineSound;
@@ -307,20 +305,14 @@ namespace HotFix.UI {
 
             Time.timeScale = 0f;	    
             ViewModel.PauseGame(); // 游戏暂停
-            AudioManager.Instance.audioSource.Play();
+            // AudioManager.Instance.audioSource.Play();
             pausePanel.SetActive(true);
             // Bug: disable all Hud canvas buttons: swap
         }
         void OnClickFalButton() {
         }
         void OnClickTogButton() {
-            // 当前的视图需要隐藏起来吗? 检查一下逻辑
-            type ^= 1;
-// 根据当前需要显示的按钮组的值的不同,来显示平移组或是旋转组
-// 这两个组的按钮也需要分别制作成视图,两个不同的视图
-            // if (type == 0)
-            // else
-            Hide();
+            EventManager.Instance.FireEvent("canvas");
         }
         void OnClickPtoButton() { // preview Tetromino Button COMMON BUTTON
         }
@@ -344,7 +336,7 @@ namespace HotFix.UI {
             ViewModel.isPaused = false;
             pausePanel.SetActive(false);
 // TODO: 这里暂停后再恢复,音乐没能恢复过来            
-            AudioManager.Instance.audioSource.Play(); 
+            // AudioManager.Instance.audioSource.Play(); 
         }
         void OnClickGuiButton() { // 可以视频GUIDE吗?
             // ViewManager.DesginView.Reveal();
@@ -445,10 +437,10 @@ namespace HotFix.UI {
         }
         public void PauseGame() {
             Time.timeScale = 0f;        
-            audioSource.Pause();
+            //audioSource.Pause();
             ViewModel.isPaused = true;
             // Bug: disable all Hud canvas buttons: swap
-            audioSource.Pause();
+            //audioSource.Pause();
             pausePanel.SetActive(true);
             // Bug cleaning: when paused game, if game has NOT started yet, disable Save Button
             if (!gameStarted) {
@@ -826,9 +818,9 @@ namespace HotFix.UI {
 
 // AudioManager: 单例模式            
             managers = GameObject.FindChildByName("managers");
-            AudioManager.Instance.gameObject.transform.SetParent(managers.transform, false);
+            // AudioManager.Instance.gameObject.transform.SetParent(managers.transform, false);
 // 检查是否循环,希望它循环
-            AudioManager.Instance.PlayOneShotGameLoop();
+            // AudioManager.Instance.PlayOneShotGameLoop();
 // TODO: 晚点儿等把项目理解得更为透彻的时候再回来写这个
 // TODO: PoolManager 存在两个不同程序域的适配问题,这个模块暂时先放一下(没有必要把它设置为SingleMono, Single<PoolManager>就可以了,回头再测一下,很简单)            
             // PoolManager.Instance.gameObject.transform.SetParent(managers.transform, false);
@@ -873,8 +865,9 @@ namespace HotFix.UI {
             falBtn = GameObject.FindChildByName("falBtn").GetComponent<Button>();
             falBtn.onClick.AddListener(OnClickFalButton);
             togBtn = GameObject.FindChildByName("togBtn").GetComponent<Button>();
-            // togBtn.onClick.AddListener(OnClickTogButton); // toggle moveCanvas rotateCanvas
-            togBtn.onClick.AddListener(ViewModel.toggleButtons); // toggle moveCanvas rotateCanvas
+            togBtn.onClick.AddListener(OnClickTogButton); // toggle moveCanvas rotateCanvas
+            // togBtn.onClick.AddListener(ViewModel.toggleButtons); // toggle moveCanvas rotateCanvas
+
             swaBtn = GameObject.FindChildByName("swaBtn").GetComponent<Button>();
             // swaBtn.onClick.AddListener(OnClickSwaButton);
             swaBtn.onClick.AddListener(onSwapPreviewTetrominos);
@@ -898,11 +891,11 @@ namespace HotFix.UI {
             creBtn.onClick.AddListener(OnClickCreButton);
 
             cycledPreviewTetromino = new GameObject();
-// // 四个平移方向
-            ViewManager.leftBtn.onClick.AddListener(OnClickLeftButton);
-            ViewManager.rightBtn.onClick.AddListener(OnClickRightButton);
-            ViewManager.upBtn.onClick.AddListener(OnClickUpButton);
-            ViewManager.downBtn.onClick.AddListener(OnClickDownButton);
+// // // 四个平移方向
+//             ViewManager.leftBtn.onClick.AddListener(OnClickLeftButton);
+//             ViewManager.rightBtn.onClick.AddListener(OnClickRightButton);
+//             ViewManager.upBtn.onClick.AddListener(OnClickUpButton);
+//             ViewManager.downBtn.onClick.AddListener(OnClickDownButton);
 
 // 六个旋转方向
             ViewManager.XPosBtn.onClick.AddListener(OnClickXPosButton);
@@ -974,24 +967,24 @@ namespace HotFix.UI {
             }
         }
         
-// [阴影会自动跟随;] 游戏视图模型会需要更新表格; 方块砖需要移动; 音频管理器需要操作背景音乐
-        private Vector3 moveDelta = Vector3.zero;
-        void OnClickLeftButton() {
-            moveDelta = new Vector3(-1, 0, 0);
-            EventManager.Instance.FireEvent("move", moveDelta);
-        }
-        void OnClickRightButton() {
-            moveDelta = new Vector3(1, 0, 0);
-            EventManager.Instance.FireEvent("move", moveDelta);
-        }
-        void OnClickUpButton() {
-            moveDelta = new Vector3(0, 0, 1);
-            EventManager.Instance.FireEvent("move", moveDelta);
-        }
-        void OnClickDownButton() {
-            moveDelta = new Vector3(0, 0, -1);
-            EventManager.Instance.FireEvent("move", moveDelta);
-        }
+// // [阴影会自动跟随;] 游戏视图模型会需要更新表格; 方块砖需要移动; 音频管理器需要操作背景音乐
+//         private Vector3 moveDelta = Vector3.zero;
+//         void OnClickLeftButton() {
+//             moveDelta = new Vector3(-1, 0, 0);
+//             EventManager.Instance.FireEvent("move", moveDelta);
+//         }
+//         void OnClickRightButton() {
+//             moveDelta = new Vector3(1, 0, 0);
+//             EventManager.Instance.FireEvent("move", moveDelta);
+//         }
+//         void OnClickUpButton() {
+//             moveDelta = new Vector3(0, 0, 1);
+//             EventManager.Instance.FireEvent("move", moveDelta);
+//         }
+//         void OnClickDownButton() {
+//             moveDelta = new Vector3(0, 0, -1);
+//             EventManager.Instance.FireEvent("move", moveDelta);
+//         }
 
         // 想找一个更为合适的地方来写上面的观察者模式监听回调
         public void OnRevealed() {

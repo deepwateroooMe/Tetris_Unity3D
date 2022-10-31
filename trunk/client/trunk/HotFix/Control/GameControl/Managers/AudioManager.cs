@@ -2,16 +2,15 @@
 
 namespace HotFix.Control {
 
-// 应用中的音效播放管理器:它应该管理游戏中所有声音相关的,存有相关的音频,控制播放与停止等等,后来加上的?感觉代码不完整
-// TODO: 这里我忘记了,为什么我必须在热更新程序域里再定义一遍一个应用类Singleton.cs来着?因为两个不同域之间需要适配吗?再测一下(现在还不是一个很好的时间来测这个;今天中午吃撑了下午的脑袋就在打转,等原理再透一些项目再熟悉一些再回来测)    
+// 应用中的音效播放管理器:它应该管理游戏中所有声音相关的,存有相关的音频,控制播放与停止等等,后来加上的?
+// TODO: 这里我忘记了,为什么我必须在热更新程序域里再定义一遍一个应用类Singleton.cs来着?因为两个不同域之间需要适配吗?
+// 通过事件的接收通知来处理背景或是特殊音效的释放与暂停恢复等,现把这个模块独立出来了,但是把游戏音乐弄没了,需要补上    
     public class AudioManager : SingletonMono<AudioManager> { // 感知Mono生命周期
        public const string TAG = "AudioManager";
 
-        public string currentClipName;
         public AudioSource audioSource;
 
         private AudioClip currentClip = null;
-
         private AudioClip gameLoop; 
         private AudioClip moveSound;
         private AudioClip rotateSound;
@@ -19,10 +18,6 @@ namespace HotFix.Control {
         private AudioClip exploseSound;
         private AudioClip clearLineSound;
 
-        //private EventManager eventManager;
-
-        // void OnEnable () { // 这个方法暂时还没有适配
-        //     Debug.Log(TAG + ": OnEnable()");
         public void Awake() {
             Debug.Log(TAG + " Awake()");
             gameObject.AddComponent<AudioSource>();
@@ -48,9 +43,11 @@ namespace HotFix.Control {
         void onTetrominoMove(TetrominoMoveEventInfo info) {
             audioSource.PlayOneShot(moveSound);
         }
+
         void onTetrominoRotate(TetrominoRotateEventInfo info) {
             audioSource.PlayOneShot(rotateSound);
         }
+
         void onTetrominoLand(TetrominoLandEventInfo info) {
             audioSource.PlayOneShot(landSound);
         }

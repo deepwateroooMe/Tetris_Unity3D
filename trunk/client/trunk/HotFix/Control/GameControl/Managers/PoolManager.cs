@@ -9,9 +9,7 @@ using UnityEngine;
 namespace HotFix.Control {
 
 // 暂时就让它与BtnsCanvasView同一个资源包一起读,暂时仍然让ViewManager 来处理相关逻辑
-// 晚点儿项目快结束时,再试着将这一部分的逻辑分出来,统一管理    
-
-// 还有一点儿小问题,接下来三天放假不更新,周六会接着更新    
+// TODO: 这个管理器还不能独立于ViewManager之外,需要更多的工作    
     public class PoolManager : Singleton<PoolManager> {
         private const string TAG = "PoolManager";
 
