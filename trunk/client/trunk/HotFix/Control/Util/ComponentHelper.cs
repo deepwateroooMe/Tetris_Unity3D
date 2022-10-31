@@ -18,13 +18,6 @@ namespace HotFix.Control {
 		public static void AddRotateCanvasComponent(GameObject go) {
 			go.AddComponent<RotateCanvas>();
 		}
-// // MoveButtonEventListener RotateButtonClickEventInfo
-//         public static void AddMoveBtnsListener(GameObject go) {
-//             go.AddComponent<MoveButtonEventListener>();
-//         }
-//         public static void AddRotateBtnsListener(GameObject go) {
-//             go.AddComponent<RotateButtonEventListener>();
-//         }
         
 // Tetromino GhostTetromino        
 		public static Tetromino GetTetroComponent(GameObject go) {
@@ -40,12 +33,5 @@ namespace HotFix.Control {
 		public static RotateCanvas GetRotateCanvasComponent(GameObject go) {
 			return go.GetComponent<RotateCanvas>();
 		}
-// // MoveButtonEventListener RotateButtonClickEventInfo
-//         public static MoveButtonEventListener GetMoveBtnsListener(GameObject go) {
-//             return go.GetComponent<MoveButtonEventListener>();
-//         }
-//         public static RotateButtonEventListener GetRotateBtnsListener(GameObject go) {
-//             return go.GetComponent<RotateButtonEventListener>();
-//         }
 	}
 }

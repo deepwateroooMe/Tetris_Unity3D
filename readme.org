@@ -4,7 +4,8 @@
 
 * 游戏基本场景设计
 - debugging game flow, 现游戏的主场景如下(热更新程序域里的主要逻辑功能模块化管理主要工作完成,还没有debug游戏逻辑):
-  
+- RotateCanvas 需要调整一下摄像机
+
 [[./pic/readme_20221030_162737.png]]
 
 - *TODO:*

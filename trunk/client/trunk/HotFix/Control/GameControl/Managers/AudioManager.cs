@@ -127,7 +127,20 @@ namespace HotFix.Control {
             audioSource.PlayOneShot(clearLineSound);
         }
 
-            
+        // // 1.粒子特效的GameObject实例化完毕。
+        // // 2.确保粒子所用到的贴图载入内存
+        // // 3.让粒子进行一次预热（目前预热功能只能在循环的粒子特效里面使用，所以不循环的粒子特效是不能用的）
+        // // 粒子系统的实例化，何时销毁？
+        // // 出于性能考虑，其中Update内部的操作也可以移至FixedUpdate中进行以减少更新次数，但是视觉上并不会带来太大的差异
+        // // // temporatorily don't consider these yet
+        // // string particleType = "particles";
+        //  m_ExplosionParticles = ViewManager.GetFromPool(GetSpecificPrefabType(m_ExplosionPrefab)).GetComponent<ParticleSystem>();
+        // // m_ExplosionParticles = ViewManager.GetFromPool(particleType).GetComponent<ParticleSystem>();
+        // /m_ExplosionParticles = Instantiate(m_ExplosionPrefab).GetComponent<ParticleSystem>();
+        // // m_ExplosionAudio = m_ExplosionParticles.GetComponent<AudioSource>();
+        // // m_ExplosionParticles.gameObject.SetActive(false);
+        //  因为实例化粒子特效以后，实际上粒子的脚本就已经完成了初始化的工作，也就是Awake()和OnEnable()方法。然后设置SetActive(false)仅仅是把粒子特效隐藏起来。
+        
         void OnDisable() {
             Debug.Log(TAG + ": OnDisable()");
 //            Debug.Log(TAG + " gameObject.name: " + gameObject.name);

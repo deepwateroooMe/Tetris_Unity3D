@@ -74,25 +74,9 @@ namespace HotFix.UI {
                         GameObject.DontDestroyOnLoad(go); // 以此为父节点的所有子节点都不会被销毁,包括各种管理类
                         moveCanvas = go.FindChildByName("moveCanvas");
                         rotateCanvas = go.FindChildByName("rotateCanvas");
-// 4 move Buttons
-                        leftBtn = go.FindChildByName("leftBtn").GetComponent<Button>();
-                        rightBtn = go.FindChildByName("rightBtn").GetComponent<Button>();
-                        upBtn = go.FindChildByName("upBtn").GetComponent<Button>();
-                        downBtn = go.FindChildByName("downBtn").GetComponent<Button>();
-// 6 rotate Buttons: 想当然地要实现至少三组不同的旋转及位置(可以不实现三组,只用一组,但需要更为精确的摆放,以便他们也可以旋转,让他们的显示与否变得聪明一些)
-                        XPosBtn = go.FindChildByName("posX").GetComponent<Button>();
-                        XNegBtn = go.FindChildByName("negX").GetComponent<Button>();
-                        YPosBtn = go.FindChildByName("posY").GetComponent<Button>();
-                        YNegBtn = go.FindChildByName("negY").GetComponent<Button>();
-                        ZPosBtn = go.FindChildByName("posZ").GetComponent<Button>();
-                        ZNegBtn = go.FindChildByName("negZ").GetComponent<Button>();
-
                         ComponentHelper.AddMoveCanvasComponent(moveCanvas);
-                        // MoveCanvas listener = ComponentHelper.GetMoveCanvasComponent(moveCanvas);
-                        // listener.enabled = false;
-                        moveCanvas.SetActive(false); // 从主控件失活就可以了,不必控制这单个的元件
-                        // ComponentHelper.AddRotateCanvasComponent(rotateCanvas);
-                        // ComponentHelper.GetRotateCanvasComponent(rotateCanvas).enabled = false;
+                        moveCanvas.SetActive(false); 
+                        ComponentHelper.AddRotateCanvasComponent(rotateCanvas);
                         rotateCanvas.SetActive(false);
 // 我先试图在这里把预设都先整理一下?
                         minosDic = new Dictionary<string, GameObject>();
@@ -138,18 +122,6 @@ namespace HotFix.UI {
 
 // 两块不同按钮的画布,两架相机,以及游戏过程中生成的所有的方块砖都位于这个视图下        
 #region BtnsCanvasView
-// move Buttons
-        public static Button leftBtn;
-        public static Button rightBtn;
-        public static Button upBtn;
-        public static Button downBtn;
-// rotate Buttons
-        public static Button XPosBtn;
-        public static Button XNegBtn;
-        public static Button YPosBtn;
-        public static Button YNegBtn;
-        public static Button ZPosBtn;
-        public static Button ZNegBtn;
 
         public static GameObject moveCanvas = null;
         public static GameObject rotateCanvas = null;
@@ -211,11 +183,9 @@ namespace HotFix.UI {
 //             //RectTransform rt = go.GetComponent<RectTransform>();
 //             float obj_width = rt.rect.size.x;
 //             float obj_height = rt.rect.size.y;
- 
 //             //Canvas出现[Some Values Driven By Canvas]提示时UI物体不能及时获取到宽高，需等待
 //             yield return obj_width != 0 && obj_width != 0;
 //             Debug.Log($"宽 = {obj_width}  高 = {obj_height}");
-
 //             rt.sizeDelta = new Vector2(1920, 3412);
 // //改变RectTransform的pos
 //             // rt.anchoredPosition3D = new Vector3(posx,posy,posz);
@@ -309,17 +279,6 @@ namespace HotFix.UI {
 
 // 热更新的视图，远远不止这两个，但是留这两个已经够参考了，其它删除了
 #region Views
-        // static MenuView _menuView;
-        // public static MenuView MenuView {
-        //     get {
-        //         if (_menuView == null) {
-        //             _menuView = new MenuView();
-        //             _menuView.BindingContext = new MenuViewModel();
-        //             views.Add(_menuView.ViewName, _menuView);
-        //         }
-        //         return _menuView;
-        //     }
-        // }
         static BtnsCanvasView _btnscanvasView;
         public static BtnsCanvasView BtnsCanvasView {
             get {
@@ -376,89 +335,5 @@ namespace HotFix.UI {
            }
         }
 #endregion
-//         // 根据序列化的文本来反序列化为对象,我的游戏项目里好像是不需要的
-// // 视图里的小物件管理:　视图中需要可能会用到的运行时需要实例化的小物件(比如各种不同类型的方块砖/阴影砖,粒子系统等)管理
-// // 与此部分相关联的是UI csharp项目中这些不同类型方块砖(以及不同类型的小MINO,粒子系统)的预设制作,相关数据导入? 与那个项目(UI相关逻辑)的设计与资源打包相关联
-//         // 注意这里是确实需要在UI中显示出来的小物件;是在初始化的时候就显示出来的;但是后来需要显示出来的也是需要初始化的,应该可以放在这里处理
-// // 视图中使用到的运行时需要实例化的小物件包括:
-//         // 各种不同类型的方块砖(7种)
-//         // 各种不同类型方块砖的一一对应阴影方块砖(7种)
-//         // 各种不同类型方块砖的一一对应小MINO(7种)
-//         // 教育模式下的粒子系统(1种?)
-//         // 延伸扩展的可以包括游戏中使用到的不同层级的BUTTON: 主页面的三个按钮可以是一种类型;游戏主界面的各个调控按钮(swap, undo, fallfast, pause, toggleBtn)? 但是因为目前已经本身是在热更新程序集,这个思路可能又会抽象出一层更为高层的架构,暂时就只是想想算了,但可以考虑和收集思路
-//     // 那么就需要使用至少三个?四个字典来管理这些个不同类型的数据,以便实时实例化
-// #region ItemDatas
-//         public static void InitializeItemDatas() {
-//             string minoitemJson = ResourceHelper.LoadTextAsset("ui/config/minoitem", "minoitem", EAssetBundleUnloadLevel.LoadOver).text;
-//             //Debug.Log("minoitemJson: " + minoitemJson);
-//             if (!string.IsNullOrEmpty(minoitemJson)) {
-//                 InitializeMinoData(minoitemJson);
-//             }
-//             string tetrominoitemJson = ResourceHelper.LoadTextAsset("ui/config/tetrominoitem", "tetrominoitem", EAssetBundleUnloadLevel.LoadOver).text;
-//             //Debug.Log("tetrominoitemJson: " + tetrominoitemJson);
-//             if (!string.IsNullOrEmpty(tetrominoitemJson)) {
-//                 InitializeTetrominoData(tetrominoitemJson);
-//             }
-//         }
-//         static Dictionary<int, MinoData> minoDatas;
-//         static Dictionary<string, TetrominoData> tetrominoDatas;
-        
-//         public static Dictionary<int, MinoData> GetMinoDatas() {
-//             return minoDatas;
-//         }
-//         public static Dictionary<string, TetrominoData> GetTetrominoDatas() {
-//             return tetrominoDatas;
-//         }
-//         public static MinoData GetMinoData(int id) {
-//             if (minoDatas.ContainsKey(id)) {
-//                 return minoDatas[id];
-//             } else {
-//                 return null;
-//             }
-//         }
-//         public static TetrominoData GetTetrominoData(string type) {
-//             if (tetrominoDatas.ContainsKey(type)) {
-//                 return tetrominoDatas[type];
-//             } else {
-//                 return null;
-//             }
-//         }
-//         static void InitializeMinoData(string jsonStr) {
-//             if (jsonStr != null) {
-//                 minoDatas = new Dictionary<int, MinoData>();
-//                 JsonArray jsonArray = JsonSerializer.Deserialize(jsonStr) as JsonArray;
-//                 if (jsonArray != null) {
-//                     foreach (JsonValue jsonValue in jsonArray) {
-//                         MinoData data = MinoData.JsonToObject(jsonValue.ToString());
-//                         if (!minoDatas.ContainsKey(data.instanceID)) {
-//                             minoDatas.Add(data.instanceID, data);
-//                         } else {
-//                             Debug.LogError("minoDatas contains key: " + data.instanceID);
-//                         }
-//                     }
-//                 } else {
-//                     Debug.LogError("minoitemData jsonArray is null");
-//                 }
-//             }
-//         }
-//         static void InitializeTetrominoData(string jsonStr) {
-//             if (jsonStr != null) {
-//                 tetrominoDatas = new Dictionary<string, TetrominoData>();
-//                 JsonArray jsonArray = JsonSerializer.Deserialize(jsonStr) as JsonArray;
-//                 if (jsonArray != null) {
-//                     foreach (JsonValue jsonValue in jsonArray) {
-//                         TetrominoData data = TetrominoData.JsonToObject(jsonValue.ToString());
-//                         if (!tetrominoDatas.ContainsKey(data.type)) {
-//                             tetrominoDatas.Add(data.type, data);
-//                         } else {
-//                             Debug.LogError("tetrominoDatas contains key: " + data.type);
-//                         }
-//                     }
-//                 } else {
-//                     Debug.LogError("tetrominoitemData jsonArray is null");
-//                 }
-//             }
-//         }
-// #endregion
     }
 }
