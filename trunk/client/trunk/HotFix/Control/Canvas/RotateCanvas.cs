@@ -38,16 +38,19 @@ namespace HotFix.Control {
             ZPosBtn.onClick.AddListener(OnClickZPosButton);
             ZNegBtn.onClick.AddListener(OnClickZNegButton);
         }
-        
+        public void OnEnable() {
+            Debug.Log(TAG + " onEnable");
+            Start();
+        }
         public void Start() {
             Debug.Log(TAG + " Start");
+// Canvas: Toggled
+            EventManager.Instance.RegisterListener<CanvasToggledEventInfo>(onCanvasToggled); 
 // Tetrominon: Spawned, Move, Rotate, Land,
             // EventManager.Instance.RegisterListener<TetrominoSpawnedEventInfo>(onActiveTetrominoSpawn); 
             EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
-            EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate); 
+            // EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate); 
             EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 
-// Canvas: Toggled
-            EventManager.Instance.RegisterListener<CanvasToggledEventInfo>(onCanvasToggled); 
         }
 
         void OnClickXPosButton() {
@@ -80,9 +83,9 @@ namespace HotFix.Control {
             if ((int)info.delta.y != 0) // 平移画布只上下移动            
                 ViewManager.rotateCanvas.gameObject.transform.position += new Vector3(0, info.delta.y, 0);
         }
-        void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
-            // Debug.Log(TAG + " onActiveTetrominoRotate");
-        }
+        // void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
+        //     // Debug.Log(TAG + " onActiveTetrominoRotate");
+        // }
         void onActiveTetrominoLand(TetrominoLandEventInfo info) {
             Debug.Log(TAG + " onActiveTetrominoLand");
             ViewManager.rotateCanvas.SetActive(false); // 这里没有失活
@@ -93,22 +96,20 @@ namespace HotFix.Control {
 // 因为它这个缓慢的调用响应速度,必须得把方块砖下降的速度调得很慢,并需要在响应回来之前把按钮失活? 几个细节需要实现        
         void onCanvasToggled(CanvasToggledEventInfo info) {
             Debug.Log(TAG + " CanvasToggledEventInfo");
-            ViewManager.moveCanvas.SetActive(true);
             ViewManager.rotateCanvas.SetActive(false);
-            // ViewManager.moveCanvas.SetActive(true);
-            // gameObject.SetActive(false);
+            ViewManager.moveCanvas.SetActive(true);
         }
 
 // TODO: 适配器适配的方法太少,会导致一堆的资源泄露?        
         public void OnDisable() {
             Debug.Log(TAG + " OnDisable");
+// Canvas: Toggled
+            EventManager.Instance.UnregisterListener<CanvasToggledEventInfo>(onCanvasToggled); 
 // Tetrominon: Spawned, Move, Rotate, Land,
             // EventManager.Instance.UnregisterListener<TetrominoSpawnedEventInfo>(onActiveTetrominoSpawn); 
             EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
-            EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate); 
+            // EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate); 
             EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 
-// Canvas: Toggled
-            EventManager.Instance.UnregisterListener<CanvasToggledEventInfo>(onCanvasToggled); 
         }
 	}
 }

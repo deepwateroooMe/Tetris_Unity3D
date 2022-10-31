@@ -11,12 +11,11 @@ namespace HotFix.Control {
         private const string TAG = "EventManager";
 
 // 普通代理: 其实是说,如果触发了el事件,回调这个EventListener(EventInfo el)方法,是触发事件之后的回调;是以参数和返回类型来区分代理之间的不同的
-        public delegate void EventListener(EventInfo el);                
+        public delegate void EventListener(EventInfo el); // 普通代理: 给出普通代理的定义               
 // 泛型代理，带一个EventInfo参数,这样就可以处理所有自定义事件了继承子类了
-        public delegate void EventListener<T>(T el) where T : EventInfo; 
+        public delegate void EventListener<T>(T el) where T : EventInfo; // 转化为泛型代理
 
-// 这里上下两个字典的键,好像被我写反了.....        
-// 字典:它的銉是以热更新工程中定义过的EventInfo的子类相区分;这个字典的键的个数会比较多,因为热更新工程中所自定义的类比较多?确认一下
+// 字典:它的銉是以热更新工程中定义过的EventInfo的子类类型相区分;这个字典的键的个数会比较少(因为整个项目中一个类型只占一个键与条款)
         public Dictionary<System.Type, EventListener> delegatesMap;
 // 字典:是对不同类型事件代理的管理;热更新项目中定义过的不同事件代理作键(EventListener<T>)(那是这个字典的键是以代理相区分,就是不同代理方法的参数与返回类型相区分), 值为一个这样的代理EventListener<T>;这个字典键的个数会略少
         public Dictionary<System.Delegate, EventListener> delegateLookupMap;
@@ -50,14 +49,20 @@ namespace HotFix.Control {
         }
 
         public void RegisterListener<T>(EventListener<T> listener) where T : EventInfo { 
-            // Debug.Log(TAG + ": RegisterListener()");
-            EventListener internalDelegate = (el) => { listener((T)el); };
+// + ", callback: " + listener: 是ILRuntime热更新里面所用的Action什么的not-read friendly
+            Debug.Log(TAG + ": RegisterListener(): T: " + typeof(T)); 
+            EventListener internalDelegate = (el) => {
+                //Debug.Log(TAG + " RegisterListener<T>:　(typeof(T)): " + typeof(T)); // EventManager (typeof(T)): HotFix.Control.CanvasToggledEventInfo
+                listener((T)el);
+            };
 
 // 代理类型(EventListener<T>)已经存在，且值(所有注册过的回调方法,唯一一个)相等，那就不需要再做什么,直接返回
-            if (delegateLookupMap.ContainsKey(listener) && delegateLookupMap[listener] == internalDelegate) 
+            if (delegateLookupMap.ContainsKey(listener) && delegateLookupMap[listener] == internalDelegate) {
+                Debug.Log(TAG + " RegisterListener<T> CONTAINED & RETURNS T.TAG: " + typeof(T)); // 可是为什么我这个消息没有打印出来呢?
                 return;
-// 还没有注册过这种代码的回调监听,就注册一个(唯一一个)            
+            }
             delegateLookupMap[listener] = internalDelegate; 
+
             EventListener  tmpDelegate;
             if (delegatesMap.TryGetValue(typeof(T), out tmpDelegate)) {    // 如果存在这个类型T的键，返回true，并且值的内容写入在tmpDelegate里面
                 delegatesMap[typeof(T)] = tmpDelegate += internalDelegate; // 那么对于当前键，其值的内容再添加一个新的代理监听监听回调(注册回调方法的时候也是这么写的)

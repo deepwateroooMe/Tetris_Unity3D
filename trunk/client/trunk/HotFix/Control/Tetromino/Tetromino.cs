@@ -26,7 +26,6 @@ namespace HotFix.Control {
         private Vector3 delta; // for MOVE ROTATE delta
 
         public void Awake() {
-            Debug.Log(TAG + " Awake");
             delta = Vector3.zero;
         }
         public void Start () {
@@ -37,14 +36,14 @@ namespace HotFix.Control {
             EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onTetrominoRotate);
             EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onTetrominoLand);
         }
-        // void OnDisable() { // TODO:方法还不有适配
-        //     Debug.Log(TAG + ": OnDisable()");
-        //     if (EventManager.Instance != null) {
-        //         EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onTetrominoMove);
-        //         EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onTetrominoRotate);
-        //         // EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onTetrominoLand);
-        //     }
-        // }        
+        public void OnDisable() { // TODO:方法还不有适配
+            Debug.Log(TAG + ": OnDisable()");
+            if (EventManager.Instance != null) {
+                EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onTetrominoMove);
+                EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onTetrominoRotate);
+                EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onTetrominoLand);
+            }
+        }        
 
         public void Update () {
             timer -= Time.deltaTime;
