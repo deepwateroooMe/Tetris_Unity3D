@@ -32,8 +32,8 @@ namespace HotFix.Control {
             // currentClip = gameLoop;
         }
 
-        public void OnStart () {
-            Debug.Log(TAG + ": OnStart()"); 
+        public void Start () {
+            Debug.Log(TAG + ": Start()"); 
             Debug.Log(TAG + " gameObject.name: " + gameObject.name);
 // todo: 其它游戏场景的时间播放主背景音乐
             EventManager.Instance.RegisterListener<GameEnterEventInfo>(onEnterGame);
