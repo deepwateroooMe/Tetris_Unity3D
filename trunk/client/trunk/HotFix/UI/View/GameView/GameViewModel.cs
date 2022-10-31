@@ -209,7 +209,7 @@ namespace HotFix.UI {
         }
 
 //         private void SpawnPreviewTetromino() {
-//             Debug.Log(TAG + ": SpawnPreviewTetromino()");
+//             Debug.Log(TAG + ": SpawnPreviewTetromino()"); 
 // // 这里仍旧是写成观察者模式,视图观察视图模型的数据变化            
 //             previewTetromino = PoolManager.Instance.GetFromPool(
 //                 ViewModel.GetRandomTetromino(), previewTetrominoPosition,
@@ -430,7 +430,7 @@ namespace HotFix.UI {
             // Debug.Log(TAG + " ghostTetromino.CompareTag(\"currentGhostTetromino\"): " + ghostTetromino.CompareTag("currentGhostTetromino")); 
             if (ghostTetromino != null) {
                 ghostTetromino.tag = "Untagged";
-                PoolManager.ReturnToPool(ghostTetromino, ghostTetromino.GetComponent<TetrominoType>().type);
+                ViewManager.ReturnToPool(ghostTetromino, ghostTetromino.GetComponent<TetrominoType>().type);
             }
         }
         public void recycleNextTetromino(GameObject nextTetromino) {
@@ -440,7 +440,7 @@ namespace HotFix.UI {
                 nextTetromino.GetComponent<Tetromino>().enabled = false;
                 resetGridAfterDisappearingNextTetromino(nextTetromino);  // this one for undo click only ???? Nonono
                 if (nextTetromino.transform.childCount == 4) {
-                    PoolManager.ReturnToPool(nextTetromino, nextTetromino.GetComponent<TetrominoType>().type);
+                    ViewManager.ReturnToPool(nextTetromino, nextTetromino.GetComponent<TetrominoType>().type);
                 } else
                     GameObject.Destroy(nextTetromino.gameObject);
             }
@@ -585,7 +585,7 @@ namespace HotFix.UI {
                                         gridOcc[x][y][z] = 0;
                                     }
                                 }
-                                PoolManager.ReturnToPool(tmpParentTransform.gameObject, tmpParentTransform.gameObject.GetComponent<TetrominoType>().type);
+                                ViewManager.ReturnToPool(tmpParentTransform.gameObject, tmpParentTransform.gameObject.GetComponent<TetrominoType>().type);
                             } else if (grid[i][j][k].parent != null && grid[i][j][k].parent.childCount < 4) { // parent != null && childCount < 4
                                 foreach (Transform transform in grid[i][j][k].parent) {
                                     string type = transform.gameObject.GetComponent<MinoType>() == null ?
@@ -599,7 +599,7 @@ namespace HotFix.UI {
                                         grid[x][y][z] = null;
                                         gridOcc[x][y][z] = 0;
                                     }
-                                    PoolManager.ReturnToPool(transform.gameObject, type);
+                                    ViewManager.ReturnToPool(transform.gameObject, type);
                                 }
                             }
                         }
@@ -621,7 +621,7 @@ namespace HotFix.UI {
             preparePreviewTetrominoRecycle(previewTetromino2); // 用第一个,回收第二个
             cycledPreviewTetromino = previewTetromino2;
             nextTetrominoType.Value = comTetroType.Value; // 记忆功能, 这不是重复了吗?
-            PoolManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+            ViewManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
 
 // 配置当前方块砖的相关信息
             previewTetromino2.transform.localScale -= previewTetrominoScale;
@@ -657,7 +657,7 @@ namespace HotFix.UI {
             preparePreviewTetrominoRecycle(previewTetromino);
             cycledPreviewTetromino = previewTetromino;
             nextTetrominoType.Value = eduTetroType.Value; // 记忆功能
-            PoolManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type); // 回收一个方块砖
+            ViewManager.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type); // 回收一个方块砖
 // 配置当前方块砖的相关信息
             previewTetromino2.transform.localScale -= previewTetrominoScale;
             Debug.Log(TAG + " (nextTetroRot.Value == null): " + (nextTetroRot.Value == null));

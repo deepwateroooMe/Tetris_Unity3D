@@ -7,6 +7,8 @@ using Framework.ResMgr;
 
 // 打包工具类
 public class AssetBundleTool : MonoBehaviour {
+    private const string TAG = "AssetBundleTool"; 
+
     static string _dirName = string.Empty;
     
 #region MenuItemFunction
@@ -143,9 +145,14 @@ public class AssetBundleTool : MonoBehaviour {
 
     // 复制文件
     static void CopyDirectory(string srcPath, string tarPath) {
+        Debug.Log(TAG + " CopyDirectory");
         DirectoryInfo sourceDir = new DirectoryInfo(srcPath);
         DirectoryInfo targetDir = new DirectoryInfo(tarPath);
-        if (targetDir.FullName.StartsWith(sourceDir.FullName, System.StringComparison.CurrentCultureIgnoreCase)) {
+        Debug.Log(TAG + " sourceDir.FullName: " + sourceDir.FullName);
+        Debug.Log(TAG + " targetDir.FullName: " + targetDir.FullName);
+        bool tmp = targetDir.FullName.StartsWith(sourceDir.FullName, System.StringComparison.CurrentCultureIgnoreCase);
+        // if (targetDir.FullName.StartsWith(sourceDir.FullName, System.StringComparison.CurrentCultureIgnoreCase)) {
+        if (tmp) {
             Debug.LogError("父目录不能拷贝到子目录！");
             return;
         }

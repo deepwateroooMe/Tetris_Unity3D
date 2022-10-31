@@ -10,7 +10,7 @@ namespace HotFix.Control {
 
         public AudioSource audioSource;
 
-        private AudioClip currentClip = null;
+        // private AudioClip currentClip = null;
         private AudioClip gameLoop; 
         private AudioClip moveSound;
         private AudioClip rotateSound;
@@ -28,18 +28,27 @@ namespace HotFix.Control {
             landSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "land", EAssetBundleUnloadLevel.Never);
             exploseSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "Explosion", EAssetBundleUnloadLevel.Never);
             clearLineSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "linecleared", EAssetBundleUnloadLevel.Never);
-            currentClip = gameLoop;
+            audioSource.clip = gameLoop;
+            // currentClip = gameLoop;
         }
 
         public void OnStart () {
             Debug.Log(TAG + ": OnStart()"); 
             Debug.Log(TAG + " gameObject.name: " + gameObject.name);
 // todo: 其它游戏场景的时间播放主背景音乐
+            EventManager.Instance.RegisterListener<GameEnterEventInfo>(onEnterGame);
             EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onTetrominoMove);
             EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onTetrominoRotate);
             EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onTetrominoLand);
         }
 
+        void onEnterGame(GameEnterEventInfo info) {
+            Debug.Log(TAG + " onEnterGame");
+            audioSource.clip = gameLoop;
+            audioSource.loop = true;
+            audioSource.Play();
+        }
+        
         void onTetrominoMove(TetrominoMoveEventInfo info) {
             audioSource.PlayOneShot(moveSound);
         }
@@ -52,59 +61,59 @@ namespace HotFix.Control {
             audioSource.PlayOneShot(landSound);
         }
 
-        public void setCurrentClip(string name) {
-            switch (name) {
-            case "move":
-                currentClip = moveSound;
-                break;
-            case "rotate":
-                currentClip = rotateSound;
-                break;
-            case "land":
-                currentClip = landSound;
-                break;
-            case "explose":
-                currentClip = exploseSound;
-                break;
-            case "clearline":
-                currentClip = clearLineSound;
-                break;
-            default:
-                currentClip = gameLoop;
-                break;
-            }
-        }
-
-        public void PlayAudio(string name) {
-            switch (name) {
-            case "move":
-                currentClip = moveSound;
-                break;
-            case "rotate":
-                currentClip = rotateSound;
-                break;
-            case "land":
-                currentClip = landSound;
-                break;
-            case "explose":
-                currentClip = exploseSound;
-                break;
-            case "clearline":
-                currentClip = clearLineSound;
-                break;
-            default:
-                currentClip = gameLoop;
-                break;
-            }
-            audioSource.PlayOneShot(currentClip);
-        }
+// // 好像这两个方法不是很有用
+//         public void setCurrentClip(string name) {
+//             switch (name) {
+//             case "move":
+//                 currentClip = moveSound;
+//                 break;
+//             case "rotate":
+//                 currentClip = rotateSound;
+//                 break;
+//             case "land":
+//                 currentClip = landSound;
+//                 break;
+//             case "explose":
+//                 currentClip = exploseSound;
+//                 break;
+//             case "clearline":
+//                 currentClip = clearLineSound;
+//                 break;
+//             default:
+//                 currentClip = gameLoop;
+//                 break;
+//             }
+//         }
+//         public void PlayAudio(string name) {
+//             switch (name) {
+//             case "move":
+//                 currentClip = moveSound;
+//                 break;
+//             case "rotate":
+//                 currentClip = rotateSound;
+//                 break;
+//             case "land":
+//                 currentClip = landSound;
+//                 break;
+//             case "explose":
+//                 currentClip = exploseSound;
+//                 break;
+//             case "clearline":
+//                 currentClip = clearLineSound;
+//                 break;
+//             default:
+//                 currentClip = gameLoop;
+//                 break;
+//             }
+//             audioSource.PlayOneShot(currentClip);
+//         }
 
         public void PlayOneShotAudioClip(AudioClip clip) {
             audioSource.PlayOneShot(clip);
         }
         
         public void PlayOneShotAudioClip() {
-            audioSource.PlayOneShot(currentClip);
+            //audioSource.PlayOneShot(currentClip);
         }
 
 // BUG: 这里好像是只播放一次,想要循环播放        
@@ -115,7 +124,7 @@ namespace HotFix.Control {
 // 它是不是容易失忆呢?        
         public void Play() {
             Debug.Log(TAG + " Play");
-            audioSource.PlayOneShot(currentClip); // 这就是从来开始播放,而不是继续播放
+            //audioSource.PlayOneShot(currentClip); // 这就是从来开始播放,而不是继续播放
             // audioSource.UnPause();
         }
         

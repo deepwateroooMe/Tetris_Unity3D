@@ -28,6 +28,8 @@ namespace HotFix.Control {
         private TetrominoMoveEventInfo moveInfo;
         private TetrominoRotateEventInfo rotateInfo;
         private TetrominoLandEventInfo landInfo;
+
+        private GameEnterEventInfo enterInfo;
         private CanvasToggledEventInfo canvasInfo;
         
         public void Awake() {
@@ -40,6 +42,7 @@ namespace HotFix.Control {
             rotateInfo = new TetrominoRotateEventInfo();
             landInfo = new TetrominoLandEventInfo();
             canvasInfo = new CanvasToggledEventInfo();
+            enterInfo = new GameEnterEventInfo();
         }
 
         public void RegisterListener<T>(EventListener<T> listener) where T : EventInfo { 
@@ -79,8 +82,11 @@ namespace HotFix.Control {
         }
 // 事件:不带任何增量信息的
         public void FireEvent(string type) {
-            Debug.Log(TAG + ": FireEvent() type"); 
+            Debug.Log(TAG + ": FireEvent() type: " + type); 
             switch (type) {
+            case "entergame":
+                FireEvent(enterInfo);
+                return;
             case "spawned":
                 FireEvent(spawnedInfo);
                 return;
@@ -94,7 +100,7 @@ namespace HotFix.Control {
         }
 
         public void FireEvent(string type, Vector3 delta) {
-            Debug.Log(TAG + ": FireEvent() type + delta"); 
+            Debug.Log(TAG + ": FireEvent() type + delta. type: " + type); 
             switch (type) {
             case "spawned":
                 FireEvent(spawnedInfo);
@@ -117,6 +123,7 @@ namespace HotFix.Control {
         }
         
         public void FireEvent(EventInfo eventInfo) {
+            Debug.Log(TAG + "FireEvent EventInfo.TAG: " + EventInfo.TAG);
             EventListener tmpDelegate;
             if (delegatesMap.TryGetValue(eventInfo.GetType(), out tmpDelegate)) 
                 tmpDelegate.Invoke(eventInfo);

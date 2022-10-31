@@ -55,9 +55,15 @@ namespace HotFix.UI {
                         UI2DRoot = go.GetComponent<Canvas>();
                         var viewRoot = new GameObject("ViewRoot"); // 实例化一个新空控件当作是视图层的根节点
                         viewRoot.layer = LayerMask.NameToLayer("UI");
+// Managers: slightly higher level for receiving game events
+                        var managersRoot = new GameObject("Managers");
+                        managersRoot.transform.SetParent(UI2DRoot.transform);
+// EventManager: 这里是已经创建了单例实例(放在这里的问题是,会丢掉一些事件,它需要在更早的时间启动,转到ViewManager里去)           
+                        EventManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
+                        AudioManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
+
                         var viewRect = viewRoot.AddComponent<RectTransform>();
-                        viewRect.SetParent(UI2DRoot.transform, false); // ori
-                        // // viewRect.SetParent(UI2DRoot.transform, true);
+                        viewRect.SetParent(UI2DRoot.transform, false);
                         viewRect.sizeDelta = new Vector2(0, 0);
                         viewRect.anchorMin = Vector2.zero;
                         viewRect.anchorMax = Vector2.one; // ori
@@ -123,6 +129,7 @@ namespace HotFix.UI {
 // 两块不同按钮的画布,两架相机,以及游戏过程中生成的所有的方块砖都位于这个视图下        
 #region BtnsCanvasView
 
+        // public static GameObject eventManager = null;
         public static GameObject moveCanvas = null;
         public static GameObject rotateCanvas = null;
         public static GameObject nextTetromino = null; // 放这里,主要是方便GameViewModel和Tetromino GhostTetromino来拿到reference

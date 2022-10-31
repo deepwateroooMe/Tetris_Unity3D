@@ -25,15 +25,15 @@ namespace HotFix.Control {
             right = gameObject.FindChildByName("rightBtn");
             up = gameObject.FindChildByName("upBtn");
             down = gameObject.FindChildByName("downBtn");
-        }
-
-        public void Start() {
-            Debug.Log(TAG + " Start");
 // MoveCanvas: Four buttons:
             left.GetComponent<Button>().onClick.AddListener(OnClickLeftButton);
             right.GetComponent<Button>().onClick.AddListener(OnClickRightButton);
             up.GetComponent<Button>().onClick.AddListener(OnClickUpButton);
             down.GetComponent<Button>().onClick.AddListener(OnClickDownButton);
+        }
+
+        public void Start() {
+            Debug.Log(TAG + " Start");
 // Tetrominon: Spawned, Move, Rotate, Land,
             EventManager.Instance.RegisterListener<TetrominoSpawnedEventInfo>(onActiveTetrominoSpawn); 
             EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
@@ -85,8 +85,9 @@ namespace HotFix.Control {
 
         void onCanvasToggled(CanvasToggledEventInfo info) {
             Debug.Log(TAG + " CanvasToggledEventInfo");
-            ViewManager.moveCanvas.SetActive(!ViewManager.moveCanvas.activeSelf);
-            ViewManager.rotateCanvas.SetActive(!ViewManager.rotateCanvas.activeSelf);
+            ViewManager.rotateCanvas.SetActive(true);
+            // ViewManager.moveCanvas.SetActive(false);
+            gameObject.SetActive(false);
         }
 
 // TODO: 适配器适配的方法太少,会导致一堆的资源泄露?        

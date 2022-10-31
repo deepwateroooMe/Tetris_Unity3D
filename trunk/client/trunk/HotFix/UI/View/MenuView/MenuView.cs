@@ -1,4 +1,5 @@
 ﻿using Framework.MVVM;
+using HotFix.Control;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -33,15 +34,6 @@ namespace HotFix.UI {
                 return (MenuViewModel)BindingContext;
             }
         }
-
-//         public override void OnAppear() {
-//             base.OnAppear(); // 这里,在基类UnityGuiView里OnRevealed()基类实现里,若是根视图,为自动关闭其它所有视图
-// // 这里是只是赋值回调函数,方便将来回调,还是说这里已经回调了呢(这里应该还没有,回去检查)@!            
-//             CloseOtherRootView = CloseOtherRootViews; // 只是赋值
-//         }
-//         void CloseOtherRootViews() {
-//             ViewManager.CloseOtherRootViews("MenuView");
-//         }
 
         GameObject menuViewPanel;
         Button eduButton; // Education
@@ -80,10 +72,12 @@ namespace HotFix.UI {
         }
         void OnClickClaButton() {
             ViewModel.gameMode = 1;
+            EventManager.Instance.FireEvent("entergame");
             Hide();
         }
         void OnClickChaButton() {
             ViewModel.gameMode = 2;
+            EventManager.Instance.FireEvent("entergame");
             Hide();
         }
 
@@ -107,6 +101,7 @@ namespace HotFix.UI {
             ActiveToggle();
             // 感觉这里有个更直接快速的但凡一toggle某个的时候就自动触发的观察者模式,改天再写
             
+            EventManager.Instance.FireEvent("entergame");
             ViewManager.GameView.Reveal();
 
 // 需要激活,方便从其它视图回退到主菜单视图            

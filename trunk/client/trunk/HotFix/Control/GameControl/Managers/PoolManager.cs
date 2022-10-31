@@ -13,13 +13,13 @@ namespace HotFix.Control {
     public class PoolManager : Singleton<PoolManager> {
         private const string TAG = "PoolManager";
 
-        public static Dictionary<string, GameObject> minosDic = null; // [type, prefab gameObject]
-        public static Dictionary<string, Stack<GameObject>> pool = null;
+        public Dictionary<string, GameObject> minosDic = null; // [type, prefab gameObject]
+        public Dictionary<string, Stack<GameObject>> pool = null;
 
-        private static GameObject tetrosPool = null;
-        private static GameObject tetroParent = null;
+        private GameObject tetrosPool = null;
+        private GameObject tetroParent = null;
 
-        private static Vector3 defaultPos = new Vector3(-100, -100, -100); // 不同类型的起始位置不一样(可否设置在预设里呢>??)
+        private Vector3 defaultPos = new Vector3(-100, -100, -100); // 不同类型的起始位置不一样(可否设置在预设里呢>??)
 
 // 这几个换材质的,可以晚点儿再写
         // public Material [] materials; // [red, green, blue, yellow]
@@ -27,12 +27,12 @@ namespace HotFix.Control {
 
         // public void Awake() {
         //     Debug.Log(TAG + " Awake()");
-        public static void Initialize() {
+        public void Initialize() {
             minosDic = new Dictionary<string, GameObject>();
             pool = new Dictionary<string, Stack<GameObject>>();
         }
 
-        public static void fillPool(Transform prefab) {
+        public void fillPool(Transform prefab) {
             string name = prefab.gameObject.name;
             // Debug.Log(TAG + " name: " + name);
             // if (child.gameObject.name.StartsWith("mino"))
@@ -101,7 +101,7 @@ namespace HotFix.Control {
 //         }
 // 这里好像是: 管理层也都需要红过两个域的适配,这里适配的过程中出了问题;
 // BUG: 把这个暂时放一下,等晚点儿再回来独立这个模块,继续放在ViewManager里面,先        
-        public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3 localScale) {
+        public GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3 localScale) {
             Stack<GameObject> st = pool[type];
             GameObject objInstance = null;
             if (st.Count > 0) 
@@ -122,7 +122,7 @@ namespace HotFix.Control {
             return objInstance;
         }
     
-        public static void ReturnToPool(GameObject gameObject, string type) {
+        public void ReturnToPool(GameObject gameObject, string type) {
             if (gameObject.activeSelf) {
                 gameObject.SetActive(false);
                 if (pool[type].Count < 10) {
@@ -132,7 +132,7 @@ namespace HotFix.Control {
             } 
         }
 
-        public static GameObject GetFromPool(string type) {
+        public GameObject GetFromPool(string type) {
             GameObject objInstance = null;
             if (pool.ContainsKey(type) && pool[type].Count > 0) {
                 objInstance = pool[type].Pop();
@@ -142,7 +142,7 @@ namespace HotFix.Control {
             return objInstance;
         }
 
-//         public static void ReturnToPool(GameObject gameObject, string type, float delay) {
+//         public void ReturnToPool(GameObject gameObject, string type, float delay) {
 // // CoroutineHelper这个帮助类对协程的适配做得不到位,这个方法现在还不能用            
 //            CoroutineHelper.StartCoroutine(DelayedReturnToPool(gameObject, type, delay));
 //         }
@@ -160,6 +160,3 @@ namespace HotFix.Control {
         }
     }
 }
-
-
-

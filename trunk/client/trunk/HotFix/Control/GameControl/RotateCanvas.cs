@@ -34,13 +34,6 @@ namespace HotFix.Control {
         
         public void Start() {
             Debug.Log(TAG + " Start");
-// RotateCanvas: 六个旋转方向
-            XPosBtn.onClick.AddListener(OnClickXPosButton);
-            XNegBtn.onClick.AddListener(OnClickXNegButton);
-            YPosBtn.onClick.AddListener(OnClickYPosButton);
-            YNegBtn.onClick.AddListener(OnClickYNegButton);
-            ZPosBtn.onClick.AddListener(OnClickZPosButton);
-            ZNegBtn.onClick.AddListener(OnClickZNegButton);
 // Tetrominon: Spawned, Move, Rotate, Land,
             // EventManager.Instance.RegisterListener<TetrominoSpawnedEventInfo>(onActiveTetrominoSpawn); 
             EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
@@ -91,11 +84,15 @@ namespace HotFix.Control {
             ViewManager.rotateCanvas.SetActive(false); // 这里没有失活
         }
 
+// BUG TODO: 最开始几次好像切换得没问题; 再多切换几次就忙不过来了?!!!没响应
+// 总是停要平移画布上切不过去了,并且只能切换两次,需要DEBUG一下        
+// 因为它这个缓慢的调用响应速度,必须得把方块砖下降的速度调得很慢,并需要在响应回来之前把按钮失活? 几个细节需要实现        
         void onCanvasToggled(CanvasToggledEventInfo info) {
             Debug.Log(TAG + " CanvasToggledEventInfo");
-// 这里的一点儿交叉:是因为当另一个控件是失活状态,会丢掉或说接到不到相关事件,需要另一个画布帮助先激活            
-            ViewManager.moveCanvas.SetActive(!ViewManager.moveCanvas.activeSelf);
-            ViewManager.rotateCanvas.SetActive(!ViewManager.rotateCanvas.activeSelf);
+            // ViewManager.moveCanvas.SetActive(true);
+            // ViewManager.rotateCanvas.SetActive(false);
+            ViewManager.moveCanvas.SetActive(true);
+            gameObject.SetActive(false);
         }
 
 // TODO: 适配器适配的方法太少,会导致一堆的资源泄露?        

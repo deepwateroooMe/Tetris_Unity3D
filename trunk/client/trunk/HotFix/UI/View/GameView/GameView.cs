@@ -631,36 +631,16 @@ namespace HotFix.UI {
             ViewModel.loadSavedGame = false;
             ViewModel.loadSavedGame = false;
         }    
-        private void currentActiveTetrominoPrepare() {
-            Debug.Log(TAG + ": currentActiveTetrominoPrepare()");
-            nextTetromino.tag = "currentActiveTetromino";
-            nextTetromino.transform.rotation = Quaternion.identity;
-            ComponentHelper.GetTetroComponent(ViewManager.GameView.nextTetromino).enabled = true;
-            // ComponentHelper.AddTetroComponent(ViewManager.GameView.nextTetromino);
-            Tetromino tmp = ComponentHelper.GetTetroComponent(ViewManager.GameView.nextTetromino);
-            Debug.Log(TAG + " (ViewManager.GameView.nextTetromino.GetComponent<Tetromino>() != null): " + tmp);
-            tmp.Update();
-            
-            //if (ViewModel.gameMode.Value == 0 && (ViewModel.gridWidth == 3 || ViewModel.gridWidth == 4)) {
-            //    nextTetromino.transform.localPosition = new Vector3(1.0f, ViewModel.gridHeight - 1f, 1.0f);
-            //} else 
-            //    nextTetromino.transform.localPosition = new Vector3(2.0f, ViewModel.gridHeight - 1f, 2.0f);
-            //Tetromino tmp = nextTetromino.GetComponent<Tetromino>();
-            //Debug.Log(TAG + " (tmp != null): " + (tmp != null));
-            //if (tmp != null)
-            //    Debug.Log(TAG + " tmp.activeSelf: " + tmp.enabled);
 
-            // Debug.Log(TAG + " (defaultContainer == null) before: " + (defaultContainer == null)); 
-            // if (defaultContainer == null)
-            //     defaultContainer = GameObject.FindGameObjectWithTag("defaultContainer");
-            // Debug.Log(TAG + " (defaultContainer == null) after: " + (defaultContainer == null)); 
-            // nextTetromino.transform.SetParent(defaultContainer.transform, false);
-// 下面这里跟以前的预设做得不一样:需要对象池第一次创建的时候根据不同的类型来添加脚本            
-            // nextTetromino.GetComponent<Tetromino>().enabled = !nextTetromino.GetComponent<Tetromino>().enabled; 
-// // 下面这行是被我弄掉了
-//             nextTetromino.AddComponent<Tetromino>();
-            // ViewModel.nextTetrominoType = nextTetromino.GetComponent<TetrominoType>().type; // 可以去掉了
-            //Debug.Log(TAG + " nextTetromino.name: " + nextTetromino.name);
+        private void currentActiveTetrominoPrepare() {
+            // Debug.Log(TAG + ": currentActiveTetrominoPrepare()");
+            ViewManager.nextTetromino.tag = "currentActiveTetromino";
+            ViewManager.nextTetromino.transform.rotation = Quaternion.identity;
+            ComponentHelper.GetTetroComponent(ViewManager.GameView.nextTetromino).enabled = true;
+            if (ViewModel.gameMode.Value == 0 && (ViewModel.gridWidth == 3 || ViewModel.gridWidth == 4)) {
+                ViewManager.nextTetromino.transform.localPosition = new Vector3(1.0f, ViewModel.gridHeight - 1f, 1.0f);
+            } else 
+                ViewManager.nextTetromino.transform.localPosition = new Vector3(2.0f, ViewModel.gridHeight - 1f, 2.0f);
         }
         
         public void onSwapPreviewTetrominos () {
@@ -758,13 +738,6 @@ namespace HotFix.UI {
         protected override void OnInitialize() {
             base.OnInitialize();
             Debug.Log(TAG + " OnInitialize");
-
-// AudioManager: 单例模式            
-            managers = GameObject.FindChildByName("managers");
-// TODO: PoolManager 存在两个不同程序域的适配问题,这个模块暂时先放一下(没有必要把它设置为SingleMono, Single<PoolManager>就可以了,回头再测一下,很简单)            
-            // PoolManager.Instance.gameObject.transform.SetParent(managers.transform, false);
-// EventManager: 这里是已经创建了单例实例           
-            EventManager.Instance.gameObject.transform.SetParent(managers.transform, false);
             RegisterListeners();
             
             baseBoard5 = GameObject.FindChildByName("BaseBoard5");
@@ -782,7 +755,7 @@ namespace HotFix.UI {
             case 5:
                 baseBoard5.SetActive(true);
                 break;
-            }
+            } 
 
 // 预览两块方块砖的按钮
             comTetroView = GameObject.FindChildByName("ComTetroView");
@@ -930,3 +903,5 @@ namespace HotFix.UI {
 //         }
     }
 }
+
+
