@@ -7,8 +7,6 @@ using HotFix.Control;
 
 namespace HotFix.Control {
 
-// TOGO: 对MoveCanvas RotateCanvas中两组按钮共十个的管理设计不够理想;
-// 因热更新中的游戏框架依赖于这个管理器,暂且如此运行,过程中会试图优化对那两三组按钮的管理    
     public class EventManager : SingletonMono<EventManager> { 
         private const string TAG = "EventManager";
 
@@ -30,6 +28,8 @@ namespace HotFix.Control {
         private TetrominoLandEventInfo landInfo;
 
         private GameEnterEventInfo enterInfo;
+        private GamePauseEventInfo pauseInfo;
+        private GameResumeEventInfo resumeInfo;
         private CanvasToggledEventInfo canvasInfo;
         
         public void Awake() {
@@ -37,17 +37,20 @@ namespace HotFix.Control {
             delegatesMap = new Dictionary<System.Type, EventListener>();  // eventListeners;     
             delegateLookupMap = new Dictionary<System.Delegate, EventListener>();
             delta = Vector3.zero;
+
             spawnedInfo = new TetrominoSpawnedEventInfo();
             moveInfo = new TetrominoMoveEventInfo();
             rotateInfo = new TetrominoRotateEventInfo();
             landInfo = new TetrominoLandEventInfo();
+
             canvasInfo = new CanvasToggledEventInfo();
             enterInfo = new GameEnterEventInfo();
+            pauseInfo = new GamePauseEventInfo();
+            resumeInfo = new GameResumeEventInfo();
         }
 
         public void RegisterListener<T>(EventListener<T> listener) where T : EventInfo { 
-            Debug.Log(TAG + ": RegisterListener()");
-
+            // Debug.Log(TAG + ": RegisterListener()");
             EventListener internalDelegate = (el) => { listener((T)el); };
 
 // 代理类型(EventListener<T>)已经存在，且值(所有注册过的回调方法,唯一一个)相等，那就不需要再做什么,直接返回
@@ -65,7 +68,7 @@ namespace HotFix.Control {
         }
         
         public void UnregisterListener<T>(EventListener<T> listener) where T : EventInfo { // System.Action 这里并没有能真正移除掉监听，需要再理解、更改
-            Debug.Log(TAG + ": UnregisterListener()"); 
+            // Debug.Log(TAG + ": UnregisterListener()"); 
             EventListener internalDelegate;
             if (delegateLookupMap.TryGetValue(listener, out internalDelegate)) {
                 EventListener tmpDelegate;
@@ -78,33 +81,45 @@ namespace HotFix.Control {
                 }
                 delegateLookupMap.Remove(listener);
             }
-            Debug.Log(TAG + " delegatesMap.Count after: " + delegatesMap.Count + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
+            Debug.Log(TAG + " UnregisterListener() delegatesMap.Count after: " + delegatesMap.Count + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
         }
 // 事件:不带任何增量信息的
         public void FireEvent(string type) {
             Debug.Log(TAG + ": FireEvent() type: " + type); 
             switch (type) {
             case "entergame":
+                enterInfo = new GameEnterEventInfo();
                 FireEvent(enterInfo);
                 return;
+            case "pausegame":
+                pauseInfo = new GamePauseEventInfo();
+                FireEvent(pauseInfo);
+                return;
+            case "resumegame":
+                resumeInfo = new GameResumeEventInfo();
+                FireEvent(resumeInfo);
+                return;
+
             case "spawned":
+                spawnedInfo = new TetrominoSpawnedEventInfo();
                 FireEvent(spawnedInfo);
                 return;
             case "land":
+                landInfo = new TetrominoLandEventInfo();
                 FireEvent(landInfo);
                 return;
             case "canvas":
+                canvasInfo = new CanvasToggledEventInfo();
                 FireEvent(canvasInfo);
                 return;
             }
         }
-
         public void FireEvent(string type, Vector3 delta) {
             Debug.Log(TAG + ": FireEvent() type + delta. type: " + type); 
             switch (type) {
-            case "spawned":
-                FireEvent(spawnedInfo);
-                return;
+            // case "spawned":
+            //     FireEvent(spawnedInfo);
+            //     return;
             case "move":
                 moveInfo.delta = delta;
                 FireEvent(moveInfo);
@@ -113,17 +128,16 @@ namespace HotFix.Control {
                 rotateInfo.delta = delta;
                 FireEvent(rotateInfo);
                 return;
-            case "land":
-                FireEvent(landInfo);
-                return;
-            case "canvas":
-                FireEvent(canvasInfo);
-                return;
+            // case "land":
+            //     FireEvent(landInfo);
+            //     return;
+            // case "canvas":
+            //     FireEvent(canvasInfo);
+            //     return;
             }
         }
         
         public void FireEvent(EventInfo eventInfo) {
-            Debug.Log(TAG + "FireEvent EventInfo.TAG: " + EventInfo.TAG);
             EventListener tmpDelegate;
             if (delegatesMap.TryGetValue(eventInfo.GetType(), out tmpDelegate)) 
                 tmpDelegate.Invoke(eventInfo);

@@ -248,19 +248,28 @@ namespace HotFix.UI {
             // startingHighScore2 = PlayerPrefs.GetInt("highscore2");
             // startingHighScore3 = PlayerPrefs.GetInt("highscore3");
         }
-        
-        void OnClickPauButton() { // public void PauseGame()
+// PauseGame, ResumeGame        
+        void OnClickPauButton() { 
             Debug.Log(TAG + " OnClickPauButton");
 
-            Time.timeScale = 0f;	    
-            ViewModel.PauseGame(); // 游戏暂停
-            // AudioManager.Instance.audioSource.Play();
+            Time.timeScale = 0f;
+            EventManager.Instance.FireEvent("pausegame");
+            // ViewModel.PauseGame(); // 游戏暂停
             pausePanel.SetActive(true);
-            // Bug: disable all Hud canvas buttons: swap
+// TODO : Bug: disable all Hud canvas buttons: swap etc
         }
+        void OnClickResButton() { // RESUME GAME: 隐藏当前游戏过程中的视图,就可以了 // public void OnClickResButton();
+            Debug.Log(TAG + " OnClickResButton");
+            Time.timeScale = 1.0f;
+            ViewModel.isPaused = false;
+            pausePanel.SetActive(false);
+            EventManager.Instance.FireEvent("resumegame"); // for Audio
+        }
+        
         void OnClickFalButton() {
         }
         void OnClickTogButton() {
+            Debug.Log(TAG + " OnClickTogButton");
             EventManager.Instance.FireEvent("canvas");
         }
         void OnClickPtoButton() { // preview Tetromino Button COMMON BUTTON
@@ -278,15 +287,7 @@ namespace HotFix.UI {
         // MidMenuView 里的5 个按钮
         void OnClickSavButton() { // SAVE GAME
         }
-        void OnClickResButton() { // RESUME GAME: 隐藏当前游戏过程中的视图,就可以了 // public void OnClickResButton();
-            Debug.Log(TAG + " OnClickResButton");
-
-            Time.timeScale = 1.0f;
-            ViewModel.isPaused = false;
-            pausePanel.SetActive(false);
-// TODO: 这里暂停后再恢复,音乐没能恢复过来            
-            // AudioManager.Instance.audioSource.Play(); 
-        }
+        
         void OnClickGuiButton() { // 可以视频GUIDE吗?
             // ViewManager.DesginView.Reveal();
         }
@@ -379,26 +380,16 @@ namespace HotFix.UI {
         public void CheckUserInput() {  // originally pasuseButton & continueButton
             Debug.Log(TAG + ": CheckUserInput()"); 
             if (Time.timeScale == 1.0f) {
-                PauseGame();
+                // PauseGame(); 不知道这里说的是哪个暂停游戏方法
+                OnClickPauButton();
             } else {
                 OnClickResButton();
             }
         }
-        public void PauseGame() {
-            Time.timeScale = 0f;        
-            //audioSource.Pause();
-            ViewModel.isPaused = true;
-            // Bug: disable all Hud canvas buttons: swap
-            //audioSource.Pause();
-            pausePanel.SetActive(true);
-            // Bug cleaning: when paused game, if game has NOT started yet, disable Save Button
-            if (!gameStarted) {
-                
-            }
-        }
+
         public void onActiveTetrominoLand(TetrominoLandEventInfo info) {
             Debug.Log(TAG + ": onActiveTetrominoLand()");
-            MoveUp();
+            //MoveUp();
             ViewModel.onActiveTetrominoLand(info, nextTetromino);
 // 更好的办法应该是前面定义过的 BindableProperty<IType>,对方块砖的基类和扩展类分别作出不同的实现,来解除偶合            
             ViewModel.recycleGhostTetromino(ghostTetromino); // 放这里的主要原因是需要传参数
@@ -644,13 +635,14 @@ namespace HotFix.UI {
         }
         
         public void onSwapPreviewTetrominos () {
-            Debug.Log(TAG + ": swapPreviewTetrominosFunc()");
-            if (ViewModel.buttonInteractableList[2] == 0) return;
-            ViewModel.preparePreviewTetrominoRecycle(previewTetromino); // recycle 1st tetromino first
-           PoolHelper.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
-            ViewModel.preparePreviewTetrominoRecycle(previewTetromino2); // recycle 2st tetromino then
-            PoolHelper.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
-            SpawnPreviewTetromino();
+            Debug.Log(TAG + " onSwapPreviewTetrominos");
+            EventManager.Instance.FireEvent("swap");
+            // if (ViewModel.buttonInteractableList[2] == 0) return;
+            // ViewModel.preparePreviewTetrominoRecycle(previewTetromino); // recycle 1st tetromino first
+            // PoolHelper.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+            // ViewModel.preparePreviewTetrominoRecycle(previewTetromino2); // recycle 2st tetromino then
+            // PoolHelper.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+            // SpawnPreviewTetromino();
         }
         
         public void onSwapPreviewTetrominos(SwapPreviewsEventInfo swapInfo) {
@@ -722,29 +714,34 @@ namespace HotFix.UI {
             ViewModel.UpdateHighScore();
             // SceneManager.LoadScene("GameOver");
         }
-        // 平移与旋转两套按钮的上下移动: 应该是放在视图里的吧;最好是写成观察者模式,UI观察数据的变化,UI事件触发下发更新数据指令
-        public void MoveDown() {
-            ViewManager.moveCanvas.transform.position += new Vector3(0, -1, 0);
-            ViewManager.rotateCanvas.transform.position += new Vector3(0, -1, 0);
+
+        void onActiveTetrominoMove(TetrominoMoveEventInfo info) { 
+            Debug.Log(TAG + " onActiveTetrominoMove");
+// TODO: 这里牵线搭桥的写法是对性能的极大浪费,可以简化步骤,直接放入GameViewModel中管理,省去来回调用
+            if (ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).IsMoveValid) { // TODO
+                // if (ViewManager.nextTetromino.GetComponent<Tetromino>().IsMoveValid) {
+// 不希望这里面再处理按钮画布相关的逻辑
+                // ViewManager.moveCanvas.transform.position += info.delta;
+                // if ((int)info.delta.y != 0) 
+                //     ViewManager.rotateCanvas.transform.position += new Vector3(0, info.delta.y, 0);
+                ViewModel.UpdateGrid(ViewManager.nextTetromino);
+            }
         }
-        public void MoveUp() {
-            Debug.Log(TAG + ": MoveUp()");
-            MathUtil.print(nextTetromino.transform.position);
-            
-            ViewManager.moveCanvas.transform.position += new Vector3(0, 1, 0);
-            ViewManager.rotateCanvas.transform.position += new Vector3(0, 1, 0);
+        void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
+            // Debug.Log(TAG + ": onActiveTetrominoRotate()"); 
+            if (nextTetromino.GetComponent<Tetromino>().IsRotateValid) {
+                ViewModel.UpdateGrid(nextTetromino); 
+            }
         }
-        // 需要有来自ViewModel的数据变化来刷新UI: 观察者模式观察视图模型中数据的变体
+
         protected override void OnInitialize() {
             base.OnInitialize();
-            Debug.Log(TAG + " OnInitialize");
             RegisterListeners();
             
             baseBoard5 = GameObject.FindChildByName("BaseBoard5");
             setAllBaseBoardInactive();
 // 当视图想要通过视图模型来获取父视图模型的数据时,实际上当前视图模型还没能启动好,还没有设置好其父视图模型,所以会得到空,要换种写法
-            // switch (((MenuViewModel)BindingContext.ParentViewModel).gridWidth) { // 大方格的类型
-            switch (((MenuViewModel)ViewManager.MenuView.BindingContext).gridWidth) {
+            switch (ViewManager.MenuView.ViewModel.gridWidth) {
                 // 大方格的类型
             case 3:
                 //     baseBoard3.SetActive(true);
@@ -760,12 +757,11 @@ namespace HotFix.UI {
 // 预览两块方块砖的按钮
             comTetroView = GameObject.FindChildByName("ComTetroView");
             eduTetroView = GameObject.FindChildByName("EduTetroView");
-// 这里按键的检测本身是没有问题的,出问题的只是游戏逻辑中视图模型里某些变量的设置;
             pvBtnOne = GameObject.FindChildByName("ptoBtn").GetComponent<Button>();
             pvBtnOne.onClick.AddListener(playFirstTetromino); 
             pvBtnTwo = GameObject.FindChildByName("pteBtn").GetComponent<Button>();
             pvBtnTwo.onClick.AddListener(playSecondTetromino);
-
+// 游戏得分文本框
             scoText = GameObject.FindChildByName("scoTxt").GetComponent<Text>();
             lvlText = GameObject.FindChildByName("lvlTxt").GetComponent<Text>();
             linText = GameObject.FindChildByName("linTxt").GetComponent<Text>();
@@ -779,10 +775,10 @@ namespace HotFix.UI {
             pauBtn = GameObject.FindChildByName("pauBtn").GetComponent<Button>();
             pauBtn.onClick.AddListener(OnClickPauButton);
 
-            falBtn = GameObject.FindChildByName("falBtn").GetComponent<Button>();
-            falBtn.onClick.AddListener(OnClickFalButton);
             swaBtn = GameObject.FindChildByName("swaBtn").GetComponent<Button>();
             swaBtn.onClick.AddListener(onSwapPreviewTetrominos);
+            falBtn = GameObject.FindChildByName("falBtn").GetComponent<Button>();
+            falBtn.onClick.AddListener(OnClickFalButton);
             undBtn = GameObject.FindChildByName("undBtn").GetComponent<Button>();
             undBtn.onClick.AddListener(OnClickUndButton);
 // pausePanel里的5个按钮
@@ -804,38 +800,15 @@ namespace HotFix.UI {
 
         void RegisterListeners() {
             Debug.Log(TAG + " RegisterListeners");
-// TODO: 这里的检查是属于没有必要的工作,真正做好了,这里不需要再检查,需要清理            
-// check if it is cleaned up first
-            Debug.Log(TAG + " (!EventManager.Instance.isCleanedUp()): " + (!EventManager.Instance.isCleanedUp())); 
-            if (!EventManager.Instance.isCleanedUp()) 
-                EventManager.Instance.cleanUpLists();
-            // EventManager.Instance.RegisterListener<SaveGameEventInfo>(SaveGame); 
+
             EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
             EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
             EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
+
+            EventManager.Instance.RegisterListener<SaveGameEventInfo>(SaveGame); 
         }
 
-        void onActiveTetrominoMove(TetrominoMoveEventInfo info) { 
-            Debug.Log(TAG + " onActiveTetrominoMove");
-// TODO: 这里牵线搭桥的写法是对性能的极大浪费,可以简化步骤,直接放入GameViewModel中管理,省去来回调用
-            if (ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).IsMoveValid) { // TODO
-            // if (ViewManager.nextTetromino.GetComponent<Tetromino>().IsMoveValid) {
-// 不希望这里面再处理按钮画布相关的逻辑
-                // ViewManager.moveCanvas.transform.position += info.delta;
-                // if ((int)info.delta.y != 0) 
-                //     ViewManager.rotateCanvas.transform.position += new Vector3(0, info.delta.y, 0);
-                ViewModel.UpdateGrid(ViewManager.nextTetromino);
-            }
-        }
-        void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
-            // Debug.Log(TAG + ": onActiveTetrominoRotate()"); 
-            if (nextTetromino.GetComponent<Tetromino>().IsRotateValid) {
-                ViewModel.UpdateGrid(nextTetromino); 
-            }
-        }
-
-        // 想找一个更为合适的地方来写上面的观察者模式监听回调
-        public void OnRevealed() {
+        public void OnRevealed() { // 写在这里是因为热更新程序域里回调慢,写早了有时候拿不到返回空
             base.OnRevealed();
             Debug.Log(TAG + " OnRevealed");
             // 注册对视图模型数据的监听观察回调等
@@ -846,22 +819,21 @@ namespace HotFix.UI {
 // TODO: 再测试一下这个: 还仍然是不过
             // ViewModel.gameMode.OnValueChanged += onGameModeChanged; // 运行时仍为空抛异常,因为它的初始化的过程会相对复杂那么一点点儿
 
-//// 不想要游戏视图来观察,要对象池来观察,只想游戏视图中持一个对象池的引用            
-//// 预览中的两个方块砖类型变了:要生成实例并刷新
-//            ViewModel.comTetroTyep.OnValueChanged += onComTetroTypeChanged;
-//            ViewModel.eduTetroTyep.OnValueChanged += onEduTetroTypeChanged;
+// 不想要游戏视图来观察,要对象池来观察[对象池的帮助方法都只能静态调用,可以观察吗?]暂先放这里
+           ViewModel.comTetroType.OnValueChanged += onComTetroTypeChanged;
+           ViewModel.eduTetroType.OnValueChanged += onEduTetroTypeChanged;
 
-// // ViewManager: nextTetromino position, rotation, localScale
-// // 这套系统不工作,太多的适配相关的问题,先把简单的系统逻辑连通
-//             ViewModel.nextTetroTrans.OnValueChanged += onNextTetroTransChanged;
-//             ViewModel.nextTetroPos.OnValueChanged += onNextTetroPosChanged;
-//             ViewModel.nextTetroRot.OnValueChanged += onNextTetroRotChanged;
-//             ViewModel.nextTetroSca.OnValueChanged += onNextTetroScaChanged;
-
-            // 对于启蒙模式下,这里的游戏逻辑就是说,在加载视图的时候就需要去实例化两个方块砖,并在显示视图的时候显示出来给看
-            Start();
+            Start(); // 开始游戏
         }
-// 下面,这些简单类型的绑定是没有问题的,不需要任何适配        
+        void onComTetroTypeChanged(string pre, string cur) {
+            Debug.Log(TAG + " onComTetroTypeChanged");
+// TODO: 这里的逻辑需要的后来的整合优化            
+            PoolHelper.GetFromPool(cur);
+        }
+        void onEduTetroTypeChanged(String pre, string cur) {
+            Debug.Log(TAG + " onEduTetroTypeChanged");
+        }
+// 游戏主场景: 得分等游戏进展框,自动观察视图模型的数据自动,刷新
         void onCurrentScoreChanged(int pre, int cur) {
             hud_score.text = cur.ToString();
         }
@@ -903,5 +875,3 @@ namespace HotFix.UI {
 //         }
     }
 }
-
-

@@ -3,7 +3,8 @@ using UnityEngine;
 namespace HotFix.Control {
 
     public abstract class EventInfo {
-        public const string TAG = "EventInfo"; 
+        public const string TAG = "EventInfo";
+        
     } // TODO: search for, stucts of individual classes ? inheritance struct ??? 
 
 // Buttons group: Move, Rotate, Generic
@@ -19,6 +20,7 @@ namespace HotFix.Control {
         public const string TAG = "GenericButtonClickEventInfo";
         public GameObject unitGO;
     }
+
 // Tetromino EventInfo: Spawned, Move, Rotate, Land    
     public class TetrominoSpawnedEventInfo : EventInfo {  // Spawned
         public const string TAG = "TetrominoSpawnedEventInfo";
@@ -35,17 +37,24 @@ namespace HotFix.Control {
     public class TetrominoLandEventInfo : EventInfo {     // land
         public const string TAG = "TetrominoLandEventInfo";
     }
-// Game Control: Started, Pause, Resume, Stop etc
+
+// Game Control: Enter, Start, Pause, Resume, Stop etc
     public class GameEnterEventInfo : EventInfo {         // Entered Game View
         public const string TAG = "GameEnterEventInfo";
     }
-    public class StartedGameEventInfo : EventInfo {       // Started Game
-        public const string TAG = "StartedGameEventInfo";
+    public class GameStartEventInfo : EventInfo {         // Start Game
+        public const string TAG = "GameStartEventInfo";
     }
-    public class PauseGameEventInfo : EventInfo {         // Pause Game
-        public const string TAG = "PauseGameEventInfo";
+    public class GamePauseEventInfo : EventInfo {         // Pause Game
+        public const string TAG = "GamePauseEventInfo";
     }
-    
+    public class GameResumeEventInfo : EventInfo {         // Resume Game
+        public const string TAG = "GameResumeEventInfo";
+    }
+    public class GameStopEventInfo : EventInfo {           // Stop Game
+        public const string TAG = "GameStopEventInfo";
+    }
+// Game main menu events:     
     public class SwapPreviewsEventInfo : EventInfo {      // swapPreviewTetrominoButton
         public const string TAG = "SwapPreviewsEventInfo";
     }
@@ -54,9 +63,6 @@ namespace HotFix.Control {
     }
     public class UndoGameEventInfo : EventInfo {          // Undo Game
         public const string TAG = "UndoGameEventInfo";
-    }
-    public class ToggleActionEventInfo : EventInfo {      // toggleButtons
-        public const string TAG = "ToggleActionEventInfo";
     }
     public class FallFastEventInfo : EventInfo {          // fallFast
         public const string TAG = "FallFastEventInfo";

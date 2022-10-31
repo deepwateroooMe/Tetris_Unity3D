@@ -12,11 +12,11 @@ namespace HotFix.Control {
     public class MoveCanvas : MonoBehaviour {
         private const string TAG = "MoveCanvas"; 
 
-        private Vector3 delta;
         private GameObject left;
         private GameObject right;
         private GameObject up;
         private GameObject down;
+        private Vector3 delta;
         
         public void Awake() {
             Debug.Log(TAG + " Awake");
@@ -25,7 +25,6 @@ namespace HotFix.Control {
             right = gameObject.FindChildByName("rightBtn");
             up = gameObject.FindChildByName("upBtn");
             down = gameObject.FindChildByName("downBtn");
-// MoveCanvas: Four buttons:
             left.GetComponent<Button>().onClick.AddListener(OnClickLeftButton);
             right.GetComponent<Button>().onClick.AddListener(OnClickRightButton);
             up.GetComponent<Button>().onClick.AddListener(OnClickUpButton);
@@ -65,7 +64,8 @@ namespace HotFix.Control {
         void onActiveTetrominoSpawn(TetrominoSpawnedEventInfo info) {
             Debug.Log(TAG + " onActiveTetrominoSpawn");
             if (ViewManager.MenuView.ViewModel.gameMode > 0 || ViewManager.MenuView.ViewModel.gameMode == 0) 
-                ViewManager.moveCanvas.SetActive(true);
+// TODO: FOR GAMEMODE = 0, GameView里清除掉帮助启动的逻辑
+                ViewManager.moveCanvas.SetActive(true); 
         }
         
         void onActiveTetrominoMove(TetrominoMoveEventInfo info) {
@@ -75,7 +75,7 @@ namespace HotFix.Control {
         }
 
         void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
-            Debug.Log(TAG + " onActiveTetrominoRotate");
+            // Debug.Log(TAG + " onActiveTetrominoRotate");
         }
 
         void onActiveTetrominoLand(TetrominoLandEventInfo info) {
@@ -86,12 +86,20 @@ namespace HotFix.Control {
         void onCanvasToggled(CanvasToggledEventInfo info) {
             Debug.Log(TAG + " CanvasToggledEventInfo");
             ViewManager.rotateCanvas.SetActive(true);
-            // ViewManager.moveCanvas.SetActive(false);
-            gameObject.SetActive(false);
+            ViewManager.moveCanvas.SetActive(false);
+            // gameObject.SetActive(false);
         }
 
 // TODO: 适配器适配的方法太少,会导致一堆的资源泄露?        
-        public void onDestroy() {
+        public void OnDisable() {
+            Debug.Log(TAG + " OnDisable");
+// Tetrominon: Spawned, Move, Rotate, Land,
+            EventManager.Instance.UnregisterListener<TetrominoSpawnedEventInfo>(onActiveTetrominoSpawn); 
+            EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
+            EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate); 
+            EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 
+// Canvas: Toggled
+            EventManager.Instance.UnregisterListener<CanvasToggledEventInfo>(onCanvasToggled); 
         }
     }
 }

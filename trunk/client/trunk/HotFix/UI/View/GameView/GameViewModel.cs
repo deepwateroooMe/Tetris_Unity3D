@@ -510,18 +510,13 @@ namespace HotFix.UI {
         public void CheckUserInput() {  // originally pasuseButton & continueButton
             Debug.Log(TAG + ": CheckUserInput()"); 
             if (Time.timeScale == 1.0f) {
-                PauseGame();
+// CHECK: 感觉这些都是不必要的逻辑????
+                // PauseGame();
+                
             } else {
 // // 这里需要补充成视图模型里的恢复游戏的逻辑,而不是视图层面的                
 //                 onResumeGame();
             }
-        }
-
-        public void PauseGame() {
-            Time.timeScale = 0f;	    
-            // AudioManager.Instance.Pause();
-            isPaused = true;
-            // Bug cleaning: when paused game, if game has NOT started yet, disable Save Button
         }
 
         public void onActiveTetrominoLand(TetrominoLandEventInfo info,
