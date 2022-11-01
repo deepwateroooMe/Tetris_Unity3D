@@ -97,8 +97,8 @@ namespace HotFix.Control {
         public void onTetrominoLand(TetrominoLandEventInfo eventInfo) {
         // private void onTetrominoLand() {
             Debug.Log(TAG + ": onTetrominoLand()");
-            ViewManager.GameView.nextTetromino.tag = "Untagged";
-            ViewManager.GameView.nextTetromino.GetComponent<Tetromino>().enabled = false;
+            ViewManager.nextTetromino.tag = "Untagged";
+            ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).enabled = false;
             ViewManager.GameView.ViewModel.currentScore.Value += individualScore;            
         }
 
@@ -126,11 +126,11 @@ namespace HotFix.Control {
             // ViewManager.GameView.MoveDown(); // 怎么会这样呢?什么时候会写出这种.....
             // Debug.Log(TAG + " CheckIsValidPosition(): " + CheckIsValidPosition()); 
             if (CheckIsValidPosition()) {
-                ViewManager.GameView.ViewModel.UpdateGrid(ViewManager.GameView.nextTetromino);
+                ViewManager.GameView.ViewModel.UpdateGrid(ViewManager.nextTetromino);
 				if (Input.GetKey(KeyCode.DownArrow)) ; 
             } else {
                 ViewManager.nextTetromino.transform.position += new Vector3(0, 1, 0);
-                ViewManager.GameView.ViewModel.recycleGhostTetromino(ViewManager.GameView.ghostTetromino); // 涉及事件的先后顺序，这里处理比较安全：确保在Tetromino之前处理
+                PoolHelper.recycleGhostTetromino(); // 涉及事件的先后顺序，这里处理比较安全：确保在Tetromino之前处理
                 // onTetrominoLand(); // check ????? 这里调这个是什么意思 ???
                 EventManager.Instance.FireEvent("land");
             }
@@ -147,7 +147,7 @@ namespace HotFix.Control {
             }
             if (!CheckIsValidPosition()) {
                 ViewManager.nextTetromino.transform.position += new Vector3(0, 1, 0);
-                ViewManager.GameView.ViewModel.recycleGhostTetromino(ViewManager.GameView.ghostTetromino);
+                PoolHelper.recycleGhostTetromino();
                 //onTetrominoLand();
                 EventManager.Instance.FireEvent("land");
 			}
@@ -287,278 +287,11 @@ namespace HotFix.Control {
             // FindObjectOfType<Game>().MoveZNeg(); // moveCanvas moves too
 
             if (CheckIsValidPosition()) {
-                ViewManager.GameView.ViewModel.UpdateGrid(ViewManager.GameView.nextTetromino);
+                ViewManager.GameView.ViewModel.UpdateGrid(ViewManager.nextTetromino);
             } else {
                 ViewManager.nextTetromino.transform.position += new Vector3(0, 0, 1);
                 // ViewManager.GameView.MoveZPos(); // moveCanvas moves too
             }
         }
-        
-        //public void MoveDelta(Vector3 delta) { 
-        //    //     if (delta != Vector3.zero) {
-        //    //         moveCommand = new MoveCommand(this, delta); // this: Tetromino as IEntity
-        //    //         _commandProcessor.ExecuteCommand(moveCommand);
-        //    //     }
-        //}
-        //public void RotateDelta(Vector3 delta) {
-        //    // if (delta != Vector3.zero) {
-        //    //     rotateCommand = new RotateCommand(this, delta); // this: Tetromino as IEntity
-        //    //     _commandProcessor.ExecuteCommand(rotateCommand);
-        //    // }
-        //}
-// 这是以前考虑延迟等写得相对质朴一点儿的写法,现几个调控变量还没有用上去        
-        // public void MoveXPos() { 
-        //     if (movedImmediateHorizontal) {
-        //         if (buttonDownWaitTimerHorizontal < buttonDownWaitMax) {
-        //             buttonDownWaitTimerHorizontal += Time.deltaTime;
-        //             return;
-        //         }
-        //         if (horizontalTimer < continuousHorizontalSpeed) {
-        //             horizontalTimer += Time.deltaTime;
-        //             return;
-        //         }
-        //     }
-        //     if (!movedImmediateHorizontal) 
-        //         movedImmediateHorizontal = true;
-        //     horizontalTimer = 0;
-        //     //transform.position += new Vector3(1, 0, 0);
-        // }
-        // public void MoveXNeg() { 
-        //     if (movedImmediateHorizontal) {
-        //         if (buttonDownWaitTimerHorizontal < buttonDownWaitMax) {
-        //             buttonDownWaitTimerHorizontal += Time.deltaTime;
-        //             return;
-        //         }
-        //         if (horizontalTimer < continuousHorizontalSpeed) {
-        //             horizontalTimer += Time.deltaTime;
-        //             return;
-        //         }
-        //     }
-        //     if (!movedImmediateHorizontal) 
-        //         movedImmediateHorizontal = true;
-        //     horizontalTimer = 0;
-        // }
-        // public void MoveZPos() { 
-        //     if (movedImmediateHorizontal) {
-        //         if (buttonDownWaitTimerHorizontal < buttonDownWaitMax) {
-        //             buttonDownWaitTimerHorizontal += Time.deltaTime;
-        //             return;
-        //         }
-        //         if (horizontalTimer < continuousHorizontalSpeed) {
-        //             horizontalTimer += Time.deltaTime;
-        //             return;
-        //         }
-        //     }
-        //     if (!movedImmediateHorizontal) 
-        //         movedImmediateHorizontal = true;
-        //     horizontalTimer = 0;
-        // }
-
-        // public void RotateXPos() { 
-        //     if (noRotationX) return;
-        //     if (limitRotation) {
-        //         if (transform.rotation.eulerAngles.x >= 90) {
-        //             transform.Rotate(-90, 0, 0);
-        //             rotateMinoOnly(-90, 0, 0);
-        //         } else {
-        //             transform.Rotate(90, 0, 0);
-        //             rotateMinoOnly(90, 0, 0);
-        //         }
-        //     } else {
-        //         transform.Rotate(90, 0, 0);
-        //         rotateMinoOnly(90, 0, 0);
-        //     }
-        //     if (CheckIsValidPosition()) {
-        //         ViewManager.GameView.UpdateGrid(ViewManager.GameView.nextTetromino);
-        //     } else { 
-        //         if (limitRotation) {
-        //             if (transform.rotation.eulerAngles.x >= 90) {
-        //                 transform.Rotate(-90, 0, 0);
-        //                 rotateMinoOnly(-90, 0, 0);
-        //             } else {
-        //                 transform.Rotate(90, 0, 0);
-        //                 rotateMinoOnly(90, 0, 0);
-        //             }
-        //         } else {
-        //             transform.Rotate(-90, 0, 0); // i changed here from 90 to -90 for fixing movement buttons
-        //             rotateMinoOnly(-90, 0, 0);
-        //         }
-        //     }
-        // }
-        // public void RotateXNeg() { // X axis
-        //     if (noRotationX) return;
-        //     if (limitRotation) {
-        //         if (transform.rotation.eulerAngles.x >= 90) {
-        //             transform.Rotate(90, 0, 0);
-        //             rotateMinoOnly(90, 0, 0);
-        //         } else {
-        //             transform.Rotate(-90, 0, 0);
-        //             rotateMinoOnly(-90, 0, 0);
-        //         }
-        //     } else {
-        //         transform.Rotate(-90, 0, 0);
-        //         rotateMinoOnly(-90, 0, 0);
-        //     }
-        //     if (CheckIsValidPosition()) {
-        //         ViewManager.GameView.UpdateGrid(ViewManager.GameView.nextTetromino);
-        //     } else { 
-        //         if (limitRotation) {
-        //             if (transform.rotation.eulerAngles.x >= 90) {
-        //                 transform.Rotate(90, 0, 0);
-        //                 rotateMinoOnly(90, 0, 0);
-        //             } else {
-        //                 transform.Rotate(-90, 0, 0);
-        //                 rotateMinoOnly(-90, 0, 0);
-        //             }
-        //         } else {
-        //             transform.Rotate(90, 0, 0); // -90
-        //             rotateMinoOnly(90, 0, 0);
-        //         }
-        //     }
-        // }
-        // public void RotateYPos() { 
-        //     if (noRotationY) return;
-        //     if (limitRotation) {
-        //         if (transform.rotation.eulerAngles.y >= 90) {
-        //             transform.Rotate(0, 90, 0);
-        //             rotateMinoOnly(0, 90, 0);
-        //         } else {
-        //             transform.Rotate(0, -90, 0);
-        //             rotateMinoOnly(0, -90, 0);
-        //         }
-        //     } else {
-        //         transform.Rotate(0, -90, 0);
-        //         rotateMinoOnly(0, -90, 0);
-        //     }
-		
-        //     if (CheckIsValidPosition()) {
-        //         ViewManager.GameView.UpdateGrid(ViewManager.GameView.nextTetromino);
-        //     } else { 
-        //         if (limitRotation) {
-        //             if (transform.rotation.eulerAngles.y >= 90) {
-        //                 transform.Rotate(0, 90, 0);
-        //                 rotateMinoOnly(0, 90, 0);
-        //             } else {
-        //                 transform.Rotate(0, -90, 0);
-        //                 rotateMinoOnly(0, -90, 0);
-        //             }
-        //         } else {
-        //             transform.Rotate(0, 90, 0);  //-90
-        //             rotateMinoOnly(0, 90, 0);
-        //         }
-        //     }
-        // }
-        // public void RotateYNeg() { 
-        //     if (noRotationY) return;
-        //     if (limitRotation) {
-        //         if (transform.rotation.eulerAngles.y >= 90) {
-        //             transform.Rotate(0, -90, 0);
-        //             rotateMinoOnly(0, -90, 0);
-        //         } else {
-        //             transform.Rotate(0, 90, 0);
-        //             rotateMinoOnly(0, 90, 0);
-        //         }
-        //     } else {
-        //         transform.Rotate(0, 90, 0);
-        //         rotateMinoOnly(0, 90, 0);
-        //     }
-        //     if (CheckIsValidPosition()) {
-        //         ViewManager.GameView.UpdateGrid(ViewManager.GameView.nextTetromino);
-        //     } else { 
-        //         if (limitRotation) {
-        //             if (transform.rotation.eulerAngles.y >= 90) {
-        //                 transform.Rotate(0, -90, 0);
-        //                 rotateMinoOnly(0, -90, 0);
-        //             } else {
-        //                 transform.Rotate(0, 90, 0);
-        //                 rotateMinoOnly(0, 90, 0);
-        //             }
-        //         } else {
-        //             transform.Rotate(0, -90, 0); 
-        //             rotateMinoOnly(0, -90, 0);
-        //         }
-        //     }
-        // }
-        // public void RotateZPos() { 
-        //     if (noRotationZ) return;
-        //     if (limitRotation) {
-        //         if (transform.rotation.eulerAngles.z >= 90) {
-        //             transform.Rotate(0, 0, -90);
-        //             rotateMinoOnly(0, 0, -90);
-        //         } else {
-        //             transform.Rotate(0, 0, 90);
-        //             rotateMinoOnly(0, 0, 90);
-        //         }
-        //     } else {
-        //         transform.Rotate(0, 0, 90);
-        //         rotateMinoOnly(0, 0, 90);
-        //     }
-		
-        //     if (CheckIsValidPosition()) {
-        //         ViewManager.GameView.UpdateGrid(ViewManager.GameView.nextTetromino);
-        //     } else { 
-        //         if (limitRotation) {
-        //             if (transform.rotation.eulerAngles.z >= 90) {
-        //                 transform.Rotate(0, 0, -90);
-        //                 rotateMinoOnly(0, 0, -90);
-        //             } else {
-        //                 transform.Rotate(0, 0, 90);
-        //                 rotateMinoOnly(0, 0, 90);
-        //             }
-        //         } else {
-        //             transform.Rotate(0, 0, -90); 
-        //             rotateMinoOnly(0, 0, -90);
-        //         }
-        //     }
-        // }
-        // public void RotateZNeg() { // Z axis
-        //     if (noRotationZ) return;
-        //     if (limitRotation) {
-        //         if (transform.rotation.eulerAngles.z >= 90) {
-        //             transform.Rotate(0, 0, 90);
-        //             rotateMinoOnly(0, 0, 90);
-        //         } else {
-        //             transform.Rotate(0, 0, -90);
-        //             rotateMinoOnly(0, 0, -90);
-        //         }
-        //     } else {
-        //         transform.Rotate(0, 0, -90);
-        //         rotateMinoOnly(0, 0, -90);
-        //     }
-        //     if (CheckIsValidPosition()) {
-        //         ViewManager.GameView.UpdateGrid(ViewManager.GameView.nextTetromino);
-        //     } else { 
-        //         if (limitRotation) {
-        //             if (transform.rotation.eulerAngles.z >= 90) {
-        //                 transform.Rotate(0, 0, 90);
-        //                 rotateMinoOnly(0, 0, 90);
-        //             } else {
-        //                 transform.Rotate(0, 0, -90);
-        //                 rotateMinoOnly(0, 0, -90);
-        //             }
-        //         } else {
-        //             transform.Rotate(0, 0, 90); // -90
-        //             rotateMinoOnly(0, 0, 90);
-        //         }
-        //     }
-        // }
-        // public bool limitRotation = false; // No-Limited Rotation Control
-        // public bool noRotationX = false;
-        // public bool noRotationY = false;
-        // public bool noRotationZ = false;
-        // private float continuousVerticalSpeed = 0.05f; // the speed at which the tetromino will move when the down button is held down
-        // private float continuousHorizontalSpeed = 0.1f;// the speed at which the tetromino will move when the left or right buttons are held down
-        // private float buttonDownWaitMax = 0.2f;        // how long to wait before the tetromino recognizeds that a button is being held down
-        // private float verticalTimer = 0;
-        // private float horizontalTimer = 0;
-        // private float buttonDownWaitTimerHorizontal = 0;
-        // private float buttonDownWaitTimerVertical = 0;
-        // private bool movedImmediateHorizontal = false;
-        // private bool movedImmediateVertical = false;
-        // private int touchSensitivityHorizontal = 8;
-        // private int touchSensitivityVertical = 4;
-        // private Vector3 previousUnitPosition = Vector3.zero; // 不受影响？
-        // private Vector3 direction = Vector3.zero;
-        // private bool moved = false; // this one used for android touch
     }
 }

@@ -56,15 +56,13 @@ namespace Framework.Core {
             appDomain.DelegateManager.RegisterFunctionDelegate<int, string>();
             appDomain.DelegateManager.RegisterMethodDelegate<string>();
             appDomain.DelegateManager.RegisterMethodDelegate<int, int>();
+
 // 感觉这一步的加虽然消除了一个运行时错误,但内存的运行效率有可能是降低了: 还是必要的,至少是它不再报错了
 // 参照官方一点儿的例子,改成下面的相对高效的,原理在于不再频繁地GC Alloc
             appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Vector3, UnityEngine.Vector3>();
             appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Transform, UnityEngine.Transform>();
             appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Quaternion, UnityEngine.Quaternion>();
-
             appDomain.DelegateManager.RegisterMethodDelegate<ILRuntime.Runtime.Intepreter.ILTypeInstance>();
-            //appDomain.DelegateManager.RegisterMethodDelegate<deepwaterooo.tetris3d.Events.TetrominoMoveEventInfo>();
-            //appDomain.DelegateManager.RegisterMethodDelegate<deepwaterooo.tetris3d.Events.TetrominoRotateEventInfo>();
 
             appDomain.DelegateManager.RegisterMethodDelegate<List<int>, List<int>>();
             appDomain.DelegateManager.RegisterMethodDelegate<string, string>();
@@ -89,18 +87,6 @@ namespace Framework.Core {
             appDomain.DelegateManager.RegisterMethodDelegate<Exception>();
             appDomain.DelegateManager.RegisterFunctionDelegate<GameObject, GameObject>();
             appDomain.DelegateManager.RegisterFunctionDelegate<ILTypeInstance, ILTypeInstance, int>();
-
-            //appDomain.DelegateManager.RegisterDelegateConvertor<deepwaterooo.tetris3d.Events.EventManager.EventListener<deepwaterooo.tetris3d.Events.TetrominoRotateEventInfo>>((act) => {
-            //       return new deepwaterooo.tetris3d.Events.EventManager.EventListener<deepwaterooo.tetris3d.Events.TetrominoRotateEventInfo>((el) => {
-            //               ((Action<deepwaterooo.tetris3d.Events.TetrominoRotateEventInfo>)act)(el);
-            //           });
-            //   });
-            //appDomain.DelegateManager.RegisterDelegateConvertor<deepwaterooo.tetris3d.Events.EventManager.EventListener<deepwaterooo.tetris3d.Events.TetrominoMoveEventInfo>>((act) => {
-            //       return new deepwaterooo.tetris3d.Events.EventManager.EventListener<deepwaterooo.tetris3d.Events.TetrominoMoveEventInfo>((el) => {
-            //               ((Action<deepwaterooo.tetris3d.Events.TetrominoMoveEventInfo>)act)(el);
-            //           });
-            //   });
-            
             appDomain.DelegateManager.RegisterDelegateConvertor<UnityAction>((action) => {
                return new UnityAction(() => {
                    ((Action)action)();
@@ -177,7 +163,7 @@ namespace Framework.Core {
                 if (i.Name == "CreateInstance" && i.IsGenericMethodDefinition) 
                     appDomain.RegisterCLRMethodRedirection(i, CreateInstance); // 方法重定向,到下面的自定义的方法中来
             }
-// 我觉得这里只定义这一类的方法可能不够用,按照网上的把AddComponent<>() GetComponent<>()也都加上                
+// 这里只定义这一类的方法不够用,把AddComponent<>() GetComponent<>()也都加上                
             var arr = typeof(GameObject).GetMethods();
             foreach (var k in arr) {
                 if (k.Name == "AddComponent" && k.GetGenericArguments().Length == 1) 
@@ -192,7 +178,7 @@ namespace Framework.Core {
             appDomain.RegisterCrossBindingAdaptor(new UnityGuiViewAdapter());
             appDomain.RegisterCrossBindingAdaptor(new ModuleBaseAdapter());
             appDomain.RegisterCrossBindingAdaptor(new IEnumeratorObjectAdaptor());
-            appDomain.RegisterCrossBindingAdaptor(new InterfaceCrossBindingAdaptor()); // <<<<<<<<<<<<<<<<<<<< 
+            appDomain.RegisterCrossBindingAdaptor(new InterfaceCrossBindingAdaptor()); // <<<<<<<<<<<<<<<<<<<< TODO: 想把这块儿再理解得透彻一点儿
             appDomain.RegisterCrossBindingAdaptor(new MonoBehaviourAdapter());
         }
         
@@ -318,3 +304,4 @@ namespace Framework.Core {
         }
     }
 }
+

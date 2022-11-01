@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using deepwaterooo.tetris3d;
 using Framework.Util;
 using HotFix.UI;
 using UnityEngine;
@@ -21,6 +22,7 @@ namespace HotFix.Control {
         private static GameObject tetroParent = null;
 
         private static Vector3 defaultPos = new Vector3(-100, -100, -100); // 不同类型的起始位置不一样(可否设置在预设里呢>??)
+        private static Vector3 previewTetrominoScale = new Vector3(6f, 6f, 6f); // previewTetromino Scale (7,7,7)
 
         // public Material [] materials; // [red, green, blue, yellow]
         // public Material [] colors;
@@ -31,31 +33,29 @@ namespace HotFix.Control {
         }
 
         public static void fillPool(Transform prefab) {
-            string name = prefab.gameObject.name;
-            // Debug.Log(TAG + " name: " + name);
-            // if (child.gameObject.name.StartsWith("mino"))
-            //     type = child.GetComponent<MinoType>();
-            // else type = child.GetComponent<TetrominoType>();
-            minosDic.Add(name, prefab.gameObject);
+            string type, name = prefab.gameObject.name;
+            if (name.StartsWith("mino"))
+                type = prefab.GetComponent<deepwaterooo.tetris3d.MinoType>().type;
+            else type = prefab.GetComponent<TetrominoType>().type;
+            minosDic.Add(type, prefab.gameObject);
             Stack<GameObject> stack = new Stack<GameObject>();
             bool isTetro = name.StartsWith("Tetromino");
             bool isGhost = name.StartsWith("shadow");
             for (int i = 0; i < 10; i++) {
-				GameObject tmp = GameObject.Instantiate(prefab.gameObject).gameObject;
-                tmp.name = name;
+				GameObject oneInstance = GameObject.Instantiate(prefab.gameObject).gameObject;
+                oneInstance.name = name;
                 if (isTetro) {
-                    ComponentHelper.AddTetroComponent(tmp);
-                    Tetromino tetromino = ComponentHelper.GetTetroComponent(tmp);
-                    ComponentHelper.GetTetroComponent(tmp).enabled = false;
+                    ComponentHelper.AddTetroComponent(oneInstance);
+                    Tetromino tetromino = ComponentHelper.GetTetroComponent(oneInstance);
+                    ComponentHelper.GetTetroComponent(oneInstance).enabled = false;
                 } else if (isGhost) {
-                    ComponentHelper.AddGhostComponent(tmp); // 对阴影方块砖来说,它不需要失活,它是拿来即用的
-                    // ComponentHelper.GetGhostComponent(tmp).enabled = false;
+                    ComponentHelper.AddGhostComponent(oneInstance); 
                 }
-                tmp.transform.SetParent(ViewManager.tetrosPool.transform, true); 
-                tmp.SetActive(false);
-                stack.Push(tmp);
+                oneInstance.transform.SetParent(ViewManager.tetrosPool.transform, true); 
+                oneInstance.SetActive(false);
+                stack.Push(oneInstance);
             }
-            pool.Add(name, stack);
+            pool.Add(type, stack);
         }
 
         public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3 localScale) {
@@ -112,6 +112,32 @@ namespace HotFix.Control {
             }
             ReturnToPool(gameObject, type);
         }
+
+        public static void preparePreviewTetrominoRecycle(GameObject go) { 
+            go.transform.localScale -= previewTetrominoScale;
+            go.transform.position = Vector3.zero;
+            go.transform.rotation = Quaternion.identity;
+            go.SetActive(false);
+        }
+
+        public static void recycleNextTetromino() { // 里面的参数可以去掉
+            if (ViewManager.nextTetromino != null) {
+                ViewManager.nextTetromino.tag = "Untagged";
+                bool isEnabled = ComponentHelper.GetTetroComponent(ViewManager.nextTetromino); 
+                ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).enabled = false;
+                // resetGridAfterDisappearingNextTetromino(ViewManager.nextTetromino);  // ViewModel.放那里面去
+                if (ViewManager.nextTetromino.transform.childCount == 4) {
+                    ReturnToPool(ViewManager.nextTetromino, ViewManager.nextTetromino.GetComponent<TetrominoType>().type);
+                } else
+                    GameObject.Destroy(ViewManager.nextTetromino.gameObject);
+            }
+        }
+
+        public static void recycleGhostTetromino() {
+            if (ViewManager.ghostTetromino != null) {
+                ViewManager.ghostTetromino.tag = "Untagged";
+                ReturnToPool(ViewManager.ghostTetromino, ViewManager.ghostTetromino.GetComponent<TetrominoType>().type);
+            }
+        }
     }
 }
-

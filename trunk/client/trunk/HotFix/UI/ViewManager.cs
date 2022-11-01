@@ -201,17 +201,7 @@ namespace HotFix.UI {
                return _settingsView;
            }
         }
-        // static BgnNewContinueView _bgnnewcontinueView; // 这个会被移入到MenuView里去当个Panel子视图
-        // public static BgnNewContinueView BgnNewContinueView {
-        //     get {
-        //         if (_bgnnewcontinueView == null) {
-        //             _bgnnewcontinueView = new BgnNewContinueView();
-        //             _bgnnewcontinueView.BindingContext = new BgnNewContinueViewModel();
-        //             views.Add(_bgnnewcontinueView.ViewName, _bgnnewcontinueView);
-        //         }
-        //         return _bgnnewcontinueView;
-        //     }
-        // }
 #endregion
     }
 }
+

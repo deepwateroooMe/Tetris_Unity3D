@@ -12,12 +12,15 @@ namespace HotFix.Control {
 
 // 普通代理: 其实是说,如果触发了el事件,回调这个EventListener(EventInfo el)方法,是触发事件之后的回调;是以参数和返回类型来区分代理之间的不同的
         public delegate void EventListener(EventInfo el); // 普通代理: 给出普通代理的定义               
+
 // 泛型代理，带一个EventInfo参数,这样就可以处理所有自定义事件了继承子类了
         public delegate void EventListener<T>(T el) where T : EventInfo; // 转化为泛型代理
 
 // 字典:它的銉是以热更新工程中定义过的EventInfo的子类类型相区分;这个字典的键的个数会比较少(因为整个项目中一个类型只占一个键与条款)
         public Dictionary<System.Type, EventListener> delegatesMap;
-// 字典:是对不同类型事件代理的管理;热更新项目中定义过的不同事件代理作键(EventListener<T>)(那是这个字典的键是以代理相区分,就是不同代理方法的参数与返回类型相区分), 值为一个这样的代理EventListener<T>;这个字典键的个数会略少
+
+// 字典:是对不同类型事件代理的管理;热更新项目中定义过的不同事件代理作键(EventListener<T>)(那是这个字典的键是以代理相区分,就是不同代理方法的参数与返回类型相区分,应该还有其它),
+// 值为一个这样的代理EventListener<T>;这个字典键的个数会很多,基本每注册一个回调就填加一个键
         public Dictionary<System.Delegate, EventListener> delegateLookupMap;
 
         private Vector3 delta;
@@ -33,7 +36,7 @@ namespace HotFix.Control {
         
         public void Awake() {
             Debug.Log(TAG + " Awake");
-            delegatesMap = new Dictionary<System.Type, EventListener>();  // eventListeners;     
+            delegatesMap = new Dictionary<System.Type, EventListener>();  
             delegateLookupMap = new Dictionary<System.Delegate, EventListener>();
             delta = Vector3.zero;
 
@@ -49,14 +52,15 @@ namespace HotFix.Control {
         }
 
         public void RegisterListener<T>(EventListener<T> listener) where T : EventInfo { 
-// + ", callback: " + listener: 是ILRuntime热更新里面所用的Action什么的not-read friendly
+            // + ", callback: " + listener: 是ILRuntime热更新里面所用的Action什么的not-read friendly
             Debug.Log(TAG + ": RegisterListener(): T: " + typeof(T)); 
-            EventListener internalDelegate = (el) => {
-                //Debug.Log(TAG + " RegisterListener<T>:　(typeof(T)): " + typeof(T)); // EventManager (typeof(T)): HotFix.Control.CanvasToggledEventInfo
+            EventListener internalDelegate = (el) => { // 注意: 即便不同类(不同对象)对所感兴趣的同类事件的监听回调方法同名,这里仍然会被定义为不同的键
+                // Debug.Log(TAG + " RegisterListener<T>:　(typeof(T)): " + typeof(T)); // EventManager (typeof(T)): HotFix.Control.CanvasToggledEventInfo
                 listener((T)el);
             };
 
-// 代理类型(EventListener<T>)已经存在，且值(所有注册过的回调方法,唯一一个)相等，那就不需要再做什么,直接返回
+            // 代理类型(EventListener<T>)已经存在，且值(所有注册过的回调方法,唯一一个)相等，那就不需要再做什么,直接返回
+// TODO:我认为我写得很有条理很干净的游戏逻辑可以跳过这一步,可以晚点儿再测一下            
             if (delegateLookupMap.ContainsKey(listener) && delegateLookupMap[listener] == internalDelegate) {
                 Debug.Log(TAG + " RegisterListener<T> CONTAINED & RETURNS T.TAG: " + typeof(T)); // 可是为什么我这个消息没有打印出来呢?
                 return;
@@ -68,8 +72,8 @@ namespace HotFix.Control {
                 delegatesMap[typeof(T)] = tmpDelegate += internalDelegate; // 那么对于当前键，其值的内容再添加一个新的代理监听监听回调(注册回调方法的时候也是这么写的)
             } else
                 delegatesMap[typeof(T)] = internalDelegate;
-
-            Debug.Log(TAG + " RegisterListener() delegatesMap.Count after: " + delegatesMap.Count + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
+            Debug.Log(TAG + " RegisterListener() delegatesMap.Count after: " + delegatesMap.Count
+                      + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
         }
         
         public void UnregisterListener<T>(EventListener<T> listener) where T : EventInfo { // System.Action 这里并没有能真正移除掉监听，需要再理解、更改
@@ -86,7 +90,8 @@ namespace HotFix.Control {
                 }
                 delegateLookupMap.Remove(listener);
             }
-            Debug.Log(TAG + " UnregisterListener() delegatesMap.Count after: " + delegatesMap.Count + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
+            Debug.Log(TAG + " UnregisterListener() delegatesMap.Count after: " + delegatesMap.Count
+                      + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
         }
 // 事件:不带任何增量信息的
         public void FireEvent(string type) {
@@ -179,3 +184,6 @@ namespace HotFix.Control {
         }
     }
 }
+
+
+

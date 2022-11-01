@@ -15,6 +15,7 @@ using ILRuntime.CLR.Method;
 public class MonoBehaviourAdapter : CrossBindingAdaptor {
     private const String TAG = "MonoBehaviourAdapter";
 
+// 三个公用接口类的公用方法调用     
     public override Type BaseCLRType {
         get {
             return typeof(MonoBehaviour);
@@ -28,6 +29,7 @@ public class MonoBehaviourAdapter : CrossBindingAdaptor {
     public override object CreateCLRInstance(ILRuntime.Runtime.Enviorment.AppDomain appdomain, ILTypeInstance instance) {
         return new Adaptor(appdomain, instance);
     }
+
     //为了完整实现MonoBehaviour的所有特性，这个Adapter还得扩展，这里只抛砖引玉，只实现了最常用的Awake, Start和Update
     public class Adaptor : MonoBehaviour, CrossBindingAdaptorType {
 
@@ -39,7 +41,6 @@ public class MonoBehaviourAdapter : CrossBindingAdaptor {
             this.appdomain = appdomain;
             this.instance = instance;
         }
-
         public ILTypeInstance ILInstance { get { return instance; } set { instance = value; } }
         public ILRuntime.Runtime.Enviorment.AppDomain AppDomain { get { return appdomain; } set { appdomain = value; } }
 
@@ -73,6 +74,7 @@ public class MonoBehaviourAdapter : CrossBindingAdaptor {
                 }
             }
         }
+
         IMethod mStartMethod;
         bool mStartMethodGot;
         public void Start() {
@@ -109,6 +111,7 @@ public class MonoBehaviourAdapter : CrossBindingAdaptor {
                 appdomain.Invoke(mOnDisableMethod, instance, null);
             }
         }
+
         IMethod mOnDestroyMethod;
         bool mOnDestroyMethodGot;
         void OnDestroy() {
@@ -121,6 +124,7 @@ public class MonoBehaviourAdapter : CrossBindingAdaptor {
                 appdomain.Invoke(mOnDestroyMethod, instance, null);
             }
         }
+
         public override string ToString() {
             IMethod m = appdomain.ObjectType.GetMethod("ToString", 0);
             m = instance.Type.GetVirtualMethod(m);
@@ -131,7 +135,3 @@ public class MonoBehaviourAdapter : CrossBindingAdaptor {
         }
     }
 }
-
-
-
-

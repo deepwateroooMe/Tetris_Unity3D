@@ -21,7 +21,7 @@ namespace HotFix.Control {
         private Button ZNegBtn;
 
         public void Awake() {
-            Debug.Log(TAG + " Awake");
+            // Debug.Log(TAG + " Awake");
             delta = Vector3.zero;
 // 6 rotate Buttons: 想当然地要实现至少三组不同的旋转及位置(可以不实现三组;
 // 也可以只用一组,但需要更为精确的摆放,以便他们也可以旋转,让他们的显示与否变得更聪明一点儿)
@@ -39,10 +39,11 @@ namespace HotFix.Control {
             ZNegBtn.onClick.AddListener(OnClickZNegButton);
         }
         public void OnEnable() {
-            Debug.Log(TAG + " onEnable");
+            // Debug.Log(TAG + " onEnable");
             Start();
         }
-        public void Start() {
+// 希望把每个类里所注册的事件及个数等固定,这件再有BUG的时候,会对自己的游戏逻辑比较熟悉
+        public void Start() { 
             Debug.Log(TAG + " Start");
 // Canvas: Toggled
             EventManager.Instance.RegisterListener<CanvasToggledEventInfo>(onCanvasToggled); 
@@ -113,4 +114,3 @@ namespace HotFix.Control {
         }
 	}
 }
-

@@ -1,5 +1,7 @@
 ﻿using Framework.MVVM;
 using HotFix.Control;
+using System.IO;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,6 +11,7 @@ namespace HotFix.UI {
     // 我认为是在这个游戏菜单视图会比较有停顿,所以把游戏主视图里需要用到的预设资源读取准备工作放在这进而进行
 
     public class MenuView : UnityGuiView {
+        private const string TAG = "MenuView";
         public override string BundleName {
             get {
                 return "ui/view/menuview";
@@ -46,6 +49,12 @@ namespace HotFix.UI {
         Toggle fivToggle;
         Button conBtn;     // CONFIRM
 
+        GameObject newContinuePanel;
+        Button newButton; // New game
+        Button conButton; // Load saved game 
+        Button canButton; // Cancel
+
+        
         protected override void OnInitialize() {
             base.OnInitialize();
 
@@ -63,8 +72,16 @@ namespace HotFix.UI {
             fivToggle = GameObject.FindChildByName("Toggle5").GetComponent<Toggle>();
             conBtn = GameObject.FindChildByName("conBtn").GetComponent<Button>();
             conBtn.onClick.AddListener(OnClickConButton);
-        }
 
+            newContinuePanel = GameObject.FindChildByName("BgnNewContinueView");
+            newButton = GameObject.FindChildByName("newBtn").GetComponent<Button>();
+            newButton.onClick.AddListener(OnClickNewGameButton);
+            conButton = GameObject.FindChildByName("conBtn").GetComponent<Button>();
+            conButton.onClick.AddListener(OnClickContinueButton);
+            canButton = GameObject.FindChildByName("cancelBtn").GetComponent<Button>();
+            canButton.onClick.AddListener(OnClickCancelButton);
+        }
+// Main MenuView panel
         void OnClickEduButton() {
             menuViewPanel.SetActive(false);
             educaModesViewPanel.SetActive(true);
@@ -80,7 +97,7 @@ namespace HotFix.UI {
             EventManager.Instance.FireEvent("entergame");
             Hide();
         }
-
+// EducaModesPanel
         void ActiveToggle() {
             if (thrToggle.isOn) 
                 ViewModel.gridWidth = 3;
@@ -88,26 +105,48 @@ namespace HotFix.UI {
                 ViewModel.gridWidth = 4;
             else if (fivToggle.isOn) 
                 ViewModel.gridWidth = 5;
-// TODO: 这里这个视图的加载之后再考虑,太简单            
-            // if (isSavedFileExist()) { 
-            //     easyModeToggleSizePanel.SetActive(false);
-            //     newGameOrLoadSavedGamePanel.SetActive(true);
-            // } else
-            //     LoadScene("Main");
         }
-
         void OnClickConButton() {
             // 检查是否存有先前游戏进度数据,有则弹窗;无直接进游戏界面,这一小步暂时跳过
             ActiveToggle();
-            // 感觉这里有个更直接快速的但凡一toggle某个的时候就自动触发的观察者模式,改天再写
-            
-            EventManager.Instance.FireEvent("entergame");
-            ViewManager.GameView.Reveal();
-
-// 需要激活,方便从其它视图回退到主菜单视图            
-            menuViewPanel.SetActive(true);
+// TODO: 感觉这里有个更直接快速的但凡一toggle某个的时候就自动触发的观察者模式,改天再写
             educaModesViewPanel.SetActive(false);
-            Hide(); // 这里没有Hide住应该是
+// TODO: 检查客户端是否存有同户的进展文件:有显示提示框,提示是否需要加载保存的进展;没有直接进入新游戏视图
+            if (isSavedFileExist()) {
+                newContinuePanel.SetActive(true);
+            } else {
+                prepareEnteringNewGame();
+            }
+        }
+// New game or continue saved game panel
+        void OnClickNewGameButton() { // Start New game
+            prepareEnteringNewGame();
+        }
+        void OnClickContinueButton() { // Load Saved Game
+// TODO: load saved game
+        }
+        void OnClickCancelButton() { // back to main menu
+            newContinuePanel.SetActive(false);
+            educaModesViewPanel.SetActive(true);
+        }
+        void prepareEnteringNewGame() {
+            EventManager.Instance.FireEvent("entergame");
+            ViewManager.GameView.Reveal(); // 放在前面是因为调用需要一点儿时间
+            menuViewPanel.SetActive(true); // 需要激活,方便从其它视图回退到主菜单视图
+            newContinuePanel.SetActive(false);
+            Hide(); 
+        }
+        private bool isSavedFileExist() {
+            Debug.Log(TAG + ": isSavedFileExist()");
+            StringBuilder currentPath = new StringBuilder("");
+            if (ViewModel.gameMode > 0)
+                currentPath.Append(Application.persistentDataPath + "/" + ViewModel.saveGamePathFolderName + "/game.save");
+            else 
+                currentPath.Append(Application.persistentDataPath + "/" + ViewModel.saveGamePathFolderName + "/grid" + ViewModel.gridWidth + "/game.save");
+            Debug.Log(TAG + " currentPath: " + currentPath.ToString()); 
+            if (File.Exists(currentPath.ToString()))
+                return true;
+            return false;
         }
     }
 }

@@ -19,7 +19,7 @@ namespace HotFix.Control {
         private Vector3 delta;
         
         public void Awake() {
-            Debug.Log(TAG + " Awake");
+            // Debug.Log(TAG + " Awake");
             delta = Vector3.zero;
             left = gameObject.FindChildByName("leftBtn");
             right = gameObject.FindChildByName("rightBtn");
@@ -31,14 +31,14 @@ namespace HotFix.Control {
             down.GetComponent<Button>().onClick.AddListener(OnClickDownButton);
         }
 
-        public void OnEnable() {
-            Debug.Log(TAG + " OnEnable");
-            // 在ViewManager中第一次设置这个对象SetActive(false)的时候, OnEnable()没能调用,导致注册监听会容易不成功         
-            Start(); // 借一步调用,能够保证监听注册成功
-        }
-
 // 在Unity3D中，实际上 Start 函数只在脚本运行时，运行一次，然后便不再执行此函数，
 // 那么如何能够多次使用呢？这里实际上用了一个讨巧的方法，就是利用  OnEnable 函数。
+        public void OnEnable() {
+            // Debug.Log(TAG + " OnEnable");
+            // 在ViewManager中第一次设置这个对象SetActive(false)的时候, OnEnable()没能调用,导致注册监听会容易不成功         
+            Start(); // 借一步调用,能够确保保证监听注册成功
+        }
+
         public void Start() { 
             Debug.Log(TAG + " Start");
 // Canvas: Toggled
@@ -46,8 +46,9 @@ namespace HotFix.Control {
 // Tetrominon: Spawned, Move, Rotate, Land,
             EventManager.Instance.RegisterListener<TetrominoSpawnedEventInfo>(onActiveTetrominoSpawn); 
             EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
-            EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate); 
-            EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 
+            // EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate); 
+            EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
+// TODO: onUndoGame: SetActive(false);
         }
 
 // [阴影会自动跟随;] 游戏视图模型会需要更新表格; 方块砖需要移动; 音频管理器需要操作背景音乐
@@ -82,9 +83,9 @@ namespace HotFix.Control {
                 ViewManager.moveCanvas.gameObject.transform.position += new Vector3(0, info.delta.y, 0);
         }
 
-        void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
-            // Debug.Log(TAG + " onActiveTetrominoRotate");
-        }
+        // void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
+        //     // Debug.Log(TAG + " onActiveTetrominoRotate");
+        // }
 
         void onActiveTetrominoLand(TetrominoLandEventInfo info) {
             Debug.Log(TAG + " onActiveTetrominoLand");
@@ -105,7 +106,7 @@ namespace HotFix.Control {
 // Tetrominon: Spawned, Move, Rotate, Land,
             EventManager.Instance.UnregisterListener<TetrominoSpawnedEventInfo>(onActiveTetrominoSpawn); 
             EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
-            EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate); 
+            // EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate); 
             EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 
         }
     }
