@@ -157,17 +157,6 @@ namespace HotFix.UI {
         }
 #endregion
 #region Views
-        static BtnsCanvasView _btnscanvasView;
-        public static BtnsCanvasView BtnsCanvasView {
-            get {
-                if (_btnscanvasView == null) {
-                    _btnscanvasView = new BtnsCanvasView();
-                    _btnscanvasView.BindingContext = new BtnsCanvasViewModel();
-                    views.Add(_btnscanvasView.ViewName, _btnscanvasView);
-                }
-                return _btnscanvasView;
-            }
-        }
         static MenuView _menuView;
         public static MenuView MenuView {
             get {
@@ -204,4 +193,3 @@ namespace HotFix.UI {
 #endregion
     }
 }
-

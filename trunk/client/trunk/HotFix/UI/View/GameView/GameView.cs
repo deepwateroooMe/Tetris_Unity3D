@@ -81,6 +81,9 @@ namespace HotFix.UI {
         public bool saveForUndo = true;
 
         private static GameObject tmpTetro; // TODO: why static ?
+
+        private bool isMoveValid = false;
+        private bool isRotateValid = false;
         
         public void SpawnnextTetromino() {
             Debug.Log(TAG + ": SpawnnextTetromino()");
@@ -256,22 +259,6 @@ namespace HotFix.UI {
             }
         }
 
-        public void onActiveTetrominoLand(TetrominoLandEventInfo info) {
-            Debug.Log(TAG + ": onActiveTetrominoLand()");
-            //MoveUp();
-            ViewModel.onActiveTetrominoLand(info, ViewManager.nextTetromino);
-// 更好的办法应该是前面定义过的 BindableProperty<IType>,对方块砖的基类和扩展类分别作出不同的实现,来解除偶合            
-            PoolHelper.recycleGhostTetromino(); // 放这里的主要原因是需要传参数
-            // // SaveGameEventInfo fire here 
-            // saveGameInfo = new SaveGameEventInfo();
-            // EventManager.Instance.FireEvent(saveGameInfo);
-            // change an approach: it is unnessary and do NOT apply delegates and events here
-            // onGameSave();
-            DisableMoveRotationCanvas();
-            if (((MenuViewModel)ViewModel.ParentViewModel).gameMode != 0) 
-                SpawnnextTetromino();  
-        }
-        
         public void onUndoGame() { // 分一部分的逻辑到视图模型中去
             Debug.Log(TAG + ": onUndoGame()");
             if (ViewModel.buttonInteractableList[3] == 0) return;
@@ -495,7 +482,9 @@ namespace HotFix.UI {
         void OnClickUndButton() {
             // 类似的逻辑下发数据,并由数据驱动刷新UI
         }
-        void OnClickFalButton() {
+        void OnClickFalButton() { // SlamDown FallFast
+            Debug.Log(TAG + " OnClickFalButton");
+            ViewModel.SlamDown();
         }
         public void onSwapPreviewTetrominos () { // 这里需要下发指令到视图数据层,并根据随机数生成的新的tetromino来重新刷新UI
             Debug.Log(TAG + " onSwapPreviewTetrominos");
@@ -546,22 +535,45 @@ namespace HotFix.UI {
         }
 #endregion
 
+// TODO: 这个系统是,4+6个按钮触发事件(会有假阳性,会误播背景音乐),先发送所有事件,再接收后才判断是否合理,只有背景音乐受影响
 #region eventsCallbacks
+// 因为ViewManager.nextTetromino是静态的,将相关逻辑移到这个类里来管理, 不可以这样      
         void onActiveTetrominoMove(TetrominoMoveEventInfo info) { 
             Debug.Log(TAG + " onActiveTetrominoMove");
-// TODO: 这里牵线搭桥的写法是对性能的极大浪费,可以简化步骤,直接放入GameViewModel中管理,省去来回调用
-            if (ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).IsMoveValid) { // TODO
-                // if (ViewManager.nextTetromino.GetComponent<Tetromino>().IsMoveValid) {
-                ViewModel.UpdateGrid(ViewManager.nextTetromino);
+            ViewManager.nextTetromino.transform.position += info.delta;
+            isMoveValid = ViewModel.CheckIsValidPosition();
+            // if (isMoveValid) { // 这里下移相比于平移可以再简化优化一下?
+            //     ViewManager.GameView.ViewModel.UpdateGrid(ViewManager.nextTetromino); // ???
+            // } else {
+            if (!isMoveValid) {
+                ViewManager.nextTetromino.transform.position -= info.delta;
             }
         }
         void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
             // Debug.Log(TAG + ": onActiveTetrominoRotate()");
-// TODO: 这里面的逻辑需要修改            
-            if (ViewManager.nextTetromino.GetComponent<Tetromino>().IsRotateValid) {
-                ViewModel.UpdateGrid(ViewManager.nextTetromino); 
+            ViewManager.nextTetromino.transform.Rotate(info.delta);
+            if (ViewModel.CheckIsValidPosition()) {
+                isRotateValid = true;
+                // ViewModel.UpdateGrid(ViewManager.nextTetromino); 
+            } else {
+                ViewManager.nextTetromino.transform.Rotate(Vector3.zero - info.delta);
             }
         }
+        public void onActiveTetrominoLand(TetrominoLandEventInfo info) {
+            Debug.Log(TAG + ": onActiveTetrominoLand()");
+            // ViewModel.MoveUp(); // 把两块画布往上移动一格, 会不会比较快一点儿呢?
+            ViewModel.onActiveTetrominoLand(info, ViewManager.nextTetromino);
+            PoolHelper.recycleGhostTetromino(); // 放这里的主要原因是需要传参数
+// 保存游戏进展 
+            // // SaveGameEventInfo fire here 
+            // saveGameInfo = new SaveGameEventInfo();
+            // EventManager.Instance.FireEvent(saveGameInfo);
+            // change an approach: it is unnessary and do NOT apply delegates and events here
+            // onGameSave();
+            if (((MenuViewModel)ViewModel.ParentViewModel).gameMode != 0) 
+                SpawnnextTetromino();  
+        }
+
 #endregion
         
 #region Initialize
@@ -603,6 +615,7 @@ namespace HotFix.UI {
             swaBtn.onClick.AddListener(onSwapPreviewTetrominos);
 
             falBtn = GameObject.FindChildByName("falBtn").GetComponent<Button>();
+            // falBtn.onClick.AddListener(ViewModel.SlamDown);
             falBtn.onClick.AddListener(OnClickFalButton);
             undBtn = GameObject.FindChildByName("undBtn").GetComponent<Button>();
             undBtn.onClick.AddListener(OnClickUndButton);
@@ -715,7 +728,7 @@ namespace HotFix.UI {
 //             if (ViewManager.nextTetromino != null && ViewManager.nextTetromino.activeSelf) {// 必须当前有正在运行的方块砖
 //                 // Helpers.resetTrans(ViewManager.nextTetromino, cur);
 //                 ViewManager.nextTetromino.transform.position = cur.position;
-//                 Debug.Log(TAG + " ViewManager.nextTetromino.gameObject.transfom.position: " + ViewManager.nextTetromino.gameObject.transform.position);
+//                 Debug.Log(TAG + " ViewManager.nextTetromino.gameObject.transform.position: " + ViewManager.nextTetromino.gameObject.transform.position);
 //             }
 //         }
 //         void onNextTetroPosChanged(Vector3 pre, Vector3 cur) {

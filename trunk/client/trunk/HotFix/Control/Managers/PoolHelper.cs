@@ -48,6 +48,9 @@ namespace HotFix.Control {
                     ComponentHelper.AddTetroComponent(oneInstance);
                     Tetromino tetromino = ComponentHelper.GetTetroComponent(oneInstance);
                     ComponentHelper.GetTetroComponent(oneInstance).enabled = false;
+                    foreach (Transform oneMino in prefab) {
+                        oneMino.gameObject.tag = "mino";
+                    }
                 } else if (isGhost) {
                     ComponentHelper.AddGhostComponent(oneInstance); 
                 }

@@ -11,7 +11,7 @@ namespace HotFix.Control {
         public int individualScore = 100;
 
         private float fall = 0f;
-        private float fallSpeed = 3.0f;
+        private float fallSpeed = 1.0f;
     
         private float individualScoreTime;
 
@@ -22,33 +22,35 @@ namespace HotFix.Control {
         public bool IsRotateValid { get { return isRotateValid; } }
 
 // 如果我不加这些,它掉得太快了,仿佛瞬间从天堂掉到了地狱.....而不是一秒一格地往下掉        
-        private float timer = 1.0f;
-        private Vector3 delta; // for MOVE ROTATE delta
-
+        private float timer = 0.5f;
+        Vector3 moveDelta;
+        Vector3 rotateDelta;
+        
         public void Awake() {
-            delta = Vector3.zero;
+            moveDelta = Vector3.zero;
+            rotateDelta = Vector3.zero;
         }
         public void Start () {
             Debug.Log(TAG + ": Start()");
             fallSpeed = ViewManager.GameView.ViewModel.fallSpeed;
 
-            EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onTetrominoMove); 
-            EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onTetrominoRotate);
-            EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onTetrominoLand);
+            // EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onTetrominoMove); 
+            // EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onTetrominoRotate);
+            // EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onTetrominoLand);
         }
         public void OnDisable() { // TODO:方法还不有适配
             Debug.Log(TAG + ": OnDisable()");
-            if (EventManager.Instance != null) {
-                EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onTetrominoMove);
-                EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onTetrominoRotate);
-                EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onTetrominoLand);
-            }
+            // if (EventManager.Instance != null) {
+                // EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onTetrominoMove);
+                // EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onTetrominoRotate);
+                // EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onTetrominoLand);
+            // }
         }        
 
         public void Update () {
             timer -= Time.deltaTime;
             if (timer > 0) return;
-            
+             
             if (!ViewManager.GameView.ViewModel.isPaused) {
                CheckUserInput();
                UpdateIndividualScore();
@@ -66,37 +68,39 @@ namespace HotFix.Control {
 //               text.text = "当前没有触摸在UI上";
 //               }
 
-            delta = new Vector3(0, -1, 0);
-            EventManager.Instance.FireEvent("move", delta);
+            moveDelta = new Vector3(0, -1, 0);
+// TODO: 背景音乐会多放一次            
+            EventManager.Instance.FireEvent("move", moveDelta);
 
-            timer = 1.0f;
+            timer = 0.5f;
         }
 
-// TODO: 这里的逻辑需要想一想,好像写成了循环嵌套!!!        
-        public void onTetrominoMove(TetrominoMoveEventInfo eventInfo) { 
-            Debug.Log(TAG + ": onTetrominoMove()"); 
+// TODO: 这里的逻辑需要想一想,好像写成了循环嵌套!!!
+// TODO: 下面的这两个方法可以不要了
+        public void onTetrominoMove(TetrominoMoveEventInfo info) { 
             isMoveValid = false;
-            ViewManager.nextTetromino.transform.position += eventInfo.delta;
-            if (CheckIsValidPosition()) { // 这里下移相比于平移可以再简化优化一下?
+            ViewManager.nextTetromino.transform.position += info.delta;
+            if (((GameViewModel)ViewManager.GameView.ViewModel).CheckIsValidPosition()) { 
                 isMoveValid = true;
-                // EventManager.Instance.FireEvent("move", delta);
+                EventManager.Instance.FireEvent("move", info.delta);
             } else {
-                ViewManager.nextTetromino.transform.position -= eventInfo.delta;
+                ViewManager.nextTetromino.transform.position -= info.delta;
             }
         }
-        public void onTetrominoRotate(TetrominoRotateEventInfo eventInfo) {
-            // Debug.Log(TAG + ": onTetrominoRotate()"); 
-            ViewManager.nextTetromino.transform.Rotate(eventInfo.delta);
+        public void onTetrominoRotate(TetrominoRotateEventInfo info) {
+            ViewManager.nextTetromino.transform.Rotate(info.delta);
             isRotateValid = false;
-            if (CheckIsValidPosition()) {
+            if (((GameViewModel)ViewManager.GameView.ViewModel).CheckIsValidPosition()) {
                 isRotateValid = true;
+                EventManager.Instance.FireEvent("Rotate", info.delta);
             } else { 
-                ViewManager.nextTetromino.transform.Rotate(Vector3.zero - eventInfo.delta); 
+                ViewManager.nextTetromino.transform.Rotate(Vector3.zero - info.delta); 
             }
         }
-        public void onTetrominoLand(TetrominoLandEventInfo eventInfo) {
-        // private void onTetrominoLand() {
+
+        private void onTetrominoLand() {
             Debug.Log(TAG + ": onTetrominoLand()");
+            EventManager.Instance.FireEvent("land");
             ViewManager.nextTetromino.tag = "Untagged";
             ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).enabled = false;
             ViewManager.GameView.ViewModel.currentScore.Value += individualScore;            
@@ -119,65 +123,31 @@ namespace HotFix.Control {
             // verticalTimer = 0;
             // if (ViewManager.GameView.nextTetromino == null) return;
 
-            // ((GameViewModel)ViewManager.GameView.BindingContext).nextTetroPos.Value += new Vector3(0, -1, 0); // 不适用了,没再用这套系统
-            ViewManager.nextTetromino.transform.position += new Vector3(0, -1, 0);
-
-// 这里写的都是些什么乱七八糟的代码?完全是牛头不对马尾            
-            // ViewManager.GameView.MoveDown(); // 怎么会这样呢?什么时候会写出这种.....
-            // Debug.Log(TAG + " CheckIsValidPosition(): " + CheckIsValidPosition()); 
-            if (CheckIsValidPosition()) {
+            moveDelta = new Vector3(0, -1, 0); // 这种调用太慢了
+            MathUtil.print(ViewManager.nextTetromino.transform.position);
+            
+            ViewManager.nextTetromino.transform.position += moveDelta;
+            // (GameViewModel)ViewManager.GameView.ViewModel.MoveDown(); // 直接调用,要两块画布下移一格
+            bool isValidPos = CheckIsValidPosition();
+            Debug.Log(TAG + " isValidPos: " + isValidPos);
+            ViewManager.nextTetromino.transform.position -= moveDelta;
+            if (isValidPos) {
                 ViewManager.GameView.ViewModel.UpdateGrid(ViewManager.nextTetromino);
-				if (Input.GetKey(KeyCode.DownArrow)) ; 
-            } else {
-                ViewManager.nextTetromino.transform.position += new Vector3(0, 1, 0);
+                // EventManager.Instance.FireEvent("move", moveDelta); // 这里有个无限循环,会没有声音
+// TODO: 这里怎么只在用户有键输入的时候才播放音乐呢?
+				// if (Input.GetKey(KeyCode.DownArrow)) ; 
+                // // 这里做的事情是播放音乐
+            } else { // 往下移,不能再下移了,就是该合理着陆
+                // ViewManager.nextTetromino.transform.position += new Vector3(0, 1, 0);
                 PoolHelper.recycleGhostTetromino(); // 涉及事件的先后顺序，这里处理比较安全：确保在Tetromino之前处理
-                // onTetrominoLand(); // check ????? 这里调这个是什么意思 ???
+                ((GameViewModel)ViewManager.GameView.ViewModel).MoveUp(); // 要它快点儿提上来
+                onTetrominoLand(); 
                 EventManager.Instance.FireEvent("land");
             }
             fall = Time.time; 
         }
-        public void SlamDown() {
-            Debug.Log(TAG + ": SlamDown()");
-            Debug.Log(TAG + " ViewManager.GameView.getSlamDownIndication(): " + ViewManager.GameView.ViewModel.getSlamDownIndication()); 
-            // if (ViewManager.GameView.buttonInteractableList[5] == 0) return;
-            if (((MenuViewModel)ViewManager.GameView.ViewModel.ParentViewModel).gameMode == 0 && ViewManager.GameView.ViewModel.getSlamDownIndication() == 0) return;
-            while (CheckIsValidPosition()) { // 不知道这种极速调用,反应得过来吗?
-                // ViewManager.nextTetromino.transform.position += new Vector3(0, -1, 0);
-                // ViewManager.GameView.MoveDown(); 
-            }
-            if (!CheckIsValidPosition()) {
-                ViewManager.nextTetromino.transform.position += new Vector3(0, 1, 0);
-                PoolHelper.recycleGhostTetromino();
-                //onTetrominoLand();
-                EventManager.Instance.FireEvent("land");
-			}
-		}
-
-        public bool CheckIsValidPosition() { 
-            foreach (Transform mino in ViewManager.nextTetromino.transform) {
-                if (mino.CompareTag("mino")) {
-                    // Vector3 pos = ViewManager.GameView.Round(mino.position);
-                    Vector3 pos = MathUtil.Round(mino.position);
-                    bool isInsideGrid = ViewManager.GameView.ViewModel.CheckIsInsideGrid(pos);
-                    Debug.Log(TAG + " isInsideGrid: " + isInsideGrid);
-                    // if (!ViewManager.GameView.ViewModel.CheckIsInsideGrid(pos)) {
-                    if (!isInsideGrid)
-                        return false;
-                    // }
-                    Transform transAtGrid = ViewManager.GameView.ViewModel.GetTransformAtGridPosition(pos);
-                    Debug.Log(TAG + " (transAtGrid != null): " + (transAtGrid != null));
-                    Debug.Log(TAG + " (transAtGrid.parent != ViewManager.nextTetromino.transform): " + (transAtGrid.parent != ViewManager.nextTetromino.transform));
-                    if (ViewManager.GameView.ViewModel.GetTransformAtGridPosition(pos) != null
-                        && ViewManager.GameView.ViewModel.GetTransformAtGridPosition(pos).parent != ViewManager.nextTetromino.transform) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-	
         void CheckUserInput() {
-            // Debug.Log(TAG + ": CheckUserInput()"); 
+            Debug.Log(TAG + ": CheckUserInput()"); 
 // #if UNITY_ANDROID // 我暂时就不考虑这些了
 //             if (Input.touchCount > 0) {
 //                 Touch t = Input.GetTouch(0);
@@ -269,29 +239,42 @@ namespace HotFix.Control {
             }
         }
 
-        public void MoveZNeg() {  
-            // if (movedImmediateHorizontal) {
-            //     if (buttonDownWaitTimerHorizontal < buttonDownWaitMax) {
-            //         buttonDownWaitTimerHorizontal += Time.deltaTime;
-            //         return;
-            //     }
-            //     if (horizontalTimer < continuousHorizontalSpeed) {
-            //         horizontalTimer += Time.deltaTime;
-            //         return;
-            //     }
-            // }
-            // if (!movedImmediateHorizontal) 
-            //     movedImmediateHorizontal = true;
-            // horizontalTimer = 0;
-            ViewManager.nextTetromino.transform.position += new Vector3(0, 0, -1); 
-            // FindObjectOfType<Game>().MoveZNeg(); // moveCanvas moves too
-
-            if (CheckIsValidPosition()) {
-                ViewManager.GameView.ViewModel.UpdateGrid(ViewManager.nextTetromino);
-            } else {
-                ViewManager.nextTetromino.transform.position += new Vector3(0, 0, 1);
-                // ViewManager.GameView.MoveZPos(); // moveCanvas moves too
+        // public void SlamDown() {
+        //     Debug.Log(TAG + ": SlamDown()");
+        //     Debug.Log(TAG + " ViewManager.GameView.getSlamDownIndication(): " + ViewManager.GameView.ViewModel.getSlamDownIndication()); 
+        //     // if (ViewManager.GameView.buttonInteractableList[5] == 0) return;
+        //     if (((MenuViewModel)ViewManager.GameView.ViewModel.ParentViewModel).gameMode == 0 && ViewManager.GameView.ViewModel.getSlamDownIndication() == 0) return;
+        //     while (CheckIsValidPosition()) { // 不知道这种极速调用,反应得过来吗?
+        //         // ViewManager.nextTetromino.transform.position += new Vector3(0, -1, 0);
+        //         // ViewManager.GameView.MoveDown(); 
+        //     }
+        //     if (!CheckIsValidPosition()) {
+        //         ViewManager.nextTetromino.transform.position += new Vector3(0, 1, 0);
+        //         PoolHelper.recycleGhostTetromino();
+        //         //onTetrominoLand();
+        //         EventManager.Instance.FireEvent("land");
+		// 	}
+		// }
+        public bool CheckIsValidPosition() { 
+            foreach (Transform mino in ViewManager.nextTetromino.transform) {
+                if (mino.CompareTag("mino")) {
+                    Vector3 pos = MathUtil.Round(mino.position);
+                    MathUtil.print(pos);
+                    if (!ViewManager.GameView.ViewModel.CheckIsInsideGrid(pos)) {
+                        return false;
+                    }
+                    Transform transAtGrid = ViewManager.GameView.ViewModel.GetTransformAtGridPosition(pos);
+                    // Debug.Log(TAG + " (transAtGrid != null): " + (transAtGrid != null));
+                    // if (transAtGrid != null) {
+                    //     Debug.Log(TAG + " (transAtGrid.parent != ViewManager.nextTetromino.transform): " + (transAtGrid.parent != ViewManager.nextTetromino.transform));
+                    // }
+                    if (ViewManager.GameView.ViewModel.GetTransformAtGridPosition(pos) != null
+                        && ViewManager.GameView.ViewModel.GetTransformAtGridPosition(pos).parent != ViewManager.nextTetromino.transform) {
+                        return false;
+                    }
+                }
             }
+            return true;
         }
     }
 }

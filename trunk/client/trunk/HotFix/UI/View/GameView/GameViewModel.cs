@@ -55,7 +55,7 @@ namespace HotFix.UI {
         private int startingHighScore;
         private int startingHighScore2;
         private int startingHighScore3;
-    
+     
         public bool isMovement = true;
         private int randomTetromino;
 // TODO: INTO CONST        
@@ -83,31 +83,6 @@ namespace HotFix.UI {
             DelegateSubscribe(); 
         }
 
-        // public string GetRandomTetromino(BindableProperty<String> tetroTypeBindableProperty) { // active Tetromino
-        public string GetRandomTetromino() { // active Tetromino 
-            Debug.Log(TAG + ": GetRandomTetromino()"); 
-            if (gameMode.Value == 0 && gridWidth == 5)
-                randomTetromino = UnityEngine.Random.Range(15, 21);
-            else 
-                randomTetromino = UnityEngine.Random.Range(7, 14);
-            Debug.Log(TAG + " Generated randomTetromino: " + randomTetromino); 
-            StringBuilder tetrominoType = new StringBuilder("Tetromino");
-            switch (randomTetromino) {
-            case 15: tetrominoType.Append("I"); break;
-            case 16: tetrominoType.Append("J"); break; 
-            case 17: tetrominoType.Append("L"); break;
-            case 18: tetrominoType.Append("O"); break;
-            case 19: tetrominoType.Append("S"); break;
-            case 20: tetrominoType.Append("T"); break;
-            // case 7:
-            default:
-                tetrominoType.Append("Z"); break;
-            }
-            Debug.Log(TAG + " tetrominoType.ToString(): " + tetrominoType.ToString());
-            return tetrominoType.ToString();
-            // tetroTypeBindableProperty.Value = tetrominoType;
-        }
-
         void Initialization() {
             this.ParentViewModel = (MenuViewModel)ViewManager.MenuView.BindingContext; // 父视图模型: 菜单视图模型
             gridWidth = ((MenuViewModel)ParentViewModel).gridWidth;
@@ -129,6 +104,7 @@ namespace HotFix.UI {
                 for (int j = 0; j < gridHeight; j++) 
                     gridOcc[i][j] = new int[5];
             }
+            Debug.Log(TAG + " (grid[3][11][3] != null): " + (grid[3][11][3] != null));
             gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
             fallSpeed = 3.0f;
             saveForUndo = true;
@@ -435,12 +411,7 @@ namespace HotFix.UI {
         public void onActiveTetrominoLand(TetrominoLandEventInfo info,
                                           GameObject nextTetromino) {
             Debug.Log(TAG + ": onActiveTetrominoLand()");
-            UpdateGrid(nextTetromino);
-
-            // Debug.Log(TAG + ": gridOcc[,,] before Land and Save()"); 
-            // MathUtil.printBoard(gridOcc); 
-
-            // recycleGhostTetromino();
+            UpdateGrid(ViewManager.nextTetromino);
 
             // // SaveGameEventInfo fire here 
             // saveGameInfo = new SaveGameEventInfo();
@@ -450,10 +421,9 @@ namespace HotFix.UI {
 
             DeleteRow();
             Debug.Log(TAG + " (CheckIsAboveGrid(nextTetromino.GetComponent<Tetromino>())): " + (CheckIsAboveGrid(nextTetromino.GetComponent<Tetromino>()))); 
-            if (CheckIsAboveGrid(nextTetromino.GetComponent<Tetromino>())) {
+            if (CheckIsAboveGrid(nextTetromino.GetComponent<Tetromino>())) { // 检查游戏是否结束,最后一个方块砖是否放到顶了
                 // GameOver(); // for tmp
             }            
-            // DisableMoveRotationCanvas();
             Array.Clear(buttonInteractableList, 0, buttonInteractableList.Length);
             if (gameMode.Value  == 0) {
                 buttonInteractableList[0] = 1;
@@ -461,8 +431,6 @@ namespace HotFix.UI {
                 buttonInteractableList[2] = 1;
                 buttonInteractableList[3] = 1; // undo button
             }
-            // else 
-            //     SpawnnextTetromino();  
         }
 
         public void cleanUpGameBroad(GameObject nextTetromino, GameObject ghostTetromino) {
@@ -568,10 +536,10 @@ namespace HotFix.UI {
             // nextTetrominoTransform.rotation = Quaternion.Euler(0, 0, 0);
             // nextTetrominoTransform.localScale = Vector3.one;
             // Helpers.resetTrans(ViewManager.nextTetromino, nextTetrominoTransform);
-            // // ViewManager.nextTetromino.gameObject.transfom = nextTetrominoTransform;
+            // // ViewManager.nextTetromino.gameObject.transform = nextTetrominoTransform;
             // nextTetroPos.Value = new Vector3(2.0f, 11.0f, 2.0f);
             // nextTetroRot.Value = Quaternion.Euler(0, 0, 0);
-            // nextTetroSca.Value = new Vector3(1, 1, 1);
+            // nextTetroSca.Value = new Vector3(1, 1, 1); 
             ViewManager.nextTetromino.gameObject.transform.position = new Vector3(2.0f, 11.0f, 2.0f);
             ViewManager.nextTetromino.gameObject.transform.rotation = Quaternion.Euler(0, 0, 0);
             ViewManager.nextTetromino.gameObject.transform.localScale = Vector3.one;
@@ -977,7 +945,42 @@ namespace HotFix.UI {
             else
                 return grid[(int)pos.x][(int)pos.y][(int)pos.z];
         }
-
+// TODO: 这里面的逻辑坏掉了,需要检查修改
+        public void SlamDown() {
+            Debug.Log(TAG + " SlamDown");
+            // if (ViewManager.GameView.buttonInteractableList[5] == 0) return;
+            if (((MenuViewModel)ParentViewModel).gameMode == 0 && getSlamDownIndication() == 0) return;
+            while (CheckIsValidPosition()) { // 不知道这种极速调用,反应得过来吗?
+                ViewManager.nextTetromino.transform.position += new Vector3(0, -1, 0);
+                MoveDown(); // TODO:两块画布下移
+            }
+            if (!CheckIsValidPosition()) { // 方块砖移到了最底部
+                ViewManager.nextTetromino.transform.position += new Vector3(0, 1, 0);
+                MoveUp();
+                // PoolHelper.recycleGhostTetromino();
+                // //onTetrominoLand();
+                EventManager.Instance.FireEvent("land");
+			}
+		}
+        public bool CheckIsValidPosition() { // TODO: 写了两遍 Tetromino GameViewModel
+            // Debug.Log(TAG + " CheckIsValidPosition");
+            foreach (Transform mino in ViewManager.nextTetromino.transform) {
+                if (mino.CompareTag("mino")) {
+                    Vector3 pos = MathUtil.Round(mino.position);
+                    if (!CheckIsInsideGrid(pos)) 
+                        return false;
+                    // Transform transAtGrid = GetTransformAtGridPosition(pos);
+                    // Debug.Log(TAG + " (transAtGrid != null): " + (transAtGrid != null));
+                    // if (transAtGrid != null)
+                    //     Debug.Log(TAG + " (transAtGrid.parent != ViewManager.nextTetromino.transform): " + (transAtGrid.parent != ViewManager.nextTetromino.transform));
+                    if (GetTransformAtGridPosition(pos) != null
+                        && GetTransformAtGridPosition(pos).parent != ViewManager.nextTetromino.transform) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
         
         public void recycleNextTetromino(GameObject nextTetromino) { // 这个折成两部分来写
             Debug.Log(TAG + ": recycleNextTetromino()"); 
@@ -996,12 +999,47 @@ namespace HotFix.UI {
             GameObject nextTetromino,
             GameObject previewTetromino,
             GameObject previewTetromino2) {
-            // 回收三样东西：nextTetromino previewTetromino previewTetromino2
+            // 回收三样东西： nextTetromino previewTetromino previewTetromino2
             recycleNextTetromino(nextTetromino);
             PoolHelper.preparePreviewTetrominoRecycle(previewTetromino);
             PoolHelper.ReturnToPool(previewTetromino, previewTetromino.GetComponent<TetrominoType>().type);
             PoolHelper.preparePreviewTetrominoRecycle(previewTetromino2);
             PoolHelper.ReturnToPool(previewTetromino2, previewTetromino2.GetComponent<TetrominoType>().type);
+        }
+
+//　操纵两画面的上下移动
+       public void MoveDown() {
+           ViewManager.moveCanvas.transform.position += new Vector3(0, -1, 0);
+           ViewManager.rotateCanvas.transform.position += new Vector3(0, -1, 0);
+       }
+       public void MoveUp() {
+           ViewManager.moveCanvas.transform.position += new Vector3(0, 1, 0);
+           ViewManager.rotateCanvas.transform.position += new Vector3(0, 1, 0);
+       }
+
+        // public string GetRandomTetromino(BindableProperty<String> tetroTypeBindableProperty) { // active Tetromino
+        public string GetRandomTetromino() { // active Tetromino 
+            Debug.Log(TAG + ": GetRandomTetromino()"); 
+            if (gameMode.Value == 0 && gridWidth == 5)
+                randomTetromino = UnityEngine.Random.Range(15, 21);
+            else 
+                randomTetromino = UnityEngine.Random.Range(7, 14);
+            Debug.Log(TAG + " Generated randomTetromino: " + randomTetromino); 
+            StringBuilder tetrominoType = new StringBuilder("Tetromino");
+            switch (randomTetromino) {
+            case 15: tetrominoType.Append("I"); break;
+            case 16: tetrominoType.Append("J"); break; 
+            case 17: tetrominoType.Append("L"); break;
+            case 18: tetrominoType.Append("O"); break;
+            case 19: tetrominoType.Append("S"); break;
+            case 20: tetrominoType.Append("T"); break;
+                // case 7:
+            default:
+                tetrominoType.Append("Z"); break;
+            }
+            Debug.Log(TAG + " tetrominoType.ToString(): " + tetrominoType.ToString());
+            return tetrominoType.ToString();
+            // tetroTypeBindableProperty.Value = tetrominoType;
         }
 
 #region updatingGameScores        

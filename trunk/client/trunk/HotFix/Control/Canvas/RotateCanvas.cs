@@ -89,6 +89,7 @@ namespace HotFix.Control {
         // }
         void onActiveTetrominoLand(TetrominoLandEventInfo info) {
             Debug.Log(TAG + " onActiveTetrominoLand");
+            // ViewManager.rotateCanvas.transform.position += new Vector3(0, 1, 0); // 向上移动一格至[0, 0, 0]
             ViewManager.rotateCanvas.SetActive(false); // 这里没有失活
         }
 

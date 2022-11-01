@@ -35,7 +35,7 @@ namespace HotFix.Control {
         private CanvasToggledEventInfo canvasInfo;
         
         public void Awake() {
-            Debug.Log(TAG + " Awake");
+            // Debug.Log(TAG + " Awake");
             delegatesMap = new Dictionary<System.Type, EventListener>();  
             delegateLookupMap = new Dictionary<System.Delegate, EventListener>();
             delta = Vector3.zero;
@@ -98,28 +98,28 @@ namespace HotFix.Control {
             Debug.Log(TAG + ": FireEvent() type: " + type); 
             switch (type) {
             case "entergame":
-                enterInfo = new GameEnterEventInfo();
+                // enterInfo = new GameEnterEventInfo();
                 FireEvent(enterInfo);
                 return;
             case "pausegame":
-                pauseInfo = new GamePauseEventInfo();
+                // pauseInfo = new GamePauseEventInfo();
                 FireEvent(pauseInfo);
                 return;
             case "resumegame":
-                resumeInfo = new GameResumeEventInfo();
+                // resumeInfo = new GameResumeEventInfo();
                 FireEvent(resumeInfo);
                 return;
 
             case "spawned":
-                spawnedInfo = new TetrominoSpawnedEventInfo();
+                // spawnedInfo = new TetrominoSpawnedEventInfo();
                 FireEvent(spawnedInfo);
                 return;
             case "land":
-                landInfo = new TetrominoLandEventInfo();
+                // landInfo = new TetrominoLandEventInfo();
                 FireEvent(landInfo);
                 return;
             case "canvas":
-                canvasInfo = new CanvasToggledEventInfo();
+                // canvasInfo = new CanvasToggledEventInfo();
                 FireEvent(canvasInfo);
                 return;
             }

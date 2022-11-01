@@ -140,9 +140,11 @@ namespace HotFix.UI {
             Debug.Log(TAG + ": isSavedFileExist()");
             StringBuilder currentPath = new StringBuilder("");
             if (ViewModel.gameMode > 0)
-                currentPath.Append(Application.persistentDataPath + "/" + ViewModel.saveGamePathFolderName + "/game.save");
+                // currentPath.Append(Application.persistentDataPath + "/" + ViewModel.saveGamePathFolderName + "/game.save");
+                currentPath.Append(Application.persistentDataPath + ViewModel.saveGamePathFolderName + "/game.save");
             else 
-                currentPath.Append(Application.persistentDataPath + "/" + ViewModel.saveGamePathFolderName + "/grid" + ViewModel.gridWidth + "/game.save");
+                // currentPath.Append(Application.persistentDataPath + "/" + ViewModel.saveGamePathFolderName + "/grid" + ViewModel.gridWidth + "/game.save");
+                currentPath.Append(Application.persistentDataPath + ViewModel.saveGamePathFolderName + "/grid" + ViewModel.gridWidth + "/game.save");
             Debug.Log(TAG + " currentPath: " + currentPath.ToString()); 
             if (File.Exists(currentPath.ToString()))
                 return true;

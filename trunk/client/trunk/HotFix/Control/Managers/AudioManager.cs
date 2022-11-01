@@ -17,7 +17,7 @@ namespace HotFix.Control {
         private AudioClip exploseSound; // TODO
 
         public void Awake() {
-            Debug.Log(TAG + " Awake()");
+            // Debug.Log(TAG + " Awake()");
             gameObject.AddComponent<AudioSource>();
             audioSource = gameObject.GetComponent<AudioSource>();
             gameLoop = ResourceHelper.LoadAudioClip("ui/view/gameview", "gameloop", EAssetBundleUnloadLevel.Never);
