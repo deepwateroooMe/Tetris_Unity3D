@@ -14,7 +14,7 @@ namespace HotFix.Data {
         P Parent { get; set; }  
     }
 
-    public class MinoData : IMinoData<TetrominoData> {
+    public class MinoDataCon : IMinoData<TetrominoDataCon> {
         // public class MinoData {
         private const string TAG = "MinoData";
 
@@ -61,8 +61,8 @@ namespace HotFix.Data {
 // #endregion
 
         // 反序列化
-        public static MinoData JsonToObject(string json) {
-            MinoData data = new MinoData();
+        public static MinoDataCon JsonToObject(string json) {
+			MinoDataCon data = new MinoDataCon();
             JsonObject jsonObject = JsonSerializer.Deserialize(json) as JsonObject;
             if (jsonObject != null) {
                 data.instanceID = jsonObject["instanceID"];
@@ -103,9 +103,9 @@ namespace HotFix.Data {
         public int idx { get; set; } // 这里原本是用一位标来标注的是什么信息呢?大致标四个子立方体的位置信息,方便遍历而已
         public string type { get; set; }
         public SerializedTransform transform { get; set; }
-        public TetrominoData parentData; // { get; internal set; } 
-#region IMinoItem<TetrominoData> Members
-        TetrominoData IMinoData<TetrominoData>.Parent {
+        public TetrominoDataCon parentData; // { get; internal set; } 
+		#region IMinoItem<TetrominoData> Members
+		TetrominoDataCon IMinoData<TetrominoDataCon>.Parent {
             get {
                 return this.parentData;
             }
@@ -113,22 +113,24 @@ namespace HotFix.Data {
                 this.parentData = value;
             }
         }
-#endregion
 
-        // 这里当初游戏中的几个构造函数,到用时再补上
-        public MinoData() {
+		public TetrominoDataCon Parent { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+		#endregion
+
+		// 这里当初游戏中的几个构造函数,到用时再补上
+		public MinoDataCon() {
             Transform trans = new GameObject().transform;
             // MinoData(trans);
             this.idx = MathUtil.getIndex(trans);
             this.transform = new SerializedTransform(trans);
             this.type = "";
         }
-        public MinoData(Transform trans) {
+        public MinoDataCon(Transform trans) {
             this.idx = MathUtil.getIndex(trans);
             this.transform = new SerializedTransform(trans);
             this.type = "";
         }
-        public MinoData(Transform trans, string type) {
+        public MinoDataCon(Transform trans, string type) {
             this.type = type;
             this.idx = MathUtil.getIndex(trans);
             this.transform = new SerializedTransform(trans);
@@ -144,3 +146,5 @@ namespace HotFix.Data {
         }
     }
 }
+
+

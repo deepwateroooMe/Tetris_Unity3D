@@ -9,7 +9,7 @@ using UnityEngine;
 namespace HotFix.Data {
 
     // 方块砖实例数据:  就是说,现在暂时是两套机制,原源码的BinaryFormatter机制,以及热更新重构后的Json序列化反序列化机制,还要让两套机制同时运行时能适配原源码
-    public class TetrominoData {
+    public class TetrominoDataCon {
         private const string TAG = "TetrominoData";
 
         // 实例ID
@@ -48,10 +48,10 @@ namespace HotFix.Data {
         // ScaleZ
         public float scaleZ;
 
-        public List<MinoData> _children; 
+        public List<MinoDataCon> _children; 
 // 方块砖所特有的: 这里的这层父子们的嵌套逻辑会把序列化给搞昏的,所以必须得自定义序列化,比现项目中的序列化要稍微复杂那么一点点儿
         // 现在的逻辑没有继续明确父子关系,在什么地方可能会有影响呢? 有影响,模型里会判断小立方体的父控制是谁,所以这层关系要维护起来
-        public MinoDataCollection<TetrominoData, MinoData> children { get; private set; } 
+        public MinoDataCollectionCon<TetrominoDataCon, MinoDataCon> children { get; private set; } 
 #endregion
 
         // 因为这里暂时更多的只是在资源加载的时候的操作,并不是很频繁,暂时不考虑这些
@@ -91,8 +91,8 @@ namespace HotFix.Data {
         }
 // 套路的三个公用方法
         // 反序列化: 这里需要更多的工作来维护父子关系的?下午再好好想想这个有没有必要,如何实现
-        public static TetrominoData JsonToObject(string json) {
-            TetrominoData data = new TetrominoData();
+        public static TetrominoDataCon JsonToObject(string json) {
+            TetrominoDataCon data = new TetrominoDataCon();
             JObject tetrominoItem = (JObject)JsonConvert.DeserializeObject(json);
             data.id = (long)tetrominoItem.SelectToken("id");
             data.name = tetrominoItem.SelectToken("name").ToString();
@@ -111,7 +111,7 @@ namespace HotFix.Data {
             foreach (JToken mino in children) {
                 string minoType = mino.SelectToken("type").ToString();
                 if (minoType.StartsWith("mino")) {
-                    MinoData minoData = mino.ToObject<MinoData>();
+					MinoDataCon minoData = mino.ToObject<MinoDataCon>();
                     data._children.Add(minoData);
                 }
             }
@@ -142,3 +142,9 @@ namespace HotFix.Data {
         }
     }
 }
+
+
+
+
+
+

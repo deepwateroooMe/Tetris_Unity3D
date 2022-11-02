@@ -24,12 +24,12 @@ namespace HotFix.Control {
         }
 
         // 方块砖的集合
-        public Dictionary<int, TetrominoBase> tetrominos = new Dictionary<int, TetrominoBase>();
+        //public Dictionary<int, TetrominoBase> tetrominos = new Dictionary<int, TetrominoBase>();
 
         public SceneBase(int type) {
             Data = new SceneData();
             Data.type = type;
-            Data.tetrominoDatas = new Dictionary<int, TetrominoData>();
+            //Data.tetrominoDatas = new Dictionary<int, TetrominoDataCon>();
             TypeData = TypeDataManager.GetSceneTypeData(Data.type);
         }
 

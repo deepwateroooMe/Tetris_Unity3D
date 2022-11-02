@@ -25,7 +25,7 @@ namespace HotFix.Data {
         // public SingleData singleData; // for tmp
         // 对于游戏场景中的大方格中的方块砖与立方体,可能要采用不同的数据结构来保存,这里不是在保存
         // //  某数据类型的集合
-        public Dictionary<int, TetrominoData> tetrominoDatas;
+        // public Dictionary<int, TetrominoDataCon> tetrominoDatas;
         // // 另一数据类型的集合
         // public Dictionary<int, TypetwoData> typetwoDatas;
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Framework.MVVM;
 using HotFix.Control;
+using HotFix.UI;
 using UnityEngine;
 
 namespace HotFix.Data {
@@ -25,91 +26,89 @@ namespace HotFix.Data {
         public string previewTetromino2Type;
     
         public SerializedTransform cameraData;  // 相机数据
-        public TetrominoData nextTetrominoData; // 大方格中的当前方块砖
+        public Control.TetrominoData nextTetrominoData; // 大方格中的当前方块砖
         public List<MinoData> grid;             // 大方格中的所有先前数据
-        public List<TetrominoData> parentList;  // 如果有方块砖链表,那么链表中的方块砖有可能是残缺的(因为游戏过程中的消除行与列等)
+        public List<Control.TetrominoData> parentList;  // 如果有方块砖链表,那么链表中的方块砖有可能是残缺的(因为游戏过程中的消除行与列等)
         public bool saveForUndo; // 区分教育模式与经典模式 
         
-        public GameData () { 
-        // public GameData (Game game) { 
-            // gameMode = game.gameMode;
-            // score = Game.currentScore;
-            // level = game.currentLevel;
-            // lines = game.numLinesCleared;
+        public GameData (GameViewModel viewModel) { // viewModel: game
+            gameMode = viewModel.gameMode.Value;
+            score = viewModel.currentScore.Value;
+            level = viewModel.currentLevel.Value;
+            lines = viewModel.numLinesCleared.Value;
 
-            // if (game.gameMode == 0) {
-            //     prevPreview = game.prevPreview;
-            //     prevPreview2 = game.prevPreview2;
-            // }
-            // nextTetrominoType = game.nextTetrominoType;
-            // previewTetrominoType = game.previewTetrominoType;
-            // previewTetromino2Type = game.previewTetromino2Type;
-            // saveForUndo = game.saveForUndo;
+            if (gameMode == 0) {
+                prevPreview = viewModel.prevPreview;
+                prevPreview2 = viewModel.prevPreview2;
+            }
+            nextTetrominoType = viewModel.nextTetrominoType.Value;
+            previewTetrominoType = viewModel.previewTetrominoType;
+            previewTetromino2Type = viewModel.previewTetromino2Type;
+            saveForUndo = viewModel.saveForUndo;
             
-            // grid = new List<MinoData>();
-            // parentList = new List<TetrominoData>();
-            // int listSize = Game.gridHeight * Game.gridWidth * Game.gridWidth;
+            grid = new List<MinoData>();
+			parentList = new List<Control.TetrominoData>();
+            int listSize = viewModel.gridHeight * viewModel.gridWidth * viewModel.gridWidth;
             
-            // bool isCurrentlyActiveTetromino = false;
-            // for (int i = 0; i < listSize; i++) {
-            //     MinoData tmpMino = new MinoData(game.tmpTransform);
-            //     tmpMino.reset();
-            //     grid.Add(tmpMino);
-            // }
+            bool isCurrentlyActiveTetromino = false;
+            for (int i = 0; i < listSize; i++) {
+                MinoData tmpMino = new MinoData(viewModel.tmpTransform);
+                tmpMino.reset();
+                grid.Add(tmpMino);
+            }
         
-            // //  nextTetromino: May have landed already, may have been destroyed right after undo clicked
-            // if (Game.nextTetromino != null) {
-            //     isCurrentlyActiveTetromino = Game.nextTetromino.CompareTag("currentActiveTetromino");
-            //     if (Game.nextTetromino != null && isCurrentlyActiveTetromino) { // 没着陆
-            //         nextTetrominoData = new TetrominoData(Game.nextTetromino.transform, nextTetrominoType, Game.nextTetromino.gameObject.name);
-            //     }
-            // }
+            //  nextTetromino: May have landed already, may have been destroyed right after undo clicked
+            if (ViewManager.nextTetromino != null) {
+                isCurrentlyActiveTetromino = ViewManager.nextTetromino.CompareTag("currentActiveTetromino");
+                if (ViewManager.nextTetromino != null && isCurrentlyActiveTetromino) { // 没着陆
+					nextTetrominoData = new TetrominoData(ViewManager.nextTetromino.transform, nextTetrominoType, ViewManager.nextTetromino.gameObject.name);
+                }
+            }
             
-            // // dealing with Game Data: gird 
-            // int [] pos = new int[3];
-            // int x = 0, y = 0, z = 0;
-            // for (int i = 0; i < listSize; i++) {
-            //     pos = MathUtil.getIndex(i);
-            //     x = pos[0];
-            //     y = pos[1];
-            //     z = pos[2];
-            //     if (Game.grid[x, y, z] != null && Game.grid[x, y, z].parent != null 
-            //         && (Game.ghostTetromino == null || (Game.grid[x, y, z].parent != Game.ghostTetromino.transform))
+            // dealing with Game Data: gird 
+            int [] pos = new int[3];
+            int x = 0, y = 0, z = 0;
+            for (int i = 0; i < listSize; i++) {
+                pos = MathUtil.getIndex(i);
+                x = pos[0];
+                y = pos[1];
+                z = pos[2];
+                if (viewModel.grid[x][y][z] != null && viewModel.grid[x][y][z].parent != null 
+                    && (ViewManager.ghostTetromino == null || (viewModel.grid[x][y][z].parent != ViewManager.ghostTetromino.transform))
 
-            //         && ((saveForUndo && Game.grid[x, y, z].parent != Game.nextTetromino.transform) ||                                          // for undo, flag
-            //             // && (Game.grid[x, y, z].parent != Game.nextTetromino.transform || !Game.nextTetromino.CompareTag("currentActiveTetromino")) // for regular game Load
-            //             (!saveForUndo && (!isCurrentlyActiveTetromino || (Game.nextTetromino != null && Game.grid[x, y, z].parent != Game.nextTetromino.transform)))) // for regular game Load
+                    && ((saveForUndo && viewModel.grid[x][y][z].parent != ViewManager.nextTetromino.transform) ||                                          // for undo, flag
+                        // && (viewModel.grid[x][y][z].parent != ViewManager.nextTetromino.transform || !ViewManager.nextTetromino.CompareTag("currentActiveTetromino")) // for regular game Load
+                        (!saveForUndo && (!isCurrentlyActiveTetromino || (ViewManager.nextTetromino != null && viewModel.grid[x][y][z].parent != ViewManager.nextTetromino.transform)))) // for regular game Load
 
-            //         && (!myContains(Game.grid[x, y, z].parent))) {
+                    && (!myContains(viewModel.grid[x][y][z].parent))) {
 
-            //         TetrominoData tmp = new TetrominoData(Game.grid[x, y, z].parent,
-            //                                               new StringBuilder("shape").Append(Game.grid[x, y, z].parent.gameObject.name.Substring(10, 1)).ToString(),
-            //                                               Game.grid[x, y, z].parent.gameObject.name);
+					Control.TetrominoData tmp = new Control.TetrominoData(viewModel.grid[x][y][z].parent,
+                                                          new StringBuilder("shape").Append(viewModel.grid[x][y][z].parent.gameObject.name.Substring(10, 1)).ToString(),
+                                                          viewModel.grid[x][y][z].parent.gameObject.name);
                         
-            //         Debug.Log(TAG + " Game.grid[x, y, z].parent.gameObject.name (in parentList): " + Game.grid[x, y, z].parent.gameObject.name);
-            //         Debug.Log(TAG + " Game.grid[x, y, z].parent.childCount: " + Game.grid[x, y, z].parent.childCount); 
-            //         Debug.Log(TAG + " tmp.children.Count (in saved parent TetrominoData): " + tmp.children.Count); 
-            //         foreach (MinoData mino in tmp.children) {
-            //             MathUtil.print(MathUtil.getIndex(mino.idx));
-            //         }
-            //         parentList.Add(tmp);
-            //     }
-            //     cameraData = new SerializedTransform(Camera.main.transform);
-            // }
+                    Debug.Log(TAG + " viewModel.grid[x][y][z].parent.gameObject.name (in parentList): " + viewModel.grid[x][y][z].parent.gameObject.name);
+                    Debug.Log(TAG + " viewModel.grid[x][y][z].parent.childCount: " + viewModel.grid[x][y][z].parent.childCount); 
+                    Debug.Log(TAG + " tmp.children.Count (in saved parent TetrominoData): " + tmp.children.Count); 
+                    foreach (MinoData mino in tmp.children) {
+                        MathUtil.print(MathUtil.getIndex(mino.idx));
+                    }
+                    parentList.Add(tmp);
+                }
+                cameraData = new SerializedTransform(Camera.main.transform);
+            }
         }        
-
         
-        //private bool myContains(Transform tmp) { // 目前只比较了parent，later是有可能需要比较children的
-        //    using (List<TetrominoData>.Enumerator enumerator = parentList.GetEnumerator()) {
-        //        while (enumerator.MoveNext()) {
-        //            TetrominoData data = enumerator.Current;
-        //            if (tmp.gameObject.name == data.name & // 不同名字、形状的两个Tetromino 可以有相同的 pos rot
-        //                tmp.position == DeserializedTransform.getDeserializedTransPos(data.transform) &&
-        //                tmp.rotation == DeserializedTransform.getDeserializedTransRot(data.transform))
-        //                return true;
-        //        }
-        //    }
-        //    return false;
-        //}
+        private bool myContains(Transform tmp) { // 目前只比较了parent，later是有可能需要比较children的
+           using (List<Control.TetrominoData>.Enumerator enumerator = parentList.GetEnumerator()) {
+               while (enumerator.MoveNext()) {
+					Control.TetrominoData data = enumerator.Current;
+                   if (tmp.gameObject.name == data.name & // 不同名字、形状的两个Tetromino 可以有相同的 pos rot
+                       tmp.position == DeserializedTransform.getDeserializedTransPos(data.transform) &&
+                       tmp.rotation == DeserializedTransform.getDeserializedTransRot(data.transform))
+                       return true;
+               }
+           }
+           return false;
+        }
     }   
 }

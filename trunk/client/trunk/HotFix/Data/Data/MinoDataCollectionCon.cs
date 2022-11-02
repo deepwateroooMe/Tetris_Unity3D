@@ -10,48 +10,48 @@ namespace HotFix.Data {
     // 但同时也把问题复杂化了,它所需要知道的只是几个子方块的位置信息而已;
     // 需要考虑到消除的时候移除单个立方体:所以什么样的设计,既可以简化序列化,同样方便添减操作
     // 同样需要考虑到以后的扩展,比如某个方块砖会出现5个小立方体等
-    public class MinoDataCollection <TetrominoData, MinoData> : IList<MinoData>
-        where TetrominoData : class
-        where MinoData : IMinoData<TetrominoData>
+    public class MinoDataCollectionCon <TetrominoDataCon, MinoDataCon> : IList<MinoDataCon>
+        where TetrominoDataCon : class
+        where MinoDataCon : IMinoData<TetrominoDataCon>
     {
 
         // 相比于普通集合链表,这里的优点:维护了每个小立方体与父控件的父子关系,方便游戏过程中使用
-        private TetrominoData parent;
+        private TetrominoDataCon parent;
 
-        private IList<MinoData> collection;
+        private IList<MinoDataCon> collection;
         // public IList<MinoData> collection; // 这个改得很不好，再考虑一下
  
-        public MinoDataCollection(TetrominoData parent) {
+        public MinoDataCollectionCon(TetrominoDataCon parent) {
             this.parent = parent;
-            this.collection = new List<MinoData>();
+            this.collection = new List<MinoDataCon>();
         }
  
-        public MinoDataCollection(TetrominoData parent, IList<MinoData> collection) {
+        public MinoDataCollectionCon(TetrominoDataCon parent, IList<MinoDataCon> collection) {
             this.parent = parent;
             this.collection = collection;
         }
  
 #region IList<MinoData> Members
-        public int IndexOf(MinoData item) {
+        public int IndexOf(MinoDataCon item) {
             return collection.IndexOf(item);
         }
-        public void Insert(int index, MinoData item) {
+        public void Insert(int index, MinoDataCon item) {
             if (item != null)
                 item.Parent = parent; // 每个子控件,设置它的父控件
             collection.Insert(index, item);
         }
         public void RemoveAt(int index) {
-            MinoData oldItem = collection[index];
+			MinoDataCon oldItem = collection[index];
             collection.RemoveAt(index);
             if (oldItem != null)
                 oldItem.Parent = null;
         }
-        public MinoData this[int index] {
+        public MinoDataCon this[int index] {
             get {
                 return collection[index];
             }
             set {
-                MinoData oldItem = collection[index];
+				MinoDataCon oldItem = collection[index];
                 if (value != null)
                     value.Parent = parent;
                 collection[index] = value;
@@ -63,22 +63,22 @@ namespace HotFix.Data {
 #endregion
  
 #region ICollection<MinoData> Members
-        public void Add(MinoData item) {
+        public void Add(MinoDataCon item) {
             if (item != null)
                 item.Parent = parent;
             collection.Add(item);
         }
         public void Clear() {
-            foreach (MinoData item in collection) {
+            foreach (MinoDataCon item in collection) {
                 if (item != null)
                     item.Parent = null;
             }
             collection.Clear();
         }
-        public bool Contains(MinoData item) {
+        public bool Contains(MinoDataCon item) {
             return collection.Contains(item);
         }
-        public void CopyTo(MinoData[] array, int arrayIndex) {
+        public void CopyTo(MinoDataCon[] array, int arrayIndex) {
             collection.CopyTo(array, arrayIndex);
         }
         public int Count {
@@ -87,7 +87,10 @@ namespace HotFix.Data {
         public bool IsReadOnly {
             get { return collection.IsReadOnly; }
         }
-        public bool Remove(MinoData item) {
+
+		MinoDataCon IList<MinoDataCon>.this[int index] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+		public bool Remove(MinoDataCon item) {
             bool b = collection.Remove(item);
             if (item != null)
                 item.Parent = null;
@@ -96,7 +99,7 @@ namespace HotFix.Data {
 #endregion
  
 #region IEnumerable<MinoData> Members
-        public IEnumerator<MinoData> GetEnumerator() {
+        public IEnumerator<MinoDataCon> GetEnumerator() {
             return collection.GetEnumerator();
         }
 #endregion
@@ -105,7 +108,15 @@ namespace HotFix.Data {
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
             return (collection as System.Collections.IEnumerable).GetEnumerator();
         }
-#endregion
-    
-    }
+
+		//public int IndexOf(MinoDataCon item) => throw new NotImplementedException();
+		//public void Insert(int index, MinoDataCon item) => throw new NotImplementedException();
+		//public void Add(MinoDataCon item) => throw new NotImplementedException();
+		//public bool Contains(MinoDataCon item) => throw new NotImplementedException();
+		//public void CopyTo(MinoDataCon[] array, int arrayIndex) => throw new NotImplementedException();
+		//public bool Remove(MinoDataCon item) => throw new NotImplementedException();
+		IEnumerator<MinoDataCon> IEnumerable<MinoDataCon>.GetEnumerator() => throw new NotImplementedException();
+		#endregion
+
+	}
 }

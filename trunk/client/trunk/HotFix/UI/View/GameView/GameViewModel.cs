@@ -9,6 +9,7 @@ using HotFix.Data;
 using tetris3d;
 using UnityEngine;
 using UnityEngine.UI;
+using MinoData = HotFix.Control.MinoData;
 using SaveSystem = HotFix.Control.SaveSystem;
 
 namespace HotFix.UI {
@@ -26,8 +27,9 @@ namespace HotFix.UI {
         public int gridHeight = 12; 
         public int gridWidth;
 
-        public static Transform [][][] grid; //= new Transform[gridWidth, gridHeight, gridWidth];
-        public static int [][][] gridOcc; //= new int[gridWidth, gridHeight, gridWidth];
+        public Transform [][][] grid; //= new Transform[gridWidth, gridHeight, gridWidth]; // STATIC
+        public int [][][] gridOcc; //= new int[gridWidth, gridHeight, gridWidth];          // static
+
         public int scoreOneLine = 40;
         public int scoreTwoLine = 100;
         public int scoreThreeLine = 300;
@@ -73,6 +75,8 @@ namespace HotFix.UI {
         public bool loadSavedGame = false;
         public bool isDuringUndo = false;
 
+        public Transform tmpTransform;
+        
     // 不知道临时拿了这个作了什么用,一定要用上这个?
         private GameObject tmpParentGO;
 
@@ -219,45 +223,45 @@ namespace HotFix.UI {
             Debug.Log(TAG + " gameData.parentList.Count: " + gameData.parentList.Count); 
             LoadDataFromParentList(gameData.parentList);
 // 下面这部分被自己跳过去了,暂时没再读
-            // // currentActiveTetromino: if it has NOT landed yet
-            // StringBuilder type = new StringBuilder("");
-            // Debug.Log(TAG + " (gameData.nextTetrominoData != null): " + (gameData.nextTetrominoData != null)); 
-            // if (gameData.nextTetrominoData != null) {
-            //     nextTetromino = PoolManager.Instance.GetFromPool(
-            //         type.Append(gameData.nextTetrominoData.type).ToString(),
-            //         // gameData.nextTetrominoData.transform,
-            //         // gameData.nextTetrominoData.transform);
-            //         DeserializedTransform.getDeserializedTransPos(gameData.nextTetrominoData.transform),
-            //         DeserializedTransform.getDeserializedTransRot(gameData.nextTetrominoData.transform));
-            //     nextTetromino.tag = "currentActiveTetromino";
-            //     // if (defaultContainer == null) // 我不要再管这个东西了
-            //     //     defaultContainer = GameObject.FindGameObjectWithTag("defaultContainer");
-            //     // nextTetromino.transform.SetParent(defaultContainer.transform, false);
-            //     nextTetromino.GetComponent<Tetromino>().enabled = !nextTetromino.GetComponent<Tetromino>().enabled; 
-            //     nextTetrominoType = nextTetromino.GetComponent<TetrominoType>().type;
+            // currentActiveTetromino: if it has NOT landed yet
+            StringBuilder type = new StringBuilder("");
+            Debug.Log(TAG + " (gameData.nextTetrominoData != null): " + (gameData.nextTetrominoData != null)); 
+            if (gameData.nextTetrominoData != null) {
+                ViewManager.nextTetromino = PoolHelper.GetFromPool(
+                    type.Append(gameData.nextTetrominoData.type).ToString(),
+                    // gameData.ViewManager.nextTetrominoData.transform,
+                    // gameData.ViewManager.nextTetrominoData.transform);
+                    DeserializedTransform.getDeserializedTransPos(gameData.nextTetrominoData.transform),
+                    DeserializedTransform.getDeserializedTransRot(gameData.nextTetrominoData.transform), Vector3.zero);
+                ViewManager.nextTetromino.tag = "currentActiveTetromino";
+                // if (defaultContainer == null) // 我不要再管这个东西了
+                //     defaultContainer = GameObject.FindGameObjectWithTag("defaultContainer");
+                // ViewManager.nextTetromino.transform.SetParent(defaultContainer.transform, false);
+                ViewManager.nextTetromino.GetComponent<Tetromino>().enabled = !ViewManager.nextTetromino.GetComponent<Tetromino>().enabled; 
+                nextTetrominoType.Value = ViewManager.nextTetromino.GetComponent<TetrominoType>().type;
 
-            //     ViewManager.moveCanvas.gameObject.SetActive(true);
-            //     ViewManager.moveCanvas.transform.position = new Vector3(ViewManager.moveCanvas.transform.position.x, nextTetromino.transform.position.y, ViewManager.moveCanvas.transform.position.z);
-            //     // 也需要重新设置 ViewManager.rotateCanvas 的位置
-            //     SpawnGhostTetromino();
-            // }
+                ViewManager.moveCanvas.gameObject.SetActive(true);
+                ViewManager.moveCanvas.transform.position = new Vector3(ViewManager.moveCanvas.transform.position.x, ViewManager.nextTetromino.transform.position.y, ViewManager.moveCanvas.transform.position.z);
+                // 也需要重新设置 ViewManager.rotateCanvas 的位置
+                //SpawnGhostTetromino();
+            }
 
-            // // previewTetromino previewTetromino2
-            // type.Length = 0;
-            // string type2 = previewTetromino2Type;
-            // SpawnPreviewTetromino(type.Append(previewTetrominoType).ToString(), type2);
-            // if (prevPreview != null) {
-            //     prevPreview = prevPreview;
-            //     prevPreview2 = prevPreview2;
-            // } 
-            // // MainCamera rotation
-            // GameObject.FindGameObjectWithTag("MainCamera").transform.position = DeserializedTransform.getDeserializedTransPos(gameData.cameraData);
-            // GameObject.FindGameObjectWithTag("MainCamera").transform.rotation = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
+            // previewTetromino previewTetromino2
+            type.Length = 0;
+            string type2 = previewTetromino2Type;
+            //SpawnPreviewTetromino(type.Append(previewTetrominoType).ToString(), type2);
+            if (prevPreview != null) {
+                prevPreview = prevPreview;
+                prevPreview2 = prevPreview2;
+            } 
+            // MainCamera rotation
+            GameObject.FindGameObjectWithTag("MainCamera").transform.position = DeserializedTransform.getDeserializedTransPos(gameData.cameraData);
+            GameObject.FindGameObjectWithTag("MainCamera").transform.rotation = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
             
-            // if (nextTetromino != null && nextTetromino.CompareTag("currentActiveTetromino")) // Performance Bug: CompareTag()
-            //     gameStarted = true;
-            // loadSavedGame = false;
-            // loadSavedGame = false;
+            if (ViewManager.nextTetromino != null && ViewManager.nextTetromino.CompareTag("currentActiveTetromino")) // Performance Bug: CompareTag()
+                gameStarted = true;
+            loadSavedGame = false;
+            loadSavedGame = false;
         }    
 
         private void LoadNewGame() {
@@ -389,14 +393,6 @@ namespace HotFix.UI {
             }
         }
 
-        // void onGameSave(SaveGameEventInfo info) {
-        public void onGameSave() {
-            Debug.Log(TAG + ": onGameSave()");
-// // 这也是那个时候写得逻辑不对称的乱代码,要归位到真正用它的地方,而不是摆放在这里            
-//             if (tmpTransform == null) // Bug: 再检查一下这个到底是怎么回事
-//                 tmpTransform = new GameObject().transform;
-            SaveSystem.SaveGame(this);
-        }
         public void CheckUserInput() {  // originally pasuseButton & continueButton
             Debug.Log(TAG + ": CheckUserInput()"); 
             if (Time.timeScale == 1.0f) {
@@ -409,8 +405,7 @@ namespace HotFix.UI {
             }
         }
 
-        public void onActiveTetrominoLand(TetrominoLandEventInfo info,
-                                          GameObject nextTetromino) {
+        public void onActiveTetrominoLand(TetrominoLandEventInfo info) {
             Debug.Log(TAG + ": onActiveTetrominoLand()");
             UpdateGrid(ViewManager.nextTetromino);
 
@@ -421,8 +416,7 @@ namespace HotFix.UI {
             onGameSave();
 
             DeleteRow();
-            Debug.Log(TAG + " (CheckIsAboveGrid(nextTetromino.GetComponent<Tetromino>())): " + (CheckIsAboveGrid(nextTetromino.GetComponent<Tetromino>()))); 
-            if (CheckIsAboveGrid(nextTetromino.GetComponent<Tetromino>())) { // 检查游戏是否结束,最后一个方块砖是否放到顶了
+            if (CheckIsAboveGrid(ViewManager.nextTetromino.GetComponent<Tetromino>())) { // 检查游戏是否结束,最后一个方块砖是否放到顶了
                 Debug.Log(TAG + " TODO: Game Over");
                 // GameOver(); // for tmp
             }            
@@ -433,6 +427,14 @@ namespace HotFix.UI {
                 buttonInteractableList[2] = 1;
                 buttonInteractableList[3] = 1; // undo button
             }
+        }
+        // void onGameSave(SaveGameEventInfo info) {
+        public void onGameSave() {
+            Debug.Log(TAG + ": onGameSave()");
+// // 这也是那个时候写得逻辑不对称的乱代码,要归位到真正用它的地方,而不是摆放在这里            
+            if (tmpTransform == null) // Bug: 再检查一下这个到底是怎么回事
+                tmpTransform = new GameObject().transform;
+            SaveSystem.SaveGame(this);
         }
 
         public void cleanUpGameBroad(GameObject nextTetromino, GameObject ghostTetromino) {
@@ -655,7 +657,7 @@ namespace HotFix.UI {
             return false;
         }
 
-        public bool isTheParentChildren(Transform tmpParent, TetrominoData parent) { // compare against SerializedTransform parent
+        public bool isTheParentChildren(Transform tmpParent, TetrominoDataCon parent) { // compare against SerializedTransform parent
             return (tmpParent.gameObject.name == parent.name &&
                     tmpParent.position == DeserializedTransform.getDeserializedTransPos(parent.transform) &&
                     tmpParent.rotation == DeserializedTransform.getDeserializedTransRot(parent.transform));

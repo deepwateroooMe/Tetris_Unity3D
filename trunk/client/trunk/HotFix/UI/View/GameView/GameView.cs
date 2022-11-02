@@ -217,15 +217,6 @@ namespace HotFix.UI {
             EventManager.Instance.FireEvent("resumegame"); // for Audio
         }
         
-// 游戏进程的暂停与恢复: 这么改要改狠久狠久才能够改得完,还是先实现一些基础功能吧,到时对游戏逻辑再熟悉一点儿统一重构效率能高很多的呀
-            void onGameSave() { // 是指将游戏进度存到本地数据文件
-                Debug.Log(TAG + ": onGameSave()");
-// 不能直接删:偶合偶合,会影响其它逻辑 !!!            
-                // if (tmpTransform == null) // Bug: 再检查一下这个到底是怎么回事,为什么要生成一个新的空的呢?
-                //    // 是因为过程中的某个步骤用到了这个,可是也应该在那个要用的时候重置或是生成一个新的呀,而不是这里,那个时候都是些什么逻辑!!!
-                //    tmpTransform = new GameObject().transform;
-                SaveSystem.SaveGame(ViewModel);
-            }
         void setAllBaseBoardInactive() {
             // baseBoard3.SetActive(false);
             // baseBoard4.SetActive(false);
@@ -433,14 +424,12 @@ namespace HotFix.UI {
             isDuringUndo = true;
             ViewModel.recycleThreeMajorTetromino(ViewManager.nextTetromino, previewTetromino, previewTetromino2);
             StringBuilder path = new StringBuilder("");
-            // if (!string.IsNullOrEmpty(((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName))
             if (ViewModel.gameMode.Value > 0)
-                path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName
-                            + "/game.save");
+                path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName + "/game.save");
             else
                 path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName
                             + "grid" + ViewModel.gridWidth + "/game.save");
-            Debug.Log(TAG + " path: " + path);
+// TODO : 这里的问题是:先前每块方块砖落下的时候都会自动保存,但是我现在的逻辑还没有保存            
             GameData gameData = SaveSystem.LoadGame(path.ToString());
             StringBuilder type = new StringBuilder("");
             if (ViewModel.hasDeletedMinos) {
@@ -570,7 +559,7 @@ namespace HotFix.UI {
         }
         public void onActiveTetrominoLand(TetrominoLandEventInfo info) {
             Debug.Log(TAG + ": onActiveTetrominoLand()");
-            ViewModel.onActiveTetrominoLand(info, ViewManager.nextTetromino);
+            ViewModel.onActiveTetrominoLand(info);
 // ghostTetromino, nextTetromino 的相关处理
             PoolHelper.recycleGhostTetromino(); // 放这里的主要原因是需要传参数
             ViewManager.nextTetromino.tag = "Untagged";
@@ -585,6 +574,15 @@ namespace HotFix.UI {
             // onGameSave();
             if (((MenuViewModel)ViewModel.ParentViewModel).gameMode != 0) 
                 SpawnnextTetromino();  
+        }
+        // 游戏进程的暂停与恢复: 这么改要改狠久狠久才能够改得完,还是先实现一些基础功能吧,到时对游戏逻辑再熟悉一点儿统一重构效率能高很多的呀
+        void onGameSave() { // 是指将游戏进度存到本地数据文件
+            Debug.Log(TAG + ": onGameSave()");
+// 不能直接删:偶合偶合,会影响其它逻辑 !!!            
+            // if (tmpTransform == null) // Bug: 再检查一下这个到底是怎么回事,为什么要生成一个新的空的呢?
+            //    // 是因为过程中的某个步骤用到了这个,可是也应该在那个要用的时候重置或是生成一个新的呀,而不是这里,那个时候都是些什么逻辑!!!
+            //    tmpTransform = new GameObject().transform;
+            SaveSystem.SaveGame(ViewModel);
         }
 #endregion
         

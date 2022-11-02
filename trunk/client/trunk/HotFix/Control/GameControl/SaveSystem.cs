@@ -47,9 +47,8 @@ namespace HotFix.Control {
                 }            
             }
             FileStream stream = new FileStream(currentPath, FileMode.Create);
-            // following commented for tmp
-            // GameData data = new GameData(game); // 如果有了视图模型以及更幕后的游戏应用模型,不是不应该再保存视图层面的这些了吗,想想
-            //formatter.Serialize(stream, data);
+            GameData data = new GameData(ViewManager.GameView.ViewModel); // 如果有了视图模型以及更幕后的游戏应用模型,不是不应该再保存视图层面的这些了吗,想想
+            formatter.Serialize(stream, data);
             stream.Close();
         }
 
