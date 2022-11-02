@@ -36,7 +36,7 @@ namespace HotFix.Control {
                 path.Append(Application.persistentDataPath + "/" + parentViewModel.saveGamePathFolderName + "/game.save"); 
             } else {
                 path.Append(Application.persistentDataPath + "/" + parentViewModel.saveGamePathFolderName
-                            + "/grid" + parentViewModel.gridWidth + "/game.save"); 
+                            + "grid" + parentViewModel.gridWidth + "/game.save"); 
             }
             currentPath = path.ToString();
             if (File.Exists(currentPath)) {
@@ -71,6 +71,7 @@ namespace HotFix.Control {
                 
                 return data;
             } else {
+                Debug.Log(TAG + " currentPath: " + currentPath);
                 Debug.LogError("Save file not found in " + currentPath);
                 return null;
             }

@@ -130,7 +130,7 @@ namespace HotFix.UI {
             if (_gameMode > 0)
                 currentPath.Append(Application.persistentDataPath + "/" + _saveGamePathFolderName + "/game.save");
             else 
-                currentPath.Append(Application.persistentDataPath + "/" + _saveGamePathFolderName + "/grid" + _gridWidth + "/game.save");
+                currentPath.Append(Application.persistentDataPath + "/" + _saveGamePathFolderName + "grid" + _gridWidth + "/game.save");
             Debug.Log(TAG + " currentPath: " + currentPath.ToString()); 
             if (File.Exists(currentPath.ToString()))
                 return true;
@@ -146,6 +146,5 @@ namespace HotFix.UI {
         }
     }
 }
-
 
 

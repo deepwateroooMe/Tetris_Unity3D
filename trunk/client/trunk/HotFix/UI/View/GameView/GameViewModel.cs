@@ -8,6 +8,7 @@ using HotFix.Control;
 using HotFix.Data;
 using tetris3d;
 using UnityEngine;
+using UnityEngine.UI;
 using SaveSystem = HotFix.Control.SaveSystem;
 
 namespace HotFix.UI {
@@ -81,13 +82,38 @@ namespace HotFix.UI {
             base.OnInitialize();
             Initialization();
             DelegateSubscribe(); 
+        }   
+ 
+// 我的那些先前的歪歪斜斜的写法
+        // enable disable these button3s work slight better than this, could modify this part later
+        public int [] buttonInteractableList = new int[7]{ 1, 1, 1, 1, 1, 1, 1};
+        // previewSelectionButton     0
+        // previewSelectionButton2    1
+        // swapPreviewTetrominoButton 2
+        // undoButton                 3
+        // toggleButton               4
+        // fallButton                 5
+        // pauseButton                6
+        public int getSlamDownIndication () {
+            return buttonInteractableList[5];
         }
-
+        // buttons can be clicked once only each time: disable self whenever got clicked         
+        // states:
+        // SpawnPreviewTetromino: // undo ?
+        // disables: undoButton toggleButton fallButton
+        // playFirstTetromino:
+        // playSecondTetromino:
+        // disables: previewSelectionButton previewSelectionButton2 swapPreviewTetrominoButton
+        // enables: undoButton toggleButton fallButton
+        // onUndoGame:
+        // disableAllButtons();
+        // onActiveTetrominoLand: slam down, move down, except undoButton
+        // disableAllButtons();
+        // enable: undoButton
         void Initialization() {
             this.ParentViewModel = (MenuViewModel)ViewManager.MenuView.BindingContext; // 父视图模型: 菜单视图模型
             gridWidth = ((MenuViewModel)ParentViewModel).gridWidth;
-            Debug.Log(TAG + " gridWidth: " + gridWidth);
-
+            
 // 这里好像是需要解决一下多维数组在ILRuntime热更新程序域中的适配问题???
             // grid = new Transform[5, gridHeight, 5]; // BUGGY BUGGY BUGGY multidimensional array.....
             grid = new Transform [5][][]; // BUGGY BUGGY BUGGY multidimensional array.....
@@ -261,33 +287,6 @@ namespace HotFix.UI {
         void InitializeGrid() { // 这是里是指初始化数据管理,而不是视图层面
 
         }
-
-// 我的那些先前的歪歪斜斜的写法
-        // enable disable these button3s work slight better than this, could modify this part later
-        public int [] buttonInteractableList = new int[7]{ 1, 1, 1, 1, 1, 1, 1};
-        // previewSelectionButton     0
-        // previewSelectionButton2    1
-        // swapPreviewTetrominoButton 2
-        // undoButton                 3
-        // toggleButton               4
-        // fallButton                 5
-        // pauseButton                6
-        public int getSlamDownIndication () {
-            return buttonInteractableList[5];
-        }
-        // buttons can be clicked once only each time: disable self whenever got clicked         
-        // states:
-        // SpawnPreviewTetromino: // undo ?
-        // disables: undoButton toggleButton fallButton
-        // playFirstTetromino:
-        // playSecondTetromino:
-        // disables: previewSelectionButton previewSelectionButton2 swapPreviewTetrominoButton
-        // enables: undoButton toggleButton fallButton
-        // onUndoGame:
-        // disableAllButtons();
-        // onActiveTetrominoLand: slam down, move down, except undoButton
-        // disableAllButtons();
-        // enable: undoButton
 
         public void LoadDataFromParentList(List<TetrominoData> parentList) {
             int [] pos = new int[3];

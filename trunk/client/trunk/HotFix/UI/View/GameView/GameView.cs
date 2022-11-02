@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using deepwaterooo.tetris3d;
@@ -42,7 +43,7 @@ namespace HotFix.UI {
         Button falBtn; // fall fast button
 // EduBtnsView
         Button swaBtn; // swap current tetrominos to be a newly generating(it's coming after click) tetromino set
-        Button undBtn; // undo last selected tetromino landing, revert it back
+        Button undoBtn; // UNDO last selected tetromino landing, revert it back
 // pausePanel: 
         GameObject pausePanel;
         Button savBtn; // SAVE GAME
@@ -76,10 +77,11 @@ namespace HotFix.UI {
         private GameObject comTetroView; // 这里更多的应该是指 ComTetroView EduTetroView组合组件(会激或是失活某组组件)
         private GameObject eduTetroView;
         
-		public GameObject undoButton;
         private bool isDuringUndo = false;
         public bool saveForUndo = true;
 
+        public Dictionary<Button, bool> btnState;
+        
         private static GameObject tmpTetro; // TODO: why static ?
 
         private bool isMoveValid = false;
@@ -124,7 +126,7 @@ namespace HotFix.UI {
             previewTetromino.transform.SetParent(ViewManager.tetroParent.transform, false);
             
             if (ViewModel.gameMode.Value == 0) { // previewTetromino2
-                // excepts: undoButton toggleButton fallButton
+                // excepts: undoBtn toggleButton fallButton
                 ViewModel.buttonInteractableList[3] = 0;
                 ViewModel.buttonInteractableList[4] = 0;
                 ViewModel.buttonInteractableList[5] = 0;
@@ -143,7 +145,7 @@ namespace HotFix.UI {
                 previewTetromino2 = PoolHelper.GetFromPool(type2, previewTetromino2Position, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
                 previewTetromino2.transform.SetParent(ViewManager.tetroParent.transform, false);
             }
-            ViewModel.buttonInteractableList[3] = 1; // undoButton
+            ViewModel.buttonInteractableList[3] = 1; // undoBtn
         }
 
         private void LoadNewGame() {
@@ -161,7 +163,7 @@ namespace HotFix.UI {
             //     comTetroView.SetActive(false);
             //     eduTetroView.SetActive(false);
             //     swaBtn.SetActive(false);
-            //     undoButton.SetActive(false);
+            //     undoBtn.SetActive(false);
             // }
             // ViewManager.moveCanvas.SetActive(true);
             // ViewManager.rotateCanvas.SetActive(false);
@@ -251,46 +253,6 @@ namespace HotFix.UI {
             }
         }
 
-        public void onUndoGame() { // 分一部分的逻辑到视图模型中去
-            Debug.Log(TAG + ": onUndoGame()");
-            if (ViewModel.buttonInteractableList[3] == 0) return;
-            Array.Clear(ViewModel.buttonInteractableList, 0, ViewModel.buttonInteractableList.Length);
-            isDuringUndo = true;
-            ViewModel.recycleThreeMajorTetromino(ViewManager.nextTetromino, previewTetromino, previewTetromino2);
-            StringBuilder path = new StringBuilder("");
-            // if (!string.IsNullOrEmpty(((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName)) 
-            path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName + "/game" + ".save");
-            // else
-            //     path.Append(Application.persistentDataPath + "/game" + ".save");
-            GameData gameData = SaveSystem.LoadGame(path.ToString());
-            StringBuilder type = new StringBuilder("");
-            if (ViewModel.hasDeletedMinos) {
-                ViewModel.currentScore.Value  = gameData.score; // 这里要改
-                ViewModel.currentLevel.Value  = gameData.level;
-                numLinesCleared = gameData.lines;
-                // scoText.text = ViewModel.currentScore.ToString();
-                // lvlText.text = ViewModel.currentLevel.ToString(); // 这不希望变的
-                // linText.text = numLinesCleared.ToString();
-                
-                Debug.Log(TAG + " gameData.parentList.Count: " + gameData.parentList.Count);
-                ViewModel.LoadDataFromParentList(gameData.parentList);
-                GameObject.FindGameObjectWithTag("MainCamera").transform.position = DeserializedTransform.getDeserializedTransPos(gameData.cameraData); // MainCamera
-                GameObject.FindGameObjectWithTag("MainCamera").transform.rotation = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
-            }
-            ViewManager.moveCanvas.gameObject.SetActive(false);   // ViewManager.moveCanvas ViewManager.rotateCanvas: SetActive(false)
-            ViewManager.rotateCanvas.gameObject.SetActive(false);
-            if (ViewModel.prevPreview != null) { // previewTetromino previewTetromino2
-                type.Length = 0;
-                string type2 = ViewModel.prevPreview2;
-                SpawnPreviewTetromino(type.Append(ViewModel.prevPreview).ToString(), type2);
-            }
-            ViewModel.buttonInteractableList[0] = 1; 
-            ViewModel.buttonInteractableList[1] = 1; 
-            ViewModel.buttonInteractableList[2] = 1; 
-            ViewModel.buttonInteractableList[3] = 0; // buttons are supposed to click once at a time only
-            isDuringUndo = false;
-        }
-        
         void LoadGame(string path) {  // when load Scene load game: according to gameMode
             Debug.Log(TAG + ": LoadGame()");
             // ViewModel.InitializationForNewGame(); // com for tmp
@@ -311,7 +273,7 @@ namespace HotFix.UI {
             //     comTetroView.SetActive(false);
             //     eduTetroView.SetActive(false);
             //     swaBtn.SetActive(false);
-            //     undoButton.SetActive(false);
+            //     undoBtn.SetActive(false);
             // }
             // Debug.Log(TAG + " gameData.parentList.Count: " + gameData.parentList.Count); 
             // ViewModel.LoadDataFromParentList(gameData.parentList);
@@ -463,9 +425,51 @@ namespace HotFix.UI {
 #region GameViewCallbacks
 // 游戏主面板中7个按钮的点击回调        
 // 撤销: 最后一块降落的方块砖 TODO 这一个按钮相对复杂一点儿,放在后面写
-        void OnClickUndButton() { 
+        void OnClickUndButton() { // onUndoGame() { // 分一部分的逻辑到视图模型中去
             // 类似的逻辑下发数据,并由数据驱动刷新UI
+            Debug.Log(TAG + ": onUndoGame()");
+            if (ViewModel.buttonInteractableList[3] == 0) return;
+            Array.Clear(ViewModel.buttonInteractableList, 0, ViewModel.buttonInteractableList.Length);
+            isDuringUndo = true;
+            ViewModel.recycleThreeMajorTetromino(ViewManager.nextTetromino, previewTetromino, previewTetromino2);
+            StringBuilder path = new StringBuilder("");
+            // if (!string.IsNullOrEmpty(((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName))
+            if (ViewModel.gameMode.Value > 0)
+                path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName
+                            + "/game.save");
+            else
+                path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName
+                            + "grid" + ViewModel.gridWidth + "/game.save");
+            Debug.Log(TAG + " path: " + path);
+            GameData gameData = SaveSystem.LoadGame(path.ToString());
+            StringBuilder type = new StringBuilder("");
+            if (ViewModel.hasDeletedMinos) {
+                ViewModel.currentScore.Value  = gameData.score; // 这里要改
+                ViewModel.currentLevel.Value  = gameData.level;
+                numLinesCleared = gameData.lines;
+                // scoText.text = ViewModel.currentScore.ToString();
+                // lvlText.text = ViewModel.currentLevel.ToString(); // 这不希望变的
+                // linText.text = numLinesCleared.ToString();
+                
+                Debug.Log(TAG + " gameData.parentList.Count: " + gameData.parentList.Count);
+                ViewModel.LoadDataFromParentList(gameData.parentList);
+                GameObject.FindGameObjectWithTag("MainCamera").transform.position = DeserializedTransform.getDeserializedTransPos(gameData.cameraData); // MainCamera
+                GameObject.FindGameObjectWithTag("MainCamera").transform.rotation = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
+            }
+            ViewManager.moveCanvas.gameObject.SetActive(false);   // ViewManager.moveCanvas ViewManager.rotateCanvas: SetActive(false)
+            ViewManager.rotateCanvas.gameObject.SetActive(false);
+            if (ViewModel.prevPreview != null) { // previewTetromino previewTetromino2
+                type.Length = 0;
+                string type2 = ViewModel.prevPreview2;
+                SpawnPreviewTetromino(type.Append(ViewModel.prevPreview).ToString(), type2);
+            }
+            ViewModel.buttonInteractableList[0] = 1; 
+            ViewModel.buttonInteractableList[1] = 1; 
+            ViewModel.buttonInteractableList[2] = 1; 
+            ViewModel.buttonInteractableList[3] = 0; // buttons are supposed to click once at a time only
+            isDuringUndo = false;
         }
+
         void OnClickPauButton() { 
             Debug.Log(TAG + " OnClickPauButton");
             Time.timeScale = 0f;
@@ -513,6 +517,7 @@ namespace HotFix.UI {
         //     SpawnPreviewTetromino();
         // }
         void OnClickTogButton() { // toggle moveCanvas rotateCanvas
+            btnState.Add(togBtn, false);
             EventManager.Instance.FireEvent("canvas");
         }
         public void playFirstTetromino() { // pvBtnOne: comTetroView Button
@@ -587,7 +592,7 @@ namespace HotFix.UI {
         protected override void OnInitialize() {
             base.OnInitialize();
             RegisterListeners();
-            
+
             baseBoard5 = GameObject.FindChildByName("BaseBoard5");
             setAllBaseBoardInactive();
 // 当视图想要通过视图模型来获取父视图模型的数据时,实际上当前视图模型还没能启动好,还没有设置好其父视图模型,所以会得到空,要换种写法
@@ -623,8 +628,8 @@ namespace HotFix.UI {
 
             falBtn = GameObject.FindChildByName("falBtn").GetComponent<Button>();
             falBtn.onClick.AddListener(OnClickFalButton);
-            undBtn = GameObject.FindChildByName("undBtn").GetComponent<Button>();
-            undBtn.onClick.AddListener(OnClickUndButton);
+            undoBtn = GameObject.FindChildByName("undBtn").GetComponent<Button>();
+            undoBtn.onClick.AddListener(OnClickUndButton);
 // pausePanel里的5个按钮
             pausePanel = GameObject.FindChildByName("MidMenuView"); // MidMenuView: 它仍然是空父节点GameView的众多子节点之一
             resBtn = GameObject.FindChildByName("resBtn").GetComponent<Button>();
@@ -646,6 +651,17 @@ namespace HotFix.UI {
 
             cycledPreviewTetromino = new GameObject();
             delta = Vector3.zero;
+
+// 启动并控制游戏主场景面板上几个按钮的是否可点击状态
+            btnState = new Dictionary<Button, bool>() {
+                {pvBtnOne, true}, // comTetroView button
+                {pvBtnTwo, true}, // eduTetroView button
+                {swaBtn, true},   // swap
+                {undoBtn, true},  // undo
+                {togBtn, true},   // toggle
+                {falBtn, true},   // fall fast
+                {pauBtn, true}    // pause game
+            };
         }
         void RegisterListeners() {
             Debug.Log(TAG + " RegisterListeners");
@@ -705,7 +721,7 @@ namespace HotFix.UI {
                 comTetroView.SetActive(false); // 这里最是设置为移动位置(方便期间也可以设置三套,失活与激活另经典模式下的第三套)
                 eduTetroView.SetActive(false); 
                 //swaBtn.SetActive(false);
-                undoButton.SetActive(false); // 不可撤销(挑战模式是仍可以再考虑)
+                undoBtn.gameObject.SetActive(false); // 不可撤销(挑战模式是仍可以再考虑)
             }
         }
         void onCurrentScoreChanged(int pre, int cur) {
