@@ -32,7 +32,7 @@ namespace HotFix.UI {
         Text lvlText; // Level Text
         Text linText; // Line Text
 // ComTetroView 按钮控件
-        Button pvBtnOne; // ptoBtn
+        Button pvBtnOne; // ptoBtn 
 // EduTetroView 按钮控件
         Button pvBtnTwo; // pteBtn
 // ToggleBtnView
@@ -84,6 +84,7 @@ namespace HotFix.UI {
 
         private bool isMoveValid = false;
         private bool isRotateValid = false;
+        private Vector3 delta;
         
         public void SpawnnextTetromino() {
             Debug.Log(TAG + ": SpawnnextTetromino()");
@@ -206,15 +207,6 @@ namespace HotFix.UI {
             // startingHighScore3 = PlayerPrefs.GetInt("highscore3");
         }
 // PauseGame, ResumeGame        
-        void OnClickPauButton() { 
-            Debug.Log(TAG + " OnClickPauButton");
-
-            Time.timeScale = 0f;
-            EventManager.Instance.FireEvent("pausegame");
-            // ViewModel.PauseGame(); // 游戏暂停
-            pausePanel.SetActive(true);
-// TODO : Bug: disable all Hud canvas buttons: swap etc
-        }
         void OnClickResButton() { // RESUME GAME: 隐藏当前游戏过程中的视图,就可以了 // public void OnClickResButton();
             Debug.Log(TAG + " OnClickResButton");
             Time.timeScale = 1.0f;
@@ -375,28 +367,19 @@ namespace HotFix.UI {
                 ViewManager.nextTetromino.transform.localPosition = new Vector3(2.0f, ViewModel.gridHeight - 1f, 2.0f);
         }
         
-        private void moveRotatecanvasPrepare() { // 暂时放在视图,仍然应该是在视图模型中的
-            Debug.Log(TAG + ": moveRotatecanvasPrepare()"); 
+        private void moveRotatecanvasPrepare() { 
             ViewManager.moveCanvas.transform.localPosition = new Vector3(2.0f, ViewModel.gridHeight - 1f, 2.0f);     
             ViewManager.rotateCanvas.transform.localPosition = new Vector3(2.0f, ViewModel.gridHeight - 1f, 2.0f);
-            ViewManager.moveCanvas.transform.rotation = Quaternion.Euler(0, 0, 0); // 规正可能存在的微小转动
-
-			ViewModel.isMovement = false;
-// TODO: 因为最开始它是失活状态,接收不到事件,这里需要帮它启动一下(定义新的事件后,这里可以移除)            
+            ViewManager.moveCanvas.transform.rotation = Quaternion.Euler(0, 0, 0);   // 规正可能存在的微小转动
+            ViewManager.rotateCanvas.transform.rotation = Quaternion.Euler(0, 0, 0); // 规正可能存在的微小转动
             ViewManager.moveCanvas.SetActive(true);
-            // ViewModel.toggleButtons(1);
         }
-        public void DisableMoveRotationCanvas() {
-            Debug.Log(TAG + ": DisableMoveRotationCanvas()"); 
-            ViewManager.moveCanvas.gameObject.SetActive(false);
-            ViewManager.rotateCanvas.SetActive(false);
-        }
-    
+
         public void SpawnGhostTetromino() {
-            // Debug.Log(TAG + ": SpawnGhostTetromino() nextTetromino.tag: " + nextTetromino.tag); 
             GameObject tmpTetromino = GameObject.FindGameObjectWithTag("currentActiveTetromino");
-            // Debug.Log(TAG + ": SpawnGhostTetromino() (tmpTetromino == null): " + (tmpTetromino == null)); 
-            ViewManager.ghostTetromino = PoolHelper.GetFromPool(GameObjectHelper.GetGhostTetrominoType(ViewManager.nextTetromino), ViewManager.nextTetromino.transform.position, ViewManager.nextTetromino.transform.rotation, Vector3.one);
+            ViewManager.ghostTetromino = PoolHelper.GetFromPool(GameObjectHelper.GetGhostTetrominoType(ViewManager.nextTetromino),
+                                                                ViewManager.nextTetromino.transform.position,
+                                                                ViewManager.nextTetromino.transform.rotation, Vector3.one);
         }
         void Update() {
             ViewModel.UpdateScore();
@@ -416,10 +399,10 @@ namespace HotFix.UI {
             // SceneManager.LoadScene("GameOver");
         }
 #region pausePanel Button Handlers
-        // MidMenuView 里的5 个按钮
+        // MidMenuView 里的5 个按钮, 以及的瑨延伸的3个按钮的点击回调
         void OnClickSavButton() { // SAVE GAME
+
         }
-        
         void SaveGame(SaveGameEventInfo info) {
             Debug.Log(TAG + ": SaveGame()");
             ViewModel.saveForUndo = false;
@@ -457,7 +440,6 @@ namespace HotFix.UI {
                     Debug.LogException(ex);
                 }
             }
-            // SceneManager.LoadScene("GameMenu"); // commented out for tmp
         }
         void OnClickManButton() { // back to main menu
 // TODO: reminder FOR USER if game is NOT saved            
@@ -479,12 +461,36 @@ namespace HotFix.UI {
 #endregion
 
 #region GameViewCallbacks
-        void OnClickUndButton() {
+// 游戏主面板中7个按钮的点击回调        
+// 撤销: 最后一块降落的方块砖 TODO 这一个按钮相对复杂一点儿,放在后面写
+        void OnClickUndButton() { 
             // 类似的逻辑下发数据,并由数据驱动刷新UI
         }
+        void OnClickPauButton() { 
+            Debug.Log(TAG + " OnClickPauButton");
+            Time.timeScale = 0f;
+            EventManager.Instance.FireEvent("pausegame");
+            // ViewModel.PauseGame(); // 游戏暂停
+            pausePanel.SetActive(true);
+// TODO : Bug: disable all Hud canvas buttons: swap etc
+        }
         void OnClickFalButton() { // SlamDown FallFast
-            Debug.Log(TAG + " OnClickFalButton");
-            ViewModel.SlamDown();
+            Debug.Log(TAG + " OnClickFallFastButton");
+// // TODO: 这个数组没有管理好,为的是一个用户防连击的效果            
+//             ViewModel.printbuttonInteractableList();
+//             if (ViewModel.gameMode.Value == 0 && ViewModel.getSlamDownIndication() == 0) return; // 防用户连击
+//             ViewModel.buttonInteractableList[5] = 0;
+            delta = new Vector3(0, -1, 0);
+            ViewManager.nextTetromino.transform.position += delta;
+            while (ViewModel.CheckIsValidPosition()) { 
+                ViewManager.nextTetromino.transform.position -= delta;
+                EventManager.Instance.FireEvent("move", delta);
+                ViewManager.nextTetromino.transform.position += delta;
+            } // 出循环就是不合理位置
+            if (!ViewModel.CheckIsValidPosition()) { // 方块砖移到了最底部
+                ViewManager.nextTetromino.transform.position -= delta;
+                EventManager.Instance.FireEvent("land");
+            }
         }
         public void onSwapPreviewTetrominos () { // 这里需要下发指令到视图数据层,并根据随机数生成的新的tetromino来重新刷新UI
             Debug.Log(TAG + " onSwapPreviewTetrominos");
@@ -538,32 +544,34 @@ namespace HotFix.UI {
 // TODO: 这个系统是,4+6个按钮触发事件(会有假阳性,会误播背景音乐),先发送所有事件,再接收后才判断是否合理,只有背景音乐受影响
 #region eventsCallbacks
 // 因为ViewManager.nextTetromino是静态的,将相关逻辑移到这个类里来管理, 不可以这样      
-        void onActiveTetrominoMove(TetrominoMoveEventInfo info) { 
+        void onActiveTetrominoMove(TetrominoMoveEventInfo info) { // MoveDown:所有事件都是有效的
             Debug.Log(TAG + " onActiveTetrominoMove");
             ViewManager.nextTetromino.transform.position += info.delta;
             isMoveValid = ViewModel.CheckIsValidPosition();
-            // if (isMoveValid) { // 这里下移相比于平移可以再简化优化一下?
-            //     ViewManager.GameView.ViewModel.UpdateGrid(ViewManager.nextTetromino); // ???
-            // } else {
-            if (!isMoveValid) {
+            if (isMoveValid)
+                EventManager.Instance.FireEvent("validMR", "move");
+            else 
                 ViewManager.nextTetromino.transform.position -= info.delta;
-            }
         }
         void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
             // Debug.Log(TAG + ": onActiveTetrominoRotate()");
             ViewManager.nextTetromino.transform.Rotate(info.delta);
             if (ViewModel.CheckIsValidPosition()) {
                 isRotateValid = true;
-                // ViewModel.UpdateGrid(ViewManager.nextTetromino); 
+                EventManager.Instance.FireEvent("validMR", "rotate");
             } else {
                 ViewManager.nextTetromino.transform.Rotate(Vector3.zero - info.delta);
             }
         }
         public void onActiveTetrominoLand(TetrominoLandEventInfo info) {
             Debug.Log(TAG + ": onActiveTetrominoLand()");
-            // ViewModel.MoveUp(); // 把两块画布往上移动一格, 会不会比较快一点儿呢?
             ViewModel.onActiveTetrominoLand(info, ViewManager.nextTetromino);
+// ghostTetromino, nextTetromino 的相关处理
             PoolHelper.recycleGhostTetromino(); // 放这里的主要原因是需要传参数
+            ViewManager.nextTetromino.tag = "Untagged";
+            Tetromino tetromino = ComponentHelper.GetTetroComponent(ViewManager.nextTetromino);
+            tetromino.enabled = false;
+            ViewManager.GameView.ViewModel.currentScore.Value += tetromino.individualScore;            
 // 保存游戏进展 
             // // SaveGameEventInfo fire here 
             // saveGameInfo = new SaveGameEventInfo();
@@ -573,7 +581,6 @@ namespace HotFix.UI {
             if (((MenuViewModel)ViewModel.ParentViewModel).gameMode != 0) 
                 SpawnnextTetromino();  
         }
-
 #endregion
         
 #region Initialize
@@ -615,7 +622,6 @@ namespace HotFix.UI {
             swaBtn.onClick.AddListener(onSwapPreviewTetrominos);
 
             falBtn = GameObject.FindChildByName("falBtn").GetComponent<Button>();
-            // falBtn.onClick.AddListener(ViewModel.SlamDown);
             falBtn.onClick.AddListener(OnClickFalButton);
             undBtn = GameObject.FindChildByName("undBtn").GetComponent<Button>();
             undBtn.onClick.AddListener(OnClickUndButton);
@@ -639,6 +645,7 @@ namespace HotFix.UI {
             cancBtn = GameObject.FindChildByName("cancBtn").GetComponent<Button>(); // cancel: back to pause Panel
 
             cycledPreviewTetromino = new GameObject();
+            delta = Vector3.zero;
         }
         void RegisterListeners() {
             Debug.Log(TAG + " RegisterListeners");

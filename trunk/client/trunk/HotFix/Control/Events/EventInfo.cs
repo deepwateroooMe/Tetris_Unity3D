@@ -34,6 +34,10 @@ namespace HotFix.Control {
         public const string TAG = "TetrominoRotateEventInfo"; 
         public Vector3 delta;
     }
+    public class TetrominoValidMMInfo : EventInfo { // valid Move Rotate
+        private const string TAG = "TetrominoValidMMInfo";
+        public string type;
+    }
     public class TetrominoLandEventInfo : EventInfo {     // land
         public const string TAG = "TetrominoLandEventInfo";
     }
@@ -64,9 +68,9 @@ namespace HotFix.Control {
     public class UndoGameEventInfo : EventInfo {          // Undo Game
         public const string TAG = "UndoGameEventInfo";
     }
-    public class FallFastEventInfo : EventInfo {          // fallFast
-        public const string TAG = "FallFastEventInfo";
-    }
+    // public class FallFastEventInfo : EventInfo {          // fallFast
+    //     public const string TAG = "FallFastEventInfo";
+    // }
 // 画布: 两个画布的切换等
     public class CanvasToggledEventInfo : EventInfo {       // moveCanvas rotateCanvas
         public const string TAG = "CanvasToggledEventInfo";

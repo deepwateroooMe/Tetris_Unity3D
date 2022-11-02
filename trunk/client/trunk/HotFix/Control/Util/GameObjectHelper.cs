@@ -5,6 +5,7 @@ using System.Text;
 using UnityEngine;
 
 namespace HotFix.Control {
+
 	public class GameObjectHelper {
         private const string TAG = "GameObjectHelper"; 
 
@@ -24,6 +25,5 @@ namespace HotFix.Control {
             }
             return type.ToString(); 
         }    
-        
 	}
 }

@@ -56,7 +56,7 @@ namespace HotFix.UI {
         private int startingHighScore2;
         private int startingHighScore3;
      
-        public bool isMovement = true;
+        // public bool isMovement = true;
         private int randomTetromino;
 // TODO: INTO CONST        
         public Vector3 previewTetrominoScale = new Vector3(6f, 6f, 6f); // previewTetromino Scale (7,7,7)
@@ -104,15 +104,17 @@ namespace HotFix.UI {
                 for (int j = 0; j < gridHeight; j++) 
                     gridOcc[i][j] = new int[5];
             }
-            Debug.Log(TAG + " (grid[3][11][3] != null): " + (grid[3][11][3] != null));
             gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
-            fallSpeed = 3.0f;
+            fallSpeed = 0.5f;
             saveForUndo = true;
             gameStarted = false;
             
             nextTetroPos.Value = new Vector3(2.0f, 11.0f, 2.0f);
             nextTetroRot.Value = Quaternion.Euler(Vector3.zero);
             nextTetroSca.Value = Vector3.one;
+            buttonInteractableList = new int [7];
+            for (int i = 0; i < 7; i++)
+                buttonInteractableList[i] = 1;
         }
 
         public void Start() {
@@ -145,7 +147,7 @@ namespace HotFix.UI {
             gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
             Debug.Log(TAG + " gameMode.Value: " + gameMode.Value);
 
-            fallSpeed = 3.0f; // should be recorded too, here
+            fallSpeed = 0.5f; // should be recorded too, here
             if (gameMode.Value == 0)
                 resetGridOccBoard();
             currentScore.Value = 0;
@@ -235,7 +237,7 @@ namespace HotFix.UI {
         private void LoadNewGame() {
             Debug.Log(TAG + ": LoadNewGame()");
             gameMode.Value  = ((MenuViewModel)ParentViewModel).gameMode;
-            fallSpeed = 3.0f; // should be recorded too, here
+            fallSpeed = 0.5f; // should be recorded too, here
 
             if (gameMode.Value  == 0)
                 resetGridOccBoard();
@@ -422,6 +424,7 @@ namespace HotFix.UI {
             DeleteRow();
             Debug.Log(TAG + " (CheckIsAboveGrid(nextTetromino.GetComponent<Tetromino>())): " + (CheckIsAboveGrid(nextTetromino.GetComponent<Tetromino>()))); 
             if (CheckIsAboveGrid(nextTetromino.GetComponent<Tetromino>())) { // 检查游戏是否结束,最后一个方块砖是否放到顶了
+                Debug.Log(TAG + " TODO: Game Over");
                 // GameOver(); // for tmp
             }            
             Array.Clear(buttonInteractableList, 0, buttonInteractableList.Length);
@@ -485,7 +488,7 @@ namespace HotFix.UI {
         }
         
         public void printbuttonInteractableList() {
-            for (int i = 0; i < 6; i++) 
+            for (int i = 0; i <= 6; i++) 
                 Debug.Log(TAG + " buttonInteractableList[i]: i : " + i + ", " + buttonInteractableList[i]); 
         }
 
@@ -528,18 +531,7 @@ namespace HotFix.UI {
 // 配置当前方块砖的相关信息
             previewTetromino2.transform.localScale -= previewTetrominoScale;
             Debug.Log(TAG + " (nextTetroRot.Value == null): " + (nextTetroRot.Value == null));
-            // Helpers.resetPos(ViewManager.GameView.nextTetromino, new Vector3(2.0f, 11.0f, 2.0f));
-            // Helpers.resetRot(ViewManager.GameView.nextTetromino, Quaternion.Euler(0, 0, 0));
-            // Helpers.resetSca(ViewManager.GameView.nextTetromino, Vector3.one);
             ViewManager.nextTetromino = previewTetromino2;
-            // nextTetrominoTransform.position = new Vector3(2.0f, 11.0f, 2.0f);
-            // nextTetrominoTransform.rotation = Quaternion.Euler(0, 0, 0);
-            // nextTetrominoTransform.localScale = Vector3.one;
-            // Helpers.resetTrans(ViewManager.nextTetromino, nextTetrominoTransform);
-            // // ViewManager.nextTetromino.gameObject.transform = nextTetrominoTransform;
-            // nextTetroPos.Value = new Vector3(2.0f, 11.0f, 2.0f);
-            // nextTetroRot.Value = Quaternion.Euler(0, 0, 0);
-            // nextTetroSca.Value = new Vector3(1, 1, 1); 
             ViewManager.nextTetromino.gameObject.transform.position = new Vector3(2.0f, 11.0f, 2.0f);
             ViewManager.nextTetromino.gameObject.transform.rotation = Quaternion.Euler(0, 0, 0);
             ViewManager.nextTetromino.gameObject.transform.localScale = Vector3.one;
@@ -613,7 +605,6 @@ namespace HotFix.UI {
                     if (grid[x][y][z].parent.gameObject.name == parentData.name &&
                         MathUtil.Round(grid[x][y][z].parent.position) == MathUtil.Round(DeserializedTransform.getDeserializedTransPos(parentData.transform)) && 
                         MathUtil.Round(grid[x][y][z].parent.rotation) == MathUtil.Round(DeserializedTransform.getDeserializedTransRot(parentData.transform))) {
-// 这么写是不通的,所以要用观察者模式,视图观察视图模型里的TRANSFORM变化                        
                         // ViewManager.GameView.tmpParentGO = grid[x][y][z].parent.gameObject;  // for tmp
                         return true;
                     }
@@ -945,34 +936,12 @@ namespace HotFix.UI {
             else
                 return grid[(int)pos.x][(int)pos.y][(int)pos.z];
         }
-// TODO: 这里面的逻辑坏掉了,需要检查修改
-        public void SlamDown() {
-            Debug.Log(TAG + " SlamDown");
-            // if (ViewManager.GameView.buttonInteractableList[5] == 0) return;
-            if (((MenuViewModel)ParentViewModel).gameMode == 0 && getSlamDownIndication() == 0) return;
-            while (CheckIsValidPosition()) { // 不知道这种极速调用,反应得过来吗?
-                ViewManager.nextTetromino.transform.position += new Vector3(0, -1, 0);
-                MoveDown(); // TODO:两块画布下移
-            }
-            if (!CheckIsValidPosition()) { // 方块砖移到了最底部
-                ViewManager.nextTetromino.transform.position += new Vector3(0, 1, 0);
-                MoveUp();
-                // PoolHelper.recycleGhostTetromino();
-                // //onTetrominoLand();
-                EventManager.Instance.FireEvent("land");
-			}
-		}
         public bool CheckIsValidPosition() { // TODO: 写了两遍 Tetromino GameViewModel
-            // Debug.Log(TAG + " CheckIsValidPosition");
             foreach (Transform mino in ViewManager.nextTetromino.transform) {
                 if (mino.CompareTag("mino")) {
                     Vector3 pos = MathUtil.Round(mino.position);
                     if (!CheckIsInsideGrid(pos)) 
                         return false;
-                    // Transform transAtGrid = GetTransformAtGridPosition(pos);
-                    // Debug.Log(TAG + " (transAtGrid != null): " + (transAtGrid != null));
-                    // if (transAtGrid != null)
-                    //     Debug.Log(TAG + " (transAtGrid.parent != ViewManager.nextTetromino.transform): " + (transAtGrid.parent != ViewManager.nextTetromino.transform));
                     if (GetTransformAtGridPosition(pos) != null
                         && GetTransformAtGridPosition(pos).parent != ViewManager.nextTetromino.transform) {
                         return false;

@@ -18,7 +18,7 @@ namespace HotFix.UI {
     public static class ViewManager {
         private const string TAG = "ViewManager"; 
 
-        public static Canvas UI2DRoot; // 更应该叫UI3DRoot,无所谓了
+        public static Canvas UI2DRoot; 
         public static Dictionary<string, UnityGuiView> views = new Dictionary<string, UnityGuiView>();
 
         public static void InitializeStartUI() {
@@ -37,10 +37,9 @@ namespace HotFix.UI {
                         CoroutineHelper.StartCoroutine(GetRectSize(go.GetComponent<RectTransform>()));
 
                         UI2DRoot = go.GetComponent<Canvas>();
-                        var viewRoot = new GameObject("ViewRoot"); // 实例化一个新空控件当作是视图层的根节点
+                        var viewRoot = new GameObject("ViewRoot"); 
                         viewRoot.layer = LayerMask.NameToLayer("UI");
 
-                        // Managers: slightly higher level than GameView so they Initialized and be preapred for receiving events info
                         var managersRoot = new GameObject("Managers");
                         managersRoot.transform.SetParent(UI2DRoot.transform);
                         EventManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
@@ -58,7 +57,7 @@ namespace HotFix.UI {
             ResourceHelper
                 .LoadCloneAsyn(
                     "ui/view/btnscanvasview",
-                    "BtnsCanvasView", // 世界坐标系视图
+                    "BtnsCanvasView", 
                     (go) => {
                         go.name = "BtnsCanvasView";
                         GameObject.DontDestroyOnLoad(go); 
@@ -78,6 +77,7 @@ namespace HotFix.UI {
                         parent.SetActive(false);
                     }, EAssetBundleUnloadLevel.Never);
         }
+
 #region BtnsCanvasView
         public static GameObject moveCanvas = null;
         public static GameObject rotateCanvas = null;
@@ -88,6 +88,7 @@ namespace HotFix.UI {
         public static GameObject tetrosPool = null;
         public static GameObject tetroParent = null;
 #endregion
+
         static IEnumerator GetRectSize(RectTransform rt) { // 自己添加到这里的
 //             //RectTransform rt = go.GetComponent<RectTransform>();
 //             float obj_width = rt.rect.size.x;
@@ -109,12 +110,8 @@ namespace HotFix.UI {
             yield return null;
         }
 
-// 遍历当前视图管理器里所管理的所有的视图，凡是不是所指定特定视图的，并且是根视图,一律隐藏起来
-        // （应该只是不让用户看见，它还在那里，在幕后的某个角落乘凉）
-// 问题是:其它的不是根视图的,视图管理器它不管 ?!!!        
         public static void CloseOtherRootViews(string viewName) {
             foreach (var view in views.Values)
-// 设置根视图层级:那么若是根视图下仍有好几个子视图,就能够站在更高的层面上统一调整其以及所有子视图的显示与隐藏,比如游戏视图需要设置根视图为TRUE
                 // if (view.ViewName != viewName && view.IsRoot) // 我把这里改写了,因为我目前还没有调控IsRoot视图参数
                     if (view.ViewName != viewName) 
                     view.Hide();
@@ -122,17 +119,15 @@ namespace HotFix.UI {
 
         static void ShowStartPanel() {
             MenuView.Reveal();
-            // ViewManager.DownRootView.Reveal(); // 考虑这里是否需要将游戏模式转化为gameMode index或是int值?
         }
-// TODO:下面的这个小部分,可以我能够弄得再更明白一点儿,从来可以优化自己按钮点击事件传递系统的一个入口        
+
 #region Other
         static bool isOverUI = false;
         static bool isCheckedOverUI = false;
         static List<RaycastResult> raycastResults = new List<RaycastResult>();
         public static bool IsPointerOverUI() {
-            if (isCheckedOverUI) {
+            if (isCheckedOverUI) 
                 return isOverUI;
-            }
             isCheckedOverUI = true;
             isOverUI = false;
             if (EventSystem.current.IsPointerOverGameObject()) {
@@ -141,9 +136,8 @@ namespace HotFix.UI {
             PointerEventData pointer = new PointerEventData(EventSystem.current);
             pointer.position = Input.mousePosition;
             EventSystem.current.RaycastAll(pointer, raycastResults);
-            if (raycastResults.Count > 0) {
+            if (raycastResults.Count > 0) 
                 isOverUI = true;
-            }
             TryStopTapEvent();
             return isOverUI;
         }
@@ -156,6 +150,7 @@ namespace HotFix.UI {
             isCheckedOverUI = false;
         }
 #endregion
+
 #region Views
         static MenuView _menuView;
         public static MenuView MenuView {

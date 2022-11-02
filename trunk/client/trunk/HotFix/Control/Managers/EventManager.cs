@@ -27,6 +27,7 @@ namespace HotFix.Control {
         private TetrominoSpawnedEventInfo spawnedInfo;
         private TetrominoMoveEventInfo moveInfo;
         private TetrominoRotateEventInfo rotateInfo;
+        private TetrominoValidMMInfo validInfo;
         private TetrominoLandEventInfo landInfo;
 
         private GameEnterEventInfo enterInfo;
@@ -49,6 +50,8 @@ namespace HotFix.Control {
             enterInfo = new GameEnterEventInfo();
             pauseInfo = new GamePauseEventInfo();
             resumeInfo = new GameResumeEventInfo();
+            
+            validInfo = new TetrominoValidMMInfo();
         }
 
         public void RegisterListener<T>(EventListener<T> listener) where T : EventInfo { 
@@ -98,38 +101,33 @@ namespace HotFix.Control {
             Debug.Log(TAG + ": FireEvent() type: " + type); 
             switch (type) {
             case "entergame":
-                // enterInfo = new GameEnterEventInfo();
                 FireEvent(enterInfo);
                 return;
             case "pausegame":
-                // pauseInfo = new GamePauseEventInfo();
                 FireEvent(pauseInfo);
                 return;
             case "resumegame":
-                // resumeInfo = new GameResumeEventInfo();
                 FireEvent(resumeInfo);
                 return;
 
             case "spawned":
-                // spawnedInfo = new TetrominoSpawnedEventInfo();
                 FireEvent(spawnedInfo);
                 return;
             case "land":
-                // landInfo = new TetrominoLandEventInfo();
                 FireEvent(landInfo);
                 return;
             case "canvas":
-                // canvasInfo = new CanvasToggledEventInfo();
                 FireEvent(canvasInfo);
                 return;
             }
         }
+        public void FireEvent(string type, string isMove) { 
+            validInfo.type = isMove;
+            FireEvent(validInfo); // "validMR"
+        }
         public void FireEvent(string type, Vector3 delta) {
             Debug.Log(TAG + ": FireEvent() type + delta. type: " + type); 
             switch (type) {
-            // case "spawned":
-            //     FireEvent(spawnedInfo);
-            //     return;
             case "move":
                 moveInfo.delta = delta;
                 FireEvent(moveInfo);
@@ -138,12 +136,6 @@ namespace HotFix.Control {
                 rotateInfo.delta = delta;
                 FireEvent(rotateInfo);
                 return;
-            // case "land":
-            //     FireEvent(landInfo);
-            //     return;
-            // case "canvas":
-            //     FireEvent(canvasInfo);
-            //     return;
             }
         }
         
@@ -184,6 +176,3 @@ namespace HotFix.Control {
         }
     }
 }
-
-
-

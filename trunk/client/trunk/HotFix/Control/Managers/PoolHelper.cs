@@ -10,8 +10,6 @@ using UnityEngine;
 
 namespace HotFix.Control {
 
-// 因为热更新程序域里静态调用的特殊性,我只能把它放在ViewManager里,或是放在帮助类的静态成员静态方法里,否则无法正常运行
-// 这样也基本算是相关功能模块化了.对象池的管理就做到这里算基本结束.必要时会补充方法    
     public class PoolHelper {
         private const string TAG = "PoolHelper";
 
@@ -21,8 +19,8 @@ namespace HotFix.Control {
         private static GameObject tetrosPool = null;
         private static GameObject tetroParent = null;
 
-        private static Vector3 defaultPos = new Vector3(-100, -100, -100); // 不同类型的起始位置不一样(可否设置在预设里呢>??)
-        private static Vector3 previewTetrominoScale = new Vector3(6f, 6f, 6f); // previewTetromino Scale (7,7,7)
+        private static Vector3 defaultPos = new Vector3(-100, -100, -100); 
+        private static Vector3 previewTetrominoScale = new Vector3(6f, 6f, 6f); 
 
         // public Material [] materials; // [red, green, blue, yellow]
         // public Material [] colors;
@@ -99,11 +97,10 @@ namespace HotFix.Control {
             return objInstance;
         }
 
-        public static void ReturnToPool(GameObject gameObject, string type, float delay) {
 // CoroutineHelper这个帮助类对协程的适配做得不到位,这个方法现在还不能用            
+        public static void ReturnToPool(GameObject gameObject, string type, float delay) {
            CoroutineHelper.StartCoroutine(DelayedReturnToPool(gameObject, type, delay));
         }
-
         static IEnumerator DelayedReturnToPool(GameObject gameObject, string type, float delayTime) {
             while (delayTime > 0f) {
                 yield return null;

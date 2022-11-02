@@ -35,8 +35,9 @@ namespace HotFix.Control {
             EventManager.Instance.RegisterListener<GamePauseEventInfo>(onPauseGame);
             EventManager.Instance.RegisterListener<GameResumeEventInfo>(onResumeGame);
             
-            EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onTetrominoMove);
-            EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onTetrominoRotate);
+            // EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onTetrominoMove);
+            // EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onTetrominoRotate);
+            EventManager.Instance.RegisterListener<TetrominoValidMMInfo>(onTetrominoMoveRotate);
             EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onTetrominoLand);
         }
 
@@ -51,13 +52,17 @@ namespace HotFix.Control {
         void onResumeGame(GameResumeEventInfo info) {
             audioSource.Play();
         }
-        
-        void onTetrominoMove(TetrominoMoveEventInfo info) {
-            audioSource.PlayOneShot(moveSound);
-        }
-
-        void onTetrominoRotate(TetrominoRotateEventInfo info) {
-            audioSource.PlayOneShot(rotateSound);
+        // void onTetrominoMove(TetrominoMoveEventInfo info) {
+        //     audioSource.PlayOneShot(moveSound);
+        // }
+        // void onTetrominoRotate(TetrominoRotateEventInfo info) {
+        //     audioSource.PlayOneShot(rotateSound);
+        // }
+        void onTetrominoMoveRotate(TetrominoValidMMInfo info) {
+            if (info.type == "move")
+                audioSource.PlayOneShot(moveSound);
+            else 
+                audioSource.PlayOneShot(rotateSound);
         }
 
         void onTetrominoLand(TetrominoLandEventInfo info) {
@@ -113,8 +118,14 @@ namespace HotFix.Control {
 // com for tmp: 这里的代码写得好奇怪,明明是音频视频管理器,却搅到事件管理器里去了            
             // // Debug.Log(TAG + " (EventManager.Instance != null): " + (EventManager.Instance != null));  // when AudioManager OnDisable(), EventManager = null at the time ?
             // if (EventManager.Instance != null) { // does it hold a reference to the EventManager.cs, and holds it from destroying ?
-            //     EventManager.Instance.UnregisterListener<CanvasMovedEventInfo>(onCanvasMoved);
-            //     EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onTetrominoLand);
+            EventManager.Instance.UnregisterListener<GameEnterEventInfo>(onEnterGame); 
+            EventManager.Instance.UnregisterListener<GamePauseEventInfo>(onPauseGame);
+            EventManager.Instance.UnregisterListener<GameResumeEventInfo>(onResumeGame);
+            
+            // EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onTetrominoMove);
+            // EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onTetrominoRotate);
+            EventManager.Instance.UnregisterListener<TetrominoValidMMInfo>(onTetrominoMoveRotate);
+            EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onTetrominoLand);
             // }
         }        
 

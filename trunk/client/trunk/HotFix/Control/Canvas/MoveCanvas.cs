@@ -45,8 +45,9 @@ namespace HotFix.Control {
             EventManager.Instance.RegisterListener<CanvasToggledEventInfo>(onCanvasToggled); 
 // Tetrominon: Spawned, Move, Rotate, Land,
             EventManager.Instance.RegisterListener<TetrominoSpawnedEventInfo>(onActiveTetrominoSpawn); 
-            EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
-            // EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate); 
+            EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); // TODO: 这个事件存在假阳性
+            // EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
+            // EventManager.Instance.RegisterListener<TetrominoValidMMInfo>(onTetrominoMoveRotate);
             EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
 // TODO: onUndoGame: SetActive(false);
         }
@@ -82,9 +83,13 @@ namespace HotFix.Control {
             if ((int)info.delta.y != 0) // 平移画布只上下移动            
                 ViewManager.moveCanvas.gameObject.transform.position += new Vector3(0, info.delta.y, 0);
         }
-
         // void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
         //     // Debug.Log(TAG + " onActiveTetrominoRotate");
+        // }
+        // void onActiveTetrominoMoveRotate(TetrominoValidMMInfo info) { // 这个信息没有带变量,不知道移动位置
+        //     Debug.Log(TAG + " onActiveTetrominoMove");
+        //     if ((int)info.delta.y != 0) // 平移画布只上下移动            
+        //         ViewManager.moveCanvas.gameObject.transform.position += new Vector3(0, info.delta.y, 0);
         // }
 
         void onActiveTetrominoLand(TetrominoLandEventInfo info) {
@@ -108,6 +113,7 @@ namespace HotFix.Control {
             EventManager.Instance.UnregisterListener<TetrominoSpawnedEventInfo>(onActiveTetrominoSpawn); 
             EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
             // EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate); 
+            // EventManager.Instance.UnregisterListener<TetrominoValidMMInfo>(onTetrominoMoveRotate);
             EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 
         }
     }
