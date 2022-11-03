@@ -9,12 +9,23 @@ namespace deepwaterooo.tetris3d {
         [SerializeField]
         private string minoType;
 
+        [SerializeField]
+        private int minoScore;
+
         public string type {
             get {
                 return minoType;
             }
             set {
                 minoType = value;
+            }
+        }
+        public int score {
+            get {
+                return minoScore;
+            }
+            set {
+                minoScore = value;
             }
         }
     }

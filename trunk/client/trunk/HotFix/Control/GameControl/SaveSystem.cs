@@ -20,7 +20,7 @@ namespace HotFix.Control {
     // C:/Users/blue_/AppData/LocalLow/DefaultCompany/tetris3D/challenge/game.save 需要去搜索一下这套逻辑
     
     public static class SaveSystem { 
-        private const string TAG = "SaveSystem";
+        private const string TAG = "SaveSystem"; 
 
         private static string currentPath;
         private static StringBuilder path = new StringBuilder("");

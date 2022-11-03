@@ -8,6 +8,9 @@ namespace deepwaterooo.tetris3d {
         [SerializeField]
         private string tetrominoType;
 
+        [SerializeField]
+        private int tetrominoScore;
+
         public string type {
             get {
                 return tetrominoType;
@@ -16,5 +19,15 @@ namespace deepwaterooo.tetris3d {
                 tetrominoType = value;
             }
         }
+
+        public int score {
+            get {
+                return tetrominoScore;
+            }
+            set {
+                tetrominoScore = value;
+            }
+        }
+
     }
 }

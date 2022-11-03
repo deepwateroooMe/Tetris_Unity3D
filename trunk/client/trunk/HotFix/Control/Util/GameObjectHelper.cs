@@ -24,6 +24,6 @@ namespace HotFix.Control {
                 case "Z" : type.Append("shadowZ"); break;
             }
             return type.ToString(); 
-        }    
+        }
 	}
 }

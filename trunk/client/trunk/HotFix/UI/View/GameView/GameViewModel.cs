@@ -9,7 +9,6 @@ using HotFix.Data;
 using tetris3d;
 using UnityEngine;
 using UnityEngine.UI;
-using MinoData = HotFix.Control.MinoData;
 using SaveSystem = HotFix.Control.SaveSystem;
 
 namespace HotFix.UI {
@@ -43,6 +42,9 @@ namespace HotFix.UI {
         public BindableProperty<string> comTetroType = new BindableProperty<string>();
         public BindableProperty<string> eduTetroType = new BindableProperty<string>();
         public BindableProperty<string> nextTetrominoType = new BindableProperty<string>(); // 这个好像是用来给别人观察的,保存系统 ?
+        // public string comTetroType;
+        // public string eduTetroType;
+        // public string nextTetrominoType;
 // GameView: nextTetromino position, rotation, localScale
         private Transform nextTetrominoTransform = new GameObject().transform;
         public BindableProperty<Transform> nextTetroTrans = new BindableProperty<Transform>();
@@ -66,7 +68,6 @@ namespace HotFix.UI {
 
         public string prevPreview; // to remember previous spawned choices
         public string prevPreview2;
-        // public string nextTetrominoType;  
         public string previewTetrominoType; 
         public string previewTetromino2Type;
 
@@ -138,10 +139,13 @@ namespace HotFix.UI {
             fallSpeed = 0.5f;
             saveForUndo = true;
             gameStarted = false;
-            
+
+            numLinesCleared.Value = 0;
+			// nextTetrominoType.Value = "";
             nextTetroPos.Value = new Vector3(2.0f, 11.0f, 2.0f);
             nextTetroRot.Value = Quaternion.Euler(Vector3.zero);
             nextTetroSca.Value = Vector3.one;
+
             buttonInteractableList = new int [7];
             for (int i = 0; i < 7; i++)
                 buttonInteractableList[i] = 1;
@@ -299,67 +303,71 @@ namespace HotFix.UI {
             foreach (TetrominoData parentData in parentList) {
                 // Debug.Log(TAG + " parentData.name: " + parentData.name);
                 // Debug.Log(TAG + " parentData.children.Count: " + parentData.children.Count);
-// // 下面这里要真正的重构:因为无法拿到子立方体的集合数据                
-//                 if (isThereAnyExistChild(parentData)) { // 存在
-//                     if (!gridMatchesSavedParent(tmpParentGO, (List<MinoData>)(parentData.children.collection))) {  // 先删除多余的，再补全缺失的
-//                         foreach (Transform trans in tmpParentGO.transform) { // 先 删除多余的
-//                             // MathUtil.print(MathUtil.Round(trans.position));
-//                             // Debug.Log(TAG + " (!myContains(trans, (List<MinoData>)(parentData.children.collection))): " + (!myContains(trans, (List<MinoData>)(parentData.children.collection)))); 
-//                             if (!myContains(trans, (List<MinoData>)(parentData.children.collection))) {
-//                                 x = (int)Mathf.Round(trans.position.x);
-//                                 y = (int)Mathf.Round(trans.position.y);
-//                                 z = (int)Mathf.Round(trans.position.z);
-//                                 // MathUtil.print(x, y, z); // this one is right
-//                                 grid[x, y, z].parent = null;
-//                                 GameObject.Destroy(grid[x, y, z].gameObject);
-//                                 gridOcc[x, y, z] = 0;
-//                                 grid[x, y, z] = null;
-//                             }
-//                         }
-//                         // Debug.Log(TAG + " tmpParentGO.transform.childCount (deleted unwanted): " + tmpParentGO.transform.childCount);
-//                         foreach (MinoData minoData in parentData.children) {
-//                             Vector3 posA = MathUtil.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform)); 
-//                             MathUtil.print(posA);
-//                             x = (int)Mathf.Round(posA.x);
-//                             y = (int)Mathf.Round(posA.y);
-//                             z = (int)Mathf.Round(posA.z);
-//                             if (grid[x, y, z] == null) {
-//                                 // MathUtil.print(x, y, z);
-//                                 type.Length = 0;
-//                                 GameObject tmpMinoGO = PoolManager.Instance.GetFromPool(type.Append(minoData.type).ToString(), DeserializedTransform.getDeserializedTransPos(minoData.transform), 
-//                                                                                         DeserializedTransform.getDeserializedTransRot(minoData.transform));
-//                                 grid[x, y, z] = tmpMinoGO.transform;
-//                                 grid[x, y, z].parent = tmpParentGO.transform;
-//                                 gridOcc[x, y, z] = 1;
-//                             }
-//                         }
-//                     }
-//                     // Debug.Log(TAG + " tmpParentGO.transform.childCount (filled needed -- final): " + tmpParentGO.transform.childCount);
-//                 } else { // 重新生成                                           // 空 shapeX Tetromino_X : Universal
-//                     GameObject tmpGameObject = PoolManager.Instance.GetFromPool("shapeX", DeserializedTransform.getDeserializedTransPos(parentData.transform), 
-//                                                                                 DeserializedTransform.getDeserializedTransRot(parentData.transform));
-//                     foreach (MinoData minoData in parentData.children) {
-//                         GameObject tmpMinoGO = PoolManager.Instance.GetFromPool(minoData.type, DeserializedTransform.getDeserializedTransPos(minoData.transform), 
-//                                                                                 DeserializedTransform.getDeserializedTransRot(minoData.transform));
-//                         tmpMinoGO.transform.parent = tmpGameObject.transform;
-//                         x = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).x);
-//                         y = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).y);
-//                         z = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).z);
-//                         // fix for bug 5: fill in a Mino into board in y where there are more minos are above the filled in one
-//                         if (isColumnFromHereEmpty(x, y, z)) {
-//                             grid[x, y, z] = tmpMinoGO.transform;
-//                             gridOcc[x, y, z] = 1;
-//                         } else {
-//                             FillInMinoAtTargetPosition(x, y, z, tmpMinoGO.transform); // update grid accordingly
-//                         }
-//                     }
-//                     tmpGameObject.GetComponent<TetrominoType>().type = parentData.type;
-//                     tmpGameObject.name = parentData.name;
-//                     // Debug.Log(TAG + " tmpGameObject.GetComponent<TetrominoType>().type: " + tmpGameObject.GetComponent<TetrominoType>().type); 
-//                     // Debug.Log(TAG + " tmpGameObject.transform.childCount: " + tmpGameObject.transform.childCount); 
-//                 }
-//                 // Debug.Log(TAG + ": gridOcc[,,] after each deleted mino re-spawn"); 
-//                 // MathUtil.printBoard(gridOcc); 
+// 下面这里要真正的重构:因为无法拿到子立方体的集合数据                
+                if (isThereAnyExistChild(parentData)) { // 存在
+                    if (!gridMatchesSavedParent(tmpParentGO, (List<MinoData>)(parentData.children.collection))) {  // 先删除多余的，再补全缺失的
+                        foreach (Transform trans in tmpParentGO.transform) { // 先 删除多余的
+                            // MathUtil.print(MathUtil.Round(trans.position));
+                            // Debug.Log(TAG + " (!myContains(trans, (List<MinoData>)(parentData.children.collection))): " + (!myContains(trans, (List<MinoData>)(parentData.children.collection)))); 
+                            if (!myContains(trans, (List<MinoData>)(parentData.children.collection))) {
+                                x = (int)Mathf.Round(trans.position.x);
+                                y = (int)Mathf.Round(trans.position.y);
+                                z = (int)Mathf.Round(trans.position.z);
+                                // MathUtil.print(x, y, z); // this one is right
+                                grid[x][y][z].parent = null;
+                                GameObject.Destroy(grid[x][y][z].gameObject);
+                                gridOcc[x][y][z] = 0;
+                                grid[x][y][z] = null;
+                            }
+                        }
+                        // Debug.Log(TAG + " tmpParentGO.transform.childCount (deleted unwanted): " + tmpParentGO.transform.childCount);
+                        foreach (MinoData minoData in parentData.children) {
+                            Vector3 posA = MathUtil.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform)); 
+                            MathUtil.print(posA);
+                            x = (int)Mathf.Round(posA.x);
+                            y = (int)Mathf.Round(posA.y);
+                            z = (int)Mathf.Round(posA.z);
+                            if (grid[x][y][z] == null) {
+                                // MathUtil.print(x, y, z);
+                                type.Length = 0;
+                                GameObject tmpMinoGO = PoolHelper.GetFromPool(type.Append(minoData.type).ToString(),
+                                                                              DeserializedTransform.getDeserializedTransPos(minoData.transform), 
+                                                                              DeserializedTransform.getDeserializedTransRot(minoData.transform),
+                                    Vector3.zero);
+                                grid[x][y][z] = tmpMinoGO.transform;
+                                grid[x][y][z].parent = tmpParentGO.transform;
+                                gridOcc[x][y][z] = 1;
+                            }
+                        }
+                    }
+                    // Debug.Log(TAG + " tmpParentGO.transform.childCount (filled needed -- final): " + tmpParentGO.transform.childCount);
+                } else { // 重新生成                                           // 空 shapeX Tetromino_X : Universal
+                    GameObject tmpGameObject = PoolHelper.GetFromPool("shapeX", DeserializedTransform.getDeserializedTransPos(parentData.transform), 
+                                                                      DeserializedTransform.getDeserializedTransRot(parentData.transform),
+                                                                      Vector3.zero);
+                    foreach (MinoData minoData in parentData.children) {
+                        GameObject tmpMinoGO = PoolHelper.GetFromPool(minoData.type, DeserializedTransform.getDeserializedTransPos(minoData.transform), 
+                                                                      DeserializedTransform.getDeserializedTransRot(minoData.transform),
+                                                                      Vector3.zero);
+                        tmpMinoGO.transform.parent = tmpGameObject.transform;
+                        x = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).x);
+                        y = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).y);
+                        z = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).z);
+                        // fix for bug 5: fill in a Mino into board in y where there are more minos are above the filled in one
+                        if (isColumnFromHereEmpty(x, y, z)) {
+                            grid[x][y][z] = tmpMinoGO.transform;
+                            gridOcc[x][y][z] = 1;
+                        } else {
+                            FillInMinoAtTargetPosition(x, y, z, tmpMinoGO.transform); // update grid accordingly
+                        }
+                    }
+                    tmpGameObject.GetComponent<TetrominoType>().type = parentData.type;
+                    tmpGameObject.name = parentData.name;
+                    // Debug.Log(TAG + " tmpGameObject.GetComponent<TetrominoType>().type: " + tmpGameObject.GetComponent<TetrominoType>().type); 
+                    // Debug.Log(TAG + " tmpGameObject.transform.childCount: " + tmpGameObject.transform.childCount); 
+                }
+                // Debug.Log(TAG + ": gridOcc[,,] after each deleted mino re-spawn"); 
+                // MathUtil.printBoard(gridOcc); 
             }
         }
 
@@ -393,22 +401,9 @@ namespace HotFix.UI {
             }
         }
 
-        public void CheckUserInput() {  // originally pasuseButton & continueButton
-            Debug.Log(TAG + ": CheckUserInput()"); 
-            if (Time.timeScale == 1.0f) {
-// CHECK: 感觉这些都是不必要的逻辑????
-                // PauseGame();
-                
-            } else {
-// // 这里需要补充成视图模型里的恢复游戏的逻辑,而不是视图层面的                
-//                 onResumeGame();
-            }
-        }
-
         public void onActiveTetrominoLand(TetrominoLandEventInfo info) {
             Debug.Log(TAG + ": onActiveTetrominoLand()");
             UpdateGrid(ViewManager.nextTetromino);
-
             // // SaveGameEventInfo fire here 
             // saveGameInfo = new SaveGameEventInfo();
             // EventManager.Instance.FireEvent(saveGameInfo);
@@ -416,6 +411,7 @@ namespace HotFix.UI {
             onGameSave();
 
             DeleteRow();
+            Update();
             if (CheckIsAboveGrid(ViewManager.nextTetromino.GetComponent<Tetromino>())) { // 检查游戏是否结束,最后一个方块砖是否放到顶了
                 Debug.Log(TAG + " TODO: Game Over");
                 // GameOver(); // for tmp
@@ -428,13 +424,20 @@ namespace HotFix.UI {
                 buttonInteractableList[3] = 1; // undo button
             }
         }
+        
+        void Update() {
+            UpdateScore();
+            UpdateLevel();
+            UpdateSpeed();
+        }
         // void onGameSave(SaveGameEventInfo info) {
         public void onGameSave() {
             Debug.Log(TAG + ": onGameSave()");
 // // 这也是那个时候写得逻辑不对称的乱代码,要归位到真正用它的地方,而不是摆放在这里            
             if (tmpTransform == null) // Bug: 再检查一下这个到底是怎么回事
                 tmpTransform = new GameObject().transform;
-            SaveSystem.SaveGame(this);
+// TODO: 这里有个游戏数据保存的大版块BUG需要被修复,先把其它游戏逻辑连通            
+            // SaveSystem.SaveGame(this); 
         }
 
         public void cleanUpGameBroad(GameObject nextTetromino, GameObject ghostTetromino) {
@@ -500,6 +503,7 @@ namespace HotFix.UI {
             PoolHelper.preparePreviewTetrominoRecycle(previewTetromino2); // 用第一个,回收第二个
             cycledPreviewTetromino = previewTetromino2;
             nextTetrominoType.Value = comTetroType.Value; // 记忆功能, 这不是重复了吗?
+            Debug.Log(TAG + " nextTetrominoType.Value: " + nextTetrominoType);
             PoolHelper.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
 // 配置当前方块砖的相关信息
             previewTetromino.transform.localScale -= previewTetrominoScale;
@@ -528,6 +532,7 @@ namespace HotFix.UI {
             PoolHelper.preparePreviewTetrominoRecycle(previewTetromino);
             cycledPreviewTetromino = previewTetromino;
             nextTetrominoType.Value = eduTetroType.Value; // 记忆功能
+            Debug.Log(TAG + " nextTetrominoType.Value: " + nextTetrominoType);
             PoolHelper.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type); // 回收一个方块砖
 // 配置当前方块砖的相关信息
             previewTetromino2.transform.localScale -= previewTetrominoScale;
@@ -857,12 +862,11 @@ namespace HotFix.UI {
                 for (int  z = 0;  z < gridWidth;  z++) {
                     if (gameMode.Value  == 0) { // 只删除合格 行 列 对角线 占有的格
                         if (gridOcc != null && gridOcc[x][y][z] == 2) {
-                            Debug.Log("(x,y,z): [" + x + "," + y + "," + z +"]: " + gridOcc[x][y][z]); 
                             if (grid[x][y][z] != null && grid[x][y][z].gameObject != null) {
                                 // Debug.Log(TAG + " (grid[x][y][z].parent != null): " + (grid[x][y][z].parent != null)); 
                                 if (grid[x][y][z].parent != null) {
-                                    Debug.Log(TAG + " grid[x][y][z].parent.name: " + grid[x][y][z].parent.name);
-                                    Debug.Log(TAG + " grid[x][y][z].parent.childCount: " + grid[x][y][z].parent.childCount); 
+                                    // Debug.Log(TAG + " grid[x][y][z].parent.name: " + grid[x][y][z].parent.name);
+                                    // Debug.Log(TAG + " grid[x][y][z].parent.childCount: " + grid[x][y][z].parent.childCount); 
                                     if (grid[x][y][z].parent.childCount == 1) {
                                         Transform tmp = grid[x][y][z].parent;
                                         tmp.GetChild(0).parent = null;
@@ -1007,13 +1011,15 @@ namespace HotFix.UI {
             default:
                 tetrominoType.Append("Z"); break;
             }
-            Debug.Log(TAG + " tetrominoType.ToString(): " + tetrominoType.ToString());
+            // Debug.Log(TAG + " tetrominoType.ToString(): " + tetrominoType.ToString());
             return tetrominoType.ToString();
             // tetroTypeBindableProperty.Value = tetrominoType;
         }
 
 #region updatingGameScores        
         public void UpdateScore() {
+            Debug.Log(TAG + " UpdateScore");
+            Debug.Log(TAG + " numberOfRowsThisTurn: " + numberOfRowsThisTurn);
             if (numberOfRowsThisTurn > 0) {
                 if (numberOfRowsThisTurn == 1) 
                     ClearedOneLine();
@@ -1033,8 +1039,10 @@ namespace HotFix.UI {
 			}
 		}
         public void ClearedOneLine() {
+            Debug.Log(TAG + " ClearedOneLine");
             currentScore.Value += scoreOneLine + (currentLevel.Value  + 20);
             numLinesCleared.Value += 1;
+            Debug.Log(TAG + " numLinesCleared.Value: " + numLinesCleared.Value);
         }
         public void ClearedTwoLine() {
             currentScore.Value += scoreTwoLine + (currentLevel.Value  + 25);

@@ -49,6 +49,30 @@ namespace HotFix.Control {
                     foreach (Transform oneMino in prefab) {
                         oneMino.gameObject.tag = "mino";
                     }
+                    TetrominoType itype = oneInstance.GetComponent<TetrominoType>();
+                    switch (name) {
+                    case "TetrominoI":
+                        itype.score = 300;
+                        break;
+                    case "TetrominoJ":
+                        itype.score = 350;
+                        break;
+                    case "TetrominoL":
+                        itype.score = 350;
+                        break;
+                    case "TetrominoO":
+                        itype.score = 300;
+                        break;
+                    case "TetrominoS":
+                        itype.score = 500;
+                        break;
+                    case "TetrominoT":
+                        itype.score = 400;
+                        break;
+                    case "TetrominoZ":
+                        itype.score = 500;
+                        break;
+                    }
                 } else if (isGhost) {
                     ComponentHelper.AddGhostComponent(oneInstance); 
                 }

@@ -91,7 +91,7 @@ namespace HotFix.UI {
         public void SpawnnextTetromino() {
             Debug.Log(TAG + ": SpawnnextTetromino()");
             if (!gameStarted) {
-                Debug.Log(TAG + " (ViewModel.gameMode != null): " + (ViewModel.gameMode != null));
+                // Debug.Log(TAG + " (ViewModel.gameMode != null): " + (ViewModel.gameMode != null));
                 if (ViewModel.gameMode != null && ViewModel.gameMode.Value == 0) {
                    SpawnPreviewTetromino();
                } else {
@@ -119,9 +119,10 @@ namespace HotFix.UI {
 
         private void SpawnPreviewTetromino() {
             Debug.Log(TAG + ": SpawnPreviewTetromino()");
-// 这里仍旧是写成观察者模式,视图观察视图模型的数据变化            
+// 这里仍旧是写成观察者模式,视图观察视图模型的数据变化
+            ViewModel.comTetroType.Value = ViewModel.GetRandomTetromino();
             previewTetromino = PoolHelper.GetFromPool(
-                ViewModel.GetRandomTetromino(), previewTetrominoPosition,
+                ViewModel.comTetroType.Value, previewTetrominoPosition,
                 Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
             previewTetromino.transform.SetParent(ViewManager.tetroParent.transform, false);
             
@@ -130,8 +131,9 @@ namespace HotFix.UI {
                 ViewModel.buttonInteractableList[3] = 0;
                 ViewModel.buttonInteractableList[4] = 0;
                 ViewModel.buttonInteractableList[5] = 0;
+                ViewModel.eduTetroType.Value = ViewModel.GetRandomTetromino();
                 previewTetromino2 = PoolHelper.GetFromPool(
-                    ViewModel.GetRandomTetromino(), previewTetromino2Position, 
+                    ViewModel.eduTetroType.Value, previewTetromino2Position, 
                     Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
                 previewTetromino2.transform.SetParent(ViewManager.tetroParent.transform, false);
             }
@@ -344,7 +346,7 @@ namespace HotFix.UI {
         void UpdateUI() {
             scoText.text = ViewModel.currentScore.ToString();
             lvlText.text = ViewModel.currentLevel.ToString();
-            linText.text = numLinesCleared.ToString();
+            linText.text = ViewModel.numLinesCleared.ToString();
         }
         public void GameOver() {
             Debug.Log(TAG + ": GameOver()"); 
@@ -506,7 +508,7 @@ namespace HotFix.UI {
         //     SpawnPreviewTetromino();
         // }
         void OnClickTogButton() { // toggle moveCanvas rotateCanvas
-            btnState.Add(togBtn, false);
+			btnState[togBtn] = false;
             EventManager.Instance.FireEvent("canvas");
         }
         public void playFirstTetromino() { // pvBtnOne: comTetroView Button
@@ -564,8 +566,9 @@ namespace HotFix.UI {
             PoolHelper.recycleGhostTetromino(); // 放这里的主要原因是需要传参数
             ViewManager.nextTetromino.tag = "Untagged";
             Tetromino tetromino = ComponentHelper.GetTetroComponent(ViewManager.nextTetromino);
+            ViewModel.currentScore.Value += tetromino.GetComponent<TetrominoType>().score;
             tetromino.enabled = false;
-            ViewManager.GameView.ViewModel.currentScore.Value += tetromino.individualScore;            
+            // ViewManager.GameView.ViewModel.currentScore.Value += tetromino.individualScore;            
 // 保存游戏进展 
             // // SaveGameEventInfo fire here 
             // saveGameInfo = new SaveGameEventInfo();
@@ -698,8 +701,8 @@ namespace HotFix.UI {
 // TODO: 再测试一下这个: 还仍然是不过
             // ViewModel.gameMode.OnValueChanged += onGameModeChanged; // 运行时仍为空抛异常,因为它的初始化的过程会相对复杂那么一点点儿
 // 不想要游戏视图来观察,要对象池来观察[对象池的帮助方法都只能静态调用,可以观察吗?]暂先放这里
-           ViewModel.comTetroType.OnValueChanged += onComTetroTypeChanged;
-           ViewModel.eduTetroType.OnValueChanged += onEduTetroTypeChanged;
+           //ViewModel.comTetroType.OnValueChanged += onComTetroTypeChanged;
+           //ViewModel.eduTetroType.OnValueChanged += onEduTetroTypeChanged;
            Start(); // 开始游戏
         }
         void onComTetroTypeChanged(string pre, string cur) {
@@ -729,6 +732,8 @@ namespace HotFix.UI {
             lvlText.text = cur.ToString();
         }
         void onNumLinesCleared(int pre, int cur) {
+            Debug.Log(TAG + " onNumLinesCleared");
+            Debug.Log(TAG + " cur: " + cur);
             linText.text = cur.ToString();
         }
 #endregion

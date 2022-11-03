@@ -109,14 +109,9 @@ namespace HotFix.Data {
             return (collection as System.Collections.IEnumerable).GetEnumerator();
         }
 
-		//public int IndexOf(MinoDataCon item) => throw new NotImplementedException();
-		//public void Insert(int index, MinoDataCon item) => throw new NotImplementedException();
-		//public void Add(MinoDataCon item) => throw new NotImplementedException();
-		//public bool Contains(MinoDataCon item) => throw new NotImplementedException();
-		//public void CopyTo(MinoDataCon[] array, int arrayIndex) => throw new NotImplementedException();
-		//public bool Remove(MinoDataCon item) => throw new NotImplementedException();
 		IEnumerator<MinoDataCon> IEnumerable<MinoDataCon>.GetEnumerator() => throw new NotImplementedException();
-		#endregion
-
+#endregion
 	}
 }
+
+

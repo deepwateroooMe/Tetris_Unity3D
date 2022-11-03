@@ -7,12 +7,24 @@ namespace deepwaterooo.tetris3d {
         [SerializeField]
         private string particleType;
 
+        [SerializeField]
+        private int particleScore;
+
         public string type {
             get {
                 return particleType;
             }
             set {
                 particleType = value;
+            }
+        }
+
+        public int score {
+            get {
+                return particleScore;
+            }
+            set {
+                particleScore = value;
             }
         }
     }

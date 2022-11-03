@@ -6,6 +6,8 @@
 - debugging game flow, 现游戏的主场景如下(热更新程序域里的主要逻辑功能模块化管理主要工作完成,还没有debug游戏逻辑):
 - RotateCanvas 需要调整一下摄像机
   
+[[./pic/readme_20221103_111227.png]]
+
 [[./pic/readme_20221102_272232.png]]
 
 - *TODO:*

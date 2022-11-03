@@ -11,5 +11,12 @@
                 ghostTetrominoType = value;
             }
         }
+        public int score {
+            get {
+                return 0;
+            }
+            set {
+            }
+        }
     }
 }

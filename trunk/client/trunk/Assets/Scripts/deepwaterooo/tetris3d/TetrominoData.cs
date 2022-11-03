@@ -2,7 +2,7 @@
 using System.Text;
 using UnityEngine;
 
-namespace HotFix.Control {
+namespace deepwaterooo.tetris3d {
 
     [System.Serializable]
     public class TetrominoData {
@@ -11,18 +11,21 @@ namespace HotFix.Control {
         public string name { get; set; }
         public string type { get; set; }
         
-        public SerializedTransform transform { get; set; }  
-        public MinoDataCollection<TetrominoData, MinoData> children { get; private set; }
+        public SerializedTransform transform { get; set; }
+		public MinoDataCollection<TetrominoData, MinoData> children;
 
 		//public TetrominoDataCon() { }
         public TetrominoData(Transform parentTrans, string type, string name) {
+            Debug.Log(TAG + " TetrominoData");
             this.name = name;
             this.type = type;
             transform = new SerializedTransform(parentTrans);
             children = new MinoDataCollection<TetrominoData, MinoData>(this);
             foreach (Transform mino in parentTrans) {
-                if (mino.CompareTag("mino")) { 
-                    MinoData minoDataItem = new MinoData(mino, new StringBuilder("mino" + type.Substring(5, 1)).ToString()); // shapeX ==> minoX
+                if (mino.CompareTag("mino")) {
+                    // string tmp = new StringBuilder("mino" + type.Substring(9, 1)).ToString();
+                    // Debug.Log(TAG + " tmp: " + tmp);
+                    MinoData minoDataItem = new MinoData(mino, new StringBuilder("mino" + type.Substring(9, 1)).ToString()); // TetrominoX ==> minoX
                     children.Add(minoDataItem);
                 }
             }

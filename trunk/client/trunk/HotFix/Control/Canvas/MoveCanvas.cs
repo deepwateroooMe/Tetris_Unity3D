@@ -80,8 +80,10 @@ namespace HotFix.Control {
         
         void onActiveTetrominoMove(TetrominoMoveEventInfo info) {
             Debug.Log(TAG + " onActiveTetrominoMove");
-            if ((int)info.delta.y != 0) // 平移画布只上下移动            
+            if ((int)info.delta.y != 0) { // 平移画布只上下移动            
                 ViewManager.moveCanvas.gameObject.transform.position += new Vector3(0, info.delta.y, 0);
+                ViewManager.rotateCanvas.gameObject.transform.position += new Vector3(0, info.delta.y, 0);
+            }
         }
         // void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
         //     // Debug.Log(TAG + " onActiveTetrominoRotate");

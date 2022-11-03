@@ -178,7 +178,8 @@ namespace Framework.Core {
             appDomain.RegisterCrossBindingAdaptor(new UnityGuiViewAdapter());
             appDomain.RegisterCrossBindingAdaptor(new ModuleBaseAdapter());
             appDomain.RegisterCrossBindingAdaptor(new IEnumeratorObjectAdaptor());
-            appDomain.RegisterCrossBindingAdaptor(new InterfaceCrossBindingAdaptor()); // <<<<<<<<<<<<<<<<<<<< TODO: 想把这块儿再理解得透彻一点儿
+            appDomain.RegisterCrossBindingAdaptor(new IListCrossBindingAdapter());
+            appDomain.RegisterCrossBindingAdaptor(new InterfaceCrossBindingAdaptor());
             appDomain.RegisterCrossBindingAdaptor(new MonoBehaviourAdapter());
         }
         

@@ -6,6 +6,7 @@ using Framework.MVVM;
 using HotFix.Control;
 using HotFix.UI;
 using UnityEngine;
+using deepwaterooo.tetris3d;
 
 namespace HotFix.Data {
 
@@ -26,9 +27,9 @@ namespace HotFix.Data {
         public string previewTetromino2Type;
     
         public SerializedTransform cameraData;  // 相机数据
-        public Control.TetrominoData nextTetrominoData; // 大方格中的当前方块砖
+        public TetrominoData nextTetrominoData; // 大方格中的当前方块砖
         public List<MinoData> grid;             // 大方格中的所有先前数据
-        public List<Control.TetrominoData> parentList;  // 如果有方块砖链表,那么链表中的方块砖有可能是残缺的(因为游戏过程中的消除行与列等)
+        public List<TetrominoData> parentList;  // 如果有方块砖链表,那么链表中的方块砖有可能是残缺的(因为游戏过程中的消除行与列等)
         public bool saveForUndo; // 区分教育模式与经典模式 
         
         public GameData (GameViewModel viewModel) { // viewModel: game
@@ -47,7 +48,7 @@ namespace HotFix.Data {
             saveForUndo = viewModel.saveForUndo;
             
             grid = new List<MinoData>();
-			parentList = new List<Control.TetrominoData>();
+			parentList = new List<TetrominoData>();
             int listSize = viewModel.gridHeight * viewModel.gridWidth * viewModel.gridWidth;
             
             bool isCurrentlyActiveTetromino = false;
@@ -60,7 +61,10 @@ namespace HotFix.Data {
             //  nextTetromino: May have landed already, may have been destroyed right after undo clicked
             if (ViewManager.nextTetromino != null) {
                 isCurrentlyActiveTetromino = ViewManager.nextTetromino.CompareTag("currentActiveTetromino");
+                Debug.Log(TAG + " isCurrentlyActiveTetromino: " + isCurrentlyActiveTetromino);
                 if (ViewManager.nextTetromino != null && isCurrentlyActiveTetromino) { // 没着陆
+                    Debug.Log(TAG + " nextTetrominoType: " + nextTetrominoType);
+                    Debug.Log(TAG + " ViewManager.nextTetromino.gameObject.name: " + ViewManager.nextTetromino.gameObject.name);
 					nextTetrominoData = new TetrominoData(ViewManager.nextTetromino.transform, nextTetrominoType, ViewManager.nextTetromino.gameObject.name);
                 }
             }
@@ -82,16 +86,16 @@ namespace HotFix.Data {
 
                     && (!myContains(viewModel.grid[x][y][z].parent))) {
 
-					Control.TetrominoData tmp = new Control.TetrominoData(viewModel.grid[x][y][z].parent,
+					TetrominoData tmp = new TetrominoData(viewModel.grid[x][y][z].parent,
                                                           new StringBuilder("shape").Append(viewModel.grid[x][y][z].parent.gameObject.name.Substring(10, 1)).ToString(),
                                                           viewModel.grid[x][y][z].parent.gameObject.name);
                         
                     Debug.Log(TAG + " viewModel.grid[x][y][z].parent.gameObject.name (in parentList): " + viewModel.grid[x][y][z].parent.gameObject.name);
                     Debug.Log(TAG + " viewModel.grid[x][y][z].parent.childCount: " + viewModel.grid[x][y][z].parent.childCount); 
-                    Debug.Log(TAG + " tmp.children.Count (in saved parent TetrominoData): " + tmp.children.Count); 
-                    foreach (MinoData mino in tmp.children) {
-                        MathUtil.print(MathUtil.getIndex(mino.idx));
-                    }
+                    //Debug.Log(TAG + " tmp.children.Count (in saved parent TetrominoData): " + tmp.Children.Count); 
+                    //foreach (MinoData mino in tmp.Children) {
+                    //    MathUtil.print(MathUtil.getIndex(mino.idx));
+                    //}
                     parentList.Add(tmp);
                 }
                 cameraData = new SerializedTransform(Camera.main.transform);
@@ -99,9 +103,9 @@ namespace HotFix.Data {
         }        
         
         private bool myContains(Transform tmp) { // 目前只比较了parent，later是有可能需要比较children的
-           using (List<Control.TetrominoData>.Enumerator enumerator = parentList.GetEnumerator()) {
+           using (List<TetrominoData>.Enumerator enumerator = parentList.GetEnumerator()) {
                while (enumerator.MoveNext()) {
-					Control.TetrominoData data = enumerator.Current;
+					TetrominoData data = enumerator.Current;
                    if (tmp.gameObject.name == data.name & // 不同名字、形状的两个Tetromino 可以有相同的 pos rot
                        tmp.position == DeserializedTransform.getDeserializedTransPos(data.transform) &&
                        tmp.rotation == DeserializedTransform.getDeserializedTransRot(data.transform))

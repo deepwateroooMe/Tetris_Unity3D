@@ -28,7 +28,7 @@ public class IEnumeratorObjectAdaptor : CrossBindingAdaptor {
     //     bool MoveNext();
     //     void Reset();
     // }
-    internal class Adaptor : IEnumerator<object>, CrossBindingAdaptorType {
+    public class Adaptor : IEnumerator<object>, CrossBindingAdaptorType {
         ILTypeInstance instance;
         ILRuntime.Runtime.Enviorment.AppDomain appdomain;
 

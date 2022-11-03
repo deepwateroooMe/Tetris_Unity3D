@@ -8,7 +8,7 @@ namespace HotFix.Control {
     public class Tetromino : MonoBehaviour { 
         private static string TAG = "Tetromino";
     
-        public int individualScore = 100;
+        // public int individualScore = 100;
 
         private float fall = 0f;
         private float fallSpeed = 1.0f;
@@ -72,7 +72,7 @@ namespace HotFix.Control {
             EventManager.Instance.FireEvent("land");
             ViewManager.nextTetromino.tag = "Untagged";
             ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).enabled = false;
-            ViewManager.GameView.ViewModel.currentScore.Value += individualScore;            
+            //ViewManager.GameView.ViewModel.currentScore.Value += individualScore;            
         }
 
         public void MoveDown() {
@@ -192,7 +192,7 @@ namespace HotFix.Control {
                 individualScoreTime += Time.deltaTime;
             } else {
                 individualScoreTime = 0;
-                individualScore = Mathf.Max(individualScore - 10, 0);
+                //individualScore = Mathf.Max(individualScore - 10, 0);
             }
         }
 
