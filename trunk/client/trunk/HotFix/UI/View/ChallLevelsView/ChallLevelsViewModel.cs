@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-//using System.Threading.Tasks;
-using Framework.MVVM;
 
 namespace HotFix.UI {
-    public class SettingsViewModel : ViewModelBase {
+
+    public class ChallLevelsViewModel : ViewModelBase {
+        private const string TAG = "ChallLevelsViewModel"; 
 
         protected override void OnInitialize() {
             base.OnInitialize();

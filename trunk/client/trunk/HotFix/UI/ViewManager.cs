@@ -174,6 +174,17 @@ namespace HotFix.UI {
                 return _GameView;
             }
         }
+        static ChallLevelsView _challlevelsView;
+        public static ChallLevelsView ChallLevelsView {
+            get {
+                if (_challlevelsView == null) {
+                    _challlevelsView = new ChallLevelsView();
+                    _challlevelsView.BindingContext = new ChallLevelsViewModel();
+                    views.Add(_challlevelsView.ViewName, _challlevelsView);
+                }
+                return _challlevelsView;
+            }
+        }
         static SettingsView _settingsView;
         public static SettingsView SettingsView {
            get {

@@ -89,8 +89,6 @@ namespace HotFix.UI {
         public void SpawnnextTetromino() {
             Debug.Log(TAG + ": SpawnnextTetromino()");
             if (!gameStarted) {
-                // Debug.Log(TAG + " (ViewModel.gameMode != null): " + (ViewModel.gameMode != null));
-                // if (ViewModel.gameMode != null && ViewModel.gameMode.Value == 0) {
                 if (ViewModel.gameMode.Value == 0) {
                     SpawnPreviewTetromino();
                 } else {

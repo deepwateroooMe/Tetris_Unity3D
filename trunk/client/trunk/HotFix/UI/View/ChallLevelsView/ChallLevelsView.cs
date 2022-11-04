@@ -2,38 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-//using System.Threading.Tasks;
-using Framework.MVVM;
-using UnityEngine.UI;
 
 namespace HotFix.UI {
 
-    public class SettingsView : UnityGuiView {
-        public override string BundleName {
-            get {
-                return "ui/view/settingsview";
-            }
-        }
-        public override string AssetName {
-            get {
-                return "SettingsView";
-            }
-        }
-        public override string ViewName {
-            get {
-                return "SettingsView";
-            }
-        }
-        public override string ViewModelTypeName {
-            get {
-                return typeof(SettingsViewModel).FullName;
-            }
-        }
-        public SettingsViewModel ViewModel {
-            get {
-                return (SettingsViewModel)BindingContext;
-            }
-        }
+    public class ChallLevelsView : UnityGuiView {
+        private const string TAG = "ChallLevelsView"; 
+        public override string BundleName { get { return "ui/view/challlevelsview"; } }
+        public override string AssetName { get { return "ChallLevelsView"; } }
+        public override string ViewName { get { return "ChallLevelsView"; } }
+        public override string ViewModelTypeName { get { return typeof(ChallLevelsViewModel).FullName; } }
+        public ChallLevelsViewModel ViewModel { get { return (ChallLevelsViewModel)BindingContext; } }
 
         Button creBtn; // CREDIT
         Button ratBtn; // RATE GAME
