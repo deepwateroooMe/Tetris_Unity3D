@@ -87,15 +87,16 @@ namespace HotFix.UI {
             educaModesViewPanel.SetActive(true);
             ViewModel.gameMode = 0; // UI点击事件触发视图模型的数据变更, 通过视图模型为桥梁传给子视图模型使用数据
         }
-        void OnClickClaButton() {
+        void OnClickClaButton() { // classic mode
             ViewModel.gameMode = 1;
-            EventManager.Instance.FireEvent("entergame");
-            Hide();
+            ViewModel.gridWidth = 5;
+            prepareEnteringNewGame();
         }
         void OnClickChaButton() {
             ViewModel.gameMode = 2;
-            EventManager.Instance.FireEvent("entergame");
-            Hide();
+// TODO:这里会是一套不同的逻辑 
+            // EventManager.Instance.FireEvent("entergame");
+            // Hide();
         }
 // EducaModesPanel
         void ActiveToggle() {

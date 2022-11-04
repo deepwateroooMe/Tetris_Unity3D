@@ -13,6 +13,7 @@ namespace HotFix.UI {
         
         private bool _loadSavedGame;
         private int _gameMode = 0; // 因为其它视图也想要访问这些数据,考虑如何变为全局数据,供其它视图可读访问
+        public BindableProperty<int> mgameMode = new BindableProperty<int>();
         private string _saveGamePathFolderName;
         private int _gridWidth; //= 5;
 
@@ -32,6 +33,7 @@ namespace HotFix.UI {
             }
             set {
                 _gameMode = value;
+                // mgameMode.Value = value;
             }
         }
         public string saveGamePathFolderName {
@@ -78,6 +80,7 @@ namespace HotFix.UI {
             _loadSavedGame = false;
             _saveGamePathFolderName = "";
             _gridWidth = -1;
+            mgameMode.Value = 0;
         }
         void DelegateSubscribe() {
         }

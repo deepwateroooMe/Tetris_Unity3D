@@ -1,4 +1,4 @@
-% Created 2022-11-04 Fri 07:09
+% Created 2022-11-04 Fri 10:09
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -37,8 +37,11 @@
 \label{sec-1}
 \begin{itemize}
 \item debugging game flow, 现游戏的主场景如下(热更新程序域里的主要逻辑功能模块化管理主要工作完成,还没有debug游戏逻辑):
+\item 现逻辑支持但凡前一步有个方块砖落地,就可以撤销.但仍然存在一个方块砖落地后同时消除多行时的撤销时可能会还有bug to be fixed
 \item 昨天晚上我原本是想要添加新的图片,后来没来得及就忘记加了
 \end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221104_102732.png}
 
 \includegraphics[width=.9\linewidth]{./pic/readme_20221103_111227.png}
 

@@ -124,25 +124,28 @@ namespace Framework.MVVM {
         //     Debug.Log("(x,y,z): [" + pos[0] + ", " + pos[1] + ", " + pos[2] +"]: " + Game.gridOcc[pos[0], pos[1], pos[2]]);
         // }
 
-        public static void printBoard(int[,,] gridOcc) {
+        public static void printBoard(int[][][] gridOcc) {
             Debug.Log(TAG + ": printBoard gridOcc[,,]:"); 
             bool empty = true;
             int z = 0;
             Debug.Log(TAG + "   " + "Z0 " + "Z1 " + "Z2 " + "Z3 " + "Z4"); 
             for (int y = 0; y < n; y++) {
-                empty = true;
-                Debug.Log(TAG + " y: " + y); 
+                if (isBoardLayerEmpty(gridOcc, y)) return;
+                // Debug.Log(TAG + " y: " + y); 
                 for (int x = 0; x < m; x++) {
                     z = -1;
-                    Debug.Log("X" + x + ":      " + gridOcc[x, y, ++z] + "    " + gridOcc[x, y, ++z] + "    " + gridOcc[x, y, ++z] + "    " + gridOcc[x, y, ++z] + "    " + gridOcc[x, y, ++z]);
-                    for (z = 0; z < m; z++) {
-                        if (gridOcc[x, y, z] > 0)
-                            empty = false;
-                    }
+                    Debug.Log("X" + x + ":      " + gridOcc[x][y][++z] + "    " + gridOcc[x][y][++z] + "    " + gridOcc[x][y][++z] + "    " + gridOcc[x][y][++z] + "    " + gridOcc[x][y][++z]);
                 }
-                if (empty)
-                    break;
             }
+        }
+
+        private static bool isBoardLayerEmpty(int [][][] f, int y) {
+            for (int x = 0; x < m; x++) 
+                for (int z = 0; z < m; z++) {
+                    if (f[x][y][z] > 0)
+                        return false;
+                }
+            return true;
         }
 
         public static void printBoard(List<int> gridOccOcc) {

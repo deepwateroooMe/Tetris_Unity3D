@@ -92,7 +92,9 @@ namespace HotFix.Control {
             // verticalTimer = 0;
             // if (ViewManager.GameView.nextTetromino == null) return;
 
-            moveDelta = new Vector3(0, -1, 0); 
+            moveDelta = new Vector3(0, -1, 0);
+            // Debug.Log(TAG + " (ViewManager.nextTetromino == null): " + (ViewManager.nextTetromino == null));
+            // Debug.Log(TAG + " (moveDelta == null): " + (moveDelta == null));
             ViewManager.nextTetromino.transform.position += moveDelta; // <<<<<<<<<<<<<<<<<<<< 
             bool isValidPos = CheckIsValidPosition();
             ViewManager.nextTetromino.transform.position -= moveDelta; // <<<<<<<<<<<<<<<<<<<< 

@@ -90,9 +90,10 @@ namespace HotFix.UI {
             Debug.Log(TAG + ": SpawnnextTetromino()");
             if (!gameStarted) {
                 // Debug.Log(TAG + " (ViewModel.gameMode != null): " + (ViewModel.gameMode != null));
-                if (ViewModel.gameMode != null && ViewModel.gameMode.Value == 0) {
-                   SpawnPreviewTetromino();
-               } else {
+                // if (ViewModel.gameMode != null && ViewModel.gameMode.Value == 0) {
+                if (ViewModel.gameMode.Value == 0) {
+                    SpawnPreviewTetromino();
+                } else {
                    gameStarted = true;
                    ViewManager.nextTetromino = PoolHelper.GetFromPool(
                        ViewModel.GetRandomTetromino(),
@@ -681,8 +682,10 @@ namespace HotFix.UI {
             ViewModel.currentScore.OnValueChanged += onCurrentScoreChanged;
             ViewModel.currentLevel.OnValueChanged += onCurrentLevelChanged;
             ViewModel.numLinesCleared.OnValueChanged += onNumLinesCleared;
-// TODO: 再测试一下这个: 还仍然是不过
-            ViewModel.gameMode.OnValueChanged += onGameModeChanged; // 运行时仍为空抛异常,因为它的初始化的过程会相对复杂那么一点点儿
+// TODO: 为了触发第一次的回调,稍微绕了一下,需要更为优雅的设置方法
+            ViewManager.MenuView.ViewModel.mgameMode.OnValueChanged += onGameModeChanged; 
+            if (ViewModel.gameMode.Value != ViewManager.MenuView.ViewModel.mgameMode.Value)
+                ViewManager.MenuView.ViewModel.mgameMode.Value = ViewModel.gameMode.Value;
 // 不想要游戏视图来观察,要对象池来观察[对象池的帮助方法都只能静态调用,可以观察吗?]暂先放这里
             //ViewModel.comTetroType.OnValueChanged += onComTetroTypeChanged;
             //ViewModel.eduTetroType.OnValueChanged += onEduTetroTypeChanged;
@@ -711,12 +714,8 @@ namespace HotFix.UI {
         }
 // 游戏主场景: 得分等游戏进展框,自动观察视图模型的数据自动,刷新
         void onGameModeChanged(int pre, int cur) {
-            Debug.Log(TAG + " onGameModeChanged");
-            // if (cur == 0) { // 启蒙模式,自动生成两个tetromino方块砖摆上去
-            //     SpawnPreviewTetromino(); // 生成预览的两块方块砖,完全没有问题了!!!
-            // } else { // 非启蒙模式, 这里需要添加
+            // Debug.Log(TAG + " onGameModeChanged");
             if (cur > 0) {
-                comTetroView.SetActive(false); // 这里最是设置为移动位置(方便期间也可以设置三套,失活与激活另经典模式下的第三套)
                 eduTetroView.SetActive(false); 
                 swaBtn.SetActive(false);
                 undoBtn.SetActive(false); // 不可撤销(挑战模式是仍可以再考虑)

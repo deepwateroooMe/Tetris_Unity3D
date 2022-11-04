@@ -15,7 +15,7 @@ namespace HotFix.Control {
 
         public static Dictionary<string, GameObject> minosDic = null; 
         public static Dictionary<string, Stack<GameObject>> pool = null;
-        public static Dictionary<string, int> scoreDic = null;
+        // public static Dictionary<string, int> scoreDic = null;
 
         private static GameObject tetrosPool = null;
         private static GameObject tetroParent = null;
@@ -29,7 +29,7 @@ namespace HotFix.Control {
         public static void Initialize() {
             minosDic = new Dictionary<string, GameObject>();
             pool = new Dictionary<string, Stack<GameObject>>();
-            scoreDic = new Dictionary<string, int>();
+            // scoreDic = new Dictionary<string, int>();
         }
 
         public static void fillPool(Transform prefab) {
@@ -59,31 +59,31 @@ namespace HotFix.Control {
 					switch (name) {
                     case "TetrominoI":
                         itype.score = 300;
-                        scoreDic.Add(name, 300);
+                        // scoreDic.Add(name, 300);
                         break;
                     case "TetrominoJ":
                         itype.score = 350;
-                        scoreDic.Add(name, 350);
+                        // scoreDic.Add(name, 350);
                         break;
                     case "TetrominoL":
                         itype.score = 350;
-                        scoreDic.Add(name, 350);
+                        // scoreDic.Add(name, 350);
                         break;
                     case "TetrominoO":
                         itype.score = 300;
-                        scoreDic.Add(name, 300);
+                        // scoreDic.Add(name, 300);
                         break;
                     case "TetrominoS":
                         itype.score = 500;
-                        scoreDic.Add(name, 500);
+                        // scoreDic.Add(name, 500);
                         break;
                     case "TetrominoT":
                         itype.score = 400;
-                        scoreDic.Add(name, 400);
+                        // scoreDic.Add(name, 400);
                         break;
                     case "TetrominoZ":
                         itype.score = 500;
-                        scoreDic.Add(name, 500);
+                        // scoreDic.Add(name, 500);
                         break;
 					}
 					// scoreDic.Add(name, itype.score);

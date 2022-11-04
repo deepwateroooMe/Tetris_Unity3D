@@ -159,7 +159,7 @@ namespace HotFix.UI {
             }
             gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
             fallSpeed = 0.5f;
-            saveForUndo = true;
+            // saveForUndo = true;
             gameStarted = false;
 
             // numLinesCleared.Value = 0;
@@ -208,8 +208,10 @@ namespace HotFix.UI {
             Debug.Log(TAG + " gameMode.Value: " + gameMode.Value);
 
             fallSpeed = 0.5f; // should be recorded too, here
-            if (gameMode.Value == 0)
+            if (gameMode.Value == 0) {
                 resetGridOccBoard();
+                saveForUndo = true;
+            } else saveForUndo = false;
             currentScore.Value = 0;
             currentLevel.Value = startingLevel;
         }
@@ -299,7 +301,6 @@ namespace HotFix.UI {
                 // Debug.Log(TAG + " isThereAnyExistChil: " + isThereAnyExistChil);
                 if (isThereAnyExistChild(parentData)) { // 存在
                 // if (isThereAnyExistChil) { // 如果某块方块砖只是消除了几个格,并且还有剩余,那么只是填补消除掉的小立方体
-// BUG: 这里补缺的BUG是,后补上去的几个小立方体没能真正设立成功父控件
                     // bool gridMatchesSavedParentBool = gridMatchesSavedParent(tmpParentGO, (List<MinoData>)(parentData.children.collection));
                     // Debug.Log(TAG + " gridMatchesSavedParentBool: " + gridMatchesSavedParentBool);
                     if (!gridMatchesSavedParent(tmpParentGO, (List<MinoData>)(parentData.children.collection))) {  // 先删除多余的，再补全缺失的
@@ -342,7 +343,6 @@ namespace HotFix.UI {
                     Debug.Log(TAG + " tmpParentGO.transform.childCount (filled needed -- final): " + tmpParentGO.transform.childCount);
 // TODO:下面这个分支的逻辑没有检查,                    
                 } else { // 重新生成                // 空 shapeX Tetromino_X : Universal
-// BUG:这里仅只直接生成新的BUG是,原死伤的小个小立方体还会存在,需要消除
                 GameObject tmpGameObject = PoolHelper.GetFromPool("TetrominoX", DeserializedTransform.getDeserializedTransPos(parentData.transform), 
                                                                       DeserializedTransform.getDeserializedTransRot(parentData.transform),
                                                                       Vector3.one);
@@ -355,7 +355,6 @@ namespace HotFix.UI {
                         y = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).y);
                         z = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).z);
                         tmpMinoGO.tag = "mino";
-                        // fix for bug 5: fill in a Mino into board in y where there are more minos are above the filled in one
                         if (isColumnFromHereEmpty(x, y, z)) {
                             grid[x][y][z] = tmpMinoGO.transform;
                             gridOcc[x][y][z] = 1;
@@ -453,7 +452,8 @@ namespace HotFix.UI {
             // saveGameInfo = new SaveGameEventInfo();
             // EventManager.Instance.FireEvent(saveGameInfo);
             // change an approach: it is unnessary and do NOT apply delegates and events here
-            onGameSave();
+            if (gameMode.Value == 0) // 只在启蒙模式下才保存
+                onGameSave();
 
             DeleteRow();
             Update();
@@ -475,10 +475,10 @@ namespace HotFix.UI {
             UpdateLevel();
             UpdateSpeed();
         }
-        // void onGameSave(SaveGameEventInfo info) {
+
         public void onGameSave() {
             Debug.Log(TAG + ": onGameSave()");
-// // 这也是那个时候写得逻辑不对称的乱代码,要归位到真正用它的地方,而不是摆放在这里            
+// TODO这也是那个时候写得逻辑不对称的乱代码,要归位到真正用它的地方,而不是摆放在这里            
             if (tmpTransform == null) // Bug: 再检查一下这个到底是怎么回事
                 tmpTransform = new GameObject().transform;
 // TODO: 这里有个游戏数据保存的大版块BUG需要被修复,先把其它游戏逻辑连通
@@ -974,26 +974,39 @@ namespace HotFix.UI {
         // public string GetRandomTetromino(BindableProperty<String> tetroTypeBindableProperty) { // active Tetromino
         public string GetRandomTetromino() { // active Tetromino 
             Debug.Log(TAG + ": GetRandomTetromino()"); 
-            if (gameMode.Value == 0 && gridWidth == 5)
-                randomTetromino = UnityEngine.Random.Range(15, 21);
+
+            if (gameMode.Value == 0 && gridWidth == 3)
+                randomTetromino = UnityEngine.Random.Range(1, 7);
             else 
-                randomTetromino = UnityEngine.Random.Range(7, 14);
-            Debug.Log(TAG + " Generated randomTetromino: " + randomTetromino); 
+                randomTetromino = UnityEngine.Random.Range(1, 8);
             StringBuilder tetrominoType = new StringBuilder("Tetromino");
             switch (randomTetromino) {
-            case 15: tetrominoType.Append("I"); break;
-            case 16: tetrominoType.Append("J"); break; 
-            case 17: tetrominoType.Append("L"); break;
-            case 18: tetrominoType.Append("O"); break;
-            case 19: tetrominoType.Append("S"); break;
-            case 20: tetrominoType.Append("T"); break;
-                // case 7:
-            default:
-                tetrominoType.Append("Z"); break;
+            case 1: tetrominoType.Append("J"); break;
+            case 2: tetrominoType.Append("Z"); break; 
+            case 3: tetrominoType.Append("L"); break;
+            case 4: tetrominoType.Append("I"); break;
+            case 5: tetrominoType.Append("O"); break;
+            case 6: tetrominoType.Append("T"); break;
+            default: // 7
+                tetrominoType.Append("S"); break; // 需要放一个相对难一点儿的在非启蒙模式下
             }
-            // Debug.Log(TAG + " tetrominoType.ToString(): " + tetrominoType.ToString());
+            // if (gameMode.Value == 0 && gridWidth == 5)
+            //     randomTetromino = UnityEngine.Random.Range(15, 21);
+            // else 
+            //     randomTetromino = UnityEngine.Random.Range(7, 14);
+            // Debug.Log(TAG + " Generated randomTetromino: " + randomTetromino); 
+            // StringBuilder tetrominoType = new StringBuilder("Tetromino");
+            // switch (randomTetromino) {
+            // case 15: tetrominoType.Append("I"); break;
+            // case 16: tetrominoType.Append("J"); break; 
+            // case 17: tetrominoType.Append("L"); break;
+            // case 18: tetrominoType.Append("O"); break;
+            // case 19: tetrominoType.Append("S"); break;
+            // case 20: tetrominoType.Append("T"); break;
+            // default:
+            //     tetrominoType.Append("Z"); break;
+            // }
             return tetrominoType.ToString();
-            // tetroTypeBindableProperty.Value = tetrominoType;
         }
 
 #region updatingGameScores        

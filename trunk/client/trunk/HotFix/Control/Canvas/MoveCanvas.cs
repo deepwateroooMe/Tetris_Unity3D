@@ -97,7 +97,13 @@ namespace HotFix.Control {
         void onActiveTetrominoLand(TetrominoLandEventInfo info) {
             Debug.Log(TAG + " onActiveTetrominoLand");
             // ViewManager.moveCanvas.transform.position += new Vector3(0, 1, 0); // 向上移动一格至[0, 0, 0],会有延迟
-            ViewManager.moveCanvas.SetActive(false); // 这里没有失活, 还是说它需要那么久的影应时间呢?
+            if (ViewManager.GameView.ViewModel.gameMode.Value == 0)            
+                ViewManager.moveCanvas.SetActive(false); // 这里没有失活, 还是说它需要那么久的影应时间呢?
+            else {
+                ViewManager.moveCanvas.transform.position = new Vector3(2.0f, 11.0f, 2f);
+                ViewManager.rotateCanvas.transform.position = new Vector3(2.0f, 11.0f, 2f);
+                ViewManager.moveCanvas.SetActive(true); 
+            }
         }
 
         void onCanvasToggled(CanvasToggledEventInfo info) {
