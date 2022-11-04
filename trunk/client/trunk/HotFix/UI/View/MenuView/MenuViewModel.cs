@@ -70,8 +70,6 @@ namespace HotFix.UI {
             case 2:
                 _saveGamePathFolderName = "challenge";
                 break;
-                // default:
-                //     return                
             }
         }
         
@@ -108,22 +106,6 @@ namespace HotFix.UI {
             
         }
 
-    // 这些方法里,很多应该挪至视图里
-        // public void onNewGame() {
-        //     _loadSavedGame = false;
-        //     LoadScene("Main");
-        // }
-        // public void onLoadSavedGame() { // saved file in separate folders:  challenge classic educational
-        //     // try to always keep the last saved game for this specific mode
-        //     // if (isSavedFileExist()) { // set global flag
-        //     _loadSavedGame = true;
-        //     LoadScene("Main");
-        //     // } 
-        // }
-        // public void onClosePanel() {
-        //     newGameOrLoadSavedGamePanel.SetActive(false);
-        // }
-        
         private bool isSavedFileExist() {
             Debug.Log(TAG + ": isSavedFileExist()");
             StringBuilder currentPath = new StringBuilder("");
@@ -137,14 +119,9 @@ namespace HotFix.UI {
             return false;
         }
         
-        // private void LoadScene(string scene) {
-        //     SceneManager.LoadSceneAsync(scene); // 这里用的是系统的UnityEngine的
-        // }
-
         public void toggleSettings() {
             
         }
     }
 }
-
 

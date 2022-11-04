@@ -12,8 +12,7 @@ namespace deepwaterooo.tetris3d {
 
         private TetrominoData parent;
     
-        // private IList<MinoData> collection;
-        public IList<MinoData> collection; // 这个改得很不好，再考虑一下
+        public IList<MinoData> collection; 
  
         public MinoDataCollection(TetrominoData parent) {
             this.parent = parent;
@@ -103,3 +102,6 @@ namespace deepwaterooo.tetris3d {
     
     }
 }
+
+
+

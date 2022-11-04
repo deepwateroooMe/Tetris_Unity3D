@@ -107,14 +107,21 @@ namespace HotFix.UI {
                 ViewModel.gridWidth = 5;
         }
         void OnClickConButton() {
+            Debug.Log(TAG + " OnClickConButton");
             // 检查是否存有先前游戏进度数据,有则弹窗;无直接进游戏界面,这一小步暂时跳过
             ActiveToggle();
+// BUG TODO: 当有保存的文件存在,不知道为什么它就自动进入到了新游戏            
+// TODO: 检查客户端是否存有同户的进展文件:有显示提示框,提示是否需要加载保存的进展;没有直接进入新游戏视图
+            bool tmp = isSavedFileExist();
+            Debug.Log(TAG + " tmp: " + tmp);
 // TODO: 感觉这里有个更直接快速的但凡一toggle某个的时候就自动触发的观察者模式,改天再写
             educaModesViewPanel.SetActive(false);
-// TODO: 检查客户端是否存有同户的进展文件:有显示提示框,提示是否需要加载保存的进展;没有直接进入新游戏视图
-            if (isSavedFileExist()) {
-                newContinuePanel.SetActive(true);
+            // if (isSavedFileExist()) {
+            if (tmp) {
+                newContinuePanel.SetActive(true); // BUG 没有显示
+                Debug.Log(TAG + " newContinuePanel.activeSelf: " + newContinuePanel.activeSelf);
             } else {
+                Debug.Log(TAG + " OnClickConButton() else");
                 prepareEnteringNewGame();
             }
         }
@@ -135,6 +142,8 @@ namespace HotFix.UI {
             educaModesViewPanel.SetActive(true);
         }
         void prepareEnteringNewGame() {
+            Debug.Log(TAG + " prepareEnteringNewGame");
+
             EventManager.Instance.FireEvent("entergame");
             ViewManager.GameView.Reveal(); // 放在前面是因为调用需要一点儿时间
             menuViewPanel.SetActive(true); // 需要激活,方便从其它视图回退到主菜单视图
@@ -145,12 +154,12 @@ namespace HotFix.UI {
             Debug.Log(TAG + ": isSavedFileExist()");
             StringBuilder currentPath = new StringBuilder("");
             if (ViewModel.gameMode > 0)
-                // currentPath.Append(Application.persistentDataPath + "/" + ViewModel.saveGamePathFolderName + "/game.save");
                 currentPath.Append(Application.persistentDataPath + ViewModel.saveGamePathFolderName + "/game.save");
             else 
-                // currentPath.Append(Application.persistentDataPath + "/" + ViewModel.saveGamePathFolderName + "/grid" + ViewModel.gridWidth + "/game.save");
-                currentPath.Append(Application.persistentDataPath + ViewModel.saveGamePathFolderName + "/grid" + ViewModel.gridWidth + "/game.save");
-            Debug.Log(TAG + " currentPath: " + currentPath.ToString()); 
+                currentPath.Append(Application.persistentDataPath + ViewModel.saveGamePathFolderName + "/grid"
+                                   + ViewModel.gridWidth + "/game.save");
+            Debug.Log(TAG + " currentPath: " + currentPath.ToString());
+            Debug.Log(TAG + " (File.Exists(currentPath.ToString())): " + (File.Exists(currentPath.ToString())));
             if (File.Exists(currentPath.ToString()))
                 return true;
             return false;

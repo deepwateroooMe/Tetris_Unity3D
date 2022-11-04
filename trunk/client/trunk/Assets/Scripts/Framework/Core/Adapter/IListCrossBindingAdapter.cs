@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Framework.Core {
 
-// 为System.Collections.Generic.IList接口提供必要的适配
+// 为System.Collections.Generic.IList接口提供必要的适配: 因为保存加载系统现在放在主工程中,这个类不需要了.但是本身这个类并没有连通
     public class IListCrossBindingAdapter : CrossBindingAdaptor {
 
 // 实现基类的三个方法        

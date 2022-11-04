@@ -32,17 +32,17 @@ namespace HotFix.UI {
         Text lvlText; // Level Text
         Text linText; // Line Text
 // ComTetroView 按钮控件
-        Button pvBtnOne; // ptoBtn 
+        GameObject pvBtnOne; // ptoBtn 
 // EduTetroView 按钮控件
-        Button pvBtnTwo; // pteBtn
+        GameObject pvBtnTwo; // pteBtn
 // ToggleBtnView
-        Button togBtn; // Togcation
+        GameObject togBtn; // Togcation
 // StaticBtnsView
-        Button pauBtn; // pause Game
-        Button falBtn; // fall fast button
+        GameObject pauBtn; // pause Game
+        GameObject falBtn; // fall fast button
 // EduBtnsView
-        Button swaBtn; // swap current tetrominos to be a newly generating(it's coming after click) tetromino set
-        Button undoBtn; // UNDO last selected tetromino landing, revert it back
+        GameObject swaBtn; // swap current tetrominos to be a newly generating(it's coming after click) tetromino set
+        GameObject undoBtn; // UNDO last selected tetromino landing, revert it back
 // pausePanel: 
         GameObject pausePanel;
         Button savBtn; // SAVE GAME
@@ -69,7 +69,6 @@ namespace HotFix.UI {
         private Vector3 previewTetromino2Position = new Vector3(-68.3f, 19.6f, 32.4f); 
         public int numLinesCleared = 0;
         public GameObject emptyGO;
-        public Transform tmpTransform;
         public GameObject previewTetromino;
         public GameObject previewTetromino2;
         
@@ -79,7 +78,7 @@ namespace HotFix.UI {
         private bool isDuringUndo = false;
         public bool saveForUndo = true;
 
-        public Dictionary<Button, bool> btnState;
+        public Dictionary<GameObject, bool> btnState;
         
         private static GameObject tmpTetro; // TODO: why static ?
 
@@ -120,6 +119,7 @@ namespace HotFix.UI {
             Debug.Log(TAG + ": SpawnPreviewTetromino()");
 // 这里仍旧是写成观察者模式,视图观察视图模型的数据变化
             ViewModel.comTetroType.Value = ViewModel.GetRandomTetromino();
+            Debug.Log(TAG + " ViewModel.comTetroType.Value: " + ViewModel.comTetroType.Value);
             previewTetromino = PoolHelper.GetFromPool(
                 ViewModel.comTetroType.Value, previewTetrominoPosition,
                 Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
@@ -131,6 +131,7 @@ namespace HotFix.UI {
                 ViewModel.buttonInteractableList[4] = 0;
                 ViewModel.buttonInteractableList[5] = 0;
                 ViewModel.eduTetroType.Value = ViewModel.GetRandomTetromino();
+                Debug.Log(TAG + " ViewModel.eduTetroType.Value: " + ViewModel.eduTetroType.Value);
                 previewTetromino2 = PoolHelper.GetFromPool(
                     ViewModel.eduTetroType.Value, previewTetromino2Position, 
                     Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
@@ -151,43 +152,20 @@ namespace HotFix.UI {
 
         private void LoadNewGame() {
             Debug.Log(TAG + ": LoadNewGame()");
-            // gameMode = ((MenuViewModel)ViewModel.ParentViewModel).gameMode;
-            // fallSpeed = 3.0f; // should be recorded too, here
-            // if (gameMode == 0)
-            //     resetGridOccBoard();
+            ViewModel.LoadNewGame();
+
 // 感觉这里好鬼魅呀:视图里已经进行这时在了,可是视图模型因为反射调用还没有启动完?!!!
 // 这里的问题:应该是用IEnumerator去解决,但暂时这样; 在自己不断修改整理这些重构的代码的过程中,会对这些忘记了的相对陌生的一点点儿捡回来的
-            // ViewModel.InitializationForNewGame(); // 这里不要视图层调用,视图模型自己处理
 // 现在这里要做的就是:打预设的资源包(很简单),从资源包里将不是的预设读出来,存在字典里,供游戏需要的时候来用            
-            SpawnnextTetromino();   // cmp for tmp
-            // if (ViewModel.gameMode > 0) { // disable some components
-            //     comTetroView.SetActive(false);
-            //     eduTetroView.SetActive(false);
-            //     swaBtn.SetActive(false);
-            //     undoBtn.SetActive(false);
-            // }
+            SpawnnextTetromino();   
+
             // ViewManager.moveCanvas.SetActive(true);
             // ViewManager.rotateCanvas.SetActive(false);
         }
 
-// just so that I don't forget STATIC        
-       // static void Start () { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
         public void Start() { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
             Debug.Log(TAG + ": Start()");
-            // ComponentHelper.AddTetroComponent(ViewManager.tmp);
-            // ViewManager.nextTetromino = ViewManager.tmp;
-            // Tetromino tetro = ComponentHelper.GetTetroComponent(ViewManager.nextTetromino);
-            // // tetro.Awake(); // 这句是完全可以不要的
-            // ViewManager.moveCanvas.SetActive(true); // move Buttons work
-            
-            // // check if it is cleaned up first 这里有个热更新程序域EventManager适配的大BUG
-            // Debug.Log(TAG + " (!EventManager.Instance.isCleanedUp()): " + (!EventManager.Instance.isCleanedUp())); 
-            // if (!EventManager.Instance.isCleanedUp()) {
-            //     EventManager.Instance.cleanUpLists();
-            // }
-            // tmpTransform = emptyGO.transform; //  原本的
-           tmpTransform = new GameObject().transform; // 这里暂时这么写,容易生成很多个控件,暂时这么写
-            // audioSource = GetComponent<AudioSource>();
+// TODO: 这里有个加载原保存过的游戏的过程            
             // if (!string.IsNullOrEmpty(((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName)) {
             //     gameMode = ((MenuViewModel)ViewModel.ParentViewModel).gameMode;
             //     loadSavedGame = ((MenuViewModel)ViewModel.ParentViewModel).loadSavedGame;
@@ -199,10 +177,10 @@ namespace HotFix.UI {
             //     if (loadSavedGame) {
             //         LoadGame(path.ToString());
             //     } else {
-            //         LoadNewGame();
+                    LoadNewGame();
             //     }
             // } else {
-            LoadNewGame();
+            //     LoadNewGame();
             // }
             // currentLevel = startingLevel;
             // startingHighScore = PlayerPrefs.GetInt("highscore");
@@ -223,18 +201,7 @@ namespace HotFix.UI {
             // baseBoard4.SetActive(false);
             baseBoard5.SetActive(false);
         }
-        IEnumerator asyncLoadScene() {
-            // AsyncOperation async = SceneManager.LoadSceneAsync("GameMenu");
-            // yield return async;
-            yield return null;
-        }
-        // void onGameSave(SaveGameEventInfo info) {
-        // void onGameSave() {
-        //    Debug.Log(TAG + ": onGameSave()");
-        //    if (tmpTransform == null) // Bug: 再检查一下这个到底是怎么回事
-        //        tmpTransform = new GameObject().transform;
-        //    SaveSystem.SaveGame(this);
-        // }
+
         public void CheckUserInput() {  // originally pasuseButton & continueButton
             Debug.Log(TAG + ": CheckUserInput()"); 
             if (Time.timeScale == 1.0f) {
@@ -398,7 +365,12 @@ namespace HotFix.UI {
             ViewModel.hasSavedGameAlready = false;
             saveGameOrNotPanel.SetActive(false);
             pausePanel.SetActive(false);
+
+            PoolHelper.ReturnToPool(previewTetromino, previewTetromino.GetComponent<TetrominoType>().type);
+            if (ViewModel.gameMode.Value == 0) 
+                PoolHelper.ReturnToPool(previewTetromino2, previewTetromino2.GetComponent<TetrominoType>().type);
             ViewModel.cleanUpGameBroad(ViewManager.nextTetromino, ViewManager.ghostTetromino);
+            
             ViewModel.isPaused = false;
             Time.timeScale = 1.0f;
             if (ViewModel.gameMode.Value == 1)
@@ -589,11 +561,6 @@ namespace HotFix.UI {
         }
         // 游戏进程的暂停与恢复: 这么改要改狠久狠久才能够改得完,还是先实现一些基础功能吧,到时对游戏逻辑再熟悉一点儿统一重构效率能高很多的呀
         void onGameSave() { // 是指将游戏进度存到本地数据文件
-            Debug.Log(TAG + ": onGameSave()");
-// 不能直接删:偶合偶合,会影响其它逻辑 !!!            
-            // if (tmpTransform == null) // Bug: 再检查一下这个到底是怎么回事,为什么要生成一个新的空的呢?
-            //    // 是因为过程中的某个步骤用到了这个,可是也应该在那个要用的时候重置或是生成一个新的呀,而不是这里,那个时候都是些什么逻辑!!!
-               // tmpTransform = new GameObject().transform;
             ViewModel.onGameSave();
         }
 #endregion
@@ -624,22 +591,22 @@ namespace HotFix.UI {
 // 预览两块方块砖的按钮
             comTetroView = GameObject.FindChildByName("ComTetroView");
             eduTetroView = GameObject.FindChildByName("EduTetroView");
-            pvBtnOne = GameObject.FindChildByName("ptoBtn").GetComponent<Button>();
-            pvBtnOne.onClick.AddListener(playFirstTetromino); 
-            pvBtnTwo = GameObject.FindChildByName("pteBtn").GetComponent<Button>();
-            pvBtnTwo.onClick.AddListener(playSecondTetromino);
+            pvBtnOne = GameObject.FindChildByName("ptoBtn");
+            pvBtnOne.GetComponent<Button>().onClick.AddListener(playFirstTetromino); 
+            pvBtnTwo = GameObject.FindChildByName("pteBtn");
+            pvBtnTwo.GetComponent<Button>().onClick.AddListener(playSecondTetromino);
 // 游戏主界面面板上的几个按钮            
-            togBtn = GameObject.FindChildByName("togBtn").GetComponent<Button>();
-            togBtn.onClick.AddListener(OnClickTogButton); // toggle moveCanvas rotateCanvas
-            pauBtn = GameObject.FindChildByName("pauBtn").GetComponent<Button>();
-            pauBtn.onClick.AddListener(OnClickPauButton);
-            swaBtn = GameObject.FindChildByName("swaBtn").GetComponent<Button>();
-            swaBtn.onClick.AddListener(onSwapPreviewTetrominos);
+            togBtn = GameObject.FindChildByName("togBtn");
+            togBtn.GetComponent<Button>().onClick.AddListener(OnClickTogButton); // toggle moveCanvas rotateCanvas
+            pauBtn = GameObject.FindChildByName("pauBtn");
+            pauBtn.GetComponent<Button>().onClick.AddListener(OnClickPauButton);
+            swaBtn = GameObject.FindChildByName("swaBtn");
+            swaBtn.GetComponent<Button>().onClick.AddListener(onSwapPreviewTetrominos);
 
-            falBtn = GameObject.FindChildByName("falBtn").GetComponent<Button>();
-            falBtn.onClick.AddListener(OnClickFalButton);
-            undoBtn = GameObject.FindChildByName("undBtn").GetComponent<Button>();
-            undoBtn.onClick.AddListener(OnClickUndButton);
+            falBtn = GameObject.FindChildByName("falBtn");
+            falBtn.GetComponent<Button>().onClick.AddListener(OnClickFalButton);
+            undoBtn = GameObject.FindChildByName("undBtn");
+            undoBtn.GetComponent<Button>().onClick.AddListener(OnClickUndButton);
 // pausePanel里的5个按钮
             pausePanel = GameObject.FindChildByName("MidMenuView"); // MidMenuView: 它仍然是空父节点GameView的众多子节点之一
             resBtn = GameObject.FindChildByName("resBtn").GetComponent<Button>();
@@ -667,7 +634,7 @@ namespace HotFix.UI {
             delta = Vector3.zero;
 
 // 启动并控制游戏主场景面板上几个按钮的是否可点击状态
-            btnState = new Dictionary<Button, bool>() {
+            btnState = new Dictionary<GameObject, bool>() {
                 {pvBtnOne, true}, // comTetroView button
                 {pvBtnTwo, true}, // eduTetroView button
                 {swaBtn, true},   // swap
@@ -704,23 +671,27 @@ namespace HotFix.UI {
             EventManager.Instance.UnregisterListener<SaveGameEventInfo>(SaveGame); 
         }
 #endregion
-        
+
+// TODO: 可能更好的办法是去主工程基类中去全局控制,现先这样        
+        private bool revealed = false;
 #region BindableProperties
         public void OnRevealed() { // 写在这里是因为热更新程序域里回调慢,写早了有时候拿不到返回空
             base.OnRevealed();
+            if (revealed) return ;
             ViewModel.currentScore.OnValueChanged += onCurrentScoreChanged;
             ViewModel.currentLevel.OnValueChanged += onCurrentLevelChanged;
             ViewModel.numLinesCleared.OnValueChanged += onNumLinesCleared;
 // TODO: 再测试一下这个: 还仍然是不过
-            // ViewModel.gameMode.OnValueChanged += onGameModeChanged; // 运行时仍为空抛异常,因为它的初始化的过程会相对复杂那么一点点儿
+            ViewModel.gameMode.OnValueChanged += onGameModeChanged; // 运行时仍为空抛异常,因为它的初始化的过程会相对复杂那么一点点儿
 // 不想要游戏视图来观察,要对象池来观察[对象池的帮助方法都只能静态调用,可以观察吗?]暂先放这里
-           //ViewModel.comTetroType.OnValueChanged += onComTetroTypeChanged;
-           //ViewModel.eduTetroType.OnValueChanged += onEduTetroTypeChanged;
+            //ViewModel.comTetroType.OnValueChanged += onComTetroTypeChanged;
+            //ViewModel.eduTetroType.OnValueChanged += onEduTetroTypeChanged;
 // 相机的位置变化:主要用于启蒙模式,用户㧤撤销某块方块砖的时候 ?
             ViewModel.cameraPos.OnValueChanged += onCameraPosChanged;
             ViewModel.cameraRot.OnValueChanged += onCameraRotChanged;
             
-           Start(); // 开始游戏
+            Start(); // 开始游戏
+            revealed = true;
         }
         void onCameraPosChanged(Vector3 pre, Vector3 cur) {
             Debug.Log(TAG + " onCameraPosChanged");
@@ -741,13 +712,14 @@ namespace HotFix.UI {
 // 游戏主场景: 得分等游戏进展框,自动观察视图模型的数据自动,刷新
         void onGameModeChanged(int pre, int cur) {
             Debug.Log(TAG + " onGameModeChanged");
-            if (cur == 0) { // 启蒙模式,自动生成两个tetromino方块砖摆上去
-                SpawnPreviewTetromino(); // 生成预览的两块方块砖,完全没有问题了!!!
-            } else { // 非启蒙模式, 这里需要添加
+            // if (cur == 0) { // 启蒙模式,自动生成两个tetromino方块砖摆上去
+            //     SpawnPreviewTetromino(); // 生成预览的两块方块砖,完全没有问题了!!!
+            // } else { // 非启蒙模式, 这里需要添加
+            if (cur > 0) {
                 comTetroView.SetActive(false); // 这里最是设置为移动位置(方便期间也可以设置三套,失活与激活另经典模式下的第三套)
                 eduTetroView.SetActive(false); 
-                //swaBtn.SetActive(false);
-                undoBtn.gameObject.SetActive(false); // 不可撤销(挑战模式是仍可以再考虑)
+                swaBtn.SetActive(false);
+                undoBtn.SetActive(false); // 不可撤销(挑战模式是仍可以再考虑)
             }
         }
         void onCurrentScoreChanged(int pre, int cur) {
