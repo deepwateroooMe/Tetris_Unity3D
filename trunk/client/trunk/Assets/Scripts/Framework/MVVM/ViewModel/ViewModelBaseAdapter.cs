@@ -134,5 +134,3 @@ public class ViewModelBaseAdapter : CrossBindingAdaptor {
         bool _isOnInitializeInvoking = false;
     }
 }
-
-

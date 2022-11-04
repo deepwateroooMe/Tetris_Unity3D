@@ -10,7 +10,6 @@ using HotFix.Data;
 using tetris3d;
 using UnityEngine;
 using UnityEngine.UI;
-using SaveSystem = HotFix.Control.SaveSystem;
 
 namespace HotFix.UI {
     
@@ -142,7 +141,7 @@ namespace HotFix.UI {
         private void SpawnPreviewTetromino(string type1, string type2) {
             previewTetromino = PoolHelper.GetFromPool(type1, previewTetrominoPosition, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
             previewTetromino.transform.SetParent(ViewManager.tetroParent.transform, false);
-            ViewModel.previewTetrominoType = previewTetromino.GetComponent<TetrominoType>().type;
+            ViewModel.comTetroType.Value = previewTetromino.GetComponent<TetrominoType>().type;
             if (ViewModel.gameMode.Value == 0) { // previewTetromino2
                 previewTetromino2 = PoolHelper.GetFromPool(type2, previewTetromino2Position, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
                 previewTetromino2.transform.SetParent(ViewManager.tetroParent.transform, false);
@@ -251,7 +250,7 @@ namespace HotFix.UI {
             // ViewModel.InitializationForNewGame(); // com for tmp
             // if (ViewModel.gameMode == 0)
             //     ViewModel.resetGridOccBoard(); 
-            GameData gameData = SaveSystem.LoadGame(path);
+            GameData gameData = deepwaterooo.tetris3d.SaveSystem.LoadGame(path);
             // ViewModel.gameMode = gameData.gameMode;
             // ViewModel.currentScore.Value  = gameData.score;
             // ViewModel.currentLevel.Value  = gameData.level;
@@ -295,8 +294,8 @@ namespace HotFix.UI {
             }
             // previewTetromino previewTetromino2
             type.Length = 0;
-            string type2 = ViewModel.previewTetromino2Type;
-            SpawnPreviewTetromino(type.Append(ViewModel.previewTetrominoType).ToString(), type2);
+			string type2 = ViewModel.eduTetroType.Value;
+            SpawnPreviewTetromino(type.Append(ViewModel.comTetroType.Value).ToString(), type2);
             if (ViewModel.prevPreview != null) {
                 ViewModel.prevPreview = ViewModel.prevPreview;
                 ViewModel.prevPreview2 = ViewModel.prevPreview2;
@@ -366,37 +365,7 @@ namespace HotFix.UI {
         }
         // public void onSavedGamePanelOK() {
         // }
-        public void onYesToSaveGame() {
-            // ViewModel.saveForUndo = false;
-            // onGameSave();
-            // ViewModel.hasSavedGameAlready = true;
-            // saveGameOrNotPanel.SetActive(false);
-            // pausePanel.SetActive(false);
-            // ViewModel.cleanUpGameBroad(ViewManager.nextTetromino);
-            // ViewModel.isPaused = false;
-            // Time.timeScale = 1.0f;
-            // SceneManager.LoadScene("GameMenu");
-        }
-        public void onNoToNotSaveGame() { // 如何才能够延迟加载呢？
-            // ViewModel.hasSavedGameAlready = false;
-            // saveGameOrNotPanel.SetActive(false);
-            // pausePanel.SetActive(false);
-            // ViewModel.cleanUpGameBroad(ViewManager.nextTetromino);
-            // ViewModel.isPaused = false;
-            // Time.timeScale = 1.0f;
-            // if (gameMode == 1)
-            //    gameStarted = false;
-            // still have to check this due to auto Save
-            string path = new StringBuilder(Application.persistentDataPath).Append("/").Append(((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName).Append("/game.save").ToString();
-            if (File.Exists(path)) {
-                try {
-                    File.Delete(path);
-                } catch (System.Exception ex) {
-                    Debug.LogException(ex);
-                }
-            }
-        }
-        void OnClickManButton() { // back to main menu
+        void OnClickManButton() { // back to MAIN menu
 // TODO: reminder FOR USER if game is NOT saved            
             pausePanel.SetActive(false); 
             if (!ViewModel.hasSavedGameAlready && gameStarted) { // gameStarted
@@ -409,6 +378,45 @@ namespace HotFix.UI {
                 Hide();
             }
         }
+        // void OnClickSaveButton() {
+        //     saveGameOrNotPanel.SetActive(false);
+        // }
+        public void onYesToSaveGame() {
+            ViewModel.saveForUndo = false; // ? 这里是什么意思呢
+            onGameSave();
+            ViewModel.hasSavedGameAlready = true;
+            saveGameOrNotPanel.SetActive(false);
+            pausePanel.SetActive(false);
+            ViewModel.cleanUpGameBroad(ViewManager.nextTetromino, ViewManager.ghostTetromino);
+            ViewModel.isPaused = false;
+            Time.timeScale = 1.0f;
+// TODO: 检查一下这里还需要做哪些清理工作?
+            ViewManager.MenuView.Reveal();
+            Hide();
+        }
+        public void onNoToNotSaveGame() { // 因为每块方块砖落地时的自动保存,这里用户不需要保存时,要清除保存过的文件
+            ViewModel.hasSavedGameAlready = false;
+            saveGameOrNotPanel.SetActive(false);
+            pausePanel.SetActive(false);
+            ViewModel.cleanUpGameBroad(ViewManager.nextTetromino, ViewManager.ghostTetromino);
+            ViewModel.isPaused = false;
+            Time.timeScale = 1.0f;
+            if (ViewModel.gameMode.Value == 1)
+                gameStarted = false;
+            // still have to check this due to auto Save
+            string path = new StringBuilder(Application.persistentDataPath).Append("/").Append(((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName).Append("/game.save").ToString();
+            if (File.Exists(path)) {
+                try {
+                    File.Delete(path);
+                } catch (System.Exception ex) {
+                    Debug.LogException(ex);
+                }
+            }
+        }
+        void OnClickCancButton() { 
+            saveGameOrNotPanel.SetActive(false);
+            pausePanel.SetActive(true);
+        }
         void OnClickGuiButton() { // 可以视频GUIDE吗?
         }
         void OnClickCreButton() {
@@ -417,14 +425,13 @@ namespace HotFix.UI {
 
 #region GameViewCallbacks
 // 游戏主面板中7个按钮的点击回调        
-// 撤销: 最后一块降落的方块砖 TODO 这一个按钮相对复杂一点儿,放在后面写
-        void OnClickUndButton() { // onUndoGame() { // 分一部分的逻辑到视图模型中去
-            // 类似的逻辑下发数据,并由数据驱动刷新UI
+        void OnClickUndButton() { // onUndoGame() 撤销最后一块降落的方块砖(在最后一块降落后有消除的情况下比较复杂一点儿,大量数据的恢复)
             Debug.Log(TAG + ": onUndoGame()");
             if (ViewModel.buttonInteractableList[3] == 0) return;
-            Array.Clear(ViewModel.buttonInteractableList, 0, ViewModel.buttonInteractableList.Length);
+            // Array.Clear(ViewModel.buttonInteractableList, 0, ViewModel.buttonInteractableList.Length);
             isDuringUndo = true;
-            ViewModel.recycleThreeMajorTetromino(ViewManager.nextTetromino, previewTetromino, previewTetromino2);
+            // ViewModel.recycleThreeMajorTetromino(ViewManager.nextTetromino, previewTetromino, previewTetromino2);
+
             StringBuilder path = new StringBuilder("");
             if (ViewModel.gameMode.Value > 0)
                 path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName + "/game.save");
@@ -433,31 +440,33 @@ namespace HotFix.UI {
                             + "grid" + ViewModel.gridWidth + "/game.save");
 // TODO : 这里的问题是:先前每块方块砖落下的时候都会自动保存,但是我现在的逻辑还没有保存            
             GameData gameData = SaveSystem.LoadGame(path.ToString());
+            ViewModel.onUndoGame(gameData);
+            
+//             if (ViewModel.hasDeletedMinos) {
+//                 ViewModel.currentScore.Value  = gameData.score; // 这里要改
+//                 ViewModel.currentLevel.Value  = gameData.level;
+//                 numLinesCleared = gameData.lines;
+//                 // scoText.text = ViewModel.currentScore.ToString();
+//                 // lvlText.text = ViewModel.currentLevel.ToString(); // 这不希望变的
+//                 // linText.text = numLinesCleared.ToString();
+//                 Debug.Log(TAG + " gameData.parentList.Count: " + gameData.parentList.Count);
+//                 ViewModel.LoadDataFromParentList(gameData.parentList);
+// // 不想机载地来写这些东西                 
+// // // 相机的位置与旋转:因为是允许用户随意转动的;(可是不是位置没有变吗?为什么要保存位置呢?)
+// //                 GameObject.FindGameObjectWithTag("MainCamera").transform.position = DeserializedTransform.getDeserializedTransPos(gameData.cameraData); // MainCamera
+// //                 GameObject.FindGameObjectWithTag("MainCamera").transform.rotation = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
+//             }
+// 这里新添一个根据两种方块砖类型,重新生成两块预览的方块砖
             StringBuilder type = new StringBuilder("");
-            if (ViewModel.hasDeletedMinos) {
-                ViewModel.currentScore.Value  = gameData.score; // 这里要改
-                ViewModel.currentLevel.Value  = gameData.level;
-                numLinesCleared = gameData.lines;
-                // scoText.text = ViewModel.currentScore.ToString();
-                // lvlText.text = ViewModel.currentLevel.ToString(); // 这不希望变的
-                // linText.text = numLinesCleared.ToString();
-                
-                Debug.Log(TAG + " gameData.parentList.Count: " + gameData.parentList.Count);
-                ViewModel.LoadDataFromParentList(gameData.parentList);
-                GameObject.FindGameObjectWithTag("MainCamera").transform.position = DeserializedTransform.getDeserializedTransPos(gameData.cameraData); // MainCamera
-                GameObject.FindGameObjectWithTag("MainCamera").transform.rotation = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
-            }
-            ViewManager.moveCanvas.gameObject.SetActive(false);   // ViewManager.moveCanvas ViewManager.rotateCanvas: SetActive(false)
-            ViewManager.rotateCanvas.gameObject.SetActive(false);
             if (ViewModel.prevPreview != null) { // previewTetromino previewTetromino2
                 type.Length = 0;
                 string type2 = ViewModel.prevPreview2;
                 SpawnPreviewTetromino(type.Append(ViewModel.prevPreview).ToString(), type2);
             }
-            ViewModel.buttonInteractableList[0] = 1; 
-            ViewModel.buttonInteractableList[1] = 1; 
-            ViewModel.buttonInteractableList[2] = 1; 
-            ViewModel.buttonInteractableList[3] = 0; // buttons are supposed to click once at a time only
+            // ViewModel.buttonInteractableList[0] = 1; 
+            // ViewModel.buttonInteractableList[1] = 1; 
+            // ViewModel.buttonInteractableList[2] = 1; 
+            // ViewModel.buttonInteractableList[3] = 0; // buttons are supposed to click once at a time only
             isDuringUndo = false;
         }
 
@@ -471,7 +480,7 @@ namespace HotFix.UI {
         }
         void OnClickFalButton() { // SlamDown FallFast
             Debug.Log(TAG + " OnClickFallFastButton");
-// // TODO: 这个数组没有管理好,为的是一个用户防连击的效果            
+// // TODO: 这个数组没有管理好,为的是一个防止用户防连击的效果(自动过滤掉处理回调过程中的后续连续点击)            
 //             ViewModel.printbuttonInteractableList();
 //             if (ViewModel.gameMode.Value == 0 && ViewModel.getSlamDownIndication() == 0) return; // 防用户连击
 //             ViewModel.buttonInteractableList[5] = 0;
@@ -584,8 +593,8 @@ namespace HotFix.UI {
 // 不能直接删:偶合偶合,会影响其它逻辑 !!!            
             // if (tmpTransform == null) // Bug: 再检查一下这个到底是怎么回事,为什么要生成一个新的空的呢?
             //    // 是因为过程中的某个步骤用到了这个,可是也应该在那个要用的时候重置或是生成一个新的呀,而不是这里,那个时候都是些什么逻辑!!!
-            //    tmpTransform = new GameObject().transform;
-            SaveSystem.SaveGame(ViewModel);
+               // tmpTransform = new GameObject().transform;
+            ViewModel.onGameSave();
         }
 #endregion
         
@@ -647,8 +656,12 @@ namespace HotFix.UI {
 // Save current game or not panel
             saveGameOrNotPanel = GameObject.FindChildByName("SaveGameOrNotPanel");
             saveBtn = GameObject.FindChildByName("saveBtn").GetComponent<Button>(); // save
+            // saveBtn.onClick.AddListener(OnClickSaveButton);
+            saveBtn.onClick.AddListener(onYesToSaveGame);
             nosvBtn = GameObject.FindChildByName("nosvBtn").GetComponent<Button>(); // not saving
+            nosvBtn.onClick.AddListener(onNoToNotSaveGame);
             cancBtn = GameObject.FindChildByName("cancBtn").GetComponent<Button>(); // cancel: back to pause Panel
+            cancBtn.onClick.AddListener(OnClickCancButton);
 
             cycledPreviewTetromino = new GameObject();
             delta = Vector3.zero;
@@ -703,7 +716,19 @@ namespace HotFix.UI {
 // 不想要游戏视图来观察,要对象池来观察[对象池的帮助方法都只能静态调用,可以观察吗?]暂先放这里
            //ViewModel.comTetroType.OnValueChanged += onComTetroTypeChanged;
            //ViewModel.eduTetroType.OnValueChanged += onEduTetroTypeChanged;
+// 相机的位置变化:主要用于启蒙模式,用户㧤撤销某块方块砖的时候 ?
+            ViewModel.cameraPos.OnValueChanged += onCameraPosChanged;
+            ViewModel.cameraRot.OnValueChanged += onCameraRotChanged;
+            
            Start(); // 开始游戏
+        }
+        void onCameraPosChanged(Vector3 pre, Vector3 cur) {
+            Debug.Log(TAG + " onCameraPosChanged");
+            GameObject.FindGameObjectWithTag("MainCamera").transform.position = cur;
+        }
+        void onCameraRotChanged(Quaternion pre, Quaternion cur) {
+            Debug.Log(TAG + " onCameraRotChanged");
+            GameObject.FindGameObjectWithTag("MainCamera").transform.rotation = cur;
         }
         void onComTetroTypeChanged(string pre, string cur) {
             Debug.Log(TAG + " onComTetroTypeChanged");

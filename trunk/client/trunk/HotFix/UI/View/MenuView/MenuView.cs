@@ -124,6 +124,11 @@ namespace HotFix.UI {
         }
         void OnClickContinueButton() { // Load Saved Game
 // TODO: load saved game
+            ViewManager.GameView.Reveal();
+// TODO: 这里要等视图加载完成后,加载游戏进度数据 ?
+            newContinuePanel.SetActive(false);
+            menuViewPanel.SetActive(true); // 需要激活,方便从其它视图回退到主菜单视图
+            Hide();
         }
         void OnClickCancelButton() { // back to main menu
             newContinuePanel.SetActive(false);

@@ -8,8 +8,6 @@ using HotFix.Control;
 using HotFix.Data;
 using tetris3d;
 using UnityEngine;
-using UnityEngine.UI;
-using SaveSystem = HotFix.Control.SaveSystem;
 
 namespace HotFix.UI {
 
@@ -42,15 +40,14 @@ namespace HotFix.UI {
         public BindableProperty<string> comTetroType = new BindableProperty<string>();
         public BindableProperty<string> eduTetroType = new BindableProperty<string>();
         public BindableProperty<string> nextTetrominoType = new BindableProperty<string>(); // 这个好像是用来给别人观察的,保存系统 ?
-        // public string comTetroType;
-        // public string eduTetroType;
-        // public string nextTetrominoType;
 // GameView: nextTetromino position, rotation, localScale
-        private Transform nextTetrominoTransform = new GameObject().transform;
         public BindableProperty<Transform> nextTetroTrans = new BindableProperty<Transform>();
         public BindableProperty<Vector3> nextTetroPos = new BindableProperty<Vector3>();
         public BindableProperty<Quaternion> nextTetroRot = new BindableProperty<Quaternion>();
         public BindableProperty<Vector3> nextTetroSca = new BindableProperty<Vector3>();
+// 相机的旋转
+        public BindableProperty<Vector3> cameraPos = new BindableProperty<Vector3>();
+        public BindableProperty<Quaternion> cameraRot = new BindableProperty<Quaternion>();
         
         public static bool startingAtLevelZero;
         public static int startingLevel;
@@ -66,10 +63,8 @@ namespace HotFix.UI {
 // TODO: INTO CONST        
         public Vector3 previewTetrominoScale = new Vector3(6f, 6f, 6f); // previewTetromino Scale (7,7,7)
 
-        public string prevPreview; // to remember previous spawned choices
-        public string prevPreview2;
-        public string previewTetrominoType; 
-        public string previewTetromino2Type;
+        public string prevPreview; // 前预览方块砖类型,记忆方便撤销to remember previous spawned choices
+        public string prevPreview2;// 
 
         // private SaveGameEventInfo saveGameInfo;
         public bool hasDeletedMinos = false;
@@ -81,14 +76,50 @@ namespace HotFix.UI {
     // 不知道临时拿了这个作了什么用,一定要用上这个?
         private GameObject tmpParentGO;
 
-        // private Model model;
+        public bool isGameModel = true;
         
         protected override void OnInitialize() {
             base.OnInitialize();
             Initialization();
             DelegateSubscribe(); 
         }   
- 
+
+        public void onUndoGame(GameData gameData) { 
+            Debug.Log(TAG + ": onUndoGame()");
+            // if (buttonInteractableList[3] == 0) return;
+            Array.Clear(buttonInteractableList, 0, buttonInteractableList.Length);
+            isDuringUndo = true;
+            recycleThreeMajorTetromino(ViewManager.nextTetromino, ViewManager.GameView.previewTetromino, ViewManager.GameView.previewTetromino2);
+
+            // StringBuilder path = new StringBuilder("");
+            // if (gameMode.Value > 0)
+            //     path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName + "/game.save");
+            // else
+            //     path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName
+            //                 + "grid" + gridWidth + "/game.save");
+            // GameData gameData = SaveSystem.LoadGame(path.ToString());
+
+            StringBuilder type = new StringBuilder("");
+            if (hasDeletedMinos) {
+                currentScore.Value  = gameData.score;
+                currentLevel.Value  = gameData.level;
+                numLinesCleared.Value  = gameData.lines;
+                
+                Debug.Log(TAG + " gameData.parentList.Count: " + gameData.parentList.Count);
+                LoadDataFromParentList(gameData.parentList);
+
+                cameraPos.Value = DeserializedTransform.getDeserializedTransPos(gameData.cameraData); // MainCamera
+                cameraRot.Value = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
+                // GameObject.FindGameObjectWithTag("MainCamera").transform.position = 
+                // GameObject.FindGameObjectWithTag("MainCamera").transform.rotation = 
+            }
+            buttonInteractableList[0] = 1; 
+            buttonInteractableList[1] = 1; 
+            buttonInteractableList[2] = 1; 
+            buttonInteractableList[3] = 0; // buttons are supposed to click once at a time only
+            isDuringUndo = false;
+        }
+        
 // 我的那些先前的歪歪斜斜的写法
         // enable disable these button3s work slight better than this, could modify this part later
         public int [] buttonInteractableList = new int[7]{ 1, 1, 1, 1, 1, 1, 1};
@@ -146,6 +177,9 @@ namespace HotFix.UI {
             nextTetroRot.Value = Quaternion.Euler(Vector3.zero);
             nextTetroSca.Value = Vector3.one;
 
+            cameraPos.Value = new Vector3(11.01f, 21.297f, 0.88f);
+            cameraRot.Value = Quaternion.Euler(new Vector3(483.091f, -263.118f, -538.141f));
+            
             buttonInteractableList = new int [7];
             for (int i = 0; i < 7; i++)
                 buttonInteractableList[i] = 1;
@@ -252,8 +286,9 @@ namespace HotFix.UI {
 
             // previewTetromino previewTetromino2
             type.Length = 0;
-            string type2 = previewTetromino2Type;
+			string type2 = eduTetroType.Value;
             //SpawnPreviewTetromino(type.Append(previewTetrominoType).ToString(), type2);
+// 这里再检查一下,感觉道理不通            
             if (prevPreview != null) {
                 prevPreview = prevPreview;
                 prevPreview2 = prevPreview2;
@@ -301,10 +336,13 @@ namespace HotFix.UI {
             int x = 0, y = 0, z = 0;
             StringBuilder type = new StringBuilder("");
             foreach (TetrominoData parentData in parentList) {
-                // Debug.Log(TAG + " parentData.name: " + parentData.name);
-                // Debug.Log(TAG + " parentData.children.Count: " + parentData.children.Count);
-// 下面这里要真正的重构:因为无法拿到子立方体的集合数据                
-                if (isThereAnyExistChild(parentData)) { // 存在
+                Debug.Log(TAG + " parentData.name: " + parentData.name);
+                Debug.Log(TAG + " parentData.children.Count: " + parentData.children.Count);
+// 下面这里要真正的重构:因为无法拿到子立方体的集合数据
+                bool isThereAnyExistChil = isThereAnyExistChild(parentData);
+                Debug.Log(TAG + " isTheParentChildren: " + isThereAnyExistChil);
+                // if (isThereAnyExistChild(parentData)) { // 存在
+                if (isThereAnyExistChil) { // 如果某块方块砖只是消除了几个格,并且还有剩余,那么只是填补消除掉的小立方体
                     if (!gridMatchesSavedParent(tmpParentGO, (List<MinoData>)(parentData.children.collection))) {  // 先删除多余的，再补全缺失的
                         foreach (Transform trans in tmpParentGO.transform) { // 先 删除多余的
                             // MathUtil.print(MathUtil.Round(trans.position));
@@ -436,8 +474,20 @@ namespace HotFix.UI {
 // // 这也是那个时候写得逻辑不对称的乱代码,要归位到真正用它的地方,而不是摆放在这里            
             if (tmpTransform == null) // Bug: 再检查一下这个到底是怎么回事
                 tmpTransform = new GameObject().transform;
-// TODO: 这里有个游戏数据保存的大版块BUG需要被修复,先把其它游戏逻辑连通            
-            // SaveSystem.SaveGame(this); 
+// TODO: 这里有个游戏数据保存的大版块BUG需要被修复,先把其它游戏逻辑连通
+            StringBuilder path = new StringBuilder("");
+            if (gameMode.Value > 0) {
+                path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName + "/game.save"); 
+            } else {
+                path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName
+                            + "grid" + gridWidth + "/game.save"); 
+            }
+            GameData gameData = new GameData(ViewManager.nextTetromino, ViewManager.ghostTetromino, tmpTransform,
+                                             gameMode.Value, currentScore.Value, currentLevel.Value, numLinesCleared.Value, gridWidth,
+                                             prevPreview, prevPreview2,
+                                             nextTetrominoType.Value, comTetroType.Value, eduTetroType.Value,
+                                             saveForUndo, grid); 
+            SaveSystem.SaveGame(path.ToString(), gameData);
         }
 
         public void cleanUpGameBroad(GameObject nextTetromino, GameObject ghostTetromino) {
@@ -499,12 +549,12 @@ namespace HotFix.UI {
         public void playFirstTetromino(GameObject previewTetromino,
                                         GameObject previewTetromino2,
                                         GameObject cycledPreviewTetromino) {
-            Debug.Log(TAG + ": playFirstTetromino()");
+// 在生成新的一两预览前将现两个预览保存起来
+            prevPreview = comTetroType.Value;
+            prevPreview2 = eduTetroType.Value;
             PoolHelper.preparePreviewTetrominoRecycle(previewTetromino2); // 用第一个,回收第二个
-            cycledPreviewTetromino = previewTetromino2;
-            nextTetrominoType.Value = comTetroType.Value; // 记忆功能, 这不是重复了吗?
-            Debug.Log(TAG + " nextTetrominoType.Value: " + nextTetrominoType);
-            PoolHelper.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
+            nextTetrominoType.Value = comTetroType.Value; // 记忆功能
+            PoolHelper.ReturnToPool(previewTetromino2, previewTetromino2.GetComponent<TetrominoType>().type);
 // 配置当前方块砖的相关信息
             previewTetromino.transform.localScale -= previewTetrominoScale;
             ViewManager.nextTetromino = previewTetromino;
@@ -529,10 +579,11 @@ namespace HotFix.UI {
         public void playSecondTetromino(GameObject previewTetromino,
                                         GameObject previewTetromino2,
                                         GameObject cycledPreviewTetromino) {
+            prevPreview = comTetroType.Value;
+            prevPreview2 = eduTetroType.Value;
             PoolHelper.preparePreviewTetrominoRecycle(previewTetromino);
             cycledPreviewTetromino = previewTetromino;
             nextTetrominoType.Value = eduTetroType.Value; // 记忆功能
-            Debug.Log(TAG + " nextTetrominoType.Value: " + nextTetrominoType);
             PoolHelper.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type); // 回收一个方块砖
 // 配置当前方块砖的相关信息
             previewTetromino2.transform.localScale -= previewTetrominoScale;
@@ -557,46 +608,7 @@ namespace HotFix.UI {
                 buttonInteractableList[5] = 1;
             }
         }
-        public void onUndoGame() { 
-            Debug.Log(TAG + ": onUndoGame()");
-            if (buttonInteractableList[3] == 0) return;
-            Array.Clear(buttonInteractableList, 0, buttonInteractableList.Length);
-            isDuringUndo = true;
-            // recycleThreeMajorTetromino();
 
-            StringBuilder path = new StringBuilder("");
-            // if (!string.IsNullOrEmpty(GameMenuData.Instance.saveGamePathFolderName)) 
-            path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName + "/game" + ".save");
-            // else
-            //     path.Append(Application.persistentDataPath + "/game" + ".save");
-            GameData gameData = SaveSystem.LoadGame(path.ToString());
-            StringBuilder type = new StringBuilder("");
-            if (hasDeletedMinos) {
-                currentScore.Value  = gameData.score;
-                currentLevel.Value  = gameData.level;
-                numLinesCleared.Value  = gameData.lines;
-
-                // Debug.Log(TAG + ": onUndoGame() current board before respawn"); 
-                // MathUtil.printBoard(gridOcc); 
-                
-                Debug.Log(TAG + " gameData.parentList.Count: " + gameData.parentList.Count);
-                LoadDataFromParentList(gameData.parentList);
-
-                GameObject.FindGameObjectWithTag("MainCamera").transform.position = DeserializedTransform.getDeserializedTransPos(gameData.cameraData); // MainCamera
-                GameObject.FindGameObjectWithTag("MainCamera").transform.rotation = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
-            }
-            if (gameData.prevPreview != null) { // previewTetromino previewTetromino2
-                type.Length = 0;
-                string type2 = gameData.prevPreview2;
-                // SpawnPreviewTetromino(type.Append(gameData.prevPreview).ToString(), type2);
-            }
-            buttonInteractableList[0] = 1; 
-            buttonInteractableList[1] = 1; 
-            buttonInteractableList[2] = 1; 
-            buttonInteractableList[3] = 0; // buttons are supposed to click once at a time only
-            isDuringUndo = false;
-        }
-        
         public bool isThereAnyExistChild(TetrominoData parentData) {
             // Debug.Log(TAG + ": isThereAnyExistChild()"); 
             Vector3 pos = Vector3.zero;
@@ -611,7 +623,7 @@ namespace HotFix.UI {
                     if (grid[x][y][z].parent.gameObject.name == parentData.name &&
                         MathUtil.Round(grid[x][y][z].parent.position) == MathUtil.Round(DeserializedTransform.getDeserializedTransPos(parentData.transform)) && 
                         MathUtil.Round(grid[x][y][z].parent.rotation) == MathUtil.Round(DeserializedTransform.getDeserializedTransRot(parentData.transform))) {
-                        // ViewManager.GameView.tmpParentGO = grid[x][y][z].parent.gameObject;  // for tmp
+                        tmpParentGO = grid[x][y][z].parent.gameObject;  // 这里有保存的数据
                         return true;
                     }
                 }

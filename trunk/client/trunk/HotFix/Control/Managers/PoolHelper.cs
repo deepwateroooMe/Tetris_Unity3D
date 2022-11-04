@@ -49,6 +49,9 @@ namespace HotFix.Control {
                     foreach (Transform oneMino in prefab) {
                         oneMino.gameObject.tag = "mino";
                     }
+// 这里的意思是说,我的预设在序列化与反序列化的过程中,某些数据是没有保存的.
+// 可以使用JsonUtility来序列化与反序列化预设中的相关数据,使之不至于丢失?
+// 因现在我的预设简单,数据量少,一个标签,一个得分,可以简单地在热更新工程中设定,暂且不补这块儿                    
                     TetrominoType itype = oneInstance.GetComponent<TetrominoType>();
                     switch (name) {
                     case "TetrominoI":
