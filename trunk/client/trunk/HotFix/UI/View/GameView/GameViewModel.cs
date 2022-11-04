@@ -293,21 +293,20 @@ namespace HotFix.UI {
             int x = 0, y = 0, z = 0;
             StringBuilder type = new StringBuilder("");
             foreach (TetrominoData parentData in parentList) {
-                Debug.Log(TAG + " parentData.name: " + parentData.name);
-                Debug.Log(TAG + " parentData.children.Count: " + parentData.children.Count);
-// 下面这里要真正的重构:因为无法拿到子立方体的集合数据
-                bool isThereAnyExistChil = isThereAnyExistChild(parentData);
-                Debug.Log(TAG + " isThereAnyExistChil: " + isThereAnyExistChil);
-                // if (isThereAnyExistChild(parentData)) { // 存在
-                if (isThereAnyExistChil) { // 如果某块方块砖只是消除了几个格,并且还有剩余,那么只是填补消除掉的小立方体
+                // Debug.Log(TAG + " parentData.name: " + parentData.name);
+                // Debug.Log(TAG + " parentData.children.Count: " + parentData.children.Count);
+                // bool isThereAnyExistChil = isThereAnyExistChild(parentData);
+                // Debug.Log(TAG + " isThereAnyExistChil: " + isThereAnyExistChil);
+                if (isThereAnyExistChild(parentData)) { // 存在
+                // if (isThereAnyExistChil) { // 如果某块方块砖只是消除了几个格,并且还有剩余,那么只是填补消除掉的小立方体
 // BUG: 这里补缺的BUG是,后补上去的几个小立方体没能真正设立成功父控件
-                    bool gridMatchesSavedParentBool = gridMatchesSavedParent(tmpParentGO, (List<MinoData>)(parentData.children.collection));
-                    Debug.Log(TAG + " gridMatchesSavedParentBool: " + gridMatchesSavedParentBool);
-                    // if (!gridMatchesSavedParent(tmpParentGO, (List<MinoData>)(parentData.children.collection))) {  // 先删除多余的，再补全缺失的
-                    if (!gridMatchesSavedParentBool) {
+                    // bool gridMatchesSavedParentBool = gridMatchesSavedParent(tmpParentGO, (List<MinoData>)(parentData.children.collection));
+                    // Debug.Log(TAG + " gridMatchesSavedParentBool: " + gridMatchesSavedParentBool);
+                    if (!gridMatchesSavedParent(tmpParentGO, (List<MinoData>)(parentData.children.collection))) {  // 先删除多余的，再补全缺失的
+                    // if (!gridMatchesSavedParentBool) {
                         foreach (Transform trans in tmpParentGO.transform) { // 先 删除多余的: 很多情况下应该是一个也不多才对(除外的比如,从上一层顶层掉下来的?所以有这种可能)
-                            MathUtil.print(MathUtil.Round(trans.position));
-                            Debug.Log(TAG + " (!myContains(trans, (List<MinoData>)(parentData.children.collection))): " + (!myContains(trans, (List<MinoData>)(parentData.children.collection)))); 
+                            // MathUtil.print(MathUtil.Round(trans.position));
+                            // Debug.Log(TAG + " (!myContains(trans, (List<MinoData>)(parentData.children.collection))): " + (!myContains(trans, (List<MinoData>)(parentData.children.collection)))); 
                             if (!myContains(trans, (List<MinoData>)(parentData.children.collection))) {
                                 x = (int)Mathf.Round(trans.position.x);
                                 y = (int)Mathf.Round(trans.position.y);
@@ -319,7 +318,7 @@ namespace HotFix.UI {
                                 grid[x][y][z] = null;
                             }
                         }
-                        Debug.Log(TAG + " tmpParentGO.transform.childCount (deleted unwanted): " + tmpParentGO.transform.childCount);
+                        // Debug.Log(TAG + " tmpParentGO.transform.childCount (deleted unwanted): " + tmpParentGO.transform.childCount);
                         foreach (MinoData minoData in parentData.children) { // 再补全仍然缺失的
                             Vector3 posA = MathUtil.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform)); 
                             MathUtil.print(posA);
@@ -333,16 +332,15 @@ namespace HotFix.UI {
                                                                               DeserializedTransform.getDeserializedTransPos(minoData.transform), 
                                                                               DeserializedTransform.getDeserializedTransRot(minoData.transform),
                                     Vector3.one);
+                                tmpMinoGO.tag = "mino"; // bug fixed: 这里需要TAG,不标记TAG,不被父控件认定为子控件(限制在TetrominoData里)
                                 grid[x][y][z] = tmpMinoGO.transform;
                                 grid[x][y][z].parent = tmpParentGO.transform;
-                                grid[x][y][z].SetParent(tmpParentGO.transform, true); // 控件意义上的设置父控件
-// // 这里少链接了一层关系:父控件的子控件链表里也需要添加现补上来的几个小立方体
-//                                 tmpParentGO.children.add(minoData); // 因为先前消除的时候删掉了它们,现在要补上
                                 gridOcc[x][y][z] = 1;
                             }
                         }
                     }
                     Debug.Log(TAG + " tmpParentGO.transform.childCount (filled needed -- final): " + tmpParentGO.transform.childCount);
+// TODO:下面这个分支的逻辑没有检查,                    
                 } else { // 重新生成                // 空 shapeX Tetromino_X : Universal
 // BUG:这里仅只直接生成新的BUG是,原死伤的小个小立方体还会存在,需要消除
                 GameObject tmpGameObject = PoolHelper.GetFromPool("TetrominoX", DeserializedTransform.getDeserializedTransPos(parentData.transform), 
@@ -356,6 +354,7 @@ namespace HotFix.UI {
                         x = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).x);
                         y = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).y);
                         z = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).z);
+                        tmpMinoGO.tag = "mino";
                         // fix for bug 5: fill in a Mino into board in y where there are more minos are above the filled in one
                         if (isColumnFromHereEmpty(x, y, z)) {
                             grid[x][y][z] = tmpMinoGO.transform;
@@ -364,12 +363,15 @@ namespace HotFix.UI {
                             FillInMinoAtTargetPosition(x, y, z, tmpMinoGO.transform); // update grid accordingly
                         }
                     }
-                    tmpGameObject.GetComponent<TetrominoType>().type = parentData.type;
+// TODO: 这里仍然涉及MINO TAG, TETROMINO SCORE等的记忆, TetrominoData里也要作相应的修改                    
+                    tmpGameObject.GetComponent<TetrominoType>().type = parentData.type; // 类型 
+                    // tmpGameObject.GetComponent<TetrominoType>().score = PoolHelper.scoreDic[parentData.type]; // 得分 TODO
                     tmpGameObject.name = parentData.name;
-                    Debug.Log(TAG + " tmpGameObject.GetComponent<TetrominoType>().type: " + tmpGameObject.GetComponent<TetrominoType>().type); 
-                    Debug.Log(TAG + " tmpGameObject.transform.childCount: " + tmpGameObject.transform.childCount); 
+                    // Debug.Log(TAG + " tmpGameObject.GetComponent<TetrominoType>().type: " + tmpGameObject.GetComponent<TetrominoType>().type); 
+                    // Debug.Log(TAG + " tmpGameObject.transform.childCount: " + tmpGameObject.transform.childCount);
+                    ComponentHelper.AddTetroComponent(tmpGameObject);
                 }
-                Debug.Log(TAG + ": gridOcc[,,] after each deleted mino re-spawn"); 
+                // Debug.Log(TAG + ": gridOcc[,,] after each deleted mino re-spawn"); 
                 MathUtil.printBoard(gridOcc); 
             }
         }

@@ -15,6 +15,7 @@ namespace HotFix.Control {
 
         public static Dictionary<string, GameObject> minosDic = null; 
         public static Dictionary<string, Stack<GameObject>> pool = null;
+        public static Dictionary<string, int> scoreDic = null;
 
         private static GameObject tetrosPool = null;
         private static GameObject tetroParent = null;
@@ -28,6 +29,7 @@ namespace HotFix.Control {
         public static void Initialize() {
             minosDic = new Dictionary<string, GameObject>();
             pool = new Dictionary<string, Stack<GameObject>>();
+            scoreDic = new Dictionary<string, int>();
         }
 
         public static void fillPool(Transform prefab) {
@@ -53,30 +55,40 @@ namespace HotFix.Control {
 // 可以使用JsonUtility来序列化与反序列化预设中的相关数据,使之不至于丢失?
 // 因现在我的预设简单,数据量少,一个标签,一个得分,可以简单地在热更新工程中设定,暂且不补这块儿                    
                     TetrominoType itype = oneInstance.GetComponent<TetrominoType>();
-                    switch (name) {
+					itype.score = 0;
+					switch (name) {
                     case "TetrominoI":
                         itype.score = 300;
+                        scoreDic.Add(name, 300);
                         break;
                     case "TetrominoJ":
                         itype.score = 350;
+                        scoreDic.Add(name, 350);
                         break;
                     case "TetrominoL":
                         itype.score = 350;
+                        scoreDic.Add(name, 350);
                         break;
                     case "TetrominoO":
                         itype.score = 300;
+                        scoreDic.Add(name, 300);
                         break;
                     case "TetrominoS":
                         itype.score = 500;
+                        scoreDic.Add(name, 500);
                         break;
                     case "TetrominoT":
                         itype.score = 400;
+                        scoreDic.Add(name, 400);
                         break;
                     case "TetrominoZ":
                         itype.score = 500;
+                        scoreDic.Add(name, 500);
                         break;
-                    }
-                } else if (isGhost) {
+					}
+					// scoreDic.Add(name, itype.score);
+				}
+				else if (isGhost) {
                     ComponentHelper.AddGhostComponent(oneInstance); 
                 }
                 oneInstance.transform.SetParent(ViewManager.tetrosPool.transform, true); 

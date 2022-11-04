@@ -21,13 +21,16 @@ namespace deepwaterooo.tetris3d {
             this.type = type;
             transform = new SerializedTransform(parentTrans);
             children = new MinoDataCollection<TetrominoData, MinoData>(this);
+            int cnt = 0;
             foreach (Transform mino in parentTrans) {
                 if (mino.CompareTag("mino")) {
                     // string tmp = new StringBuilder("mino" + type.Substring(9, 1)).ToString();
                     // Debug.Log(TAG + " tmp: " + tmp);
                     MinoData minoDataItem = new MinoData(mino, new StringBuilder("mino" + type.Substring(9, 1)).ToString()); // TetrominoX ==> minoX
                     children.Add(minoDataItem);
+                    cnt++;
                 }
+                Debug.Log(TAG + " children transform cnt: " + cnt);
             }
         }
         
