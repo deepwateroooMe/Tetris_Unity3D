@@ -20,30 +20,34 @@ namespace HotFix.Control {
         public static bool isDeleteMNinoAtCoroutineRunning = false;
 
         private static StringBuilder type = new StringBuilder("");
-        private List<GameObject> minoPSList = new List<GameObject>(); 
+        private static List<GameObject> minoPSList = new List<GameObject>(); 
         private static Coroutine deleteMinoAtCoroutine;
 
         private static float connectionEffectDisplayTime = 1.1f;
-        private WaitForSeconds _waitForSeconds = new WaitForSeconds(connectionEffectDisplayTime);
+        private static WaitForSeconds _waitForSeconds = new WaitForSeconds(connectionEffectDisplayTime);
 
         private CanvasMovedEventInfo canvasMovedInfo;
 
         public delegate void BaseBoardSkinChangedDelegate();
         public static BaseBoardSkinChangedDelegate updateBaseCubesSkin;
 
-        void OnEnable() {
+        public void OnEnable() {
             Debug.Log(TAG + ": OnEnable()"); 
             Debug.Log(TAG + " gameObject.name: " + gameObject.name);
-            EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
-            EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
+            Start();
+        }
+        public void Start() {
+            Debug.Log(TAG + " Start()");
+            // EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
+            // EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
         }
         void OnDisable() {
             Debug.Log(TAG + ": OnDisable()");
             Debug.Log(TAG + " gameObject.name: " + gameObject.name);
-            if (EventManager.Instance != null) {
-                EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove);
-                EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
-            }
+            // if (EventManager.Instance != null) {
+            //     EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove);
+            //     EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
+            // }
         }
 
         public void onActiveTetrominoMove(TetrominoMoveEventInfo info) { 
@@ -74,7 +78,7 @@ namespace HotFix.Control {
             isDeleteRowCoroutineRunning = true;
 
             for (int y = 0; y < Model.gridHeight; y++) {
-                Debug.Log(TAG + " y: " + y); 
+                // Debug.Log(TAG + " y: " + y); 
                 // if (Model.IsFullFiveInLayerAt(y)) { 
                 if ( (!GloData.Instance.isChallengeMode && Model.IsFullFiveInLayerAt(y))
                      // || (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel > 2 && GloData.Instance.challengeLevel < 6 &&  Model.IsFullQuadInLayerAt(y)) ) { 
@@ -89,10 +93,10 @@ namespace HotFix.Control {
                     Debug.Log(TAG + " (GloData.Instance.isChallengeMode && Model.zoneSum == 4): " + (GloData.Instance.isChallengeMode && Model.zoneSum == 4)); 
                     if (GloData.Instance.isChallengeMode && Model.zoneSum == 4) {
                         DeleteMinoAt(y);
-                        MainScene_ScoreManager.currentScore += GloData.Instance.challengeLayerScore; // 分数再优化一下
-                        // yield return null;
+                        ScoreManager.currentScore += GloData.Instance.challengeLayerScore; // 分数再优化一下
+                        yield return null;
                     } else {
-                        MainScene_ScoreManager.currentScore += GloData.Instance.layerScore; // 分数再优化一下
+                        ScoreManager.currentScore += GloData.Instance.layerScore; // 分数再优化一下
                         Debug.Log(TAG + " (!isDeleteMNinoAtCoroutineRunning): " + (!isDeleteMNinoAtCoroutineRunning)); 
                         if (!isDeleteMNinoAtCoroutineRunning) {
                             deleteMinoAtCoroutine = CoroutineHelperP.StartCoroutine(DeleteMinoAtCoroutine(y)); // commented for tmp
@@ -121,13 +125,14 @@ namespace HotFix.Control {
                     }
                 } 
             }
-            Debug.Log(TAG + ": Model.gridOcc[,,] after DeleteRowCoroutine()"); 
+            Debug.Log(TAG + ": Model.gridOcc[][][] after DeleteRowCoroutine()"); 
             MathUtilP.printBoard(Model.gridOcc);
 
             isDeleteRowCoroutineRunning = false;
+            // yield return null;
         }
         
-        public System.Collections.IEnumerator DeleteMinoAtCoroutine(int y) { 
+        public static System.Collections.IEnumerator DeleteMinoAtCoroutine(int y) { 
             Debug.Log(TAG + ": DeleteMinoAtCoroutine() start");
             isDeleteMNinoAtCoroutineRunning = true;
             
@@ -135,7 +140,7 @@ namespace HotFix.Control {
                 minoPSList.Clear();
             // Debug.Log(TAG + ": spawning minoPS particles locations()"); 
 
-            yield return StartCoroutine(displayConnectedParticleEffects(y));
+            yield return CoroutineHelperP.StartCoroutine(displayConnectedParticleEffects(y));
             
             Debug.Log(TAG + "  minoPSList.Count: " +  minoPSList.Count);
             for (int x = 0; x < Model.gridXWidth; x++) {
@@ -180,7 +185,7 @@ namespace HotFix.Control {
             isDeleteMNinoAtCoroutineRunning = false;
         }
 
-		System.Collections.IEnumerator displayConnectedParticleEffects (int y) {
+		static System.Collections.IEnumerator displayConnectedParticleEffects (int y) {
             Debug.Log(TAG + ": displayConnectedParticleEffects()"); 
             for (int x = 0; x < Model.gridXWidth; x++) 
                 for (int  z = 0;  z < Model.gridZWidth;  z++)
@@ -208,7 +213,7 @@ namespace HotFix.Control {
             yield return null;
         }
 
-        public void DeleteRow() { // 算法上仍然需要优化
+        public static void DeleteRow() { // 算法上仍然需要优化
             Debug.Log(TAG + ": DeleteRow() start");
             // hasDeletedMinos = false; 
             bool isFullRowAtY = false;
@@ -234,9 +239,9 @@ namespace HotFix.Control {
 
                     DeleteMinoAt(y);
                     if (GloData.Instance.gameMode > 0 || (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel < 3))
-                        MainScene_ScoreManager.currentScore += GloData.Instance.layerScore;
+                       ScoreManager.currentScore += GloData.Instance.layerScore;
                     else
-                        MainScene_ScoreManager.currentScore += GloData.Instance.challengeLayerScore;
+                        ScoreManager.currentScore += GloData.Instance.challengeLayerScore;
                         
                     MoveAllRowsDown(y + 1);
                     --y;
@@ -248,7 +253,7 @@ namespace HotFix.Control {
                 MathUtilP.printBoard(Model.gridOcc); 
             }
         }
-        public void DeleteMinoAt(int y) {
+        public static void DeleteMinoAt(int y) {
             Debug.Log(TAG + ": DeleteMinoAt() start");
             for (int x = 0; x < Model.gridXWidth; x++) {
                 for (int  z = 0;  z < Model.gridZWidth;  z++) {
@@ -288,20 +293,20 @@ namespace HotFix.Control {
             }
         }
 
-        private bool isAllMinoInLayerY(Transform parent, int y) {
+        private static bool isAllMinoInLayerY(Transform parent, int y) {
             foreach (Transform mino in parent) {
                 if (Mathf.Round(mino.position.y) != y)
                     return false;
             }
             return true;
         }
-        public void MoveAllRowsDown(int y) {
+        public static void MoveAllRowsDown(int y) {
             Debug.Log(TAG + ": MoveAllRowsDown()"); 
             for (int i = y; i < Model.gridHeight; i++) {
                 MoveRowDown(i);
             }
         }
-        public void MoveRowDown(int y) {
+        public static void MoveRowDown(int y) {
             Debug.Log(TAG + ": MoveRowDown()");
             int cnt = 0;
             if (GloData.Instance.gameMode > 0 ||

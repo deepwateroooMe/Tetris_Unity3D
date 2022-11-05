@@ -95,24 +95,20 @@ namespace deepwaterooo.tetris3d {
                     && ((saveForUndo && gd[x][y][z].parent != go.transform) ||                                          // for undo, flag
                         // && (gd[x][y][z].parent != go.transform || !go.CompareTag("currentActiveTetromino")) // for regular game Load
                         (!saveForUndo && (!isCurrentlyActiveTetromino || (go != null && gd[x][y][z].parent != go.transform)))) // for regular game Load
-                    ) {
-                    // && (!myContains(gd[x][y][z].parent))) {
-                    if (!myContains(gd[x][y][z].parent)) {
-                        TetrominoData tmp = new TetrominoData(gd[x][y][z].parent,
-                                                              new StringBuilder("Tetromino").Append(gd[x][y][z].parent.gameObject.name.Substring(9, 1)).ToString(), // TetrominoI
-                                                              gd[x][y][z].parent.gameObject.name);
-                        
-                        Debug.Log(TAG + " gd[x][y][z].parent.gameObject.name (in parentList): " + gd[x][y][z].parent.gameObject.name);
-                        Debug.Log(TAG + " gd[x][y][z].parent.childCount: " + gd[x][y][z].parent.childCount); 
-                        Debug.Log(TAG + " tmp.children.Count (in saved parent TetrominoData): " + tmp.children.Count); 
-                        foreach (MinoData mino in tmp.children) {
-                            MathUtil.print(MathUtil.getIndex(mino.idx));
-                        }
-                        parentList.Add(tmp);
-                    }
-                    // else {
-                    //     curParentData.children.add()
+
+                    && (!myContains(gd[x][y][z].parent))) {
+                    string tmpType = new StringBuilder("Tetromino").Append(gd[x][y][z].parent.gameObject.name.Substring(9, 1)).ToString();
+                    Debug.Log(TAG + " tmpType: " + tmpType);
+                    // TetrominoData tmp = new TetrominoData(gd[x][y][z].parent,
+                    //                                       new StringBuilder("Tetromino").Append(gd[x][y][z].parent.gameObject.name.Substring(9, 1)).ToString(), // TetrominoI
+                    //                                       gd[x][y][z].parent.gameObject.name);
+                    // Debug.Log(TAG + " gd[x][y][z].parent.gameObject.name (in parentList): " + gd[x][y][z].parent.gameObject.name);
+                    // Debug.Log(TAG + " gd[x][y][z].parent.childCount: " + gd[x][y][z].parent.childCount); 
+                    // Debug.Log(TAG + " tmp.children.Count (in saved parent TetrominoData): " + tmp.children.Count); 
+                    // foreach (MinoData mino in tmp.children) {
+                    //     MathUtil.print(MathUtil.getIndex(mino.idx));
                     // }
+                    // parentList.Add(tmp);
                 }
                 cameraData = new SerializedTransform(Camera.main.transform);
             }

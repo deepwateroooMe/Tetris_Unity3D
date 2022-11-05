@@ -130,7 +130,7 @@ namespace Framework.MVVM {
             Debug.Log(TAG + ": printBoard gridOcc[,,]:"); 
             bool empty = true;
             int z = 0;
-            Debug.Log(TAG + "   " + "Z0 " + "Z1 " + "Z2 " + "Z3 " + "Z4"); 
+            // Debug.Log(TAG + "   " + "Z0 " + "Z1 " + "Z2 " + "Z3 " + "Z4"); 
             for (int y = 0; y < n; y++) {
                 if (isBoardLayerEmpty(gridOcc, y)) return;
                 // Debug.Log(TAG + " y: " + y); 

@@ -170,8 +170,97 @@ namespace HotFix.UI {
             // ViewManager.rotateCanvas.SetActive(false);
         }
 
+        IEnumerator displayChallengeGoal() {
+			// guiManager.InitLevelGoal();
+			//yield return _waitForSeconds;
+			// goalPanel.SetActive(false);
+			yield return null;
+        }
         public void Start() { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
             Debug.Log(TAG + ": Start()");
+
+// 在这里初始化模型数据 ?
+            // CoroutineHelperP.StartCoroutine(displayChallengeGoal());
+
+            if (GloData.Instance.isChallengeMode) {
+                // isChallengeMode = true;
+                // Model.gridXWidth = GloData.Instance.gridXSize;
+                // Model.gridZWidth = GloData.Instance.gridZSize;
+                // Model.baseCubes = new int[Model.gridXWidth * Model.gridZWidth];
+                // Model.prevSkin = new int[4];
+                // Model.prevIdx = new int[4];
+                // tetrominoCnter = GloData.Instance.tetrominoCnter;
+                // Model.grid = new Transform[Model.gridXWidth, Model.gridHeight, Model.gridZWidth];
+                // Model.gridOcc = new int[Model.gridXWidth, Model.gridHeight, Model.gridZWidth];
+                // Model.gridClr = new int[Model.gridXWidth, Model.gridHeight, Model.gridZWidth];
+                // MathUtil.resetColorBoard();
+                
+                // loadInitCubesforChallengeMode();
+            } else {
+                Model.gridWidth = GloData.Instance.gridSize;
+                Model.gridXWidth = GloData.Instance.gridSize;
+                Model.gridZWidth = GloData.Instance.gridSize;
+                
+                // Model.grid = new Transform[5][Model.gridHeight][5];
+                Model.grid = new Transform [5][][]; 
+                Model.gridOcc = new int [5][][]; 
+                Model.gridClr = new int [5][][]; 
+                for (int i = 0; i < 5; i++) {
+                    Model.grid[i] = new Transform[Model.gridHeight][];
+                    Model.gridOcc[i] = new int [Model.gridHeight][];
+                    Model.gridClr[i] = new int [Model.gridHeight][];
+                    for (int j = 0; j < Model.gridHeight; j++) {
+                        Model.grid[i][j] = new Transform[5];
+                        Model.gridOcc[i][j] = new int [5];
+                        Model.gridClr[i][j] = new int [5];
+                    }
+                }
+                // MathUtilP.initiateThreeDArray(Model.gridOcc, 5, Model.gridHeight, 5);
+                // MathUtilP.initiateThreeDArray(Model.gridClr, 5, Model.gridHeight, 5);
+
+                // MathUtilP.resetColorBoard();  // cmt for tmp
+            } 
+            
+            // if (gameMode == 0 && !isChallengeMode) { 
+            //     // guiManager.setAllBaseBoardInactive();
+            //     switch (Model.gridWidth) {
+            //     case 3:
+            //         guiManager.baseBoard3.SetActive(true);
+            //         MainScene_GUIManager.baseBoard = guiManager.baseBoard3;
+            //         break;
+            //     case 4:
+            //         guiManager.baseBoard4.SetActive(true);
+            //         MainScene_GUIManager.baseBoard = guiManager.baseBoard4;
+            //         break;
+            //     case 5:
+            //         guiManager.baseBoard5.SetActive(true);
+            //         MainScene_GUIManager.baseBoard = guiManager.baseBoard5;
+            //         break;
+            //     }
+            // }
+            // tmpTransform = emptyGO.transform;
+
+            if (!string.IsNullOrEmpty(GloData.Instance.saveGamePathFolderName)) {
+// // cmt for tmp
+//                 // if (!GloData.Instance.isChallengeMode)
+//                 gameMode = GloData.Instance.gameMode;
+//                 // else
+//                 //     gameMode = 1;
+                // loadSavedGame = GloData.Instance.loadSavedGame;
+                // type.Length = 0;
+                // if (ViewModel.gameMode.Value > 0 || GloData.Instance.isChallengeMode) // clear flag
+                //     type.Append(Application.persistentDataPath + "/" + GloData.Instance.saveGamePathFolderName + "/game.save");
+                // else 
+                //     type.Append(Application.persistentDataPath + "/" + GloData.Instance.saveGamePathFolderName + "/grid" + Model.gridWidth + "/game.save");
+                if (GloData.Instance.loadSavedGame) {
+                    // LoadGame(type.ToString());
+                } else {
+                    LoadNewGame();
+                }
+            } else {
+                LoadNewGame();
+            }
+            
 // TODO: 这里有个加载原保存过的游戏的过程            
             // if (!string.IsNullOrEmpty(((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName)) {
             //     gameMode = ((MenuViewModel)ViewModel.ParentViewModel).gameMode;
@@ -184,7 +273,8 @@ namespace HotFix.UI {
             //     if (loadSavedGame) {
             //         LoadGame(path.ToString());
             //     } else {
-                    LoadNewGame();
+// // cmt for tmp
+//             LoadNewGame(); // <<<<<<<<<<<<<<<<<<<< 
             //     }
             // } else {
             //     LoadNewGame();
@@ -346,6 +436,8 @@ namespace HotFix.UI {
                 saveGameOrNotPanel.SetActive(true);
             } else {
                 ViewModel.cleanUpGameBroad(ViewManager.nextTetromino, ViewManager.ghostTetromino);
+// TODO: 这里没有清理干净,还有东西                
+                Model.cleanUpGameBroad();
                 ViewModel.isPaused = false;
                 Time.timeScale = 1.0f;
                 ViewManager.MenuView.Reveal(); // 现在的简单逻辑
@@ -500,6 +592,7 @@ namespace HotFix.UI {
             EventManager.Instance.FireEvent("canvas");
         }
         public void playFirstTetromino() { // pvBtnOne: comTetroView Button
+            Debug.Log(TAG + " playFirstTetromino");
             // Debug.Log(TAG + " ViewModel.buttonInteractableList[0]: " + ViewModel.buttonInteractableList[0]); 
             if (ViewModel.buttonInteractableList[0] == 0) return;
 
@@ -508,11 +601,12 @@ namespace HotFix.UI {
             currentActiveTetrominoPrepare();
             
             SpawnGhostTetromino();  
-            moveRotatecanvasPrepare();
+            moveRotatecanvasPrepare(); // 
             SpawnPreviewTetromino();
         }
         public void playSecondTetromino() { // pvBtnTwo: eduTetroView Button
-            // Debug.Log(TAG + " ViewModel.buttonInteractableList[1]: " + ViewModel.buttonInteractableList[1]); 
+            Debug.Log(TAG + " playSecondTetromino");
+            Debug.Log(TAG + " ViewModel.buttonInteractableList[1]: " + ViewModel.buttonInteractableList[1]); 
             if (ViewModel.buttonInteractableList[1] == 0) return;
             ViewModel.playSecondTetromino(previewTetromino, previewTetromino2, cycledPreviewTetromino);
 
@@ -549,65 +643,60 @@ namespace HotFix.UI {
         }
         public void onActiveTetrominoLand(TetrominoLandEventInfo info) {
             Debug.Log(TAG + ": onActiveTetrominoLand()");
+            ViewModel.onActiveTetrominoLand(info); // onGameSave()
 
-            ViewModel.onActiveTetrominoLand(info);
-            Debug.Log(TAG + ": onActiveTetrominoLand()");
-            // ViewModel.UpdateGrid(ViewManager.nextTetromino);
-// TODO BUG:关于热更新里使用协程,这里还有一个重要BUG需要改掉
-            // Model.UpdateGrid(ViewManager.nextTetromino);
+// // TODO BUG:关于热更新里使用协程,这里还有一个重要BUG需要改掉
+//             ViewManager.nextTetromino.transform.rotation = Quaternion.identity;
+//             Model.UpdateGrid(ViewManager.nextTetromino);
 
-            Debug.Log(TAG + ": gridOcc[,,] aft Land UpdateGrid(), bef onGameSave()"); 
-            MathUtil.printBoard(ViewModel.gridOcc);  // Model.
-            Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), bef onGameSave()"); 
-            // MathUtil.printBoard(gridClr);  // Model.
+//             Debug.Log(TAG + ": gridOcc[,,] aft Land UpdateGrid(), bef onGameSave()"); 
+//             MathUtil.printBoard(ViewModel.gridOcc);  // Model.
+//             // Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), bef onGameSave()"); 
+//             // MathUtil.printBoard(gridClr);  // Model.
 
-            Debug.Log(TAG + " (GloData.Instance.isChallengeMode): " + (GloData.Instance.isChallengeMode));
-            if (GloData.Instance.isChallengeMode) {
-                if (ChallengeRules.isValidLandingPosition()) {
-                    // changeBaseCubesSkin();
-                } else { // print color board
-                    Debug.Log(TAG + ": color board before game Over()");
-                    MathUtil.printBoard(Model.gridClr);
+//             Debug.Log(TAG + " (GloData.Instance.isChallengeMode): " + (GloData.Instance.isChallengeMode));
+//             if (GloData.Instance.isChallengeMode) {
+//                 if (ChallengeRules.isValidLandingPosition()) {
+//                     changeBaseCubesSkin(); // 为什么会进到这里面来
+//                 } else { // print color board
+//                     Debug.Log(TAG + ": color board before game Over()");
+//                     MathUtil.printBoard(Model.gridClr);
 
-                    // Debug.Log(TAG + ": Game Over()"); 
-                    GameOver();
-                }
-            }
-            
-            onGameSave();
-            // // // SaveGameEventInfo fire here 
-            // // saveGameInfo = new SaveGameEventInfo();
-            // // EventManager.Instance.FireEvent(saveGameInfo);
-            // // change an approach: it is unnessary and do NOT apply delegates and events here
-            // if (gameMode.Value == 0) // 只在启蒙模式下才保存
-            //     onGameSave();
+//                     // Debug.Log(TAG + ": Game Over()"); 
+//                     GameOver();
+//                 }
+//             }
 
-// cmt for tmp
-            // if (ViewModel.gameMode.Value > 0 || (GloData.Instance.isChallengeMode && (GloData.Instance.challengeLevel < 3 || GloData.Instance.challengeLevel > 5))) // 1 2 6 7 8 9 10
-            //     modelMono.DeleteRow();
-            // else if (((ViewModel.gameMode.Value == 0 && !GloData.Instance.isChallengeMode) || (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel > 2 && GloData.Instance.challengeLevel < 6)) // 3 4 5
-            //          && !ModelMono.isDeleteRowCoroutineRunning)
-            //     CoroutineHelperP.StartCoroutine(modelMono.DeleteRowCoroutine()); // the case
-            // // if (Model.CheckIsAboveGrid(ViewManager.nextTetromino.GetComponent<Tetromino>()) || tetrominoCnter == 0) {
-            // if (Model.CheckIsAboveGrid(ComponentHelper.GetTetroComponent(ViewManager.nextTetromino)) || ViewModel.tetrominoCnter.Value == 0) {
-            //     GameOver();
-            // }
-            // if (ViewModel.gameMode.Value == 0)
-            //     SpawnnextTetromino();  
+//             onGameSave();
 
-            // DeleteRow();
-            // Update();
-            // if (CheckIsAboveGrid(ViewManager.nextTetromino.GetComponent<Tetromino>())) { // 检查游戏是否结束,最后一个方块砖是否放到顶了
-            //     Debug.Log(TAG + " TODO: Game Over");
-            //     // GameOver(); // for tmp
-            // }            
-            // Array.Clear(buttonInteractableList, 0, buttonInteractableList.Length);
-            // if (gameMode.Value  == 0) {
-            //     buttonInteractableList[0] = 1;
-            //     buttonInteractableList[1] = 1;
-            //     buttonInteractableList[2] = 1;
-            //     buttonInteractableList[3] = 1; // undo button
-            // }
+//             Debug.Log(TAG + " (ViewModel.gameMode.Value == 0 && !GloData.Instance.isChallengeMode): " + (ViewModel.gameMode.Value == 0 && !GloData.Instance.isChallengeMode));
+//             if (ViewModel.gameMode.Value > 0 || (GloData.Instance.isChallengeMode && (GloData.Instance.challengeLevel < 3 || GloData.Instance.challengeLevel > 5))) // 1 2 6 7 8 9 10
+//                 ModelMono.DeleteRow();
+//             else if (((ViewModel.gameMode.Value == 0 && !GloData.Instance.isChallengeMode) || (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel > 2 && GloData.Instance.challengeLevel < 6)) // 3 4 5
+//                      && !ModelMono.isDeleteRowCoroutineRunning)
+//                 CoroutineHelperP.StartCoroutine(ModelMono.Instance.DeleteRowCoroutine()); // the case
+//             // if (Model.CheckIsAboveGrid(ViewManager.nextTetromino.GetComponent<Tetromino>()) || tetrominoCnter == 0) {
+//             if (Model.CheckIsAboveGrid(ComponentHelper.GetTetroComponent(ViewManager.nextTetromino)) || ViewModel.tetrominoCnter.Value == 0) {
+//                 GameOver();
+//             }
+//             // if (ViewModel.gameMode.Value == 0)
+//             //     SpawnnextTetromino();  
+
+//             // DeleteRow();
+//             // Update();
+//             // if (CheckIsAboveGrid(ViewManager.nextTetromino.GetComponent<Tetromino>())) { // 检查游戏是否结束,最后一个方块砖是否放到顶了
+//             //     Debug.Log(TAG + " TODO: Game Over");
+//             //     // GameOver(); // for tmp
+//             // }
+// // 这是被自己控制过的逻辑,要补完整            
+//             Array.Clear(ViewModel.buttonInteractableList, 0, ViewModel.buttonInteractableList.Length);
+//             if (ViewModel.gameMode.Value  == 0) {
+//                 ViewModel.buttonInteractableList[0] = 1;
+//                 ViewModel.buttonInteractableList[1] = 1;
+//                 ViewModel.buttonInteractableList[2] = 1;
+//                 ViewModel.buttonInteractableList[3] = 1; // undo button
+//             }
+
 // TODO那么,这下面的逻辑是放在哪里处理的呢?            
 // ghostTetromino, nextTetromino 的相关处理
             PoolHelper.recycleGhostTetromino(); // 放这里的主要原因是需要传参数
@@ -616,15 +705,11 @@ namespace HotFix.UI {
             ViewModel.currentScore.Value += tetromino.GetComponent<TetrominoType>().score;
             tetromino.enabled = false;
             // ViewManager.GameView.ViewModel.currentScore.Value += tetromino.individualScore;            
-// // 保存游戏进展 
-//             // // SaveGameEventInfo fire here 
-//             // saveGameInfo = new SaveGameEventInfo();
-//             // EventManager.Instance.FireEvent(saveGameInfo);
-//             // change an approach: it is unnessary and do NOT apply delegates and events here
-//             // onGameSave();
+
             if (((MenuViewModel)ViewModel.ParentViewModel).gameMode != 0) 
                 SpawnnextTetromino();  
         }
+
         // 游戏进程的暂停与恢复: 这么改要改狠久狠久才能够改得完,还是先实现一些基础功能吧,到时对游戏逻辑再熟悉一点儿统一重构效率能高很多的呀
         void onGameSave() { // 是指将游戏进度存到本地数据文件
             ViewModel.onGameSave();

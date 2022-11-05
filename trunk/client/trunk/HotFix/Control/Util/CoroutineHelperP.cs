@@ -13,13 +13,15 @@ namespace HotFix.Control {
     
     // 协程静态帮助类: 
     public class CoroutineHelperP {
+        private const string TAG = "CoroutineHelperP"; 
+
         static CoroutineBehaviour coroutine;
 
         // 开启一个协程
         public static Coroutine StartCoroutine(IEnumerator routine) {
 // 第一次创建的时候，就是新建控件，保持不销毁，并添加脚本
             if (coroutine == null) { 
-                GameObject coroutineGameObject = new GameObject("CoroutineGameObject");
+                GameObject coroutineGameObject = new GameObject("CoroutineGameObjectP");
 				GameObject.DontDestroyOnLoad(coroutineGameObject);
                 coroutine = coroutineGameObject.AddComponent<CoroutineBehaviour>(); 
             }

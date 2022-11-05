@@ -32,11 +32,12 @@ namespace HotFix.Control {
         private static int randomTetromino;
 
         public static void UpdateGrid(GameObject tetromino) { // update gridOcc, gridClr at the same time
-            // Debug.Log(TAG + ": UpdateGrid()");
+            Debug.Log(TAG + ": UpdateGrid()");
             for (int y = 0; y < gridHeight; y++) 
                 for (int z = 0; z < gridZWidth; z++) 
                     for (int x = 0; x < gridXWidth; x++)
                         if (grid[x][y][z] != null && grid[x][y][z].parent == tetromino.transform) {
+                            MathUtilP.print(x, y, z);
                             grid[x][y][z] = null; 
                             gridOcc[x][y][z]= 0;
                             if (GloData.Instance.isChallengeMode)
@@ -195,6 +196,8 @@ namespace HotFix.Control {
                     for (int k = 0; k < gridZWidth; k++) {
                         if (grid[i][j][k] != null) {
                             if (grid[i][j][k].parent != null && grid[i][j][k].parent.childCount == 4) {
+                                Debug.Log(TAG + " grid[i][j][k].parent.gameObject.name: " + grid[i][j][k].parent.gameObject.name);
+
                                 if (grid[i][j][k].parent.gameObject.CompareTag("currentActiveTetromino")) 
                                     grid[i][j][k].parent.gameObject.GetComponent<Tetromino>().enabled = false;
                                 Transform tmpParentTransform = grid[i][j][k].parent;

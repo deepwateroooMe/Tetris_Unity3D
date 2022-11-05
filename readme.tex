@@ -1,4 +1,4 @@
-% Created 2022-11-04 Fri 10:09
+% Created 2022-11-05 Sat 14:28
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -38,7 +38,15 @@
 \begin{itemize}
 \item debugging game flow, 现游戏的主场景如下(热更新程序域里的主要逻辑功能模块化管理主要工作完成,还没有debug游戏逻辑):
 \item 现逻辑支持但凡前一步有个方块砖落地,就可以撤销.但仍然存在一个方块砖落地后同时消除多行时的撤销时可能会还有bug to be fixed
-\item 昨天晚上我原本是想要添加新的图片,后来没来得及就忘记加了
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221105_142752.png}
+
+\begin{itemize}
+\item \textbf{TODO:}
+\begin{itemize}
+\item Integrating challenging levels modes.
+\end{itemize}
 \end{itemize}
 
 \includegraphics[width=.9\linewidth]{./pic/readme_20221104_102732.png}
@@ -47,33 +55,9 @@
 
 \includegraphics[width=.9\linewidth]{./pic/readme_20221102_272232.png}
 
-它们的恶手段使多了
-只能把人赶到天边
-
-早说过了:
-不能嫁给亲爱的表哥便一切免谈
-
-只有在活宝妹能够顺利嫁给亲爱的表哥的前提下
-才会其它好说好商量
-
-若是不能嫁给亲爱的表哥
-我会远离硅谷
-回到亲爱的表哥所在的小镇
-永远守候在亲爱的表哥身边
-
-再过一两周会第一时间申请加入美国国藉
-
-还没能嫁给亲爱的表哥
-便永远也不考虑补办中国护照
-永远也不再离开美国国土半步
-
-一定要尽早嫁给亲爱的表哥
-还要尽早为亲爱的表哥生一个小小子
-
-爱表哥, 爱生活!!!
+\includegraphics[width=.9\linewidth]{./pic/readme_20221104_272732.png}
 
 \begin{itemize}
-\item \textbf{TODO:}
 \item 对于启蒙模式,是允许撤销最后一块落地了的方块砖的,即使它的落地造成了某些行或列的消除.现debug这个撤销最后一块方块砖过程中的bug
 \item 游戏视图切换的时候,从游戏主场景出来,场景没能清理干净,某些方块砖可以缓存或是销毁,清理面板
 \item 现在解决了几乎所有遇到的问题或是BUG,现在就是不管看着那堆破烂的游戏逻辑,感觉它们搅在一起太混乱,一边折解到不同的模块里去,一边debug游戏逻辑(感觉现在没有很挑战的bug,琐碎的游戏逻辑快要打不起精神来了,感觉学习和解决比较难的BUG,等解决了问题的时候会比较开心,爱表哥,爱生活!!!)

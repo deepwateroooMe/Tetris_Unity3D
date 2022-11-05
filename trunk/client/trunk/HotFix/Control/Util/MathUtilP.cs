@@ -8,10 +8,14 @@ namespace HotFix.Control {
 
     // 放到热更新工程里面,主要是为了挑战模式下的动态参数,省得debug的时候一不小心忘记了就死机,会浪费很多时间 
     public static class MathUtilP {
-        private const string TAG = "MathUtil";
+        private const string TAG = "MathUtilP";
 
-        private static int m = 5;
+        private static int m = GloData.Instance.gridSize;
+        private static int xm = GloData.Instance.gridXSize;
+        private static int zm = GloData.Instance.gridZSize;
         private static int n = 12;
+        // private static int m = 5;
+        // private static int n = 12;
 
         public static int getIndex(int x, int y, int z) {
             int idx = (int)(m * m * y + m * z + x);
@@ -130,7 +134,6 @@ namespace HotFix.Control {
             Debug.Log(TAG + ": printBoard gridOcc[,,]:"); 
             bool empty = true;
             int z = 0;
-            Debug.Log(TAG + "   " + "Z0 " + "Z1 " + "Z2 " + "Z3 " + "Z4"); 
             for (int y = 0; y < n; y++) {
                 if (isBoardLayerEmpty(gridOcc, y)) return;
                 // Debug.Log(TAG + " y: " + y); 
@@ -206,5 +209,29 @@ namespace HotFix.Control {
             transform.rotation = Quaternion.identity;
             transform.localScale.Set(1f, 1f, 1f);
         }
+
+		public static void resetColorBoard() {
+            // xm = GloData.Instance.gridXSize;
+            // zm = GloData.Instance.gridZSize;
+           xm = Model.gridXWidth;
+           zm = Model.gridZWidth;
+            for (int i = 0; i < xm; ++i) {
+                for (int j = 0; j < n; j++) {
+                    for (int k = 0; k < zm; k++) {
+                        Model.gridClr[i][j][k] = -1;
+                    }
+                }
+            }
+        }
+
+        public static void initiateThreeDArray(int [][][] f, int x, int y, int z) {
+            f = new int [x][][];
+            for (int i = 0; i < x; i++) {
+                f[i] = new int [y][];
+                for (int j = 0; j < y; j++) 
+                    f[i][j] = new int [z];
+            }
+        }
     }
 }
+

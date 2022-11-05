@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using HotFix.UI;
+using UnityEngine;
 
 namespace HotFix.Control {
 
@@ -66,7 +67,9 @@ namespace HotFix.Control {
         }
 
         void onTetrominoLand(TetrominoLandEventInfo info) {
-            audioSource.PlayOneShot(landSound);
+            Debug.Log(TAG + " onTetrominoLand");
+            if (ViewManager.nextTetromino. CompareTag("currentActiveTetromino"))
+                audioSource.PlayOneShot(landSound);
         }
 
         public void PlayOneShotAudioClip(AudioClip clip) {
