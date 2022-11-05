@@ -27,7 +27,7 @@ namespace HotFix.UI {
                         GameObject.DontDestroyOnLoad(go); 
 // 游戏运行时,不知道什么原因,会呈现一些不确定性:比如旋转某些角度等,想要把它们摆定
                         // go.GetComponent<RectTransform>().rotation = Quaternion.Euler(Vector3.zero);
-                        CoroutineHelper.StartCoroutine(GetRectSize(go.GetComponent<RectTransform>()));
+                        CoroutineHelperP.StartCoroutine(GetRectSize(go.GetComponent<RectTransform>()));
 
                         UI2DRoot = go.GetComponent<Canvas>();
                         var viewRoot = new GameObject("ViewRoot"); 
@@ -37,7 +37,8 @@ namespace HotFix.UI {
                         managersRoot.transform.SetParent(UI2DRoot.transform);
                         EventManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
                         AudioManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
-
+                        ModelMono.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
+                        
                         var viewRect = viewRoot.AddComponent<RectTransform>();
                         viewRect.SetParent(UI2DRoot.transform, false);
                         viewRect.sizeDelta = new Vector2(0, 0);
@@ -53,7 +54,9 @@ namespace HotFix.UI {
                     "BtnsCanvasView", 
                     (go) => {
                         go.name = "BtnsCanvasView";
-                        GameObject.DontDestroyOnLoad(go); 
+                        GameObject.DontDestroyOnLoad(go);
+                        directionsImg = go.FindChildByName("directions").GetComponent<SpriteRenderer>().sprite;
+                        rotationsImg = go.FindChildByName("rotations").GetComponent<SpriteRenderer>().sprite;
                         moveCanvas = go.FindChildByName("moveCanvas");
                         rotateCanvas = go.FindChildByName("rotateCanvas");
                         ComponentHelper.AddMoveCanvasComponent(moveCanvas);
@@ -80,6 +83,8 @@ namespace HotFix.UI {
         public static Dictionary<string, Stack<GameObject>> pool = null;
         public static GameObject tetrosPool = null;
         public static GameObject tetroParent = null;
+        public static Sprite directionsImg;
+        public static Sprite rotationsImg;
 #endregion
 
         static IEnumerator GetRectSize(RectTransform rt) { // 自己添加到这里的

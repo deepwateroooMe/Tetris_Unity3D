@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using deepwaterooo.tetris3d;
 using Framework.MVVM;
+using Framework.Util;
 using HotFix.Control;
 using HotFix.Data;
 using tetris3d;
@@ -36,7 +37,7 @@ namespace HotFix.UI {
 // EduTetroView 按钮控件
         GameObject pvBtnTwo; // pteBtn
 // ToggleBtnView
-        GameObject togBtn; // Togcation
+        public GameObject togBtn; // Togcation
 // StaticBtnsView
         GameObject pauBtn; // pause Game
         GameObject falBtn; // fall fast button
@@ -46,7 +47,7 @@ namespace HotFix.UI {
 // pausePanel: 
         GameObject pausePanel;
         Button savBtn; // SAVE GAME
-        Button resBtn; // RESUME GAME
+        Button resBtn; // RESUME GAME 
         Button guiBtn; // TUTORIAL
         Button manBtn; // BACK TO MAIN MENU
         Button creBtn; // CREDIT
@@ -65,6 +66,8 @@ namespace HotFix.UI {
         public GameObject defaultContainer;
         private GameObject cycledPreviewTetromino;
         private bool gameStarted = false;
+
+        public static Vector3 nextTetrominoSpawnPos = new Vector3(2.0f, Model.gridHeight - 1, 2.0f);
         private Vector3 previewTetrominoPosition = new Vector3(-17f, -5f, -9.81f);
         private Vector3 previewTetromino2Position = new Vector3(-68.3f, 19.6f, 32.4f); 
         public int numLinesCleared = 0;
@@ -85,6 +88,11 @@ namespace HotFix.UI {
         private bool isMoveValid = false;
         private bool isRotateValid = false;
         private Vector3 delta;
+
+        public ModelMono modelMono;
+// 挑战模式下:当方块砖落地的时候,地板的着色会跟着改变?        
+        public delegate void TetrominoChallengeLandingDelegate();
+        public static TetrominoChallengeLandingDelegate changeBaseCubesSkin;
         
         public void SpawnnextTetromino() {
             Debug.Log(TAG + ": SpawnnextTetromino()");
@@ -95,7 +103,7 @@ namespace HotFix.UI {
                    gameStarted = true;
                    ViewManager.nextTetromino = PoolHelper.GetFromPool(
                        ViewModel.GetRandomTetromino(),
-                       new Vector3(2.0f, ViewModel.gridHeight - 1f, 2.0f),
+                       nextTetrominoSpawnPos,
                        Quaternion.identity, Vector3.one);
                    currentActiveTetrominoPrepare();
                    ViewManager.moveCanvas.transform.rotation = Quaternion.Euler(0, 0, 0);
@@ -284,12 +292,12 @@ namespace HotFix.UI {
             if (ViewModel.gameMode.Value == 0 && (ViewModel.gridWidth == 3 || ViewModel.gridWidth == 4)) {
                 ViewManager.nextTetromino.transform.localPosition = new Vector3(1.0f, ViewModel.gridHeight - 1f, 1.0f);
             } else 
-                ViewManager.nextTetromino.transform.localPosition = new Vector3(2.0f, ViewModel.gridHeight - 1f, 2.0f);
+                ViewManager.nextTetromino.transform.localPosition = nextTetrominoSpawnPos; 
         }
         
         private void moveRotatecanvasPrepare() { 
-            ViewManager.moveCanvas.transform.localPosition = new Vector3(2.0f, ViewModel.gridHeight - 1f, 2.0f);     
-            ViewManager.rotateCanvas.transform.localPosition = new Vector3(2.0f, ViewModel.gridHeight - 1f, 2.0f);
+            ViewManager.moveCanvas.transform.localPosition = nextTetrominoSpawnPos; 
+            ViewManager.rotateCanvas.transform.localPosition = nextTetrominoSpawnPos; 
             ViewManager.moveCanvas.transform.rotation = Quaternion.Euler(0, 0, 0);   // 规正可能存在的微小转动
             ViewManager.rotateCanvas.transform.rotation = Quaternion.Euler(0, 0, 0); // 规正可能存在的微小转动
             ViewManager.moveCanvas.SetActive(true);
@@ -541,7 +549,66 @@ namespace HotFix.UI {
         }
         public void onActiveTetrominoLand(TetrominoLandEventInfo info) {
             Debug.Log(TAG + ": onActiveTetrominoLand()");
+
             ViewModel.onActiveTetrominoLand(info);
+            Debug.Log(TAG + ": onActiveTetrominoLand()");
+            // ViewModel.UpdateGrid(ViewManager.nextTetromino);
+// TODO BUG:关于热更新里使用协程,这里还有一个重要BUG需要改掉
+            // Model.UpdateGrid(ViewManager.nextTetromino);
+
+            Debug.Log(TAG + ": gridOcc[,,] aft Land UpdateGrid(), bef onGameSave()"); 
+            MathUtil.printBoard(ViewModel.gridOcc);  // Model.
+            Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), bef onGameSave()"); 
+            // MathUtil.printBoard(gridClr);  // Model.
+
+            Debug.Log(TAG + " (GloData.Instance.isChallengeMode): " + (GloData.Instance.isChallengeMode));
+            if (GloData.Instance.isChallengeMode) {
+                if (ChallengeRules.isValidLandingPosition()) {
+                    // changeBaseCubesSkin();
+                } else { // print color board
+                    Debug.Log(TAG + ": color board before game Over()");
+                    MathUtil.printBoard(Model.gridClr);
+
+                    // Debug.Log(TAG + ": Game Over()"); 
+                    GameOver();
+                }
+            }
+            
+            onGameSave();
+            // // // SaveGameEventInfo fire here 
+            // // saveGameInfo = new SaveGameEventInfo();
+            // // EventManager.Instance.FireEvent(saveGameInfo);
+            // // change an approach: it is unnessary and do NOT apply delegates and events here
+            // if (gameMode.Value == 0) // 只在启蒙模式下才保存
+            //     onGameSave();
+
+// cmt for tmp
+            // if (ViewModel.gameMode.Value > 0 || (GloData.Instance.isChallengeMode && (GloData.Instance.challengeLevel < 3 || GloData.Instance.challengeLevel > 5))) // 1 2 6 7 8 9 10
+            //     modelMono.DeleteRow();
+            // else if (((ViewModel.gameMode.Value == 0 && !GloData.Instance.isChallengeMode) || (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel > 2 && GloData.Instance.challengeLevel < 6)) // 3 4 5
+            //          && !ModelMono.isDeleteRowCoroutineRunning)
+            //     CoroutineHelperP.StartCoroutine(modelMono.DeleteRowCoroutine()); // the case
+            // // if (Model.CheckIsAboveGrid(ViewManager.nextTetromino.GetComponent<Tetromino>()) || tetrominoCnter == 0) {
+            // if (Model.CheckIsAboveGrid(ComponentHelper.GetTetroComponent(ViewManager.nextTetromino)) || ViewModel.tetrominoCnter.Value == 0) {
+            //     GameOver();
+            // }
+            // if (ViewModel.gameMode.Value == 0)
+            //     SpawnnextTetromino();  
+
+            // DeleteRow();
+            // Update();
+            // if (CheckIsAboveGrid(ViewManager.nextTetromino.GetComponent<Tetromino>())) { // 检查游戏是否结束,最后一个方块砖是否放到顶了
+            //     Debug.Log(TAG + " TODO: Game Over");
+            //     // GameOver(); // for tmp
+            // }            
+            // Array.Clear(buttonInteractableList, 0, buttonInteractableList.Length);
+            // if (gameMode.Value  == 0) {
+            //     buttonInteractableList[0] = 1;
+            //     buttonInteractableList[1] = 1;
+            //     buttonInteractableList[2] = 1;
+            //     buttonInteractableList[3] = 1; // undo button
+            // }
+// TODO那么,这下面的逻辑是放在哪里处理的呢?            
 // ghostTetromino, nextTetromino 的相关处理
             PoolHelper.recycleGhostTetromino(); // 放这里的主要原因是需要传参数
             ViewManager.nextTetromino.tag = "Untagged";
@@ -549,12 +616,12 @@ namespace HotFix.UI {
             ViewModel.currentScore.Value += tetromino.GetComponent<TetrominoType>().score;
             tetromino.enabled = false;
             // ViewManager.GameView.ViewModel.currentScore.Value += tetromino.individualScore;            
-// 保存游戏进展 
-            // // SaveGameEventInfo fire here 
-            // saveGameInfo = new SaveGameEventInfo();
-            // EventManager.Instance.FireEvent(saveGameInfo);
-            // change an approach: it is unnessary and do NOT apply delegates and events here
-            // onGameSave();
+// // 保存游戏进展 
+//             // // SaveGameEventInfo fire here 
+//             // saveGameInfo = new SaveGameEventInfo();
+//             // EventManager.Instance.FireEvent(saveGameInfo);
+//             // change an approach: it is unnessary and do NOT apply delegates and events here
+//             // onGameSave();
             if (((MenuViewModel)ViewModel.ParentViewModel).gameMode != 0) 
                 SpawnnextTetromino();  
         }
@@ -680,6 +747,9 @@ namespace HotFix.UI {
             ViewModel.currentScore.OnValueChanged += onCurrentScoreChanged;
             ViewModel.currentLevel.OnValueChanged += onCurrentLevelChanged;
             ViewModel.numLinesCleared.OnValueChanged += onNumLinesCleared;
+// TODO: CHALLENGE MODE: COUNTERS
+            // ViewModel.tetrominoCnter.OnValueChanged += 
+            
 // TODO: 为了触发第一次的回调,稍微绕了一下,需要更为优雅的设置方法
             ViewManager.MenuView.ViewModel.mgameMode.OnValueChanged += onGameModeChanged; 
             if (ViewModel.gameMode.Value != ViewManager.MenuView.ViewModel.mgameMode.Value)
@@ -690,7 +760,7 @@ namespace HotFix.UI {
 // 相机的位置变化:主要用于启蒙模式,用户㧤撤销某块方块砖的时候 ?
             ViewModel.cameraPos.OnValueChanged += onCameraPosChanged;
             ViewModel.cameraRot.OnValueChanged += onCameraRotChanged;
-            
+
             Start(); // 开始游戏
             revealed = true;
         }

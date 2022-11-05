@@ -135,8 +135,8 @@ namespace HotFix.Control {
             if (GloData.Instance.isChallengeMode && type.Substring(0, 5).Equals("shape")) { // isChallengeMode = true, gameMode = 0
                 int rand = 0, randomColor1 = 0, randomColor2 = 0, cnt = 0;
 
-                Debug.Log(TAG + " GloData.Instance.challengeLevel: " + GloData.Instance.challengeLevel); 
-                if (GameController.isChallengeMode && GloData.Instance.challengeLevel > 10 && GloData.Instance.challengeLevel < 16) { // match 2
+                Debug.Log(TAG + " GloData.Instance.challengeLevel: " + GloData.Instance.challengeLevel);
+				if (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel > 10 && GloData.Instance.challengeLevel < 16) { // match 2
                     randomColor1 = UnityEngine.Random.Range(0, 4);
                     Debug.Log(TAG + " randomColor1: " + randomColor1); 
                     randomColor2 = UnityEngine.Random.Range(0, 4);

@@ -1,9 +1,11 @@
 ﻿using Framework.MVVM;
+using HotFix.Control;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace HotFix.UI {
 
+// 这里已经写了就不想再改写了;代码最后优化的时候可以再试着改写按钮的监听与回调事件
     public class ChallLevelsView : UnityGuiView {
         private const string TAG = "ChallLevelsView"; 
         public override string BundleName { get { return "ui/view/challlevelsview"; } }
@@ -74,13 +76,13 @@ namespace HotFix.UI {
             eleBtn = GameObject.FindChildByName("eleBtn").GetComponent<Button>();
             eleBtn.onClick.AddListener(OnClickEleButton);
             twlBtn = GameObject.FindChildByName("twlBtn").GetComponent<Button>();
-            // twlBtn.onClick.AddListener(OnClickTwlButton);
+            twlBtn.onClick.AddListener(OnClickTwlButton);
             thtBtn = GameObject.FindChildByName("thtBtn").GetComponent<Button>();
-            // thtBtn.onClick.AddListener(OnClickThtButton);
+            thtBtn.onClick.AddListener(OnClickThtButton);
             fotBtn = GameObject.FindChildByName("fotBtn").GetComponent<Button>();
-            // fotBtn.onClick.AddListener(OnClickFotButton);
+            fotBtn.onClick.AddListener(OnClickFotButton);
             fifBtn = GameObject.FindChildByName("fifBtn").GetComponent<Button>();
-            // fifBtn.onClick.AddListener(OnClickFifButton);
+            fifBtn.onClick.AddListener(OnClickFifButton);
 
             sitBtn = GameObject.FindChildByName("sitBtn").GetComponent<Button>();
             // sitBtn.onClick.AddListener(OnClickSitButton);
@@ -102,29 +104,168 @@ namespace HotFix.UI {
             advancedPanel.SetActive(false);
             basicPanel.SetActive(true);
         }        
-        void OnClickOneButton() {
+        void CallBackHelper(int level) {
+            switch (level) {
+            case 1:
+                GloData.Instance.challengeLevel = 1;
+                GloData.Instance.gridSize = 5;
+                GloData.Instance.gridXSize = 5;
+                GloData.Instance.gridZSize = 5;
+                GloData.Instance.tetrominoCnter = 22;
+                break;
+            case 2:
+                GloData.Instance.challengeLevel = 2;
+                GloData.Instance.gridSize = 7;
+                GloData.Instance.gridXSize = 7;
+                GloData.Instance.gridZSize = 7;
+                GloData.Instance.tetrominoCnter = 22;
+                GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
+                break;
+            case 3:
+                GloData.Instance.challengeLevel = 3;
+                GloData.Instance.gridXSize = 9;
+                GloData.Instance.gridZSize = 7;
+                GloData.Instance.tetrominoCnter = 22;
+                GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
+                break;
+            case 4:
+                GloData.Instance.challengeLevel = 4;
+                GloData.Instance.gridSize = 8;
+                GloData.Instance.gridXSize = 8;
+                GloData.Instance.gridZSize = 8;
+                GloData.Instance.tetrominoCnter = 22;
+                GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
+                break;
+            case 5:
+                GloData.Instance.challengeLevel = 5;
+                GloData.Instance.gridXSize = 8;
+                GloData.Instance.gridZSize = 9;
+                GloData.Instance.tetrominoCnter = 22;
+                GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
+                break;
+            case 6:
+                GloData.Instance.challengeLevel = 6;
+                GloData.Instance.gridSize = 9;
+                GloData.Instance.gridXSize = 9;
+                GloData.Instance.gridZSize = 9;
+                GloData.Instance.tetrominoCnter = 42;
+                GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
+                break;
+            case 7:
+                GloData.Instance.challengeLevel = 7;
+                // GloData.Instance.gridSize = 7; // WHY commented out ??? to be fixed
+                GloData.Instance.gridXSize = 10;
+                GloData.Instance.gridZSize = 9;
+                GloData.Instance.tetrominoCnter = 42;
+                GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
+                break;
+            case 8:
+                GloData.Instance.challengeLevel = 8;
+                GloData.Instance.gridXSize = 9;
+                GloData.Instance.gridZSize = 7;
+                GloData.Instance.tetrominoCnter = 42;
+                GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
+                break;
+            case 9:
+                GloData.Instance.challengeLevel = 9;
+                GloData.Instance.gridSize = 8;
+                GloData.Instance.gridXSize = 8;
+                GloData.Instance.gridZSize = 8;
+                GloData.Instance.tetrominoCnter = 42;
+                GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
+                break;
+            case 10:
+                GloData.Instance.challengeLevel = 10;
+                GloData.Instance.gridXSize = 8;
+                GloData.Instance.gridZSize = 9;
+                GloData.Instance.tetrominoCnter = 42;
+                GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
+                break;
+            case 11:
+                GloData.Instance.challengeLevel = 11;
+                GloData.Instance.gridSize = 5;
+                GloData.Instance.gridXSize = 5;
+                GloData.Instance.gridZSize = 5;
+                GloData.Instance.tetrominoCnter = 22;
+                break;
+            case 12:
+                GloData.Instance.challengeLevel = 12;
+                GloData.Instance.gridSize = 7;
+                GloData.Instance.gridXSize = 7;
+                GloData.Instance.gridZSize = 7;
+                GloData.Instance.tetrominoCnter = 22;
+                GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
+                break;
+            case 13:
+                GloData.Instance.challengeLevel = 13;
+                GloData.Instance.gridXSize = 9;
+                GloData.Instance.gridZSize = 7;
+                GloData.Instance.tetrominoCnter = 22;
+                GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
+                break;
+            case 14:
+                GloData.Instance.challengeLevel = 14;
+                GloData.Instance.gridSize = 8;
+                GloData.Instance.gridXSize = 8;
+                GloData.Instance.gridZSize = 8;
+                GloData.Instance.tetrominoCnter = 22;
+                GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
+                break;
+            case 15:
+                GloData.Instance.challengeLevel = 15;
+                GloData.Instance.gridXSize = 8;
+                GloData.Instance.gridZSize = 9;
+                GloData.Instance.tetrominoCnter = 22;
+                GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
+                break;
+            }
             ViewManager.GameView.Reveal();
             Hide();
         }
+        void OnClickOneButton() {
+            CallBackHelper(1);
+        }
         void OnClickTwoButton() {
+            CallBackHelper(2);
         }
         void OnClickThrButton() {
+            CallBackHelper(3);
         }
         void OnClickForButton() {
+            CallBackHelper(4);
         }
         void OnClickFivButton() {
+            CallBackHelper(5);
         }
         void OnClickSixButton() {
+            CallBackHelper(6);
         }
         void OnClickSevButton() {
+            CallBackHelper(7);
         }
         void OnClickEitButton() {
+            CallBackHelper(8);
         }
         void OnClickNinButton() {
+            CallBackHelper(9);
         }
         void OnClickTenButton() {
+            CallBackHelper(10);
         }
         void OnClickEleButton() {
+            CallBackHelper(11);
+        }
+        void OnClickTwlButton() {
+            CallBackHelper(12);
+        }
+        void OnClickThtButton() {
+            CallBackHelper(13);
+        }
+        void OnClickFotButton() {
+            CallBackHelper(14);
+        }
+        void OnClickFifButton() {
+            CallBackHelper(15);
         }
     }
 }

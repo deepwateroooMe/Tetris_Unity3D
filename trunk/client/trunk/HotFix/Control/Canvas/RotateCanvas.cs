@@ -100,6 +100,7 @@ namespace HotFix.Control {
 // 因为它这个缓慢的调用响应速度,必须得把方块砖下降的速度调得很慢,并需要在响应回来之前把按钮失活? 几个细节需要实现        
         void onCanvasToggled(CanvasToggledEventInfo info) {
             Debug.Log(TAG + " CanvasToggledEventInfo");
+            ViewManager.GameView.togBtn.GetComponent<Button>().image.overrideSprite = ViewManager.rotationsImg;
             ViewManager.rotateCanvas.SetActive(false);
             ViewManager.moveCanvas.SetActive(true);
         }

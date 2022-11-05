@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using deepwaterooo.tetris3d;
 using Framework.MVVM;
+using Framework.Util;
 using HotFix.Control;
 using HotFix.Data;
 using tetris3d;
@@ -45,9 +46,14 @@ namespace HotFix.UI {
         public BindableProperty<Vector3> nextTetroPos = new BindableProperty<Vector3>();
         public BindableProperty<Quaternion> nextTetroRot = new BindableProperty<Quaternion>();
         public BindableProperty<Vector3> nextTetroSca = new BindableProperty<Vector3>();
-// 相机的旋转
+// 相机的旋转(因为目前是放在主工程下的,所以其实根本没有必要?)
         public BindableProperty<Vector3> cameraPos = new BindableProperty<Vector3>();
         public BindableProperty<Quaternion> cameraRot = new BindableProperty<Quaternion>();
+// for CHALLENGING MODE ONLY: 对于关级中可用的方块砖的数目,撤销次数,以及交换次数进行必要的限制
+        public BindableProperty<int> tetrominoCnter = new BindableProperty<int>();
+        public BindableProperty<int> undoCnter = new BindableProperty<int>();
+        public BindableProperty<int> swapCnter = new BindableProperty<int>();
+        private static Coroutine deleteMinoAtCoroutine;
         
         public static bool startingAtLevelZero;
         public static int startingLevel;
@@ -83,6 +89,185 @@ namespace HotFix.UI {
             DelegateSubscribe(); 
         }   
 
+        // public void DeleteRow() { // 算法上仍然需要优化
+        //     Debug.Log(TAG + ": DeleteRow() start");
+        //     // hasDeletedMinos = false; 
+        //     bool isFullRowAtY = false;
+        //     for (int y = 0; y < Model.gridHeight; y++) {
+        //         isFullRowAtY = Model.IsFullRowAt(y);
+        //         // Debug.Log(TAG + " isFullRowAtY: " + isFullRowAtY); 
+        //         // if (IsFullRowAt(y)) {
+        //         if (isFullRowAtY) {
+        //             // 一定要控制同屏幕同时播放的粒子数量
+        //             // 1.同屏的粒子数量一定要控制在200以内，每个粒子的发射数量不要超过50个。
+        //             // 2.尽量减少粒子的面积，面积越大就会越卡。
+        //             // 3.粒子最好不要用Alfa Test（但是有的特效又不能不用，这个看美术吧）
+        //             //   粒子的贴图用黑底的这种，然后用Particles/Additive 这种Shader，贴图必须要2的幂次方，这样渲染的效率会高很多。个人建议 粒子特效的贴图在64左右，千万不要太大。
+        //             // // 让游戏中真正要播放粒子特效的时候，粒子不用在载入它的贴图，也不用实例化，仅仅是执行一下SetActive(true)。
+        //             // SetActive(true)的时候就不会执行粒子特效的Awake()方法，但是它会执行OnEnable方法。
+        //             // hasDeletedMinos = true; // Bug: I commented this out, supposedly it's for DeleteRowCoroutine only                    
+                        
+        //             // m_ExplosionParticles.transform.position = new Vector3(2.5f, y, 2.5f); 
+        //             // m_ExplosionParticles.gameObject.SetActive(true);
+        //             // m_ExplosionParticles.Play();
+        //             // m_ExplosionAudio.Play();
+
+        //             DeleteMinoAt(y);
+        //             if (GloData.Instance.gameMode > 0 || (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel < 3))
+        //                 MainScene_ScoreManager.currentScore += GloData.Instance.layerScore;
+        //             else
+        //                 MainScene_ScoreManager.currentScore += GloData.Instance.challengeLayerScore;
+                        
+        //             MoveAllRowsDown(y + 1);
+        //             --y;
+        //         }
+        //     }
+
+        //     if (BaseBoardSkin.isSkinChanged) { // debugging
+        //         Debug.Log(TAG + ": Model.gridOcc[,,] aft DeleteRow done"); 
+        //         MathUtilP.printBoard(Model.gridOcc); 
+        //     }
+        // }
+
+        // public System.Collections.IEnumerator DeleteRowCoroutine() {
+        //     Debug.Log(TAG + ": DeleteRowCoroutine()");
+        //     isDeleteRowCoroutineRunning = true;
+
+        //     for (int y = 0; y < Model.gridHeight; y++) {
+        //         Debug.Log(TAG + " y: " + y); 
+        //         // if (Model.IsFullFiveInLayerAt(y)) { 
+        //         if ( (!GloData.Instance.isChallengeMode && Model.IsFullFiveInLayerAt(y))
+        //              // || (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel > 2 && GloData.Instance.challengeLevel < 6 &&  Model.IsFullQuadInLayerAt(y)) ) { 
+        //              || (GloData.Instance.isChallengeMode && Model.IsFullQuadInLayerAt(y)) ) { 
+
+        //             Debug.Log(TAG + ": gridOcc[,,] IsFullQuadInLayerAt(y)"); 
+        //             MathUtilP.printBoard(Model.gridOcc); 
+
+        //             Model.isNumberOfRowsThisTurnUpdated = false;
+        //             // updateScoreEvent(); // commended now
+
+        //             Debug.Log(TAG + " (GloData.Instance.isChallengeMode && Model.zoneSum == 4): " + (GloData.Instance.isChallengeMode && Model.zoneSum == 4)); 
+        //             if (GloData.Instance.isChallengeMode && Model.zoneSum == 4) {
+        //                 DeleteMinoAt(y);
+        //                 MainScene_ScoreManager.currentScore += GloData.Instance.challengeLayerScore; // 分数再优化一下
+        //                 // yield return null;
+        //             } else {
+        //                 MainScene_ScoreManager.currentScore += GloData.Instance.layerScore; // 分数再优化一下
+        //                 Debug.Log(TAG + " (!isDeleteMNinoAtCoroutineRunning): " + (!isDeleteMNinoAtCoroutineRunning)); 
+        //                 if (!isDeleteMNinoAtCoroutineRunning) {
+        //                     deleteMinoAtCoroutine = CoroutineHelper.StartCoroutine(DeleteMinoAtCoroutine(y)); // commented for tmp
+        //                 }
+        //                 yield return deleteMinoAtCoroutine;                        
+        //             }
+
+        //             MoveAllRowsDown(y + 1);
+        //             --y;
+
+        //             hasDeletedMinos = true;
+        //         }
+        //         // yield return null;
+        //     }
+
+        //     Debug.Log(TAG + " hasDeletedMinos: " + hasDeletedMinos); 
+        //     if (hasDeletedMinos) { // clean top layer 2 out: all 2s to be 0s
+        //         for (int o = Model.gridHeight - 1; o >= 0; o--) {
+        //             for (int x = 0; x < Model.gridXWidth; x++) {
+        //                 for (int z = 0; z < Model.gridZWidth; z++) {
+        //                     if (Model.gridOcc[x][o][z] == 2) {
+        //                         if (o == Model.gridHeight - 1 ||  Model.gridOcc[x][o+1][z] == 0) 
+        //                             Model.gridOcc[x][o][z] = 0;
+        //                     }
+        //                 }
+        //             }
+        //         } 
+        //     }
+        //     Debug.Log(TAG + ": Model.gridOcc[,,] after DeleteRowCoroutine()"); 
+        //     MathUtilP.printBoard(Model.gridOcc);
+
+        //     isDeleteRowCoroutineRunning = false;
+        // }
+
+        // public System.Collections.IEnumerator DeleteMinoAtCoroutine(int y) { 
+        //     Debug.Log(TAG + ": DeleteMinoAtCoroutine() start");
+        //     isDeleteMNinoAtCoroutineRunning = true;
+            
+        //     if (minoPSList.Count > 0)
+        //         minoPSList.Clear();
+        //     // Debug.Log(TAG + ": spawning minoPS particles locations()"); 
+
+        //     yield return CoroutineHelper.StartCoroutine(displayConnectedParticleEffects(y));
+            
+        //     Debug.Log(TAG + "  minoPSList.Count: " +  minoPSList.Count);
+        //     for (int x = 0; x < Model.gridXWidth; x++) {
+        //         for (int  z = 0;  z < Model.gridZWidth;  z++) {
+        //             if (Model.gridOcc != null && Model.gridOcc[x][y][z] == 2) {
+        //                 Debug.Log("(x,y,z): [" + x + "," + y + "," + z +"]: " + Model.gridOcc[x][y][z]); 
+        //                 if (Model.grid[x][y][z] != null && Model.grid[x][y][z].gameObject != null) { // 一定要
+        //                     if (Model.grid[x][y][z].parent != null) {
+        //                         Debug.Log(TAG + " Model.grid[x][y][z].parent.name: " + Model.grid[x][y][z].parent.name);
+        //                         Debug.Log(TAG + " Model.grid[x][y][z].parent.childCount: " + Model.grid[x][y][z].parent.childCount);
+                                
+        //                         if (Model.grid[x][y][z].parent.childCount == 1) {
+        //                             Transform tmp = Model.grid[x][y][z].parent;
+        //                             type.Length = 0;
+        //                             if (Model.grid[x][y][z].gameObject.GetComponent<MinoType>() == null) {
+        //                                 Model.grid[x][y][z].gameObject.AddComponent<MinoType>();
+        //                                 Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type = type.Append("mino" + Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().type.Substring(5, 1)).ToString();
+        //                                 Model.grid[x][y][z].gameObject.name = type.ToString();
+        //                                 PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, type.ToString());
+        //                             } else
+        //                                 PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
+        //                             Model.grid[x][y][z] = null;
+        //                             // Destroy(tmp.gameObject); // Destroy parent todo : how?
+        //                             tmp = null;
+        //                         } else { // childCount > 1
+        //                             type.Length = 0;
+        //                             if (Model.grid[x][y][z].gameObject.GetComponent<MinoType>() == null) {
+        //                                 Model.grid[x][y][z].gameObject.AddComponent<MinoType>();
+        //                                 Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type = type.Append("mino" + Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().type.Substring(5, 1)).ToString();
+        //                                 Model.grid[x][y][z].gameObject.name = type.ToString();
+        //                                 PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, type.ToString());
+        //                             } else
+        //                                 PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
+        //                             Model.grid[x][y][z] = null;
+        //                         }
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        //     yield return null;
+        //     isDeleteMNinoAtCoroutineRunning = false;
+        // }
+
+		// System.Collections.IEnumerator displayConnectedParticleEffects (int y) {
+        //     Debug.Log(TAG + ": displayConnectedParticleEffects()"); 
+        //     for (int x = 0; x < Model.gridXWidth; x++) 
+        //         for (int  z = 0;  z < Model.gridZWidth;  z++)
+        //             if (Model.gridOcc != null && Model.gridOcc[x][y][z] == 2) {
+        //                 // Debug.Log("(x,y,z): [" + x + "," + y + "," + z +"]: " + Model.gridOcc[x][y][z]);
+                        
+        //                 // if (Model.grid[x][y][z] != null)
+        //                 //     Debug.Log(TAG + " (Model.grid[x][y][z].childCount == 0): " + (Model.grid[x][y][z].childCount == 0)); 
+        //                 if (Model.grid[x][y][z] != null && Model.grid[x][y][z].childCount == 0) {
+        //                     GameObject connectedEffectTmp = PoolHelper.GetFromPool("minoPS", new Vector3(x, y, z), Quaternion.identity, Vector3.one);
+        //                     connectedEffectTmp.transform.SetParent(Model.grid[x][y][z], true);
+        //                     minoPSList.Add(connectedEffectTmp);
+        //                 }
+        //             }
+        //     Debug.Log(TAG + "  minoPSList.Count: " +  minoPSList.Count);
+        //     yield return _waitForSeconds;
+
+        //     for (int i = minoPSList.Count - 1; i >= 0; i--) {
+        //         minoPSList[i].transform.parent = null;
+        //         PoolHelper.ReturnToPool(minoPSList[i], "minoPS");
+        //         minoPSList.RemoveAt(i);
+        //     }
+
+        //     Debug.Log(TAG + "  minoPSList.Count: " +  minoPSList.Count);
+        //     yield return null;
+        // }
+        
         public void onUndoGame(GameData gameData) { 
             Debug.Log(TAG + ": onUndoGame()");
             // if (buttonInteractableList[3] == 0) return;
@@ -171,6 +356,10 @@ namespace HotFix.UI {
 
             cameraPos.Value = new Vector3(11.01f, 21.297f, 0.88f);
             cameraRot.Value = Quaternion.Euler(new Vector3(483.091f, -263.118f, -538.141f));
+
+            tetrominoCnter.Value = 0;
+            undoCnter.Value = 5;
+            swapCnter.Value = 5;
             
             buttonInteractableList = new int [7];
             for (int i = 0; i < 7; i++)
@@ -448,6 +637,12 @@ namespace HotFix.UI {
         public void onActiveTetrominoLand(TetrominoLandEventInfo info) {
             Debug.Log(TAG + ": onActiveTetrominoLand()");
             UpdateGrid(ViewManager.nextTetromino);
+
+            Debug.Log(TAG + ": gridOcc[,,] aft Land UpdateGrid(), bef onGameSave()"); 
+            MathUtil.printBoard(gridOcc);  // Model.
+            Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), bef onGameSave()"); 
+            // MathUtil.printBoard(gridClr);  // Model.
+            
             // // SaveGameEventInfo fire here 
             // saveGameInfo = new SaveGameEventInfo();
             // EventManager.Instance.FireEvent(saveGameInfo);
@@ -761,6 +956,7 @@ namespace HotFix.UI {
             // Debug.Log(TAG + ": After all DeleteRow() finish");
             // MathUtil.printBoard(gridOcc); 
         }
+
         public bool IsFullFiveInLayerAt(int y) {
             // Debug.Log(TAG + ": IsFullFiveInLayerAt()");
             int tmpSum = 0;
