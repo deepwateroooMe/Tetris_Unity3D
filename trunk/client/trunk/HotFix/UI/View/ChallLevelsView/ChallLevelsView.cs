@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Framework.MVVM;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace HotFix.UI {
 
@@ -13,48 +12,119 @@ namespace HotFix.UI {
         public override string ViewModelTypeName { get { return typeof(ChallLevelsViewModel).FullName; } }
         public ChallLevelsViewModel ViewModel { get { return (ChallLevelsViewModel)BindingContext; } }
 
-        Button creBtn; // CREDIT
-        Button ratBtn; // RATE GAME
-        Button sunBtn; // SUNUME GAME
-        Button adsBtn; // SUNUME GAME
-        Button lotBtn; // TUTORIAL
-        Button setBtn; // BACK TO MAIN MENU
+        GameObject basicPanel;
+        Button rightBtn;
+        Button oneBtn;
+        Button twoBtn;
+        Button thrBtn;
+        Button forBtn;
+        Button fivBtn;
+        Button sixBtn;
+        Button sevBtn;
+        Button eitBtn;
+        Button ninBtn;
+        Button tenBtn;
 
+        GameObject advancedPanel;
+        Button leftBtn;
+        Button eleBtn;
+        Button twlBtn;
+        Button thtBtn;
+        Button fotBtn;
+        Button fifBtn;
+        Button sitBtn;
+        Button svtBtn;
+        Button attBtn;
+        Button nitBtn;
+        Button twtBtn;
+        
         protected override void OnInitialize() {
             base.OnInitialize();
 
-            creBtn = GameObject.FindChildByName("creBtn").GetComponent<Button>();
-            creBtn.onClick.AddListener(OnClickCreButton);
+            basicPanel = GameObject.FindChildByName("basicPanel");
+            rightBtn = GameObject.FindChildByName("right").GetComponent<Button>();
+			rightBtn.onClick.AddListener(OnClickRightButton);
 
-            ratBtn = GameObject.FindChildByName("ratBtn").GetComponent<Button>();
-            ratBtn.onClick.AddListener(OnClickRatButton);
+            oneBtn = GameObject.FindChildByName("oneBtn").GetComponent<Button>();
+            oneBtn.onClick.AddListener(OnClickOneButton);
+            twoBtn = GameObject.FindChildByName("twoBtn").GetComponent<Button>();
+            twoBtn.onClick.AddListener(OnClickTwoButton);
+            thrBtn = GameObject.FindChildByName("thrBtn").GetComponent<Button>();
+            thrBtn.onClick.AddListener(OnClickThrButton);
+            forBtn = GameObject.FindChildByName("forBtn").GetComponent<Button>();
+            forBtn.onClick.AddListener(OnClickForButton);
+            fivBtn = GameObject.FindChildByName("fivBtn").GetComponent<Button>();
+            fivBtn.onClick.AddListener(OnClickFivButton);
 
-            sunBtn = GameObject.FindChildByName("sunBtn").GetComponent<Button>();
-            sunBtn.onClick.AddListener(OnClickSunButton);
+            sixBtn = GameObject.FindChildByName("sixBtn").GetComponent<Button>();
+            sixBtn.onClick.AddListener(OnClickSixButton);
+            sevBtn = GameObject.FindChildByName("sevBtn").GetComponent<Button>();
+            sevBtn.onClick.AddListener(OnClickSevButton);
+            eitBtn = GameObject.FindChildByName("eitBtn").GetComponent<Button>();
+            eitBtn.onClick.AddListener(OnClickEitButton);
+            ninBtn = GameObject.FindChildByName("ninBtn").GetComponent<Button>();
+            ninBtn.onClick.AddListener(OnClickNinButton);
+            tenBtn = GameObject.FindChildByName("tenBtn").GetComponent<Button>();
+            tenBtn.onClick.AddListener(OnClickTenButton);
 
-            adsBtn = GameObject.FindChildByName("adsBtn").GetComponent<Button>();
-            adsBtn.onClick.AddListener(OnClickAdsButton);
+            advancedPanel = GameObject.FindChildByName("advancedPanel");
+            leftBtn = GameObject.FindChildByName("left").GetComponent<Button>();
+            leftBtn.onClick.AddListener(OnClickLeftButton);
 
-            lotBtn = GameObject.FindChildByName("lotBtn").GetComponent<Button>();
-            lotBtn.onClick.AddListener(OnClickLotButton);
+            eleBtn = GameObject.FindChildByName("eleBtn").GetComponent<Button>();
+            eleBtn.onClick.AddListener(OnClickEleButton);
+            twlBtn = GameObject.FindChildByName("twlBtn").GetComponent<Button>();
+            // twlBtn.onClick.AddListener(OnClickTwlButton);
+            thtBtn = GameObject.FindChildByName("thtBtn").GetComponent<Button>();
+            // thtBtn.onClick.AddListener(OnClickThtButton);
+            fotBtn = GameObject.FindChildByName("fotBtn").GetComponent<Button>();
+            // fotBtn.onClick.AddListener(OnClickFotButton);
+            fifBtn = GameObject.FindChildByName("fifBtn").GetComponent<Button>();
+            // fifBtn.onClick.AddListener(OnClickFifButton);
 
-            setBtn = GameObject.FindChildByName("setBtn").GetComponent<Button>();
-            setBtn.onClick.AddListener(OnClickSetButton);
-
+            sitBtn = GameObject.FindChildByName("sitBtn").GetComponent<Button>();
+            // sitBtn.onClick.AddListener(OnClickSitButton);
+            svtBtn = GameObject.FindChildByName("svtBtn").GetComponent<Button>();
+            // svtBtn.onClick.AddListener(OnClickSvtButton);
+            attBtn = GameObject.FindChildByName("attBtn").GetComponent<Button>();
+            // attBtn.onClick.AddListener(OnClickAttButton);
+            nitBtn = GameObject.FindChildByName("nitBtn").GetComponent<Button>();
+            // nitBtn.onClick.AddListener(OnClickNitButton);
+            twtBtn = GameObject.FindChildByName("twtBtn").GetComponent<Button>();
+            // twtBtn.onClick.AddListener(OnClickTwtButton);
         }
 
-        void OnClickCreButton() {
+        void OnClickRightButton() {
+            basicPanel.SetActive(false);
+            advancedPanel.SetActive(true);
+        }        
+        void OnClickLeftButton() {
+            advancedPanel.SetActive(false);
+            basicPanel.SetActive(true);
+        }        
+        void OnClickOneButton() {
+            ViewManager.GameView.Reveal();
+            Hide();
         }
-        void OnClickRatButton() {
+        void OnClickTwoButton() {
         }
-        void OnClickSunButton() {
+        void OnClickThrButton() {
         }
-        void OnClickAdsButton() {
+        void OnClickForButton() {
         }
-        void OnClickLotButton() {
-            // ViewSetager.DesginView.Reveal();
+        void OnClickFivButton() {
         }
-        void OnClickSetButton() {
+        void OnClickSixButton() {
+        }
+        void OnClickSevButton() {
+        }
+        void OnClickEitButton() {
+        }
+        void OnClickNinButton() {
+        }
+        void OnClickTenButton() {
+        }
+        void OnClickEleButton() {
         }
     }
 }

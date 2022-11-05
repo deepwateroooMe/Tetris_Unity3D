@@ -23,8 +23,9 @@ namespace HotFix.Control {
         private static Vector3 defaultPos = new Vector3(-100, -100, -100); 
         private static Vector3 previewTetrominoScale = new Vector3(6f, 6f, 6f); 
 
-        // public Material [] materials; // [red, green, blue, yellow]
-        // public Material [] colors;
+// TODO: 这些材质的打包与填充初始化        
+        public static Material [] materials; // [red, green, blue, yellow]
+        public static Material [] colors;
 
         public static void Initialize() {
             minosDic = new Dictionary<string, GameObject>();
@@ -98,6 +99,29 @@ namespace HotFix.Control {
             pool.Add(type, stack);
         }
 
+        public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, int color = 0) {
+            Stack<GameObject> st = pool[type];
+            GameObject objInstance = null;
+            if (st.Count > 0) 
+                objInstance = st.Pop();
+            else 
+                objInstance = GameObject.Instantiate(minosDic[type]); 
+            objInstance.transform.position = pos;
+            objInstance.transform.rotation = rotation;
+
+// 必要的情况下给小立方体更换皮肤材质
+            if (GloData.Instance.isChallengeMode
+                && type.Substring(0, 4).Equals("mino")
+                && !type.Substring(0, 5).Equals("minoP")) { // isChallengeMode = true, gameMode = 0
+                objInstance.GetComponent<MinoType>().color = color;
+                objInstance.GetComponent<Renderer>().sharedMaterial = materials[color];
+            }
+            
+            objInstance.SetActive(true);
+            objInstance.transform.SetParent(ViewManager.tetroParent.transform, false); // default set here 吧
+            return objInstance;
+        }
+
         public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3 localScale) {
             Stack<GameObject> st = pool[type];
             GameObject objInstance = null;
@@ -107,6 +131,55 @@ namespace HotFix.Control {
                 objInstance = GameObject.Instantiate(minosDic[type]); 
             objInstance.transform.position = pos;
             objInstance.transform.rotation = rotation;
+
+            if (GloData.Instance.isChallengeMode && type.Substring(0, 5).Equals("shape")) { // isChallengeMode = true, gameMode = 0
+                int rand = 0, randomColor1 = 0, randomColor2 = 0, cnt = 0;
+
+                Debug.Log(TAG + " GloData.Instance.challengeLevel: " + GloData.Instance.challengeLevel); 
+                if (GameController.isChallengeMode && GloData.Instance.challengeLevel > 10 && GloData.Instance.challengeLevel < 16) { // match 2
+                    randomColor1 = UnityEngine.Random.Range(0, 4);
+                    Debug.Log(TAG + " randomColor1: " + randomColor1); 
+                    randomColor2 = UnityEngine.Random.Range(0, 4);
+                    while (randomColor2 == randomColor1)
+                        randomColor2 = UnityEngine.Random.Range(0, 4);
+                    Debug.Log(TAG + " randomColor2: " + randomColor2); 
+                    foreach (Transform child in objInstance.transform) {
+                        rand = UnityEngine.Random.Range(0, 2);
+                        Debug.Log(TAG + " cnt: " + cnt);
+                        Debug.Log(TAG + " (objInstance.GetComponent<TetrominoType>().childCnt - 1): " + (objInstance.GetComponent<TetrominoType>().childCnt - 1)); 
+                        if ((rand == 0 && cnt != objInstance.GetComponent<TetrominoType>().childCnt - 1)
+                            // || (objInstance.transform.childCount == objInstance.GetComponent<TetrominoType>().childCnt - 1 && cnt == 0))) {
+                            || cnt == 0) {
+                            ++cnt;
+                            child.gameObject.GetComponent<MinoType>().color = randomColor1;
+                            child.gameObject.GetComponent<Renderer>().sharedMaterial = materials[randomColor1];
+                            Debug.Log(TAG + " child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString: " + child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString()); 
+                        } else {
+                            child.gameObject.GetComponent<MinoType>().color = randomColor2;
+                            child.gameObject.GetComponent<Renderer>().sharedMaterial = materials[randomColor2];
+                            Debug.Log(TAG + " child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString: " + child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString()); 
+                        }
+                    }
+                } else { // 1 color per tetromino
+                    int randomColor = UnityEngine.Random.Range(0, 4);
+                    objInstance.GetComponent<TetrominoType>().color = randomColor;
+                    Debug.Log(TAG + " randomColor: " + randomColor); 
+
+                    foreach (Transform child in objInstance.transform) {
+                        child.gameObject.GetComponent<MinoType>().color = randomColor;
+                        child.gameObject.GetComponent<Renderer>().sharedMaterial = materials[randomColor];
+                        // Debug.Log(TAG + " child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString: " + child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString()); 
+                    }
+                }
+            }
+            
+            // if (type == "shapeJ") { // J ==> green
+            //     foreach (Transform child in objInstance.transform) {
+            //         child.gameObject.GetComponent<Renderer>().material.mainTexture = greenTexture;
+            //         // Debug.Log(TAG + " child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString: " + child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString()); 
+            //     }
+            // } // OK
+
             if (localScale == null)
                 objInstance.transform.localScale = Vector3.one;
             else
@@ -115,7 +188,29 @@ namespace HotFix.Control {
             objInstance.transform.SetParent(ViewManager.tetroParent.transform, false); // default set here 吧
             return objInstance;
         }
-    
+
+// 不知道下面的这两个方法还用得上吗?        
+        public GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3 localScale, int color) {
+            Stack<GameObject> st = pool[type];
+            GameObject objInstance = null;
+            if (st.Count > 0) {
+                objInstance = st.Pop();
+            } else
+                objInstance = GameObject.Instantiate(minosDic[type]); 
+            objInstance.transform.position = pos;
+            objInstance.transform.rotation = rotation;
+            objInstance.transform.localScale = localScale;
+
+            objInstance.GetComponent<TetrominoType>().color = color;
+            foreach (Transform child in objInstance.transform) {
+                child.gameObject.GetComponent<MinoType>().color = color;
+                child.gameObject.GetComponent<Renderer>().sharedMaterial = materials[color];
+            }
+            objInstance.SetActive(true);
+            objInstance.transform.SetParent(ViewManager.tetroParent.transform, false); // default set here 吧
+            return objInstance;
+        }
+
         public static void ReturnToPool(GameObject gameObject, string type) {
             if (gameObject.activeSelf) {
                 gameObject.SetActive(false);
@@ -135,6 +230,16 @@ namespace HotFix.Control {
                 objInstance = GameObject.Instantiate(minosDic[type]);
             return objInstance;
         }
+        // public void ReturnToPool(GameObject gameObject, string type) {
+        //     if (gameObject.activeSelf) {
+        //         gameObject.SetActive(false);
+        //         gameObject.transform.position = defaultPos;
+        //         PoolInfo selected = GetPoolByType(type);
+        //         gameObject.transform.SetParent(selected.container.transform, false);
+        //         List<GameObject> pool = selected.pool;
+        //         pool.Add(gameObject);
+        //     } 
+        // }
 
 // CoroutineHelper这个帮助类对协程的适配做得不到位,这个方法现在还不能用            
         public static void ReturnToPool(GameObject gameObject, string type, float delay) {

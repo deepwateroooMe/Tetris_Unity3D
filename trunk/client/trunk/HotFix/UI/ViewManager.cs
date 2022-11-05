@@ -1,17 +1,10 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 using Framework.MVVM;
 using Framework.Util;
 using System.Collections;
-using System.Json;
-using System.Text;
-using deepwaterooo.tetris3d;
 using HotFix.Control;
-using HotFix.Data;
 using UnityEngine.EventSystems;
-using HotFix.UI.View.SettingsView;
-using UnityEngine.UI;
 
 namespace HotFix.UI {
 

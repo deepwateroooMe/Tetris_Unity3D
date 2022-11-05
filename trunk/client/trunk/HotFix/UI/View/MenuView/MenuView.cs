@@ -81,24 +81,34 @@ namespace HotFix.UI {
             canButton = GameObject.FindChildByName("cancelBtn").GetComponent<Button>();
             canButton.onClick.AddListener(OnClickCancelButton);
         }
-// Main MenuView panel
-        void OnClickEduButton() {
+
+#region EDUCATIONAL CLASSIC CHALLENGE MODES
+        void OnClickEduButton() { // EDUCATIONAL
+            GloData.Instance.saveGamePathFolderName = "educational";
+            GloData.Instance.gameMode = 0;
             menuViewPanel.SetActive(false);
             educaModesViewPanel.SetActive(true);
             ViewModel.gameMode = 0; // UI点击事件触发视图模型的数据变更, 通过视图模型为桥梁传给子视图模型使用数据
         }
-        void OnClickClaButton() { // classic mode
+        void OnClickClaButton() { // CLASSIC MODE
+            GloData.Instance.saveGamePathFolderName = "classic";
+            GloData.Instance.gameMode = 1;
             ViewModel.gameMode = 1;
             ViewModel.gridWidth = 5;
             prepareEnteringNewGame();
         }
-        void OnClickChaButton() {
-            ViewModel.gameMode = 2;
-// TODO:这里会是一套不同的逻辑 
-            // EventManager.Instance.FireEvent("entergame");
-            // Hide();
+        void OnClickChaButton() { // CHALLENGE MODE
+            GloData.Instance.saveGamePathFolderName = "challenge";
+            GloData.Instance.gameMode = 0;
+            GloData.Instance.isChallengeMode = true;
+
+            ViewModel.gameMode = 0; // to match above previously
+            ViewManager.ChallLevelsView.Reveal();
+            Hide();
         }
-// EducaModesPanel
+#endregion
+
+#region EducaModesPanel
         void ActiveToggle() {
             if (thrToggle.isOn) 
                 ViewModel.gridWidth = 3;
@@ -126,7 +136,9 @@ namespace HotFix.UI {
                 prepareEnteringNewGame();
             }
         }
-// New game or continue saved game panel
+#endregion        
+
+#region New game or continue saved game panel
         void OnClickNewGameButton() { // Start New game
             prepareEnteringNewGame();
         }
@@ -165,5 +177,6 @@ namespace HotFix.UI {
                 return true;
             return false;
         }
+#endregion        
     }
 }

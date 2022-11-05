@@ -12,6 +12,9 @@ namespace deepwaterooo.tetris3d {
         [SerializeField]
         private int minoScore;
 
+        [SerializeField]
+        private int minoColor;
+        
         public string type {
             get {
                 return minoType;
@@ -26,6 +29,14 @@ namespace deepwaterooo.tetris3d {
             }
             set {
                 minoScore = value;
+            }
+        }
+        public int color {
+            get {
+                return minoColor;
+            }
+            set {
+                minoColor = value;
             }
         }
     }

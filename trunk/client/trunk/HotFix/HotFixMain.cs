@@ -8,7 +8,7 @@ namespace HotFix {
     public static class HotFixMain {
 
         public static void Start() {
-        // public static IEnumerator Start() {
+            // public static IEnumerator Start() {
 
             Debug.Log("InitializeTypeDatas");
 

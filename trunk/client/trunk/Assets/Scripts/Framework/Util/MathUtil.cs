@@ -110,6 +110,14 @@ namespace Framework.MVVM {
                 Debug.Log(TAG + " tmp[]: " + tmp[0] + ", " + tmp[1] + ", " + tmp[2] + ", " +tmp[3]);
         }
 
+// 这两个加了数组作参数,所有的应用的地方都得改
+        public static void printWithGridVal(int [][][] gridOcc, int x, int y, int z) {
+            Debug.Log("(x,y,z): [" + x + ", " + y + ", " + z +"]: " + gridOcc[x][y][z]);
+        }
+        public static void printWithGridVal(int [][][] gridOcc, int [] pos) {
+            Debug.Log("(x,y,z): [" + pos[0] + ", " + pos[1] + ", " + pos[2] +"]: " + gridOcc[pos[0]][pos[1]][pos[2]]);
+        }
+
         public static void print(Quaternion tmp) {
             Debug.Log(TAG + " tmp(x, y, z): " + tmp.x + ", " + tmp.y + ", " + tmp.z + ", " + tmp.w); 
         }
@@ -117,12 +125,6 @@ namespace Framework.MVVM {
         public static void print(int x, int y, int z) {
             Debug.Log("(x,y,z): [" + x + ", " + y + ", " + z +"]: ");
         }
-        // public static void printWithGridVal(int x, int y, int z) {
-        //     Debug.Log("(x,y,z): [" + x + ", " + y + ", " + z +"]: " + Game.gridOcc[x, y, z]);
-        // }
-        // public static void printWithGridVal(int [] pos) {
-        //     Debug.Log("(x,y,z): [" + pos[0] + ", " + pos[1] + ", " + pos[2] +"]: " + Game.gridOcc[pos[0], pos[1], pos[2]]);
-        // }
 
         public static void printBoard(int[][][] gridOcc) {
             Debug.Log(TAG + ": printBoard gridOcc[,,]:"); 
@@ -147,6 +149,36 @@ namespace Framework.MVVM {
                 }
             return true;
         }
+
+        //public static void printBoard(int[] color) {
+        //    int n = color.Length;
+        //    int x = 0, z = 0;
+        //    int [,] baseColor = new int [Model.gridXWidth, Model.gridZWidth];
+        //    for (int i = 0; i < Model.gridXWidth; i++) {
+        //        for (int j = 0; j < Model.gridZWidth; j++) {
+        //            baseColor[i, j] = -1;
+        //        }
+        //    }
+        //    for (int i = 0; i < n; i++) {
+        //        x = i % Model.gridXWidth;
+        //        z = i / Model.gridXWidth;
+        //        baseColor[x, z] = color[i];
+        //    }
+
+        //    Debug.Log(TAG + " Z0  " + "Z1   " + "Z2   " + "Z3   " + "Z4   " + "Z5   " + "Z6   " + "Z7   " + "Z8 "); 
+        //    for (int i = 0; i < Model.gridXWidth; i++) {
+        //        int j = -1;
+        //        Debug.Log("X" + i + ":           " +
+        //                  baseColor[i, ++j] + "    " +
+        //                  baseColor[i, ++j] + "    " +
+        //                  baseColor[i, ++j] + "    " +
+        //                  baseColor[i, ++j] + "    " +
+        //                  // baseColor[i, ++j] + "    " +
+        //                  // baseColor[i, ++j] + "    " +
+        //                  // baseColor[i, ++j] + "    " +
+        //                  baseColor[i, ++j]);
+        //    }
+        //}
 
         public static void printBoard(List<int> gridOccOcc) {
             bool empty = true;

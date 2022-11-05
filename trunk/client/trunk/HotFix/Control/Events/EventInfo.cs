@@ -75,13 +75,16 @@ namespace HotFix.Control {
     public class CanvasToggledEventInfo : EventInfo {       // moveCanvas rotateCanvas
         public const string TAG = "CanvasToggledEventInfo";
     }
-    
+    public class CanvasMovedEventInfo : EventInfo {
+        private const string TAG = "CanvasMovedEventInfo";
+        public Vector3 delta;
+    }
     public class LevelButtonClickEventInfo : EventInfo {
         public const string TAG = "LevelButtonClickEventInfo";
         public GameObject unitGO;
     }
 // 没想明白当初为什么需要这个 ?    
-    // public class PropertyChangedEventInfo : EventInfo {
-    //     public string propertyName;
-    // }
+    public class PropertyChangedEventInfo : EventInfo {
+        public string propertyName;
+    }
 }

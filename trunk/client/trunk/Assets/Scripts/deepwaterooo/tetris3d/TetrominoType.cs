@@ -11,6 +11,12 @@ namespace deepwaterooo.tetris3d {
         [SerializeField]
         private int tetrominoScore;
 
+        [SerializeField]
+        private int tetrominoColor;
+
+        [SerializeField]
+        private int tetrominoChildCnt;
+
         public string type {
             get {
                 return tetrominoType;
@@ -29,5 +35,22 @@ namespace deepwaterooo.tetris3d {
             }
         }
 
+        public int color {
+            get {
+                return tetrominoColor;
+            }
+            set {
+                tetrominoColor = value;
+            }
+        }
+
+        public int childCnt {
+            get {
+                return tetrominoChildCnt;
+            }
+            set {
+                tetrominoChildCnt = value;
+            }
+        }
     }
 }
