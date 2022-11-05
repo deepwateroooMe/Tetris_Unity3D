@@ -17,9 +17,11 @@ namespace HotFix.Control {
         private GameObject up;
         private GameObject down;
         private Vector3 delta;
+        // private Button togBtn;
         
         public void Awake() {
             // Debug.Log(TAG + " Awake");
+            // togBtn = ViewManager.GameView.togBtn; // 会不会报错报空
             delta = Vector3.zero;
             left = gameObject.FindChildByName("leftBtn");
             right = gameObject.FindChildByName("rightBtn");
@@ -109,6 +111,7 @@ namespace HotFix.Control {
         void onCanvasToggled(CanvasToggledEventInfo info) {
             Debug.Log(TAG + " CanvasToggledEventInfo");
 // 切换失活与激活的先后顺序有一定的关系,会产生交叉会死锁
+            ViewManager.GameView.togBtn.GetComponent<Button>().image.overrideSprite = ViewManager.directionsImg;
             ViewManager.moveCanvas.SetActive(false);
             ViewManager.rotateCanvas.SetActive(true);
         }
