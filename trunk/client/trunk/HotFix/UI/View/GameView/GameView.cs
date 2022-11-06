@@ -110,8 +110,10 @@ namespace HotFix.UI {
                        nextTetrominoSpawnPos,
                        Quaternion.identity, Vector3.one);
                    currentActiveTetrominoPrepare();
+                   // if (ViewModel.gameMode.Value == 0) {
                    ViewManager.moveCanvas.transform.rotation = Quaternion.Euler(0, 0, 0);
                    ViewManager.moveCanvas.gameObject.SetActive(true);  
+                   // }                   
                    SpawnGhostTetromino();
                    SpawnPreviewTetromino();
                }
@@ -120,8 +122,9 @@ namespace HotFix.UI {
                ViewManager.nextTetromino = previewTetromino;
                currentActiveTetrominoPrepare();
                 
-               SpawnGhostTetromino();  
-               moveRotatecanvasPrepare();
+               SpawnGhostTetromino();
+               if (ViewModel.gameMode.Value == 0)
+                   moveRotatecanvasPrepare();
                SpawnPreviewTetromino();
             }
         }
@@ -405,7 +408,8 @@ namespace HotFix.UI {
             if (ViewModel.gameMode.Value == 0 && (ViewModel.gridWidth == 3 || ViewModel.gridWidth == 4)) {
                 ViewManager.nextTetromino.transform.localPosition = new Vector3(1.0f, ViewModel.gridHeight - 1f, 1.0f);
             } else 
-                ViewManager.nextTetromino.transform.localPosition = nextTetrominoSpawnPos; 
+                ViewManager.nextTetromino.transform.localPosition = nextTetrominoSpawnPos;
+            EventManager.Instance.FireEvent("spawned", ViewManager.nextTetromino.transform.localPosition);
         }
         
         private void moveRotatecanvasPrepare() { 
@@ -459,12 +463,11 @@ namespace HotFix.UI {
                 saveGameOrNotPanel.SetActive(true);
             } else {
                 Model.cleanUpGameBroad();
-// TODO: 这里没有清理干净,还有东西                
-                Model.cleanUpGameBroad();
                 ViewModel.isPaused = false;
                 Time.timeScale = 1.0f;
                 ViewManager.MenuView.Reveal(); // 现在的简单逻辑
-                Hide();
+                // Hide(); // TOGO, BUG: 这里还没能真正切换到主游戏菜单去
+                ViewManager.GameView.Hide();
             }
         }
         public void onYesToSaveGame() {
@@ -674,8 +677,8 @@ namespace HotFix.UI {
             }
             
 // TODO那么,这下面的逻辑是放在哪里处理的呢?            
-// ghostTetromino, nextTetromino 的相关处理
-            PoolHelper.recycleGhostTetromino(); // 放这里的主要原因是需要传参数
+// nextTetromino 的相关处理
+            PoolHelper.recycleGhostTetromino(); 
             ViewManager.nextTetromino.tag = "Untagged";
             Tetromino tetromino = ComponentHelper.GetTetroComponent(ViewManager.nextTetromino);
             ViewModel.currentScore.Value += tetromino.GetComponent<TetrominoType>().score;
@@ -692,7 +695,7 @@ namespace HotFix.UI {
             ViewManager.nextTetromino.transform.position += info.delta;
             isMoveValid = Model.CheckIsValidPosition();
             if (isMoveValid)
-                EventManager.Instance.FireEvent("validMR", "move");
+                EventManager.Instance.FireEvent("validMR", "move", info.delta);
             else 
                 ViewManager.nextTetromino.transform.position -= info.delta;
         }
@@ -701,7 +704,7 @@ namespace HotFix.UI {
             ViewManager.nextTetromino.transform.Rotate(info.delta);
             if (Model.CheckIsValidPosition()) {
                 isRotateValid = true;
-                EventManager.Instance.FireEvent("validMR", "rotate");
+                EventManager.Instance.FireEvent("validMR", "rotate", info.delta);
             } else {
                 ViewManager.nextTetromino.transform.Rotate(Vector3.zero - info.delta);
             }

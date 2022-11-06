@@ -49,8 +49,7 @@ namespace HotFix.Control {
             EventManager.Instance.RegisterListener<CanvasToggledEventInfo>(onCanvasToggled); 
 // Tetrominon: Spawned, Move, Rotate, Land,
             // EventManager.Instance.RegisterListener<TetrominoSpawnedEventInfo>(onActiveTetrominoSpawn); 
-            EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
-            // EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate); 
+            EventManager.Instance.RegisterListener<TetrominoValidMMInfo>(onActiveTetrominoMoveRotate);
             EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 
         }
 
@@ -79,20 +78,21 @@ namespace HotFix.Control {
             EventManager.Instance.FireEvent("rotate", delta);
         }
 
-        void onActiveTetrominoMove(TetrominoMoveEventInfo info) {
-            // Debug.Log(TAG + " onActiveTetrominoMove");
-            if ((int)info.delta.y != 0) { // 平移画布只上下移动            
+        void onActiveTetrominoMoveRotate(TetrominoValidMMInfo info) { // 这个信息没有带变量,不知道移动位置
+            Debug.Log(TAG + " onActiveTetrominoMove");
+            if (info.type.Equals("move") && (int)info.delta.y != 0) { // 平移画布只上下移动            
                 ViewManager.moveCanvas.gameObject.transform.position += new Vector3(0, info.delta.y, 0);
                 ViewManager.rotateCanvas.gameObject.transform.position += new Vector3(0, info.delta.y, 0);
             }
         }
-        // void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
-        //     // Debug.Log(TAG + " onActiveTetrominoRotate");
-        // }
         void onActiveTetrominoLand(TetrominoLandEventInfo info) {
             Debug.Log(TAG + " onActiveTetrominoLand");
             // ViewManager.rotateCanvas.transform.position += new Vector3(0, 1, 0); // 向上移动一格至[0, 0, 0]
             ViewManager.rotateCanvas.SetActive(false); // 这里没有失活
+            ViewManager.moveCanvas.transform.position = new Vector3(2.0f, 11.0f, 2f);
+            ViewManager.rotateCanvas.transform.position = new Vector3(2.0f, 11.0f, 2f);
+            if (GloData.Instance.gameMode > 0) 
+                ViewManager.moveCanvas.SetActive(true); 
         }
 
 // BUG TODO: 最开始几次好像切换得没问题; 再多切换几次就忙不过来了?!!!没响应
@@ -113,8 +113,7 @@ namespace HotFix.Control {
             EventManager.Instance.UnregisterListener<CanvasToggledEventInfo>(onCanvasToggled); 
 // Tetrominon: Spawned, Move, Rotate, Land,
             // EventManager.Instance.UnregisterListener<TetrominoSpawnedEventInfo>(onActiveTetrominoSpawn); 
-            EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
-            // EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate); 
+            EventManager.Instance.UnregisterListener<TetrominoValidMMInfo>(onActiveTetrominoMoveRotate);
             EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 
         }
 	}

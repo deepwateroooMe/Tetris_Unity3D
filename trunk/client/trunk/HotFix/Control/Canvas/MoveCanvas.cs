@@ -46,10 +46,8 @@ namespace HotFix.Control {
 // Canvas: Toggled
             EventManager.Instance.RegisterListener<CanvasToggledEventInfo>(onCanvasToggled); 
 // Tetrominon: Spawned, Move, Rotate, Land,
-            EventManager.Instance.RegisterListener<TetrominoSpawnedEventInfo>(onActiveTetrominoSpawn); 
-            EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); // TODO: 这个事件存在假阳性
-            // EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
-            // EventManager.Instance.RegisterListener<TetrominoValidMMInfo>(onTetrominoMoveRotate);
+            // EventManager.Instance.RegisterListener<TetrominoSpawnedEventInfo>(onActiveTetrominoSpawn); // 接收不到
+            EventManager.Instance.RegisterListener<TetrominoValidMMInfo>(onActiveTetrominoMoveRotate);
             EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
 // TODO: onUndoGame: SetActive(false);
         }
@@ -80,32 +78,20 @@ namespace HotFix.Control {
                 ViewManager.moveCanvas.SetActive(true); 
         }
         
-        void onActiveTetrominoMove(TetrominoMoveEventInfo info) {
+        void onActiveTetrominoMoveRotate(TetrominoValidMMInfo info) { // 这个信息没有带变量,不知道移动位置
             Debug.Log(TAG + " onActiveTetrominoMove");
-            if ((int)info.delta.y != 0) { // 平移画布只上下移动            
+            if (info.type.Equals("move") && (int)info.delta.y != 0) { // 平移画布只上下移动            
                 ViewManager.moveCanvas.gameObject.transform.position += new Vector3(0, info.delta.y, 0);
                 ViewManager.rotateCanvas.gameObject.transform.position += new Vector3(0, info.delta.y, 0);
             }
         }
-        // void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
-        //     // Debug.Log(TAG + " onActiveTetrominoRotate");
-        // }
-        // void onActiveTetrominoMoveRotate(TetrominoValidMMInfo info) { // 这个信息没有带变量,不知道移动位置
-        //     Debug.Log(TAG + " onActiveTetrominoMove");
-        //     if ((int)info.delta.y != 0) // 平移画布只上下移动            
-        //         ViewManager.moveCanvas.gameObject.transform.position += new Vector3(0, info.delta.y, 0);
-        // }
 
         void onActiveTetrominoLand(TetrominoLandEventInfo info) {
             Debug.Log(TAG + " onActiveTetrominoLand");
-            // ViewManager.moveCanvas.transform.position += new Vector3(0, 1, 0); // 向上移动一格至[0, 0, 0],会有延迟
+            ViewManager.moveCanvas.transform.position = new Vector3(2.0f, 11.0f, 2f);
+            ViewManager.rotateCanvas.transform.position = new Vector3(2.0f, 11.0f, 2f);
             if (ViewManager.GameView.ViewModel.gameMode.Value == 0)            
                 ViewManager.moveCanvas.SetActive(false); // 这里没有失活, 还是说它需要那么久的影应时间呢?
-            else {
-                ViewManager.moveCanvas.transform.position = new Vector3(2.0f, 11.0f, 2f);
-                ViewManager.rotateCanvas.transform.position = new Vector3(2.0f, 11.0f, 2f);
-                ViewManager.moveCanvas.SetActive(true); 
-            }
         }
 
         void onCanvasToggled(CanvasToggledEventInfo info) {
@@ -123,9 +109,7 @@ namespace HotFix.Control {
             EventManager.Instance.UnregisterListener<CanvasToggledEventInfo>(onCanvasToggled); 
 // Tetrominon: Spawned, Move, Rotate, Land,
             EventManager.Instance.UnregisterListener<TetrominoSpawnedEventInfo>(onActiveTetrominoSpawn); 
-            EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
-            // EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate); 
-            // EventManager.Instance.UnregisterListener<TetrominoValidMMInfo>(onTetrominoMoveRotate);
+            EventManager.Instance.UnregisterListener<TetrominoValidMMInfo>(onActiveTetrominoMoveRotate);
             EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 
         }
     }

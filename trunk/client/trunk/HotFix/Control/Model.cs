@@ -827,7 +827,7 @@ namespace HotFix.Control {
                 randomTetromino = UnityEngine.Random.Range(0, 12);
 			// Debug.Log(TAG + " randomTetromino: " + randomTetromino); 
 			type.Length = 0;
-            type.Append("shape");
+            type.Append("Tetromino");
             switch (randomTetromino) {
             case 0: type.Append("0"); break;
             case 1: type.Append("C"); break;

@@ -37,6 +37,7 @@ namespace HotFix.Control {
     public class TetrominoValidMMInfo : EventInfo { // valid Move Rotate
         private const string TAG = "TetrominoValidMMInfo";
         public string type;
+        public Vector3 delta;
     }
     public class TetrominoLandEventInfo : EventInfo {     // land
         public const string TAG = "TetrominoLandEventInfo";

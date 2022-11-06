@@ -123,7 +123,7 @@ namespace HotFix.Control {
         }
 
         public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3 localScale) {
-            Debug.Log(TAG + "GetFromPool() type: " + type);
+            Debug.Log(TAG + " GetFromPool() type: " + type);
             Stack<GameObject> st = pool[type];
             GameObject objInstance = null;
             if (st.Count > 0) 
@@ -133,7 +133,7 @@ namespace HotFix.Control {
             objInstance.transform.position = pos;
             objInstance.transform.rotation = rotation;
 
-            if (GloData.Instance.isChallengeMode && type.Substring(0, 5).Equals("shape")) { // isChallengeMode = true, gameMode = 0
+            if (GloData.Instance.isChallengeMode && type.Substring(0, 9).Equals("Tetromino")) { // isChallengeMode = true, gameMode = 0
                 int rand = 0, randomColor1 = 0, randomColor2 = 0, cnt = 0;
 
                 Debug.Log(TAG + " GloData.Instance.challengeLevel: " + GloData.Instance.challengeLevel);
@@ -286,3 +286,7 @@ namespace HotFix.Control {
         }
     }
 }
+
+
+
+

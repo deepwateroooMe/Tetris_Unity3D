@@ -109,10 +109,6 @@ namespace HotFix.Control {
             case "resumegame":
                 FireEvent(resumeInfo);
                 return;
-
-            case "spawned":
-                FireEvent(spawnedInfo);
-                return;
             case "land":
                 FireEvent(landInfo);
                 return;
@@ -121,13 +117,18 @@ namespace HotFix.Control {
                 return;
             }
         }
-        public void FireEvent(string type, string isMove) { 
+        public void FireEvent(string type, string isMove, Vector3 delta) { 
             validInfo.type = isMove;
+            validInfo.delta = delta;
             FireEvent(validInfo); // "validMR"
         }
         public void FireEvent(string type, Vector3 delta) {
             Debug.Log(TAG + ": FireEvent() type + delta. type: " + type); 
             switch (type) {
+            case "spawned":
+                spawnedInfo.delta = delta;
+                FireEvent(spawnedInfo);
+                return;
             case "move":
                 moveInfo.delta = delta;
                 FireEvent(moveInfo);

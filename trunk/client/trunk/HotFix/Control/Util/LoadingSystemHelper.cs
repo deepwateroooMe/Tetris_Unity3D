@@ -81,7 +81,7 @@ namespace HotFix.Control {
                     }
                     Debug.Log(TAG + " tmpParentGO.transform.childCount (filled needed -- final): " + tmpParentGO.transform.childCount);
                 } else { // 重新生成                                           // 空 shapeX Tetromino_X : Universal
-                    GameObject tmpGameObject = PoolHelper.GetFromPool("shapeX",
+                    GameObject tmpGameObject = PoolHelper.GetFromPool("TetrominoX",
                                                                       DeserializedTransform.getDeserializedTransPos(parentData.transform), 
                                                                       DeserializedTransform.getDeserializedTransRot(parentData.transform),
                                                                       Vector3.one);
