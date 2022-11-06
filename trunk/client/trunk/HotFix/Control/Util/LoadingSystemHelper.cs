@@ -110,10 +110,10 @@ namespace HotFix.Control {
                     tmpGameObject.GetComponent<TetrominoType>().childCnt = childCounter;
                     tmpGameObject.name = parentData.name;
 
-                    Debug.Log(TAG + " tmpGameObject.GetComponent<TetrominoType>().type: " + tmpGameObject.GetComponent<TetrominoType>().type); 
-                    Debug.Log(TAG + " tmpGameObject.transform.childCount: " + tmpGameObject.transform.childCount); 
+                    // Debug.Log(TAG + " tmpGameObject.GetComponent<TetrominoType>().type: " + tmpGameObject.GetComponent<TetrominoType>().type); 
+                    // Debug.Log(TAG + " tmpGameObject.transform.childCount: " + tmpGameObject.transform.childCount); 
                 }
-                Debug.Log(TAG + ": Model.gridOcc[,,] after each deleted mino re-spawn"); 
+                // Debug.Log(TAG + ": Model.gridOcc[,,] after each deleted mino re-spawn"); 
                 MathUtil.printBoard(Model.gridOcc); 
             }
         }

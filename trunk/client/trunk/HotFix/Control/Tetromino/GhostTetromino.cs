@@ -57,14 +57,14 @@ namespace HotFix.Control {
         bool CheckIsValidPosition() {
             foreach (Transform mino in transform) {
                 Vector3 pos = MathUtil.Round(mino.position);
-                if (!ViewManager.GameView.ViewModel.CheckIsInsideGrid(pos))
+                if (!Model.CheckIsInsideGrid(pos))
                     return false;
 
-                 if (ViewManager.GameView.ViewModel.GetTransformAtGridPosition(pos) != null &&
-                     ViewManager.GameView.ViewModel.GetTransformAtGridPosition(pos).parent.CompareTag("currentActiveTetromino"))
+                 if (Model.GetTransformAtGridPosition(pos) != null &&
+                     Model.GetTransformAtGridPosition(pos).parent.CompareTag("currentActiveTetromino"))
                     return true;
-                if (ViewManager.GameView.ViewModel.GetTransformAtGridPosition(pos) != null &&
-                    ViewManager.GameView.ViewModel.GetTransformAtGridPosition(pos).parent != transform) {
+                if (Model.GetTransformAtGridPosition(pos) != null &&
+                    Model.GetTransformAtGridPosition(pos).parent != transform) {
                     return false;
                 }
             }

@@ -25,8 +25,8 @@ namespace HotFix.UI {
         public int gridHeight = 12; 
         public int gridWidth;
 
-        public Transform [][][] grid; //= new Transform[gridWidth, gridHeight, gridWidth]; // STATIC
-        public int [][][] gridOcc; //= new int[gridWidth, gridHeight, gridWidth];          // static
+        // public Transform [][][] grid; //= new Transform[gridWidth, gridHeight, gridWidth]; // STATIC
+        // public int [][][] gridOcc; //= new int[gridWidth, gridHeight, gridWidth];          // static
 
         public int scoreOneLine = 40;
         public int scoreTwoLine = 100;
@@ -85,8 +85,6 @@ namespace HotFix.UI {
         
         private GameObject tmpParentGO; // 在撤销恢复方格的时候会用来填充数据
 
-        public bool isGameModel = true;
-        
         protected override void OnInitialize() {
             base.OnInitialize();
             Initialization();
@@ -157,22 +155,6 @@ namespace HotFix.UI {
             this.ParentViewModel = (MenuViewModel)ViewManager.MenuView.BindingContext; // 父视图模型: 菜单视图模型
             gridWidth = ((MenuViewModel)ParentViewModel).gridWidth;
             
-// 这里好像是需要解决一下多维数组在ILRuntime热更新程序域中的适配问题???
-            // grid = new Transform[5, gridHeight, 5]; // BUGGY BUGGY BUGGY multidimensional array.....
-            grid = new Transform [5][][]; // BUGGY BUGGY BUGGY multidimensional array.....
-            for (int i = 0; i < 5; i++) {
-                grid[i] = new Transform[gridHeight][];
-                for (int j = 0; j < gridHeight; j++) 
-                    grid[i][j] = new Transform[5];
-            }
-                
-            // gridOcc = new int[5, gridHeight, 5];
-            gridOcc = new int[5][][];
-            for (int i = 0; i < 5; i++) {
-                gridOcc[i] = new int[gridHeight][];
-                for (int j = 0; j < gridHeight; j++) 
-                    gridOcc[i][j] = new int[5];
-            }
             gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
             fallSpeed = 0.5f;
             // saveForUndo = true;
@@ -213,7 +195,7 @@ namespace HotFix.UI {
             //         LoadNewGame();
             //     }
             // } else {
-                LoadNewGame();
+            LoadNewGame();
             // }
             currentLevel.Value = startingLevel;
             startingHighScore = PlayerPrefs.GetInt("highscore");
@@ -229,171 +211,28 @@ namespace HotFix.UI {
 
             fallSpeed = 0.5f; // should be recorded too, here
             if (gameMode.Value == 0) {
-                resetGridOccBoard();
+                Model.resetGridOccBoard();
                 saveForUndo = true;
             } else saveForUndo = false;
             currentScore.Value = 0;
             currentLevel.Value = startingLevel;
         }
 
-        public void LoadGame(string path) {  // when load Scene load game: according to gameMode
-            Debug.Log(TAG + ": LoadGame()");
-            if (gameMode.Value  == 0)
-                resetGridOccBoard(); 
-            GameData gameData = SaveSystem.LoadGame(path);
-            gameMode.Value  = gameData.gameMode;
-            
-            currentScore.Value  = gameData.score;
-            currentLevel.Value  = gameData.level;
-            numLinesCleared.Value  = gameData.lines;
-            
-            Debug.Log(TAG + " gameData.parentList.Count: " + gameData.parentList.Count); 
-            LoadDataFromParentList(gameData.parentList);
-// 下面这部分被自己跳过去了,暂时没再读
-            // currentActiveTetromino: if it has NOT landed yet
-            StringBuilder type = new StringBuilder("");
-            Debug.Log(TAG + " (gameData.nextTetrominoData != null): " + (gameData.nextTetrominoData != null)); 
-            if (gameData.nextTetrominoData != null) {
-                ViewManager.nextTetromino = PoolHelper.GetFromPool(
-                    type.Append(gameData.nextTetrominoData.type).ToString(),
-                    // gameData.ViewManager.nextTetrominoData.transform,
-                    // gameData.ViewManager.nextTetrominoData.transform);
-                    DeserializedTransform.getDeserializedTransPos(gameData.nextTetrominoData.transform),
-                    DeserializedTransform.getDeserializedTransRot(gameData.nextTetrominoData.transform), Vector3.one);
-                ViewManager.nextTetromino.tag = "currentActiveTetromino";
-                // if (defaultContainer == null) // 我不要再管这个东西了
-                //     defaultContainer = GameObject.FindGameObjectWithTag("defaultContainer");
-                // ViewManager.nextTetromino.transform.SetParent(defaultContainer.transform, false);
-                ViewManager.nextTetromino.GetComponent<Tetromino>().enabled = !ViewManager.nextTetromino.GetComponent<Tetromino>().enabled; 
-                nextTetrominoType.Value = ViewManager.nextTetromino.GetComponent<TetrominoType>().type;
-
-                ViewManager.moveCanvas.gameObject.SetActive(true);
-                ViewManager.moveCanvas.transform.position = new Vector3(ViewManager.moveCanvas.transform.position.x, ViewManager.nextTetromino.transform.position.y, ViewManager.moveCanvas.transform.position.z);
-                // 也需要重新设置 ViewManager.rotateCanvas 的位置
-                //SpawnGhostTetromino();
-            }
-
-            // previewTetromino previewTetromino2
-            type.Length = 0;
-			string type2 = eduTetroType.Value;
-            //SpawnPreviewTetromino(type.Append(previewTetrominoType).ToString(), type2);
-// 这里再检查一下,感觉道理不通            
-            if (prevPreview != null) {
-                prevPreview = prevPreview;
-                prevPreview2 = prevPreview2;
-            } 
-            // MainCamera rotation
-            GameObject.FindGameObjectWithTag("MainCamera").transform.position = DeserializedTransform.getDeserializedTransPos(gameData.cameraData);
-            GameObject.FindGameObjectWithTag("MainCamera").transform.rotation = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
-            
-            if (ViewManager.nextTetromino != null && ViewManager.nextTetromino.CompareTag("currentActiveTetromino")) // Performance Bug: CompareTag()
-                gameStarted = true;
-            loadSavedGame = false;
-            loadSavedGame = false;
-        }    
-
-       public void LoadNewGame() {
+        public void LoadNewGame() {
             Debug.Log(TAG + ": LoadNewGame()");
             gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
             fallSpeed = 1.0f; // should be recorded too, here
 
             if (gameMode.Value == 0)
-                resetGridOccBoard();
+                Model.resetGridOccBoard();
             currentScore.Value = 0;
             currentLevel.Value = startingLevel;
         }
-        
-        void DelegateSubscribe() { // 这里怎么写成是观察者模式呢?
-        }
+
+        void DelegateSubscribe() { } // 这里怎么写成是观察者模式呢?
         // 最开始的三种大方格的状态都应该是隐藏着的
-        void InitializeGrid() { // 这是里是指初始化数据管理,而不是视图层面
+        void InitializeGrid() { } // 这是里是指初始化数据管理,而不是视图层面
 
-        }
-
-        public void LoadDataFromParentList(List<TetrominoData> parentList) {
-            int [] pos = new int[3];
-            int x = 0, y = 0, z = 0;
-            StringBuilder type = new StringBuilder("");
-            foreach (TetrominoData parentData in parentList) {
-                // Debug.Log(TAG + " parentData.name: " + parentData.name);
-                // Debug.Log(TAG + " parentData.children.Count: " + parentData.children.Count);
-                // bool isThereAnyExistChil = isThereAnyExistChild(parentData);
-                // Debug.Log(TAG + " isThereAnyExistChil: " + isThereAnyExistChil);
-                if (isThereAnyExistChild(parentData)) { // 存在
-                // if (isThereAnyExistChil) { // 如果某块方块砖只是消除了几个格,并且还有剩余,那么只是填补消除掉的小立方体
-                    // bool gridMatchesSavedParentBool = gridMatchesSavedParent(tmpParentGO, (List<MinoData>)(parentData.children.collection));
-                    // Debug.Log(TAG + " gridMatchesSavedParentBool: " + gridMatchesSavedParentBool);
-                    if (!gridMatchesSavedParent(tmpParentGO, (List<MinoData>)(parentData.children.collection))) {  // 先删除多余的，再补全缺失的
-                    // if (!gridMatchesSavedParentBool) {
-                        foreach (Transform trans in tmpParentGO.transform) { // 先 删除多余的: 很多情况下应该是一个也不多才对(除外的比如,从上一层顶层掉下来的?所以有这种可能)
-                            // MathUtil.print(MathUtil.Round(trans.position));
-                            // Debug.Log(TAG + " (!myContains(trans, (List<MinoData>)(parentData.children.collection))): " + (!myContains(trans, (List<MinoData>)(parentData.children.collection)))); 
-                            if (!myContains(trans, (List<MinoData>)(parentData.children.collection))) {
-                                x = (int)Mathf.Round(trans.position.x);
-                                y = (int)Mathf.Round(trans.position.y);
-                                z = (int)Mathf.Round(trans.position.z);
-                                // MathUtil.print(x, y, z); // this one is right
-                                grid[x][y][z].parent = null;
-                                GameObject.Destroy(grid[x][y][z].gameObject);
-                                gridOcc[x][y][z] = 0;
-                                grid[x][y][z] = null;
-                            }
-                        }
-                        // Debug.Log(TAG + " tmpParentGO.transform.childCount (deleted unwanted): " + tmpParentGO.transform.childCount);
-                        foreach (MinoData minoData in parentData.children) { // 再补全仍然缺失的
-                            Vector3 posA = MathUtil.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform)); 
-                            MathUtil.print(posA);
-                            x = (int)Mathf.Round(posA.x);
-                            y = (int)Mathf.Round(posA.y);
-                            z = (int)Mathf.Round(posA.z);
-                            if (grid[x][y][z] == null) {
-                                MathUtil.print(x, y, z);
-                                type.Length = 0;
-                                GameObject tmpMinoGO = PoolHelper.GetFromPool(type.Append(minoData.type).ToString(),
-                                                                              DeserializedTransform.getDeserializedTransPos(minoData.transform), 
-                                                                              DeserializedTransform.getDeserializedTransRot(minoData.transform),
-                                    Vector3.one);
-                                tmpMinoGO.tag = "mino"; // bug fixed: 这里需要TAG,不标记TAG,不被父控件认定为子控件(限制在TetrominoData里)
-                                grid[x][y][z] = tmpMinoGO.transform;
-                                grid[x][y][z].parent = tmpParentGO.transform;
-                                gridOcc[x][y][z] = 1;
-                            }
-                        }
-                    }
-                    Debug.Log(TAG + " tmpParentGO.transform.childCount (filled needed -- final): " + tmpParentGO.transform.childCount);
-// TODO:下面这个分支的逻辑没有检查,                    
-                } else { // 重新生成                // 空 shapeX Tetromino_X : Universal
-                GameObject tmpGameObject = PoolHelper.GetFromPool("TetrominoX", DeserializedTransform.getDeserializedTransPos(parentData.transform), 
-                                                                      DeserializedTransform.getDeserializedTransRot(parentData.transform),
-                                                                      Vector3.one);
-                    foreach (MinoData minoData in parentData.children) {
-                        GameObject tmpMinoGO = PoolHelper.GetFromPool(minoData.type, DeserializedTransform.getDeserializedTransPos(minoData.transform), 
-                                                                      DeserializedTransform.getDeserializedTransRot(minoData.transform),
-                                                                      Vector3.one);
-                        tmpMinoGO.transform.parent = tmpGameObject.transform;
-                        x = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).x);
-                        y = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).y);
-                        z = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).z);
-                        tmpMinoGO.tag = "mino";
-                        if (isColumnFromHereEmpty(x, y, z)) {
-                            grid[x][y][z] = tmpMinoGO.transform;
-                            gridOcc[x][y][z] = 1;
-                        } else {
-                            FillInMinoAtTargetPosition(x, y, z, tmpMinoGO.transform); // update grid accordingly
-                        }
-                    }
-// TODO: 这里仍然涉及MINO TAG, TETROMINO SCORE等的记忆, TetrominoData里也要作相应的修改                    
-                    tmpGameObject.GetComponent<TetrominoType>().type = parentData.type; // 类型 
-                    // tmpGameObject.GetComponent<TetrominoType>().score = PoolHelper.scoreDic[parentData.type]; // 得分 TODO
-                    tmpGameObject.name = parentData.name;
-                    // Debug.Log(TAG + " tmpGameObject.GetComponent<TetrominoType>().type: " + tmpGameObject.GetComponent<TetrominoType>().type); 
-                    // Debug.Log(TAG + " tmpGameObject.transform.childCount: " + tmpGameObject.transform.childCount);
-                    ComponentHelper.AddTetroComponent(tmpGameObject);
-                }
-                // Debug.Log(TAG + ": gridOcc[,,] after each deleted mino re-spawn"); 
-                MathUtil.printBoard(gridOcc); 
-            }
-        }
         public bool gridMatchesSavedParent(GameObject tmpGO, List<MinoData> data) {
             Debug.Log(TAG + " gridMatchesSavedParent");
             if (tmpGO.transform.childCount == 4 && data.Count == 4) return true;
@@ -412,57 +251,6 @@ namespace HotFix.UI {
                     // && MathUtil.Round(tmp.rotation) == MathUtil.Round(DeserializedTransform.getDeserializedTransRot(data.transform)))
                     return true;
             return false;
-        }
-        public bool isThereAnyExistChild(TetrominoData parentData) {
-            Debug.Log(TAG + ": isThereAnyExistChild()"); 
-            Vector3 pos = Vector3.zero;
-            int x = 0, y = 0, z = 0;
-            foreach (MinoData mino in parentData.children) {
-                pos = DeserializedTransform.getDeserializedTransPos(mino.transform);
-                x = (int)Mathf.Round(pos.x);
-                y = (int)Mathf.Round(pos.y);
-                z = (int)Mathf.Round(pos.z);
-                MathUtil.print(x, y, z);
-                if (grid[x][y][z] != null && grid[x][y][z].parent != null) { // // make sure parent matches first !
-                    if (grid[x][y][z].parent.gameObject.name == parentData.name &&
-                        MathUtil.Round(grid[x][y][z].parent.position) == MathUtil.Round(DeserializedTransform.getDeserializedTransPos(parentData.transform)) && 
-                        MathUtil.Round(grid[x][y][z].parent.rotation) == MathUtil.Round(DeserializedTransform.getDeserializedTransRot(parentData.transform))) {
-                        tmpParentGO = grid[x][y][z].parent.gameObject;  // 这里有保存的数据
-                        Debug.Log(TAG + " tmpParentGO.gameObject.name: " + tmpParentGO.gameObject.name);
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        public void UpdateGrid(GameObject tetromino) { // update gridOcc at the same time
-            Debug.Log(TAG + ": UpdateGrid()");
-            for (int y = 0; y < gridHeight; y++) 
-                for (int z = 0; z < gridWidth; z++) 
-                    for (int x = 0; x < gridWidth; x++)
-                        if (grid[x][y][z] != null && grid[x][y][z].parent == tetromino.transform) {
-                            grid[x][y][z] = null; 
-                            gridOcc[x][y][z]= 0; 
-                        }
-            foreach (Transform mino in tetromino.transform) {
-                Vector3 pos = MathUtil.Round(mino.position);
-                if (pos.y >= 0 && pos.y < gridHeight && pos.x >= 0 && pos.x < gridWidth && pos.z >= 0 && pos.z < gridWidth) { 
-                    grid[(int)pos.x][(int)pos.y][(int)pos.z] = mino;
-                    gridOcc[(int)pos.x][(int)pos.y][(int)pos.z] = 1;
-                }
-            }
-            Debug.Log(TAG + " tetromino.name: " + tetromino.name);
-        }
-
-        public void resetGridAfterDisappearingNextTetromino(GameObject tetromino) {
-            foreach (Transform mino in tetromino.transform) {
-                Vector3 pos = MathUtil.Round(mino.position);
-                if ((int)pos.y >= 0 && (int)pos.y < gridHeight && (int)pos.x >= 0 && (int)pos.x < gridWidth && (int)pos.z >= 0 && (int)pos.z < gridWidth) { 
-                    grid[(int)pos.x][(int)pos.y][(int)pos.z] = null;
-                    gridOcc[(int)pos.x][(int)pos.y][(int)pos.z] = 0;
-                }
-            }
         }
 
         void Update() {
@@ -484,7 +272,7 @@ namespace HotFix.UI {
                 path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName
                             + "grid" + gridWidth + "/game.save"); 
             }
-
+// TODO:这里还有BUG，也还有先前改过一个,大概撤销之后会生成几套预览的BUG, to be fixed           
             Debug.Log(TAG + " prevPreview: " + prevPreview);
             Debug.Log(TAG + " prevPreview2: " + prevPreview2);
 
@@ -496,67 +284,14 @@ namespace HotFix.UI {
             SaveSystem.SaveGame(path.ToString(), gameData);
         }
 
-        public void cleanUpGameBroad(GameObject nextTetromino, GameObject ghostTetromino) {
-            Debug.Log(TAG + ": cleanUpGameBroad()");
-            // dealing with currentActiveTetromino & ghostTetromino firrst
-            if (ViewManager.nextTetromino != null && ViewManager.nextTetromino.CompareTag("currentActiveTetromino")) { // hang in the air
-                Debug.Log(TAG + " (ghostTetromino != null): " + (ghostTetromino != null));  // always true
-                if (ViewManager.ghostTetromino != null) {
-                    PoolHelper.recycleGhostTetromino();
-                }
-                recycleNextTetromino();
-            }
-            prevPreview = "";
-            prevPreview2 = "";
-            int x = 0, y = 0, z = 0;
-            for (int i = 0; i < gridWidth; i++) {
-                for (int j = 0; j < gridHeight; j++) {
-                    for (int k = 0; k < gridWidth; k++) {
-                        if (grid[i][j][k] != null) {
-                            if (grid[i][j][k].parent != null && grid[i][j][k].parent.childCount == 4) {
-                                if (grid[i][j][k].parent.gameObject.CompareTag("currentActiveTetromino")) 
-                                    grid[i][j][k].parent.gameObject.GetComponent<Tetromino>().enabled = false;
-                                Transform tmpParentTransform = grid[i][j][k].parent;
-                                foreach (Transform transform in grid[i][j][k].parent) {
-                                    x = (int)Mathf.Round(transform.position.x);
-                                    y = (int)Mathf.Round(transform.position.y);
-                                    z = (int)Mathf.Round(transform.position.z);
-                                    if (y >= 0 && y < gridHeight && x >= 0 && x < gridWidth && z >= 0 && z < gridWidth) {
-                                        grid[x][y][z] = null;
-                                        gridOcc[x][y][z] = 0;
-                                    }
-                                }
-                                PoolHelper.ReturnToPool(tmpParentTransform.gameObject, tmpParentTransform.gameObject.GetComponent<TetrominoType>().type);
-                            } else if (grid[i][j][k].parent != null && grid[i][j][k].parent.childCount < 4) { // parent != null && childCount < 4
-                                foreach (Transform transform in grid[i][j][k].parent) {
-                                    string type = transform.gameObject.GetComponent<MinoType>() == null ?
-                                        new StringBuilder("mino").Append(grid[i][j][k].parent.gameObject.GetComponent<TetrominoType>().type.Substring(9, 1)).ToString()
-                                        : transform.gameObject.GetComponent<MinoType>().type;
-                                    // grid[(int)Mathf.Round(transform.position.x), (int)Mathf.Round(transform.position.y), (int)Mathf.Round(transform.position.z)] = null;
-                                    x = (int)Mathf.Round(transform.position.x);
-                                    y = (int)Mathf.Round(transform.position.y);
-                                    z = (int)Mathf.Round(transform.position.z);
-                                    if (y >= 0 && y < gridHeight && x >= 0 && x < gridWidth && z >= 0 && z < gridWidth) {
-                                        grid[x][y][z] = null;
-                                        gridOcc[x][y][z] = 0;
-                                    }
-                                    PoolHelper.ReturnToPool(transform.gameObject, type);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
         public void printbuttonInteractableList() {
             for (int i = 0; i <= 6; i++) 
                 Debug.Log(TAG + " buttonInteractableList[i]: i : " + i + ", " + buttonInteractableList[i]); 
         }
 
         public void playFirstTetromino(GameObject previewTetromino,
-                                        GameObject previewTetromino2,
-                                        GameObject cycledPreviewTetromino) {
+                                       GameObject previewTetromino2,
+                                       GameObject cycledPreviewTetromino) {
 // 在生成新的一两预览前将现两个预览保存起来
             prevPreview = comTetroType.Value;
             prevPreview2 = eduTetroType.Value;
@@ -614,64 +349,6 @@ namespace HotFix.UI {
             }
         }
 
-        public void FillInMinoAtTargetPosition(int x, int y, int z, Transform minoTrans) {
-            int o = gridHeight - 1;
-            // grid[x, o, z] = 0, otherwose gameover
-            while (grid[x][o-1][z] == null) o--;
-            for (int i = o; i > y; i--) { // y // if (grid[x] i - 1,[z] != null) {
-                grid[x][i][z] = grid[x][i-1][z];
-                gridOcc[x][i][z] = gridOcc[x][i-1][z];
-                if (grid[x][i-1][z] != null) {
-                    grid[x][i-1][z] = null;
-                    gridOcc[x][i-1][z] = 0;
-                    grid[x][i][z].position += new Vector3(0, 1, 0);
-                }
-            }
-            grid[x][y][z] = minoTrans;
-            gridOcc[x][y][z] = 1;
-        }
-        public bool isColumnFromHereEmpty(int x, int y, int z) {
-            bool isColumnAboveEmpty = true;
-            for (int i = y; i < gridHeight; i++) {
-                if (grid[x][y][z] != null)
-                    isColumnAboveEmpty = false;
-            }
-            return isColumnAboveEmpty;
-        }
-        public bool isTheParentChildren(Transform tmpParent, TetrominoDataCon parent) { // compare against SerializedTransform parent
-            return (tmpParent.gameObject.name == parent.name &&
-                    tmpParent.position == DeserializedTransform.getDeserializedTransPos(parent.transform) &&
-                    tmpParent.rotation == DeserializedTransform.getDeserializedTransRot(parent.transform));
-        }
-
-        // public bool existInChildren(Transform transform, MinoDataCollection<TetrominoData, MinoData> children) {
-        //     foreach (MinoData data in children) {
-        //         if (transform.position == DeserializedTransform.getDeserializedTransPos(data.transform) &&
-        //             transform.rotation == DeserializedTransform.getDeserializedTransRot(data.transform)) {
-        //             return true;
-        //         }
-        //     }
-        //     return false;
-        // }
-
-        // public void moveRotatecanvasPrepare() {
-        //     // Debug.Log(TAG + ": moveRotatecanvasPrepare()"); 
-        //     moveCanvas.transform.localPosition = new Vector3(2.1f, gridHeight - 1f, 2.1f);     
-        //     rotateCanvas.transform.localPosition = new Vector3(2.1f, gridHeight - 1f, 2.1f);
-        //     isMovement = false;
-        //     toggleButtons(1);
-        // }
-
-        public void resetGridOccBoard() {
-            for (int y = 0; y < gridHeight; y++) {
-                for (int x = 0; x < gridWidth; x++) {
-                    for (int z = 0; z < gridWidth; z++) {
-                        gridOcc[x][y][z] = 0;
-                    }
-                }
-            }
-        }
-
         public void UpdateLevel() {
             if (startingAtLevelZero || (!startingAtLevelZero && numLinesCleared.Value  / 10 > startingLevel)) 
                 currentLevel.Value  = numLinesCleared.Value  / 10;
@@ -680,267 +357,13 @@ namespace HotFix.UI {
         public void UpdateSpeed() { 
             fallSpeed = 1.0f - (float)currentLevel.Value  * 0.1f;
         }
-    
-        public bool CheckIsAboveGrid(Tetromino tetromino) {
-            // public bool CheckIsAboveGrid(Transform transform) {
-            for (int x = 0; x < gridWidth; x++)
-                for (int j = 0; j < gridWidth; j++) 
-                    foreach (Transform mino in tetromino.transform) {
-                        Vector3 pos = MathUtil.Round(mino.position);
-                        //if (mino.CompareTag("mino" && pos.y > gridHeight - 1)) 
-                        //if (mino.CompareTag("mino" && pos.y >= gridHeight - 1))
-                        if (pos.y >= gridHeight - 1) // BUG: for game auto ended after first tetromino landing down
-                            return true;
-                    }
-            return false;
-        }
-
-        public bool IsFullRowAt(int y) {
-            for (int x = 0; x < gridWidth; x++)
-                for (int j = 0; j < gridWidth; j++)
-// 下面的两句话:临时先写成ViewManager.GameView.ghostTetromino.transform ,之后再重构                    
-                    if (grid[x][y][j] == null ||      // modified here for ghostTetromino
-                        (grid[x][y][j].parent == ViewManager.ghostTetromino.transform
-                         && grid[x][y][j].parent != ViewManager.nextTetromino.transform)) 
-                        return false;
-            numberOfRowsThisTurn++;
-            return true;
-        }
-        // public void DeleteRow() { // 算法上仍然需要优化
-        //     Debug.Log(TAG + ": DeleteRow() start");
-        //     hasDeletedMinos = false;
-        //     for (int y = 0; y < gridHeight; y++) {
-        //         if (gameMode.Value  > 0) {
-        //             if (IsFullRowAt(y)) {
-        //                 // 一定要控制同屏幕同时播放的粒子数量
-        //                 // 1.同屏的粒子数量一定要控制在200以内，每个粒子的发射数量不要超过50个。
-        //                 // 2.尽量减少粒子的面积，面积越大就会越卡。
-        //                 // 3.粒子最好不要用Alfa Test（但是有的特效又不能不用，这个看美术吧）
-        //                 //   粒子的贴图用黑底的这种，然后用Particles/Additive 这种Shader，贴图必须要2的幂次方，这样渲染的效率会高很多。个人建议 粒子特效的贴图在64左右，千万不要太大。
-        //                 // // 让游戏中真正要播放粒子特效的时候，粒子不用在载入它的贴图，也不用实例化，仅仅是执行一下SetActive(true)。
-        //                 // SetActive(true)的时候就不会执行粒子特效的Awake()方法，但是它会执行OnEnable方法。
-        //                 hasDeletedMinos = true;
-                        
-        //                 // m_ExplosionParticles.transform.position = new Vector3(2.5f, y, 2.5f); 
-        //                 // m_ExplosionParticles.gameObject.SetActive(true);
-        //                 // m_ExplosionParticles.Play();
-        //                 // m_ExplosionAudio.Play();
-
-        //                 DeleteMinoAt(y);
-        //                 MoveAllRowsDown(y + 1);
-        //                 --y;
-        //             }
-        //         } else { // easy mode
-        //             if (IsFullFiveInLayerAt(y)) { // 有可能是 bug 的存在
-        //                 hasDeletedMinos = true;
-
-        //                 DeleteMinoAt(y);
-        //                 // MoveRowDown(y + 1);
-        //                 MoveAllRowsDown(y + 1);
-        //                 --y;
-        //             }
-        //         }
-        //     }
-        //     if (gameMode.Value  == 0) {
-        //         // clean top layer 2 out: all 2s to be 0s
-        //         for (int o = gridHeight - 1; o >= 0; o--) {
-        //             for (int x = 0; x < gridWidth; x++) {
-        //                 for (int z = 0; z < gridWidth; z++) {
-        //                     if (gridOcc[x][o][z] == 2) {
-        //                         if (o == gridHeight - 1 ||  gridOcc[x][o+1][z] == 0) // this statement ???
-        //                             gridOcc[x][o][z] = 0;
-        //                     }
-        //                 }
-        //             }
-        //         } 
-        //     }
-        //     // Debug.Log(TAG + ": After all DeleteRow() finish");
-        //     // MathUtil.printBoard(gridOcc); 
-        // }
-
-        public bool IsFullFiveInLayerAt(int y) {
-            // Debug.Log(TAG + ": IsFullFiveInLayerAt()");
-            int tmpSum = 0;
-            bool result = false;
-            for (int x = 0; x < gridWidth; x++) {
-                tmpSum = 0;
-                for (int z = 0; z < gridWidth; z++) {
-                    tmpSum += gridOcc[x][y][z] == 0 ? 0 : 1; 
-                }
-                if (tmpSum == gridWidth) {
-                    numberOfRowsThisTurn++;
-                    result = true;
-                    for (int z = 0; z < gridWidth; z++) {
-                        gridOcc[x][y][z] += gridOcc[x][y][z] == 1 ? 1 : 0; 
-                    }
-                }
-            } // 数完5列
-            for (int z = 0; z < gridWidth; z++) { // 数5行
-                tmpSum = 0;
-                for (int x = 0; x < gridWidth; x++) {
-                    tmpSum += gridOcc[x][y][z] == 2 ? 1 : gridOcc[x][y][z]; // 2
-                }
-                if (tmpSum == gridWidth) {
-                    numberOfRowsThisTurn++;
-                    result = true;
-                    for (int x = 0; x < gridWidth; x++) {
-                        gridOcc[x][y][z] += gridOcc[x][y][z] == 1 ? 1 : 0; 
-                    }
-                }
-            } // 数完5行
-            tmpSum = 0;
-            for (int x = 0; x < gridWidth; x++) { // 数2对角线
-                for (int z = 0; z < gridWidth; z++) {
-                    if (x == z) {
-                        tmpSum += gridOcc[x][y][z] == 2 ? 1 : gridOcc[x][y][z]; // 2
-                    }
-                }
-            }
-            if (tmpSum == gridWidth) {
-                result = true;
-                numberOfRowsThisTurn++;
-                for (int x = 0; x < gridWidth; x++) { // 数2对角线
-                    for (int o = 0; o < gridWidth; o++) {
-                        if (x == o) {
-                            gridOcc[x][y][o] += gridOcc[x][y][o] == 1 ? 1 : 0;  
-                        }
-                    }
-                }
-            } // 数完一条对角线
-            tmpSum = 0; 
-            for (int x = 0; x < gridWidth; x++) {
-                for (int z = 0; z < gridWidth; z++) {
-                    if (z == gridWidth - 1 - x) {
-                        tmpSum += gridOcc[x][y][z] == 2 ? 1 : gridOcc[x][y][z]; // 2
-                    }
-                }
-            }
-            if (tmpSum == gridWidth) {
-                result = true;
-                numberOfRowsThisTurn++;
-                for (int x = 0; x < gridWidth; x++) {
-                    for (int o = 0; o < gridWidth; o++) {
-                        if (o == gridWidth - 1 - x) {
-                            gridOcc[x][y][o] += gridOcc[x][y][o] == 1 ? 1 : 0; 
-                        }
-                    }
-                }
-            } // 数完另一条对角线
-            // MathUtil.printBoard(gridOcc); // 太多打印的了
-            if (result) {
-                return true;
-            }
-            return false;
-        }
-
-        public void DeleteMinoAt(int y) {
-            Debug.Log(TAG + ": DeleteMinoAt() start"); 
-            for (int x = 0; x < gridWidth; x++) 
-                for (int  z = 0;  z < gridWidth;  z++) {
-                    if (gameMode.Value  == 0) { // 只删除合格 行 列 对角线 占有的格
-                        if (gridOcc != null && gridOcc[x][y][z] == 2) {
-                            if (grid[x][y][z] != null && grid[x][y][z].gameObject != null) {
-                                // Debug.Log(TAG + " (grid[x][y][z].parent != null): " + (grid[x][y][z].parent != null)); 
-                                if (grid[x][y][z].parent != null) {
-                                    // Debug.Log(TAG + " grid[x][y][z].parent.name: " + grid[x][y][z].parent.name);
-                                    // Debug.Log(TAG + " grid[x][y][z].parent.childCount: " + grid[x][y][z].parent.childCount); 
-                                    if (grid[x][y][z].parent.childCount == 1) {
-                                        Transform tmp = grid[x][y][z].parent;
-                                        tmp.GetChild(0).parent = null;
-                                        GameObject.Destroy(grid[x][y][z].gameObject);
-                                        GameObject.Destroy(tmp.gameObject);
-                                    } else {
-                                        grid[x][y][z].parent = null;
-                                        GameObject.Destroy(grid[x][y][z].gameObject);
-                                    }
-                                    grid[x][y][z] = null;
-                                    // gridOcc[x][y][z] = 0;
-                                } else {
-                                    // PoolManager.ReturnToPool(grid[x][y][z].gameObject, GetSpecificPrefabMinoType(grid[x][y][z].gameObject));
-                                    GameObject.Destroy(grid[x][y][z].gameObject);
-                                    // gridOcc[x][y][z] = 0; // 暂时还不更新，等要删除的时候才更新
-                                    grid[x][y][z] = null; // x ==> z
-                                }
-                            }
-                        } else if (grid[x][y][z] == null && gridOcc[x][y][z] == 2) { // grid[x][y][z] = null
-                            // gridOcc[x][y][z] = 0;
-                        }
-                    } else {
-                        GameObject.Destroy(grid[x][y][z].gameObject);
-                        // PoolManager.ReturnToPool(grid[x][y][z].gameObject, GetSpecificPrefabMinoType(grid[x][y][z].gameObject));
-                        grid[x][y][z] = null;
-                        gridOcc[x][y][z] = 0; // 其它 mode 好像也不需要这个东西
-                    }
-                }
-        }
-        public void MoveRowDown(int y) {
-            if (gameMode.Value  > 0) {
-                for (int j = 0; j < gridWidth; j++)    
-                    for (int x = 0; x < gridWidth; x++) {
-                        if (grid[x][y][j] != null) {
-                            grid[x][y-1][j] = grid[x][y][j];
-                            grid[x][y][j] = null;
-                            grid[x][y-1][j].position += new Vector3(0, -1, 0);
-                        }
-                    }
-            } else { // gameMode.Value  == 0
-                for (int x = 0; x < gridWidth; x++) {
-                    for (int z = 0; z < gridWidth; z++) {
-                        if (gridOcc[x][y-1][z] == 2) { // 下面是消毁掉了的，压下去
-                            gridOcc[x][y-1][z] = gridOcc[x][y][z];
-
-                            if (grid[x][y][z] != null) {
-                                grid[x][y-1][z] = grid[x][y][z];
-                                grid[x][y][z] = null;
-                                grid[x][y-1][z].position += new Vector3(0, -1, 0);
-                            }
-                            gridOcc[x][y][z] = y == gridHeight - 1 ? 0 : 2;
-                        }
-                    }   
-                }
-            } // gameMode.Value  == 0
-        } 
-
-        public void MoveAllRowsDown(int y) {
-            for (int i = y; i < gridHeight; i++) 
-                MoveRowDown(i);
-        }
-    
-        public bool CheckIsInsideGrid(Vector3 pos) {
-            return ((int)pos.x >= 0 && (int)pos.x < gridWidth &&
-                    (int)pos.z >= 0 && (int)pos.z < gridWidth && 
-                    (int)pos.y >= 0 && (int)pos.y < gridHeight); 
-        }
-
-        public Transform GetTransformAtGridPosition(Vector3 pos) {
-            if (pos.y > gridHeight - 1) 
-                return null;
-            else
-                return grid[(int)pos.x][(int)pos.y][(int)pos.z];
-        }
-        public bool CheckIsValidPosition() { // TODO: 写了两遍 Tetromino GameViewModel
-            foreach (Transform mino in ViewManager.nextTetromino.transform) {
-                if (mino.CompareTag("mino")) {
-                    Vector3 pos = MathUtil.Round(mino.position);
-                    if (!CheckIsInsideGrid(pos)) 
-                        return false;
-                    if (GetTransformAtGridPosition(pos) != null
-                        && GetTransformAtGridPosition(pos).parent != ViewManager.nextTetromino.transform) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
         
         public void recycleNextTetromino() { // 这个折成两部分来写
             Debug.Log(TAG + ": recycleNextTetromino()"); 
             if (ViewManager.nextTetromino != null) {
-                // resetGridAfterDisappearingNextTetromino(ViewManager.nextTetromino); // check ???
                 Model.resetGridAfterDisappearingNextTetromino(ViewManager.nextTetromino); // check ???
                 if (ViewManager.nextTetromino.transform.childCount == 4) {
                     PoolHelper.recycleNextTetromino();
-                    // PoolHelper.ReturnToPool(ViewManager.nextTetromino, ViewManager.nextTetromino.GetComponent<TetrominoType>().type);
                 } else
                     GameObject.Destroy(ViewManager.nextTetromino.gameObject);
             }
@@ -953,17 +376,6 @@ namespace HotFix.UI {
             PoolHelper.recyclePreviewTetrominos(previewTetromino2);
         }
 
-//　操纵两画面的上下移动
-       public void MoveDown() {
-           ViewManager.moveCanvas.transform.position += new Vector3(0, -1, 0);
-           ViewManager.rotateCanvas.transform.position += new Vector3(0, -1, 0);
-       }
-       public void MoveUp() {
-           ViewManager.moveCanvas.transform.position += new Vector3(0, 1, 0);
-           ViewManager.rotateCanvas.transform.position += new Vector3(0, 1, 0);
-       }
-
-        // public string GetRandomTetromino(BindableProperty<String> tetroTypeBindableProperty) { // active Tetromino
         public string GetRandomTetromino() { // active Tetromino 
             Debug.Log(TAG + ": GetRandomTetromino()"); 
 
@@ -982,25 +394,9 @@ namespace HotFix.UI {
             default: // 7
                 tetrominoType.Append("S"); break; // 需要放一个相对难一点儿的在非启蒙模式下
             }
-            // if (gameMode.Value == 0 && gridWidth == 5)
-            //     randomTetromino = UnityEngine.Random.Range(15, 21);
-            // else 
-            //     randomTetromino = UnityEngine.Random.Range(7, 14);
-            // Debug.Log(TAG + " Generated randomTetromino: " + randomTetromino); 
-            // StringBuilder tetrominoType = new StringBuilder("Tetromino");
-            // switch (randomTetromino) {
-            // case 15: tetrominoType.Append("I"); break;
-            // case 16: tetrominoType.Append("J"); break; 
-            // case 17: tetrominoType.Append("L"); break;
-            // case 18: tetrominoType.Append("O"); break;
-            // case 19: tetrominoType.Append("S"); break;
-            // case 20: tetrominoType.Append("T"); break;
-            // default:
-            //     tetrominoType.Append("Z"); break;
-            // }
             return tetrominoType.ToString();
         }
-
+        
 #region updatingGameScores        
         public void UpdateScore() {
             Debug.Log(TAG + " UpdateScore");
@@ -1015,14 +411,14 @@ namespace HotFix.UI {
                 else if (numberOfRowsThisTurn == 4) 
                     ClearedFourLine();
                 numberOfRowsThisTurn = 0;
-				// 考虑粒子系统是否像是声频管理器一样的统一管理,只在教育模式下使用到粒子系统,但其它模式可以扩展                
-				//PlayLineClearedSound();
-				//particles = GetComponent<ParticleSystem>();
-				//emissionModule = particles.emission;
-				//emissionModule.enabled = true;
-				//particles.Play();
-			}
-		}
+                // 考虑粒子系统是否像是声频管理器一样的统一管理,只在教育模式下使用到粒子系统,但其它模式可以扩展                
+                //PlayLineClearedSound();
+                //particles = GetComponent<ParticleSystem>();
+                //emissionModule = particles.emission;
+                //emissionModule.enabled = true;
+                //particles.Play();
+            }
+        }
         public void ClearedOneLine() {
             Debug.Log(TAG + " ClearedOneLine");
             currentScore.Value += scoreOneLine + (currentLevel.Value  + 20);
@@ -1053,46 +449,9 @@ namespace HotFix.UI {
                 PlayerPrefs.SetInt("highscore3", currentScore.Value);
         }
 #endregion
-        
-        // public void onActiveTetrominoLand(TetrominoLandEventInfo info) {
-        //     Debug.Log(TAG + ": onActiveTetrominoLand()");
-        //     // UpdateGrid(ViewManager.nextTetromino);
-
-        //     Debug.Log(TAG + ": gridOcc[,,] aft Land UpdateGrid(), bef onGameSave()"); 
-        //     MathUtil.printBoard(gridOcc);  // Model.
-        //     // Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), bef onGameSave()"); 
-        //     // MathUtil.printBoard(gridClr);  // Model.
-            
-        //     if (gameMode.Value == 0) // 只在启蒙模式下才保存
-        //         onGameSave();
-
-        //     if (gameMode.Value > 0 || (GloData.Instance.isChallengeMode && (GloData.Instance.challengeLevel < 3 || GloData.Instance.challengeLevel > 5))) // 1 2 6 7 8 9 10
-        //         // ModelMono.DeleteRow();
-        //         DeleteRow();
-        //     else if (((gameMode.Value == 0 && !GloData.Instance.isChallengeMode) || (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel > 2 && GloData.Instance.challengeLevel < 6)) // 3 4 5
-        //              && !ModelMono.isDeleteRowCoroutineRunning)
-        //         // CoroutineHelperP.StartCoroutine(ModelMono.Instance.DeleteRowCoroutine()); // the case
-        //         CoroutineHelperP.StartCoroutine(DeleteRowCoroutine()); // the case
-
-        //     // 后面一部分,只在持战模式下,当剩余的方块砖的数目为0时才游戏结束
-        //     // if (Model.CheckIsAboveGrid(ComponentHelper.GetTetroComponent(ViewManager.nextTetromino)) || GloData.Instance.isChallengeMode && tetrominoCnter.Value == 0) {
-        //     if (CheckIsAboveGrid(ComponentHelper.GetTetroComponent(ViewManager.nextTetromino)) || GloData.Instance.isChallengeMode && tetrominoCnter.Value == 0) {
-        //         //GameOver();
-        //     }
-        //     // DeleteRow(); // 第一套原来的逻辑
-        //     // Update();
-        //     // if (CheckIsAboveGrid(ViewManager.nextTetromino.GetComponent<Tetromino>())) { // 检查游戏是否结束,最后一个方块砖是否放到顶了
-        //     //     Debug.Log(TAG + " TODO: Game Over");
-        //     //     // GameOver(); // for tmp
-        //     // }            
-
-        //     Array.Clear(buttonInteractableList, 0, buttonInteractableList.Length);
-        //     if (gameMode.Value  == 0) {
-        //         buttonInteractableList[0] = 1; 
-        //         buttonInteractableList[1] = 1;
-        //         buttonInteractableList[2] = 1;
-        //         buttonInteractableList[3] = 1; // undo button
-        //     }
-        // }
     }
 }
+
+
+
+

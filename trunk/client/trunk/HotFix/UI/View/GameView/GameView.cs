@@ -80,9 +80,7 @@ namespace HotFix.UI {
         
         private bool isDuringUndo = false;
         public bool saveForUndo = true;
-
-        public Dictionary<GameObject, bool> btnState;
-        
+     
         private static GameObject tmpTetro; // TODO: why static ?
 
         private bool isMoveValid = false;
@@ -94,7 +92,10 @@ namespace HotFix.UI {
 // 挑战模式下:当方块砖落地的时候,地板的着色会跟着改变?        
         public delegate void TetrominoChallengeLandingDelegate();
         public static TetrominoChallengeLandingDelegate changeBaseCubesSkin;
-        
+
+// TODO:对按钮,更该用状态来管理,而不是彻底看不见,应该设置为可见不可点击回调        
+        public Dictionary<GameObject, bool> btnState;
+
         public void SpawnnextTetromino() {
             Debug.Log(TAG + ": SpawnnextTetromino()");
             if (!gameStarted) {
@@ -185,9 +186,6 @@ namespace HotFix.UI {
 // 这里的问题:应该是用IEnumerator去解决,但暂时这样; 在自己不断修改整理这些重构的代码的过程中,会对这些忘记了的相对陌生的一点点儿捡回来的
 // 现在这里要做的就是:打预设的资源包(很简单),从资源包里将不是的预设读出来,存在字典里,供游戏需要的时候来用            
             SpawnnextTetromino();   
-
-            // ViewManager.moveCanvas.SetActive(true);
-            // ViewManager.rotateCanvas.SetActive(false);
         }
 
         IEnumerator displayChallengeGoal() {
@@ -455,7 +453,7 @@ namespace HotFix.UI {
             if (!ViewModel.hasSavedGameAlready && gameStarted) { // gameStarted
                 saveGameOrNotPanel.SetActive(true);
             } else {
-                ViewModel.cleanUpGameBroad(ViewManager.nextTetromino, ViewManager.ghostTetromino);
+                Model.cleanUpGameBroad();
 // TODO: 这里没有清理干净,还有东西                
                 Model.cleanUpGameBroad();
                 ViewModel.isPaused = false;
@@ -464,16 +462,13 @@ namespace HotFix.UI {
                 Hide();
             }
         }
-        // void OnClickSaveButton() {
-        //     saveGameOrNotPanel.SetActive(false);
-        // }
         public void onYesToSaveGame() {
             ViewModel.saveForUndo = false; // ? 这里是什么意思呢
             onGameSave();
             ViewModel.hasSavedGameAlready = true;
             saveGameOrNotPanel.SetActive(false);
             pausePanel.SetActive(false);
-            ViewModel.cleanUpGameBroad(ViewManager.nextTetromino, ViewManager.ghostTetromino);
+            Model.cleanUpGameBroad();
             ViewModel.isPaused = false;
             Time.timeScale = 1.0f;
 // TODO: 检查一下这里还需要做哪些清理工作?
@@ -488,7 +483,7 @@ namespace HotFix.UI {
             PoolHelper.ReturnToPool(previewTetromino, previewTetromino.GetComponent<TetrominoType>().type);
             if (ViewModel.gameMode.Value == 0) 
                 PoolHelper.ReturnToPool(previewTetromino2, previewTetromino2.GetComponent<TetrominoType>().type);
-            ViewModel.cleanUpGameBroad(ViewManager.nextTetromino, ViewManager.ghostTetromino);
+            Model.cleanUpGameBroad();
             
             ViewModel.isPaused = false;
             Time.timeScale = 1.0f;
@@ -543,37 +538,6 @@ namespace HotFix.UI {
             ViewModel.onUndoGame(gameData);
             isDuringUndo = false;
         }
-//         void OnClickUndButton() { // onUndoGame() 撤销最后一块降落的方块砖(在最后一块降落后有消除的情况下比较复杂一点儿,大量数据的恢复)
-//             Debug.Log(TAG + ": onUndoGame()");
-//             if (ViewModel.buttonInteractableList[3] == 0) return;
-//             // Array.Clear(ViewModel.buttonInteractableList, 0, ViewModel.buttonInteractableList.Length);
-//             isDuringUndo = true;
-//             // ViewModel.recycleThreeMajorTetromino(ViewManager.nextTetromino, previewTetromino, previewTetromino2);
-
-//             StringBuilder path = new StringBuilder("");
-//             if (ViewModel.gameMode.Value > 0)
-//                 path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName + "/game.save");
-//             else
-//                 path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName
-//                             + "grid" + ViewModel.gridWidth + "/game.save");
-
-// // TODO : 这里的问题是:先前每块方块砖落下的时候都会自动保存,但是我现在的逻辑还没有保存            
-//             GameData gameData = SaveSystem.LoadGame(path.ToString());
-//             ViewModel.onUndoGame(gameData);
-            
-// // 这里新添一个根据两种方块砖类型,重新生成两块预览的方块砖
-//             StringBuilder type = new StringBuilder("");
-//             if (ViewModel.prevPreview != null) { // previewTetromino previewTetromino2
-//                 type.Length = 0;
-//                 string type2 = ViewModel.prevPreview2;
-//                 SpawnPreviewTetromino(type.Append(ViewModel.prevPreview).ToString(), type2);
-//             }
-//             // ViewModel.buttonInteractableList[0] = 1; 
-//             // ViewModel.buttonInteractableList[1] = 1; 
-//             // ViewModel.buttonInteractableList[2] = 1; 
-//             // ViewModel.buttonInteractableList[3] = 0; // buttons are supposed to click once at a time only
-//             isDuringUndo = false;
-//         }
 
         void OnClickPauButton() { 
             Debug.Log(TAG + " OnClickPauButton");
@@ -591,12 +555,12 @@ namespace HotFix.UI {
 //             ViewModel.buttonInteractableList[5] = 0;
             delta = new Vector3(0, -1, 0);
             ViewManager.nextTetromino.transform.position += delta;
-            while (ViewModel.CheckIsValidPosition()) { 
+            while (Model.CheckIsValidPosition()) { 
                 ViewManager.nextTetromino.transform.position -= delta;
                 EventManager.Instance.FireEvent("move", delta);
                 ViewManager.nextTetromino.transform.position += delta;
             } // 出循环就是不合理位置
-            if (!ViewModel.CheckIsValidPosition()) { // 方块砖移到了最底部
+            if (!Model.CheckIsValidPosition()) { // 方块砖移到了最底部
                 ViewManager.nextTetromino.transform.position -= delta;
                 EventManager.Instance.FireEvent("land");
             }
@@ -654,7 +618,6 @@ namespace HotFix.UI {
 
 // TODO: 这个系统是,4+6个按钮触发事件(会有假阳性,会误播背景音乐),先发送所有事件,再接收后才判断是否合理,只有背景音乐受影响
 #region eventsCallbacks
-// TODO: 不明白为什么这里同一个下落事件,会触发两个这个函数的调用 ? 启蒙模式下        
         public void onActiveTetrominoLand(TetrominoLandEventInfo info) {
             Debug.Log(TAG + ": onActiveTetrominoLand()");
             btnState[togBtn] = false;
@@ -667,7 +630,7 @@ namespace HotFix.UI {
             Model.UpdateGrid(ViewManager.nextTetromino); 
 
             Debug.Log(TAG + ": gridOcc[,,] aft Land UpdateGrid(), bef onGameSave()"); 
-            MathUtil.printBoard(ViewModel.gridOcc);  // Model.
+            MathUtil.printBoard(Model.gridOcc);  // Model.
             // Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), bef onGameSave()"); 
             // MathUtil.printBoard(gridClr);  // Model.
 
@@ -725,7 +688,7 @@ namespace HotFix.UI {
         void onActiveTetrominoMove(TetrominoMoveEventInfo info) { // MoveDown:所有事件都是有效的
             Debug.Log(TAG + " onActiveTetrominoMove");
             ViewManager.nextTetromino.transform.position += info.delta;
-            isMoveValid = ViewModel.CheckIsValidPosition();
+            isMoveValid = Model.CheckIsValidPosition();
             if (isMoveValid)
                 EventManager.Instance.FireEvent("validMR", "move");
             else 
@@ -734,7 +697,7 @@ namespace HotFix.UI {
         void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
             // Debug.Log(TAG + ": onActiveTetrominoRotate()");
             ViewManager.nextTetromino.transform.Rotate(info.delta);
-            if (ViewModel.CheckIsValidPosition()) {
+            if (Model.CheckIsValidPosition()) {
                 isRotateValid = true;
                 EventManager.Instance.FireEvent("validMR", "rotate");
             } else {
@@ -925,35 +888,5 @@ namespace HotFix.UI {
         //         Debug.Log(TAG + " ViewModel.buttonInteractableList[i]: i : " + i + ", " + ViewModel.buttonInteractableList[i]); 
         // }
 #endregion
-// // TODO:不仅仅是当前方块砖的位置/旋转/缩放,还该包括阴影的相关观察
-// // 这套系统不工作,太多的适配相关的问题,先把简单的系统逻辑连通
-//         // bug to be fixed: 这里的位置是变化的,但是这样的位置变化无法改变沉浸过程,所以热更新里面最好还是用热更新原生的方法
-//         void onNextTetroTransChanged(Transform pre, Transform cur) {
-//             Debug.Log(TAG + " onNextTetroTransChanged");
-//             Debug.Log(TAG + " cur.position: " + cur.position);
-//             Utils.print(cur.position);
-//             if (ViewManager.nextTetromino != null && ViewManager.nextTetromino.activeSelf) {// 必须当前有正在运行的方块砖
-//                 // Helpers.resetTrans(ViewManager.nextTetromino, cur);
-//                 ViewManager.nextTetromino.transform.position = cur.position;
-//                 Debug.Log(TAG + " ViewManager.nextTetromino.gameObject.transform.position: " + ViewManager.nextTetromino.gameObject.transform.position);
-//             }
-//         }
-//         void onNextTetroPosChanged(Vector3 pre, Vector3 cur) {
-//             Debug.Log(TAG + " onNextTetroPosChanged");
-//             Utils.print(cur);
-//             if (ViewManager.nextTetromino != null && ViewManager.nextTetromino.activeSelf) {// 必须当前有正在运行的方块砖
-//                 Utils.print(ViewManager.nextTetromino.gameObject.transform.position);
-//                 ViewManager.nextTetromino.transform.position = cur;
-//                 Utils.print(ViewManager.nextTetromino.gameObject.transform.position);
-//             }
-//         }
-//         void onNextTetroRotChanged(Quaternion pre, Quaternion cur) {
-//             if (ViewManager.nextTetromino != null && ViewManager.nextTetromino.activeSelf) // 必须当前有正在运行的方块砖
-//                 ViewManager.nextTetromino.transform.rotation = cur;
-//         }
-//         void onNextTetroScaChanged(Vector3 pre, Vector3 cur) {
-//             if (ViewManager.nextTetromino != null && ViewManager.nextTetromino.activeSelf) // 必须当前有正在运行的方块砖
-//                ViewManager.nextTetromino.transform.localScale = cur;
-//         }
     }
 }
