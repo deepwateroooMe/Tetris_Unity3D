@@ -10,14 +10,16 @@ namespace deepwaterooo.tetris3d {
 
         public string name { get; set; }
         public string type { get; set; }
+        public int color { get; set; }
         
         public SerializedTransform transform { get; set; }
 		public MinoDataCollection<TetrominoData, MinoData> children;
 
-        public TetrominoData(Transform parentTrans, string type, string name) {
+        public TetrominoData(Transform parentTrans, string type, string name, int colortmp) {
             Debug.Log(TAG + " TetrominoData" + " type: " + type);
             this.name = name;
             this.type = type;
+            this.color = colortmp;
             transform = new SerializedTransform(parentTrans);
             children = new MinoDataCollection<TetrominoData, MinoData>(this);
             foreach (Transform mino in parentTrans) {

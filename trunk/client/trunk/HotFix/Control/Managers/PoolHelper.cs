@@ -257,7 +257,12 @@ namespace HotFix.Control {
             ReturnToPool(gameObject, type);
         }
 
-        public static void preparePreviewTetrominoRecycle(GameObject go) { 
+        public static void recyclePreviewTetrominos(GameObject go) {
+            preparePreviewTetrominoRecycle(go);
+            ReturnToPool(go, go.GetComponent<TetrominoType>().type);
+        }
+
+        private static void preparePreviewTetrominoRecycle(GameObject go) { 
             go.transform.localScale -= previewTetrominoScale;
             go.transform.position = Vector3.zero;
             go.transform.rotation = Quaternion.identity;

@@ -15,7 +15,7 @@ namespace deepwaterooo.tetris3d {
 // TODO: 里面的文件地址路径等相关不必要逻辑放入帮助类里去    
     public static class SaveSystem { 
         private const string TAG = "SaveSystem"; 
-            
+        
         public static void SaveGame(string currentPath, GameData gameData) { 
             Debug.Log(TAG + ": SaveGame()");
 
@@ -49,7 +49,7 @@ namespace deepwaterooo.tetris3d {
                 
                 return data;
             } else {
-                Debug.LogError("Save file not found in currentPath");
+                Debug.LogError("Save file not found in pathIn: " + pathIn);
                 return null;
             }
         } 

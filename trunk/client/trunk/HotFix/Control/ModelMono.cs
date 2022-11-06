@@ -31,6 +31,8 @@ namespace HotFix.Control {
         public delegate void BaseBoardSkinChangedDelegate();
         public static BaseBoardSkinChangedDelegate updateBaseCubesSkin;
 
+        // public static int lastTetroIndiScore = 0;
+        
         public void OnEnable() {
             Debug.Log(TAG + ": OnEnable()"); 
             Debug.Log(TAG + " gameObject.name: " + gameObject.name);
@@ -40,38 +42,42 @@ namespace HotFix.Control {
             Debug.Log(TAG + " Start()");
             // EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
             // EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
+            // EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 
         }
         void OnDisable() {
             Debug.Log(TAG + ": OnDisable()");
             Debug.Log(TAG + " gameObject.name: " + gameObject.name);
             // if (EventManager.Instance != null) {
-            //     EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove);
             //     EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
+            // EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
             // }
         }
-
-        public void onActiveTetrominoMove(TetrominoMoveEventInfo info) { 
-            Debug.Log(TAG + ": onActiveTetrominoMove()");
-            ViewManager.nextTetromino.transform.position += info.delta; // -11 0 -11, 0 -11 0
-            if (Model.CheckIsValidPosition()) {
-                if (canvasMovedInfo == null) {
-                    canvasMovedInfo = new CanvasMovedEventInfo();
-                }
-                canvasMovedInfo.delta = info.delta;
-                EventManager.Instance.FireEvent(canvasMovedInfo);
-                Model.UpdateGrid(ViewManager.nextTetromino);
-            } else {
-                ViewManager.nextTetromino.transform.position -= info.delta;
-            }
-        }
-        public void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
-            Debug.Log(TAG + ": onActiveTetrominoRotate()");
-            ViewManager.nextTetromino.transform.Rotate(info.delta);
-            if (Model.CheckIsValidPosition()) {
-                Model.UpdateGrid(ViewManager.nextTetromino); 
-            } else
-                ViewManager.nextTetromino.transform.Rotate(Vector3.zero - info.delta); 
-        }
+        // public void onActiveTetrominoLand(TetrominoLandEventInfo info) {
+        //     Debug.Log(TAG + " onActiveTetrominoLand");
+        //     lastTetroIndiScore = ComponentHelper.GetTetroComponent(info.unitGO).score;
+        // }
+        // public void onActiveTetrominoMove(TetrominoMoveEventInfo info) { 
+        //     Debug.Log(TAG + ": onActiveTetrominoMove()");
+        //     ViewManager.nextTetromino.transform.position += info.delta; // -11 0 -11, 0 -11 0
+        //     if (Model.CheckIsValidPosition()) {
+        //         if (canvasMovedInfo == null) {
+        //             canvasMovedInfo = new CanvasMovedEventInfo();
+        //         }
+        //         canvasMovedInfo.delta = info.delta;
+        //         EventManager.Instance.FireEvent(canvasMovedInfo);
+        //         Model.UpdateGrid(ViewManager.nextTetromino);
+        //     } else {
+        //         ViewManager.nextTetromino.transform.position -= info.delta;
+        //     }
+        // }
+        // public void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
+        //     Debug.Log(TAG + ": onActiveTetrominoRotate()");
+        //     ViewManager.nextTetromino.transform.Rotate(info.delta);
+        //     if (Model.CheckIsValidPosition()) {
+        //         Model.UpdateGrid(ViewManager.nextTetromino); 
+        //     } else
+        //         ViewManager.nextTetromino.transform.Rotate(Vector3.zero - info.delta); 
+        // }
 
         public System.Collections.IEnumerator DeleteRowCoroutine() {
             Debug.Log(TAG + ": DeleteRowCoroutine()");
@@ -157,7 +163,7 @@ namespace HotFix.Control {
                                     type.Length = 0;
                                     if (Model.grid[x][y][z].gameObject.GetComponent<MinoType>() == null) {
                                         Model.grid[x][y][z].gameObject.AddComponent<MinoType>();
-                                        Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type = type.Append("mino" + Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().type.Substring(5, 1)).ToString();
+                                        Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type = type.Append("mino" + Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().type.Substring(9, 1)).ToString(); // Tetromino
                                         Model.grid[x][y][z].gameObject.name = type.ToString();
                                         PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, type.ToString());
                                     } else
@@ -169,8 +175,10 @@ namespace HotFix.Control {
                                     type.Length = 0;
                                     if (Model.grid[x][y][z].gameObject.GetComponent<MinoType>() == null) {
                                         Model.grid[x][y][z].gameObject.AddComponent<MinoType>();
-                                        Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type = type.Append("mino" + Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().type.Substring(5, 1)).ToString();
+                                        Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type = type.Append("mino" + Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().type.Substring(9, 1)).ToString();
                                         Model.grid[x][y][z].gameObject.name = type.ToString();
+
+                                        Debug.Log(TAG + " type.ToString(): " + type.ToString());
                                         PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, type.ToString());
                                     } else
                                         PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
@@ -190,26 +198,23 @@ namespace HotFix.Control {
             for (int x = 0; x < Model.gridXWidth; x++) 
                 for (int  z = 0;  z < Model.gridZWidth;  z++)
                     if (Model.gridOcc != null && Model.gridOcc[x][y][z] == 2) {
-                        // Debug.Log("(x,y,z): [" + x + "," + y + "," + z +"]: " + Model.gridOcc[x][y][z]);
-                        
-                        // if (Model.grid[x][y][z] != null)
-                        //     Debug.Log(TAG + " (Model.grid[x][y][z].childCount == 0): " + (Model.grid[x][y][z].childCount == 0)); 
                         if (Model.grid[x][y][z] != null && Model.grid[x][y][z].childCount == 0) {
+                            // MathUtilP.print(x, y, z);
                             GameObject connectedEffectTmp = PoolHelper.GetFromPool("minoPS", new Vector3(x, y, z), Quaternion.identity, Vector3.one);
                             connectedEffectTmp.transform.SetParent(Model.grid[x][y][z], true);
                             minoPSList.Add(connectedEffectTmp);
                         }
                     }
-            Debug.Log(TAG + "  minoPSList.Count: " +  minoPSList.Count);
+// TODO: 感觉这里还有点儿不通,时间不够长,粒子系统展示得不完整            
             yield return _waitForSeconds;
 
+            // Debug.Log(TAG + "  minoPSList.Count: " +  minoPSList.Count);
             for (int i = minoPSList.Count - 1; i >= 0; i--) {
                 minoPSList[i].transform.parent = null;
                 PoolHelper.ReturnToPool(minoPSList[i], "minoPS");
                 minoPSList.RemoveAt(i);
             }
-
-            Debug.Log(TAG + "  minoPSList.Count: " +  minoPSList.Count);
+            // Debug.Log(TAG + "  minoPSList.Count: " +  minoPSList.Count);
             yield return null;
         }
 

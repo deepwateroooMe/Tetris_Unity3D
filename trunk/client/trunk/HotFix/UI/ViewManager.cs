@@ -37,7 +37,7 @@ namespace HotFix.UI {
                         managersRoot.transform.SetParent(UI2DRoot.transform);
                         EventManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
                         AudioManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
-                        // ModelMono.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
+                        ModelMono.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
                         
                         var viewRect = viewRoot.AddComponent<RectTransform>();
                         viewRect.SetParent(UI2DRoot.transform, false);

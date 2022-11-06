@@ -215,7 +215,7 @@ namespace HotFix.Control {
                                 foreach (Transform transform in grid[i][j][k].parent) {
 									type.Length = 0;
                                     string typeTmp = transform.gameObject.GetComponent<MinoType>() == null ?
-                                        type.Append("mino" + grid[i][j][k].parent.gameObject.GetComponent<TetrominoType>().type.Substring(5, 1)).ToString()
+                                        type.Append("mino" + grid[i][j][k].parent.gameObject.GetComponent<TetrominoType>().type.Substring(9, 1)).ToString()
                                         : transform.gameObject.GetComponent<MinoType>().type;
                                     // grid[(int)Mathf.Round(transform.position.x), (int)Mathf.Round(transform.position.y), (int)Mathf.Round(transform.position.z)] = null;
                                     x = (int)Mathf.Round(transform.position.x);

@@ -19,6 +19,7 @@ namespace deepwaterooo.tetris3d {
 
         public int idx { get; set; }
         public string type { get; set; }
+        public int color { get; set; }
         public SerializedTransform transform { get; set; }
 
         [NonSerialized]
