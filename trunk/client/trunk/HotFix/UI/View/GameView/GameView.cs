@@ -148,12 +148,17 @@ namespace HotFix.UI {
         }
 
         private void SpawnPreviewTetromino(string type1, string type2) {
+            Debug.Log(TAG + " SpawnPreviewTetromino() type1 type2");
             previewTetromino = PoolHelper.GetFromPool(type1, previewTetrominoPosition, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
             previewTetromino.transform.SetParent(ViewManager.tetroParent.transform, false);
-            ViewModel.comTetroType.Value = previewTetromino.GetComponent<TetrominoType>().type;
+            // ViewModel.comTetroType.Value = previewTetromino.GetComponent<TetrominoType>().type;
+            ViewModel.comTetroType.Value = type1;
+            ViewModel.previewTetrominoColor = previewTetromino.GetComponent<TetrominoType>().color;
             if (ViewModel.gameMode.Value == 0) { // previewTetromino2
                 previewTetromino2 = PoolHelper.GetFromPool(type2, previewTetromino2Position, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
                 previewTetromino2.transform.SetParent(ViewManager.tetroParent.transform, false);
+                ViewModel.eduTetroType.Value = type2;
+                ViewModel.previewTetromino2Color = previewTetromino2.GetComponent<TetrominoType>().color;
             }
             ViewModel.buttonInteractableList[3] = 1; // undoBtn
         }
@@ -161,13 +166,13 @@ namespace HotFix.UI {
         private void SpawnPreviewTetromino(string type1, string type2, int color1, int color2) {
             previewTetromino = PoolHelper.GetFromPool(type1, previewTetrominoPosition, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one, color1);
             previewTetromino.transform.SetParent(ViewManager.tetroParent.transform, false);
-            ViewModel.previewTetrominoType = previewTetromino.GetComponent<TetrominoType>().type;
+            ViewModel.comTetroType.Value = previewTetromino.GetComponent<TetrominoType>().type;
             ViewModel.previewTetrominoColor = previewTetromino.GetComponent<TetrominoType>().color;
 
-            if (gameMode == 0) { // previewTetromino2
+            if (ViewModel.gameMode.Value == 0) { // previewTetromino2
                 previewTetromino2 = PoolHelper.GetFromPool(type2, previewTetromino2Position, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one, color2);
                 previewTetromino.transform.SetParent(ViewManager.tetroParent.transform, false);
-                ViewModel.previewTetromino2Type = previewTetromino2.GetComponent<TetrominoType>().type;
+                ViewModel.eduTetroType.Value = previewTetromino2.GetComponent<TetrominoType>().type;
                 ViewModel.previewTetromino2Color = previewTetromino2.GetComponent<TetrominoType>().color;
             }
         }
@@ -515,6 +520,7 @@ namespace HotFix.UI {
             Debug.Log(TAG + ": onUndoGame()");
             if (isDuringUndo) return ;
             isDuringUndo = true;
+            Debug.Log(TAG + " (ViewModel.buttonInteractableList[2] == 0 || ViewModel.undoCnter.Value == 0): " + (ViewModel.buttonInteractableList[2] == 0 || ViewModel.undoCnter.Value == 0));
             if (ViewModel.buttonInteractableList[2] == 0 || ViewModel.undoCnter.Value == 0) return;
 
             StringBuilder path = new StringBuilder("");
@@ -527,6 +533,7 @@ namespace HotFix.UI {
             GameData gameData = SaveSystem.LoadGame(path.ToString());
             ViewModel.onUndoGame(gameData);
 
+            Debug.Log(TAG + " (gameData.prevPreview != null): " + (gameData.prevPreview != null));
             if (gameData.prevPreview != null) { 
                 type.Length = 0;
                 string type2 = gameData.prevPreview2;
@@ -645,9 +652,9 @@ namespace HotFix.UI {
 
 // TODO: 这个系统是,4+6个按钮触发事件(会有假阳性,会误播背景音乐),先发送所有事件,再接收后才判断是否合理,只有背景音乐受影响
 #region eventsCallbacks
+// TODO: 不明白为什么这里同一个下落事件,会触发两个这个函数的调用 ? 启蒙模式下        
         public void onActiveTetrominoLand(TetrominoLandEventInfo info) {
             Debug.Log(TAG + ": onActiveTetrominoLand()");
-
 // 最近一个月刚开始重做这个项目的时候没有拿到更原始功能更多的版本,所以最开始的缺少了很多后来挑战模块下的源码和逻辑,以及粒子系统等
 // 在适配进热更新工程后,现因要整合挑战模块,把原本也只修改了几个BUG的前版本就不要了,直接用现在抽象独立出来的Model ModelMono (原本被我全写在GameViewModel里)
 // 这只是众多重构过程中的一个小节,无关任何其它. 爱表哥,爱生活!!!            
@@ -708,7 +715,7 @@ namespace HotFix.UI {
             // ViewManager.GameView.ViewModel.currentScore.Value += tetromino.individualScore;            
 
             if (((MenuViewModel)ViewModel.ParentViewModel).gameMode != 0) 
-                SpawnnextTetromino();  
+                SpawnnextTetromino();
         }
 
 // 因为ViewManager.nextTetromino是静态的,将相关逻辑移到这个类里来管理, 不可以这样      

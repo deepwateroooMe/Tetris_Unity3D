@@ -102,8 +102,8 @@ namespace HotFix.Control {
                 EventManager.Instance.FireEvent("move", moveDelta); // 有效下落,触发事件
             } else { // 往下移,不能再下移了,就是到最底格可以放置了
                 PoolHelper.recycleGhostTetromino(); // 涉及事件的先后顺序，这里处理比较安全：确保在Tetromino之前处理
-                onTetrominoLandTetromino(); 
-                EventManager.Instance.FireEvent("land");
+                onTetrominoLandTetromino(); // EventManager.Instance.FireEvent("land");
+               
             }
             fall = Time.time; // 更新现在的时间
         }

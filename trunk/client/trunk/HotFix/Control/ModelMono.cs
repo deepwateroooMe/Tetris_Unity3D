@@ -23,7 +23,7 @@ namespace HotFix.Control {
         private static List<GameObject> minoPSList = new List<GameObject>(); 
         private static Coroutine deleteMinoAtCoroutine;
 
-        private static float connectionEffectDisplayTime = 1.1f;
+        private static float connectionEffectDisplayTime = 2.0f; // ori: 1.1f
         private static WaitForSeconds _waitForSeconds = new WaitForSeconds(connectionEffectDisplayTime);
 
         private CanvasMovedEventInfo canvasMovedInfo;
@@ -199,9 +199,9 @@ namespace HotFix.Control {
                 for (int  z = 0;  z < Model.gridZWidth;  z++)
                     if (Model.gridOcc != null && Model.gridOcc[x][y][z] == 2) {
                         if (Model.grid[x][y][z] != null && Model.grid[x][y][z].childCount == 0) {
-                            // MathUtilP.print(x, y, z);
+                            MathUtilP.print(x, y, z);
                             GameObject connectedEffectTmp = PoolHelper.GetFromPool("minoPS", new Vector3(x, y, z), Quaternion.identity, Vector3.one);
-                            connectedEffectTmp.transform.SetParent(Model.grid[x][y][z], true);
+                            connectedEffectTmp.transform.SetParent(Model.grid[x][y][z], false);
                             minoPSList.Add(connectedEffectTmp);
                         }
                     }

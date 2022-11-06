@@ -189,8 +189,7 @@ namespace HotFix.Control {
             return objInstance;
         }
 
-// 不知道下面的这两个方法还用得上吗?        
-        public GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3 localScale, int color) {
+        public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3 localScale, int color) {
             Stack<GameObject> st = pool[type];
             GameObject objInstance = null;
             if (st.Count > 0) {
@@ -212,13 +211,19 @@ namespace HotFix.Control {
         }
 
         public static void ReturnToPool(GameObject gameObject, string type) {
-            if (gameObject.activeSelf) {
+            if (gameObject.activeSelf) 
                 gameObject.SetActive(false);
-                if (pool[type].Count < 10) {
-                    gameObject.transform.position = defaultPos;
-                    pool[type].Push(gameObject);
-                } else GameObject.DestroyImmediate(gameObject);
-            } 
+            if (pool[type].Count < 10) {
+                gameObject.transform.position = defaultPos;
+                pool[type].Push(gameObject);
+            } else GameObject.DestroyImmediate(gameObject);
+            // if (gameObject.activeSelf) {
+            //     gameObject.SetActive(false);
+            //     if (pool[type].Count < 10) {
+            //         gameObject.transform.position = defaultPos;
+            //         pool[type].Push(gameObject);
+            //     } else GameObject.DestroyImmediate(gameObject);
+            // } 
         }
 
         public static GameObject GetFromPool(string type) {
@@ -230,16 +235,6 @@ namespace HotFix.Control {
                 objInstance = GameObject.Instantiate(minosDic[type]);
             return objInstance;
         }
-        // public void ReturnToPool(GameObject gameObject, string type) {
-        //     if (gameObject.activeSelf) {
-        //         gameObject.SetActive(false);
-        //         gameObject.transform.position = defaultPos;
-        //         PoolInfo selected = GetPoolByType(type);
-        //         gameObject.transform.SetParent(selected.container.transform, false);
-        //         List<GameObject> pool = selected.pool;
-        //         pool.Add(gameObject);
-        //     } 
-        // }
 
 // CoroutineHelper这个帮助类对协程的适配做得不到位,这个方法现在还不能用            
         public static void ReturnToPool(GameObject gameObject, string type, float delay) {

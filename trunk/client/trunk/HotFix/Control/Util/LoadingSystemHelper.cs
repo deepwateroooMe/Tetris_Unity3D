@@ -64,15 +64,15 @@ namespace HotFix.Control {
                             z = (int)Mathf.Round(posA.z);
 
                             Debug.Log(TAG + " (Model.gridw[x][y][z] == null): " + (Model.grid[x][y][z] == null));
-                            if (Model.grid[x][y][z] != null) {
-                                Debug.Log(TAG + " Model.grid[x][y][z].parent.gameObject.name: " + Model.grid[x][y][z].parent.gameObject.name); 
-                                Debug.Log(TAG + " Model.grid[x][y][z].parent.childCount: " + Model.grid[x][y][z].parent.childCount); 
-                            }
+                            // if (Model.grid[x][y][z] != null) {
+                            //     Debug.Log(TAG + " Model.grid[x][y][z].parent.gameObject.name: " + Model.grid[x][y][z].parent.gameObject.name); 
+                            //     Debug.Log(TAG + " Model.grid[x][y][z].parent.childCount: " + Model.grid[x][y][z].parent.childCount); 
+                            // }
                             if (Model.grid[x][y][z] == null || (Model.grid[x][y][z].parent.gameObject != tmpParentGO)) {
                                 type.Length = 0;
                                 GameObject tmpMinoGO = PoolHelper.GetFromPool(type.Append(minoData.type).ToString(), DeserializedTransform.getDeserializedTransPos(minoData.transform), 
                                                                                         DeserializedTransform.getDeserializedTransRot(minoData.transform), minoData.color);
-                                
+                                tmpMinoGO.tag = "mino";
                                 tmpMinoGO.transform.parent = tmpParentGO.transform;
                                 if (Model.grid[x][y][z] == null) {
                                     Model.grid[x][y][z] = tmpMinoGO.transform; // 当原有，如何升高 add in the position, and move previously one upper
@@ -96,6 +96,7 @@ namespace HotFix.Control {
                         y = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).y);
                         z = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).z);
                         // fix for bug 5: fill in a Mino into board in y where there are more minos are above the filled in one
+                        tmpMinoGO.tag = "mino";
                         if (isColumnFromHereEmpty(x, y, z)) {
                             Model.grid[x][y][z] = tmpMinoGO.transform;
                             Model.gridOcc[x][y][z] = 1;

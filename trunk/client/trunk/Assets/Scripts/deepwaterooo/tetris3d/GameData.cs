@@ -127,7 +127,7 @@ namespace deepwaterooo.tetris3d {
                     color = gridClr[x][y][z];
                     Debug.Log(TAG + " color: " + color); 
                     TetrominoData tmp = new TetrominoData(gd[x][y][z].parent,
-                                                          new StringBuilder("shape").Append(gd[x][y][z].parent.gameObject.name.Substring(10, 1)).ToString(),
+                                                          new StringBuilder("Tetromino").Append(gd[x][y][z].parent.gameObject.name.Substring(9, 1)).ToString(),
                                                           gd[x][y][z].parent.gameObject.name, color);
                         
                     Debug.Log(TAG + " gd[x][y][z].parent.gameObject.name (in parentList): " + gd[x][y][z].parent.gameObject.name);

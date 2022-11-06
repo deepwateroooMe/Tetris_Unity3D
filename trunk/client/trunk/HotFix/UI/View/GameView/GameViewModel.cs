@@ -74,7 +74,7 @@ namespace HotFix.UI {
         public int prevPreviewColor;
         public int prevPreviewColor2;
         public int previewTetrominoColor;
-        public int previewTetrominoColor2;
+        public int previewTetromino2Color;
         
         // private SaveGameEventInfo saveGameInfo;
         public bool hasDeletedMinos = false;
@@ -488,7 +488,7 @@ namespace HotFix.UI {
                                              gameMode.Value, currentScore.Value, currentLevel.Value, numLinesCleared.Value, gridWidth,
                                              prevPreview, prevPreview2,
                                              nextTetrominoType.Value, comTetroType.Value, eduTetroType.Value,
-                                             saveForUndo, Model.grid); 
+                                             saveForUndo, Model.grid, Model.gridClr, prevPreviewColor, prevPreviewColor2, previewTetrominoColor, previewTetromino2Color); 
             SaveSystem.SaveGame(path.ToString(), gameData);
         }
 
@@ -599,7 +599,7 @@ namespace HotFix.UI {
             gameStarted = true; 
             
             // disables: previewSelectionButton previewSelectionButton2 swapPreviewTetrominoButton
-            // enables: undoButton toggleButton fallButton
+            // enables: undoButton toggleButton fallButtononUn
             if (gameMode.Value  == 0) {
                 buttonInteractableList[0] = 0;
                 buttonInteractableList[1] = 0;
@@ -932,14 +932,13 @@ namespace HotFix.UI {
         public void recycleNextTetromino() { // 这个折成两部分来写
             Debug.Log(TAG + ": recycleNextTetromino()"); 
             if (ViewManager.nextTetromino != null) {
-                PoolHelper.recycleNextTetromino();
-                // nextTetromino.tag = "Untagged";
-                // nextTetromino.GetComponent<Tetromino>().enabled = false;
-                resetGridAfterDisappearingNextTetromino(ViewManager.nextTetromino); // check ???
-                // if (nextTetromino.transform.childCount == 4) {
-                //     PoolHelper.ReturnToPool(nextTetromino, nextTetromino.GetComponent<TetrominoType>().type);
-                // } else
-                //     GameObject.Destroy(nextTetromino.gameObject);
+                // resetGridAfterDisappearingNextTetromino(ViewManager.nextTetromino); // check ???
+                Model.resetGridAfterDisappearingNextTetromino(ViewManager.nextTetromino); // check ???
+                if (ViewManager.nextTetromino.transform.childCount == 4) {
+                    PoolHelper.recycleNextTetromino();
+                    // PoolHelper.ReturnToPool(ViewManager.nextTetromino, ViewManager.nextTetromino.GetComponent<TetrominoType>().type);
+                } else
+                    GameObject.Destroy(ViewManager.nextTetromino.gameObject);
             }
         }
 

@@ -85,6 +85,7 @@ namespace HotFix.UI {
         public static GameObject tetroParent = null;
         public static Sprite directionsImg;
         public static Sprite rotationsImg;
+        public static GameObject minoPS;
 #endregion
 
         static IEnumerator GetRectSize(RectTransform rt) { // 自己添加到这里的
