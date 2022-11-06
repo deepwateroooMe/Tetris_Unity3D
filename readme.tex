@@ -1,4 +1,4 @@
-% Created 2022-11-05 Sat 14:28
+% Created 2022-11-06 Sun 09:40
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -38,7 +38,13 @@
 \begin{itemize}
 \item debugging game flow, 现游戏的主场景如下(热更新程序域里的主要逻辑功能模块化管理主要工作完成,还没有debug游戏逻辑):
 \item 现逻辑支持但凡前一步有个方块砖落地,就可以撤销.但仍然存在一个方块砖落地后同时消除多行时的撤销时可能会还有bug to be fixed
+\item 上面的这个bug前几天在整合CLASSIC CHALLENGING MODE之前,已经修改好了,但是因为重新整合了一套系统,所以昨天今天又把这套新系统里的这些类似的BUG又改了一遍.并且这套新系统里会有更多的BUG,会需要考虑更多的因素,但是对于自己写出来的源码,改这些都只是时间问题
+\item CHALLENGING MODE下小立方体是带黑边的,现部分预设安装了黑边,部分没有,因为一定会整合CHALLENGING MODE,所以最终都会变成带黑边的,但目前混合存在的就让它们暂时如此
+\item 现系统里整合了C\# unity COROUNTINE,虽然还没能如预期执行,但是游戏的整体难度相对提升.
+\item 现游戏框架与实现细节,除了将来的热更新服务器的服务端,其它任何部分都不再有任何挑战,只是时间问题,需要时间来整合持战模式和修改所有遇到过的BUG与细节.爱表哥,爱生活!!!
 \end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221106_092732.png}
 
 \includegraphics[width=.9\linewidth]{./pic/readme_20221105_142752.png}
 
