@@ -162,6 +162,8 @@ namespace HotFix.UI {
             // numLinesCleared.Value = 0;
             prevPreview = "";
             prevPreview2 = "";
+            prevPreviewColor = -1;
+            prevPreviewColor2 = -1;
             nextTetroPos.Value = new Vector3(2.0f, 11.0f, 2.0f);
             nextTetroRot.Value = Quaternion.Euler(Vector3.zero);
             nextTetroSca.Value = Vector3.one;
@@ -266,14 +268,18 @@ namespace HotFix.UI {
 // TODO: 这里有个游戏数据保存的大版块BUG需要被修复,先把其它游戏逻辑连通
             StringBuilder path = new StringBuilder("");
             if (gameMode.Value > 0) {
-                path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName + "/game.save"); 
+                path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName + "game.save"); 
             } else {
                 path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName
                             + "grid" + gridWidth + "/game.save"); 
             }
 // TODO:这里还有BUG，也还有先前改过一个,大概撤销之后会生成几套预览的BUG, to be fixed           
+            Debug.Log(TAG + " path.ToString(): " + path.ToString());
             Debug.Log(TAG + " prevPreview: " + prevPreview);
             Debug.Log(TAG + " prevPreview2: " + prevPreview2);
+            Debug.Log(TAG + " prevPreviewColor: " + prevPreviewColor);
+            Debug.Log(TAG + " prevPreviewColor2: " + prevPreviewColor2);
+            Debug.Log(TAG + " comTetroType.Value: " + comTetroType.Value);
 
             GameData gameData = new GameData(GloData.Instance.isChallengeMode, ViewManager.nextTetromino, ViewManager.ghostTetromino, tmpTransform,
                                              gameMode.Value, currentScore.Value, currentLevel.Value, numLinesCleared.Value, gridWidth,

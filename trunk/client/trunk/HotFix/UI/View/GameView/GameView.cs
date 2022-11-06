@@ -98,13 +98,15 @@ namespace HotFix.UI {
 
         public void SpawnnextTetromino() {
             Debug.Log(TAG + ": SpawnnextTetromino()");
+            Debug.Log(TAG + " gameStarted: " + gameStarted);
             if (!gameStarted) {
                 if (ViewModel.gameMode.Value == 0) {
                     SpawnPreviewTetromino();
                 } else {
                    gameStarted = true;
+                   ViewModel.nextTetrominoType.Value = ViewModel.GetRandomTetromino();
                    ViewManager.nextTetromino = PoolHelper.GetFromPool(
-                       ViewModel.GetRandomTetromino(),
+                       ViewModel.nextTetrominoType.Value,
                        nextTetrominoSpawnPos,
                        Quaternion.identity, Vector3.one);
                    currentActiveTetrominoPrepare();
