@@ -52,28 +52,29 @@ namespace deepwaterooo.tetris3d {
                          bool saveForUndo, Transform [][][] gd, int [][][] gridClr, 
                          int prevPreviewColor, int prevPreviewColor2, int previewTetrominoColor, int previewTetromino2Color
             ) { 
-            gameMode = gameMode;
-            isChallengeMode = isChallengeMode;
-            score = currentScore;
-            level = currentLevel;
-            lines = numLinesCleared;
+            this.gameMode = gameMode;
+            this.isChallengeMode = isChallengeMode;
+            this.score = currentScore;
+            this.level = currentLevel;
+            this.lines = numLinesCleared;
 
-            saveForUndo = saveForUndo;
+            this.saveForUndo = saveForUndo;
 
-            nextTetrominoType = nextTetrominoType;
-            previewTetrominoType = previewTetrominoType;
-            previewTetromino2Type = previewTetromino2Type;
+            this.nextTetrominoType = nextTetrominoType;
+            this.previewTetrominoType = previewTetrominoType;
+            this.previewTetromino2Type = previewTetromino2Type;
 
             if (isChallengeMode) {
-                previewTetrominoColor = previewTetrominoColor;
-                previewTetromino2Color = previewTetromino2Color;
+                this.previewTetrominoColor = previewTetrominoColor;
+                this.previewTetromino2Color = previewTetromino2Color;
             }
+            Debug.Log(TAG + " (gameMode == 0): " + (gameMode == 0));
             if (gameMode == 0) {
-                prevPreview = prevPreview;
-                prevPreview2 = prevPreview2;
+                this.prevPreview = prevPreview;
+                this.prevPreview2 = prevPreview2;
                 if (isChallengeMode) {
-                    prevPreviewColor = prevPreviewColor;
-                    prevPreviewColor2 = prevPreviewColor2;
+                    this.prevPreviewColor = prevPreviewColor;
+                    this.prevPreviewColor2 = prevPreviewColor2;
                 }
             }
 

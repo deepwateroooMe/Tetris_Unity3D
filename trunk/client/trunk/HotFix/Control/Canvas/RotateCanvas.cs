@@ -103,6 +103,7 @@ namespace HotFix.Control {
             ViewManager.GameView.togBtn.GetComponent<Button>().image.overrideSprite = ViewManager.rotationsImg;
             ViewManager.rotateCanvas.SetActive(false);
             ViewManager.moveCanvas.SetActive(true);
+            //ViewManager.GameView.btnState[togBtn] = true;
         }
 
 // TODO: 适配器适配的方法太少,会导致一堆的资源泄露?        

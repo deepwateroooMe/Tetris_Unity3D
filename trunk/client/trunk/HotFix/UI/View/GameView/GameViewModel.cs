@@ -484,6 +484,10 @@ namespace HotFix.UI {
                 path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName
                             + "grid" + gridWidth + "/game.save"); 
             }
+
+            Debug.Log(TAG + " prevPreview: " + prevPreview);
+            Debug.Log(TAG + " prevPreview2: " + prevPreview2);
+
             GameData gameData = new GameData(GloData.Instance.isChallengeMode, ViewManager.nextTetromino, ViewManager.ghostTetromino, tmpTransform,
                                              gameMode.Value, currentScore.Value, currentLevel.Value, numLinesCleared.Value, gridWidth,
                                              prevPreview, prevPreview2,

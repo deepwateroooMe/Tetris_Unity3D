@@ -114,6 +114,7 @@ namespace HotFix.Control {
             ViewManager.GameView.togBtn.GetComponent<Button>().image.overrideSprite = ViewManager.directionsImg;
             ViewManager.moveCanvas.SetActive(false);
             ViewManager.rotateCanvas.SetActive(true);
+            //ViewManager.GameView.btnState[togBtn] = true;
         }
 
         public void OnDisable() {

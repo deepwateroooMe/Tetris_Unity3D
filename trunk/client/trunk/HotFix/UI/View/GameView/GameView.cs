@@ -520,7 +520,6 @@ namespace HotFix.UI {
             Debug.Log(TAG + ": onUndoGame()");
             if (isDuringUndo) return ;
             isDuringUndo = true;
-            Debug.Log(TAG + " (ViewModel.buttonInteractableList[2] == 0 || ViewModel.undoCnter.Value == 0): " + (ViewModel.buttonInteractableList[2] == 0 || ViewModel.undoCnter.Value == 0));
             if (ViewModel.buttonInteractableList[2] == 0 || ViewModel.undoCnter.Value == 0) return;
 
             StringBuilder path = new StringBuilder("");
@@ -531,9 +530,7 @@ namespace HotFix.UI {
                             + "grid" + ViewModel.gridWidth + "/game.save");
 // TODO : 这里的问题是:先前每块方块砖落下的时候都会自动保存,但是我现在的逻辑还没有保存            
             GameData gameData = SaveSystem.LoadGame(path.ToString());
-            ViewModel.onUndoGame(gameData);
 
-            Debug.Log(TAG + " (gameData.prevPreview != null): " + (gameData.prevPreview != null));
             if (gameData.prevPreview != null) { 
                 type.Length = 0;
                 string type2 = gameData.prevPreview2;
@@ -542,6 +539,9 @@ namespace HotFix.UI {
                 } else 
                     SpawnPreviewTetromino(type.Append(gameData.prevPreview).ToString(), type2);
             }
+
+            ViewModel.onUndoGame(gameData);
+            isDuringUndo = false;
         }
 //         void OnClickUndButton() { // onUndoGame() 撤销最后一块降落的方块砖(在最后一块降落后有消除的情况下比较复杂一点儿,大量数据的恢复)
 //             Debug.Log(TAG + ": onUndoGame()");
@@ -634,6 +634,7 @@ namespace HotFix.UI {
             SpawnGhostTetromino();  
             moveRotatecanvasPrepare(); // 
             SpawnPreviewTetromino();
+            btnState[togBtn] = true;
         }
         public void playSecondTetromino() { // pvBtnTwo: eduTetroView Button
             Debug.Log(TAG + " playSecondTetromino");
@@ -647,6 +648,7 @@ namespace HotFix.UI {
             SpawnGhostTetromino();  
             moveRotatecanvasPrepare();
             SpawnPreviewTetromino();
+            btnState[togBtn] = true;
         }
 #endregion
 
@@ -655,10 +657,11 @@ namespace HotFix.UI {
 // TODO: 不明白为什么这里同一个下落事件,会触发两个这个函数的调用 ? 启蒙模式下        
         public void onActiveTetrominoLand(TetrominoLandEventInfo info) {
             Debug.Log(TAG + ": onActiveTetrominoLand()");
+            btnState[togBtn] = false;
+
 // 最近一个月刚开始重做这个项目的时候没有拿到更原始功能更多的版本,所以最开始的缺少了很多后来挑战模块下的源码和逻辑,以及粒子系统等
 // 在适配进热更新工程后,现因要整合挑战模块,把原本也只修改了几个BUG的前版本就不要了,直接用现在抽象独立出来的Model ModelMono (原本被我全写在GameViewModel里)
 // 这只是众多重构过程中的一个小节,无关任何其它. 爱表哥,爱生活!!!            
-
             // ViewModel.UpdateGrid(ViewManager.nextTetromino); 
             
             Model.UpdateGrid(ViewManager.nextTetromino); 
