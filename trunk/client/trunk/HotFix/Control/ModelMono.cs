@@ -131,24 +131,23 @@ namespace HotFix.Control {
                     }
                 } 
             }
-            Debug.Log(TAG + ": Model.gridOcc[][][] after DeleteRowCoroutine()"); 
+            Debug.Log(TAG + ": Model.gridOcc[][][] AFTER DeleteRowCoroutine()"); 
             MathUtilP.printBoard(Model.gridOcc);
 
             isDeleteRowCoroutineRunning = false;
             // yield return null;
         }
-        
+
+// TODO: 这里的逻辑还有很多问题,估计后来还会有很多BUG在这里.但暂时改到这里,等熟悉游戏和源码后会更好改        
         public static System.Collections.IEnumerator DeleteMinoAtCoroutine(int y) { 
-            Debug.Log(TAG + ": DeleteMinoAtCoroutine() start");
+            // Debug.Log(TAG + ": DeleteMinoAtCoroutine() start");
             isDeleteMNinoAtCoroutineRunning = true;
             
             if (minoPSList.Count > 0)
                 minoPSList.Clear();
-            // Debug.Log(TAG + ": spawning minoPS particles locations()"); 
 
             yield return CoroutineHelperP.StartCoroutine(displayConnectedParticleEffects(y));
             
-            Debug.Log(TAG + "  minoPSList.Count: " +  minoPSList.Count);
             for (int x = 0; x < Model.gridXWidth; x++) {
                 for (int  z = 0;  z < Model.gridZWidth;  z++) {
                     if (Model.gridOcc != null && Model.gridOcc[x][y][z] == 2) {
@@ -165,11 +164,12 @@ namespace HotFix.Control {
                                         Model.grid[x][y][z].gameObject.AddComponent<MinoType>();
                                         Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type = type.Append("mino" + Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().type.Substring(9, 1)).ToString(); // Tetromino
                                         Model.grid[x][y][z].gameObject.name = type.ToString();
-                                        PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, type.ToString());
-                                    } else
-                                        PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
+                                    }
+                                    tmp.GetChild(0).parent = null;
+                                    // PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, type.ToString());
+                                    PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
+                                    GameObject.Destroy(tmp.gameObject);
                                     Model.grid[x][y][z] = null;
-                                    // Destroy(tmp.gameObject); // Destroy parent todo : how?
                                     tmp = null;
                                 } else { // childCount > 1
                                     type.Length = 0;
@@ -177,13 +177,18 @@ namespace HotFix.Control {
                                         Model.grid[x][y][z].gameObject.AddComponent<MinoType>();
                                         Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type = type.Append("mino" + Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().type.Substring(9, 1)).ToString();
                                         Model.grid[x][y][z].gameObject.name = type.ToString();
-
-                                        Debug.Log(TAG + " type.ToString(): " + type.ToString());
-                                        PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, type.ToString());
-                                    } else
-                                        PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
+                                    }
+                                    Debug.Log(TAG + " type.ToString(): " + type.ToString());
+                                    // PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, type.ToString());
+                                    // } else { // 当删除一个小立方体的时候,需要让其父控件知道,这个小立方体已经销毁了
+                                    Model.grid[x][y][z].parent = null;
+                                    PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
+                                    // }
                                     Model.grid[x][y][z] = null;
                                 }
+                            } else { // (Model.grid[x][y][z].parent == null)
+                                GameObject.Destroy(Model.grid[x][y][z]);
+                                Model.grid[x][y][z] = null;
                             }
                         }
                     }
@@ -312,7 +317,7 @@ namespace HotFix.Control {
             }
         }
         public static void MoveRowDown(int y) {
-            Debug.Log(TAG + ": MoveRowDown()");
+            // Debug.Log(TAG + ": MoveRowDown()");
             int cnt = 0;
             if (GloData.Instance.gameMode > 0 ||
                 (GloData.Instance.isChallengeMode &&
@@ -368,7 +373,10 @@ namespace HotFix.Control {
             if (y == 1 && BaseBoardSkin.isSkinChanged) { // debug
                 updateBaseCubesSkin();
             }
-            Debug.Log(TAG + " cnt: " + cnt); 
+            // Debug.Log(TAG + " cnt: " + cnt); 
         } 
     }
 }
+
+
+

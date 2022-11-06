@@ -32,7 +32,6 @@ namespace HotFix.Control {
         private static int randomTetromino;
 
         public static void UpdateGrid(GameObject tetromino) { // update gridOcc, gridClr at the same time
-            Debug.Log(TAG + ": UpdateGrid()");
             for (int y = 0; y < gridHeight; y++) 
                 for (int z = 0; z < gridZWidth; z++) 
                     for (int x = 0; x < gridXWidth; x++)
@@ -53,7 +52,7 @@ namespace HotFix.Control {
                         gridClr[(int)pos.x][(int)pos.y][(int)pos.z] = mino.GetComponent<MinoType>().color;
                 }
             }
-            Debug.Log(TAG + " tetromino.name: " + tetromino.name);
+            Debug.Log(TAG + "UpdateGrid() ViewManager.nextTetromino.name: " + tetromino.name);
         }
 
         public static bool CheckIsValidPosition() { // check if physically fits into the grid

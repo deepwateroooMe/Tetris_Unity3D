@@ -31,30 +31,27 @@ namespace HotFix.Control {
         }
 
         public static void LoadDataFromParentList(List<TetrominoData> parentList) {
-            Debug.Log(TAG + ": LoadDataFromParentList()"); 
             int [] pos = new int[3];
             int x = 0, y = 0, z = 0, childCounter = 0;
             foreach (TetrominoData parentData in parentList) {
-                Debug.Log(TAG + " parentData.name: " + parentData.name);
+                Debug.Log(TAG + " LoadDataFromParentList() parentData.name: " + parentData.name);
                 Debug.Log(TAG + " parentData.children.Count: " + parentData.children.Count);
                 if (isThereAnyExistChild(parentData)) { // 存在
-                    // Debug.Log(TAG + " (!gridMatchesSavedParent(tmpParentGO, parentData.children)): " + (!gridMatchesSavedParent(tmpParentGO, parentData.children))); 
+                    Debug.Log(TAG + " (!gridMatchesSavedParent(tmpParentGO, parentData.children)): " + (!gridMatchesSavedParent(tmpParentGO, parentData.children))); 
                     if (!gridMatchesSavedParent(tmpParentGO, parentData.children)) {  // 先删除多余的，再补全缺失的
-                        // foreach (Transform trans in tmpParentGO.transform) { // 先 删除多余的
-                        //     MathUtil.print(MathUtil.Round(trans.position));
-                        //     // Debug.Log(TAG + " (!myContains(trans, parentData.children)): " + (!myContains(trans, parentData.children))); 
-                        //     if (!myContains(trans, parentData.children)) {
-                        //         x = (int)Mathf.Round(trans.position.x);
-                        //         y = (int)Mathf.Round(trans.position.y);
-                        //         z = (int)Mathf.Round(trans.position.z);
-                        //         // MathUtil.print(x, y, z); // this one is right
-                        //         Model.grid[x, y, z].parent = null;
-
-                        //         // Destroy(Model.grid[x, y, z].gameObject); // todo how
-                        //         Model.gridOcc[x, y, z] = 0;
-                        //         Model.grid[x, y, z] = null;
-                        //     }
-                        // }
+                        foreach (Transform trans in tmpParentGO.transform) { // 先 删除多余的, 怀疑这一步是可以完全不要的
+                            MathUtil.print(MathUtil.Round(trans.position));
+                            // Debug.Log(TAG + " (!myContains(trans, parentData.children)): " + (!myContains(trans, parentData.children))); 
+                            if (!myContains(trans, parentData.children)) {
+                                x = (int)Mathf.Round(trans.position.x);
+                                y = (int)Mathf.Round(trans.position.y);
+                                z = (int)Mathf.Round(trans.position.z);
+                                Model.grid[x][y][z].parent = null;
+                                GameObject.Destroy(Model.grid[x][y][z].gameObject); // todo how
+                                Model.gridOcc[x][y][z] = 0;
+                                Model.grid[x][y][z] = null;
+                            }
+                        }
                         Debug.Log(TAG + " tmpParentGO.transform.childCount (deleted unwanted): " + tmpParentGO.transform.childCount);
                         foreach (MinoData minoData in parentData.children) {
                             Vector3 posA = MathUtil.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform)); 
@@ -63,16 +60,15 @@ namespace HotFix.Control {
                             y = (int)Mathf.Round(posA.y);
                             z = (int)Mathf.Round(posA.z);
 
-                            Debug.Log(TAG + " (Model.gridw[x][y][z] == null): " + (Model.grid[x][y][z] == null));
-                            // if (Model.grid[x][y][z] != null) {
-                            //     Debug.Log(TAG + " Model.grid[x][y][z].parent.gameObject.name: " + Model.grid[x][y][z].parent.gameObject.name); 
-                            //     Debug.Log(TAG + " Model.grid[x][y][z].parent.childCount: " + Model.grid[x][y][z].parent.childCount); 
-                            // }
-                            if (Model.grid[x][y][z] == null || (Model.grid[x][y][z].parent.gameObject != tmpParentGO)) {
+                            if (Model.grid[x][y][z] == null || (Model.grid[x][y][z].parent.gameObject != tmpParentGO)) { // 这是后来加上的,不知道为什么
+                                // if (Model.grid[x][y][z] == null) {
                                 type.Length = 0;
-                                GameObject tmpMinoGO = PoolHelper.GetFromPool(type.Append(minoData.type).ToString(), DeserializedTransform.getDeserializedTransPos(minoData.transform), 
-                                                                                        DeserializedTransform.getDeserializedTransRot(minoData.transform), minoData.color);
+                                GameObject tmpMinoGO = PoolHelper.GetFromPool(type.Append(minoData.type).ToString(),
+                                                                              DeserializedTransform.getDeserializedTransPos(minoData.transform), 
+                                                                              DeserializedTransform.getDeserializedTransRot(minoData.transform),
+                                                                              minoData.color);
                                 tmpMinoGO.tag = "mino";
+                                Debug.Log(TAG + " tmpParentGO.transform.position: " + tmpParentGO.transform.position);
                                 tmpMinoGO.transform.parent = tmpParentGO.transform;
                                 if (Model.grid[x][y][z] == null) {
                                     Model.grid[x][y][z] = tmpMinoGO.transform; // 当原有，如何升高 add in the position, and move previously one upper
@@ -85,12 +81,16 @@ namespace HotFix.Control {
                     }
                     Debug.Log(TAG + " tmpParentGO.transform.childCount (filled needed -- final): " + tmpParentGO.transform.childCount);
                 } else { // 重新生成                                           // 空 shapeX Tetromino_X : Universal
-                    GameObject tmpGameObject = PoolHelper.GetFromPool("shapeX", DeserializedTransform.getDeserializedTransPos(parentData.transform), 
-                                                                                DeserializedTransform.getDeserializedTransRot(parentData.transform), Vector3.one);
+                    GameObject tmpGameObject = PoolHelper.GetFromPool("shapeX",
+                                                                      DeserializedTransform.getDeserializedTransPos(parentData.transform), 
+                                                                      DeserializedTransform.getDeserializedTransRot(parentData.transform),
+                                                                      Vector3.one);
                     childCounter = 0;
                     foreach (MinoData minoData in parentData.children) {
-                        GameObject tmpMinoGO = PoolHelper.GetFromPool(minoData.type, DeserializedTransform.getDeserializedTransPos(minoData.transform), 
-                                                                                DeserializedTransform.getDeserializedTransRot(minoData.transform), minoData.color);
+                        GameObject tmpMinoGO = PoolHelper.GetFromPool(minoData.type,
+                                                                      DeserializedTransform.getDeserializedTransPos(minoData.transform), 
+                                                                      DeserializedTransform.getDeserializedTransRot(minoData.transform),
+                                                                      minoData.color);
                         tmpMinoGO.transform.parent = tmpGameObject.transform;
                         x = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).x);
                         y = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).y);
@@ -114,7 +114,7 @@ namespace HotFix.Control {
                     // Debug.Log(TAG + " tmpGameObject.transform.childCount: " + tmpGameObject.transform.childCount); 
                 }
                 // Debug.Log(TAG + ": Model.gridOcc[,,] after each deleted mino re-spawn"); 
-                MathUtil.printBoard(Model.gridOcc); 
+                MathUtilP.printBoard(Model.gridOcc); 
             }
         }
 
@@ -122,21 +122,21 @@ namespace HotFix.Control {
             // Debug.Log(TAG + ": gridMatchesSavedParent()"); 
             if (tmpGO.GetComponent<TetrominoType>().childCnt == data.Count && tmpGO.transform.childCount == data.Count)
                 return true; // 完整的
-            else if (tmpGO.transform.childCount != data.Count)
+            if (tmpGO.transform.childCount != data.Count)
                 return false;
-            else { // tmpGO.transform.childCount == data.children.Count, potential mismatch ???
-                foreach (Transform trans in tmpParentGO.transform) {
-                    if (!myContains(trans, data))
-                        return false;
-                }
-                return true;
+// tmpGO.transform.childCount == data.children.Count, potential mismatch ???
+            foreach (Transform trans in tmpParentGO.transform) {
+                if (!myContains(trans, data))
+                    return false;
             }
+            return true;
         }
         
         private static bool myContains(Transform tmp, MinoDataCollection<TetrominoData, MinoData> children) {
             foreach (MinoData data in children)
-                if (MathUtil.Round(tmp.position) == MathUtil.Round(DeserializedTransform.getDeserializedTransPos(data.transform)) &&
-                    MathUtil.Round(tmp.rotation) == MathUtil.Round(DeserializedTransform.getDeserializedTransRot(data.transform)))
+                if (MathUtil.Round(tmp.position) == MathUtil.Round(DeserializedTransform.getDeserializedTransPos(data.transform))) 
+// 因为实时运行时存在微小转动.这里暂不检查旋转角度
+                    // && MathUtil.Round(tmp.rotation) == MathUtil.Round(DeserializedTransform.getDeserializedTransRot(data.transform)))
                     return true;
             return false;
         }
@@ -168,7 +168,7 @@ namespace HotFix.Control {
         }
 
         private static bool isThereAnyExistChild(TetrominoData parentData) {
-            Debug.Log(TAG + ": isThereAnyExistChild()"); 
+            // Debug.Log(TAG + ": isThereAnyExistChild()"); 
             Vector3 pos = Vector3.zero;
             int x = 0, y = 0, z = 0;
             foreach (MinoData mino in parentData.children) {
@@ -176,11 +176,12 @@ namespace HotFix.Control {
                 x = (int)Mathf.Round(pos.x);
                 y = (int)Mathf.Round(pos.y);
                 z = (int)Mathf.Round(pos.z);
-                MathUtil.print(x, y, z);
+                // MathUtil.print(x, y, z);
                 if (Model.grid[x][y][z] != null && Model.grid[x][y][z].parent != null) { // // make sure parent matches first !
                     if (Model.grid[x][y][z].parent.gameObject.name == parentData.name &&
-                        MathUtil.Round(Model.grid[x][y][z].parent.position) == MathUtil.Round(DeserializedTransform.getDeserializedTransPos(parentData.transform)) && 
-                        MathUtil.Round(Model.grid[x][y][z].parent.rotation) == MathUtil.Round(DeserializedTransform.getDeserializedTransRot(parentData.transform))) { 
+                        MathUtil.Round(Model.grid[x][y][z].parent.position) == MathUtil.Round(DeserializedTransform.getDeserializedTransPos(parentData.transform))
+						//&& MathUtil.Round(Model.grid[x][y][z].parent.rotation) == MathUtil.Round(DeserializedTransform.getDeserializedTransRot(parentData.transform))
+						) { 
                         tmpParentGO = Model.grid[x][y][z].parent.gameObject;
                         Debug.Log(TAG + " tmpParentGO.name: " + tmpParentGO.name);
                         Debug.Log(TAG + " tmpParentGO.transform.childCount: " + tmpParentGO.transform.childCount); 

@@ -131,7 +131,7 @@ namespace HotFix.Control {
         }
 
         public static void printBoard(int[][][] gridOcc) {
-            Debug.Log(TAG + ": printBoard gridOcc[,,]:"); 
+            // Debug.Log(TAG + ": printBoard gridOcc[,,]:"); 
             bool empty = true;
             int z = 0;
             for (int y = 0; y < n; y++) {
@@ -168,7 +168,7 @@ namespace HotFix.Control {
                 baseColor[x, z] = color[i];
             }
 
-            Debug.Log(TAG + " Z0  " + "Z1   " + "Z2   " + "Z3   " + "Z4   " + "Z5   " + "Z6   " + "Z7   " + "Z8 "); 
+            // Debug.Log(TAG + " Z0  " + "Z1   " + "Z2   " + "Z3   " + "Z4   " + "Z5   " + "Z6   " + "Z7   " + "Z8 "); 
             for (int i = 0; i < Model.gridXWidth; i++) {
                 int j = -1;
                 Debug.Log("X" + i + ":           " +
@@ -211,8 +211,6 @@ namespace HotFix.Control {
         }
 
 		public static void resetColorBoard() {
-            // xm = GloData.Instance.gridXSize;
-            // zm = GloData.Instance.gridZSize;
            xm = Model.gridXWidth;
            zm = Model.gridZWidth;
             for (int i = 0; i < xm; ++i) {
@@ -234,4 +232,6 @@ namespace HotFix.Control {
         }
     }
 }
+
+
 

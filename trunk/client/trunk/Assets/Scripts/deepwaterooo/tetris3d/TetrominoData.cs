@@ -24,8 +24,6 @@ namespace deepwaterooo.tetris3d {
             children = new MinoDataCollection<TetrominoData, MinoData>(this);
             foreach (Transform mino in parentTrans) {
                 if (mino.CompareTag("mino")) {
-                    // string tmp = new StringBuilder("mino" + type.Substring(9, 1)).ToString();
-                    // Debug.Log(TAG + " tmp: " + tmp);
                     MinoData minoDataItem = new MinoData(mino, new StringBuilder("mino" + type.Substring(9, 1)).ToString()); // TetrominoX ==> minoX
                     children.Add(minoDataItem);
                 }

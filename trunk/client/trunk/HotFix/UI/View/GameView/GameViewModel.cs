@@ -106,12 +106,11 @@ namespace HotFix.UI {
                 currentLevel.Value  = gameData.level;
                 numLinesCleared.Value  = gameData.lines;
 
-                Debug.Log(TAG + ": onUndoGame() current board before respawn"); 
-                MathUtil.printBoard(Model.gridOcc); 
+                Debug.Log(TAG + ": onUndoGame() current board BEFORE respawn"); 
+                MathUtilP.printBoard(Model.gridOcc); 
 
 // 这部分的逻辑独立到一个文件中去了,免得当前文件过大不好管理                 
                 Debug.Log(TAG + " gameData.parentList.Count: " + gameData.parentList.Count);
-                // LoadDataFromParentList(gameData.parentList);
                 LoadingSystemHelper.LoadDataFromParentList(gameData.parentList);
                 
                 cameraPos.Value = DeserializedTransform.getDeserializedTransPos(gameData.cameraData); // MainCamera

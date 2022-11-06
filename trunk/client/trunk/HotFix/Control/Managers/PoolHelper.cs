@@ -123,6 +123,7 @@ namespace HotFix.Control {
         }
 
         public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3 localScale) {
+            Debug.Log(TAG + "GetFromPool() type: " + type);
             Stack<GameObject> st = pool[type];
             GameObject objInstance = null;
             if (st.Count > 0) 

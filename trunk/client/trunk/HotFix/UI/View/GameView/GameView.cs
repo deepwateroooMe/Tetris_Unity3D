@@ -150,6 +150,9 @@ namespace HotFix.UI {
 
         private void SpawnPreviewTetromino(string type1, string type2) {
             Debug.Log(TAG + " SpawnPreviewTetromino() type1 type2");
+            Debug.Log(TAG + " type1: " + type1);
+            Debug.Log(TAG + " type2: " + type2);
+
             previewTetromino = PoolHelper.GetFromPool(type1, previewTetrominoPosition, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
             previewTetromino.transform.SetParent(ViewManager.tetroParent.transform, false);
             // ViewModel.comTetroType.Value = previewTetromino.GetComponent<TetrominoType>().type;
@@ -442,7 +445,7 @@ namespace HotFix.UI {
         void SaveGame(SaveGameEventInfo info) {
             Debug.Log(TAG + ": SaveGame()");
             ViewModel.saveForUndo = false;
-            onGameSave();
+            ViewModel.onGameSave();
             ViewModel.hasSavedGameAlready = true;
         }
         // public void onSavedGamePanelOK() {
@@ -464,7 +467,7 @@ namespace HotFix.UI {
         }
         public void onYesToSaveGame() {
             ViewModel.saveForUndo = false; // ? 这里是什么意思呢
-            onGameSave();
+            ViewModel.onGameSave();
             ViewModel.hasSavedGameAlready = true;
             saveGameOrNotPanel.SetActive(false);
             pausePanel.SetActive(false);
@@ -523,10 +526,10 @@ namespace HotFix.UI {
             else
                 path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName
                             + "grid" + ViewModel.gridWidth + "/game.save");
-// TODO : 这里的问题是:先前每块方块砖落下的时候都会自动保存,但是我现在的逻辑还没有保存            
             GameData gameData = SaveSystem.LoadGame(path.ToString());
-
-            if (gameData.prevPreview != null) { 
+            ViewModel.onUndoGame(gameData);
+            
+            if (gameData.prevPreview != null) { // 生成早了,会被视图模型又回收走了?
                 type.Length = 0;
                 string type2 = gameData.prevPreview2;
                 if (gameData.isChallengeMode) {
@@ -534,8 +537,6 @@ namespace HotFix.UI {
                 } else 
                     SpawnPreviewTetromino(type.Append(gameData.prevPreview).ToString(), type2);
             }
-
-            ViewModel.onUndoGame(gameData);
             isDuringUndo = false;
         }
 
@@ -629,25 +630,24 @@ namespace HotFix.UI {
             
             Model.UpdateGrid(ViewManager.nextTetromino); 
 
-            Debug.Log(TAG + ": gridOcc[,,] aft Land UpdateGrid(), bef onGameSave()"); 
+            Debug.Log(TAG + ": gridOcc[][][] aft Land aft UpdateGrid(), bef onGameSave()"); 
             MathUtil.printBoard(Model.gridOcc);  // Model.
             // Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), bef onGameSave()"); 
             // MathUtil.printBoard(gridClr);  // Model.
 
-            Debug.Log(TAG + " (GloData.Instance.isChallengeMode): " + (GloData.Instance.isChallengeMode));
+            // Debug.Log(TAG + " (GloData.Instance.isChallengeMode): " + (GloData.Instance.isChallengeMode));
             if (GloData.Instance.isChallengeMode) {
                 if (ChallengeRules.isValidLandingPosition()) {
                     changeBaseCubesSkin(); // 为什么会进到这里面来
                 } else { // print color board
                     Debug.Log(TAG + ": color board before game Over()");
                     MathUtil.printBoard(Model.gridClr);
-
                     // Debug.Log(TAG + ": Game Over()"); 
                     GameOver();
                 }
             }
 
-            onGameSave();
+            ViewModel.onGameSave();
             // ViewModel.onActiveTetrominoLand(info); // ViewModel.onGameSave();
 
             Debug.Log(TAG + " (ViewModel.gameMode.Value == 0 && !GloData.Instance.isChallengeMode): " + (ViewModel.gameMode.Value == 0 && !GloData.Instance.isChallengeMode));
@@ -703,11 +703,6 @@ namespace HotFix.UI {
             } else {
                 ViewManager.nextTetromino.transform.Rotate(Vector3.zero - info.delta);
             }
-        }
-
-        // 游戏进程的暂停与恢复: 这么改要改狠久狠久才能够改得完,还是先实现一些基础功能吧,到时对游戏逻辑再熟悉一点儿统一重构效率能高很多的呀
-        void onGameSave() { // 是指将游戏进度存到本地数据文件
-            ViewModel.onGameSave();
         }
 #endregion
         
