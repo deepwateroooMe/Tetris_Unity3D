@@ -17,8 +17,7 @@ namespace deepwaterooo.tetris3d {
         private const string TAG = "SaveSystem"; 
         
         public static void SaveGame(string currentPath, GameData gameData) { 
-            Debug.Log(TAG + ": SaveGame()");
-
+            Debug.Log(TAG + "SaveGame() currentPath: " + currentPath);
             BinaryFormatter formatter = new BinaryFormatter();
             if (File.Exists(currentPath)) {
                 try {
@@ -33,8 +32,6 @@ namespace deepwaterooo.tetris3d {
         }
 
         public static GameData LoadGame(string pathIn) {
-            Debug.Log(TAG + ": LoadGame()"); 
-            
             if (File.Exists(pathIn)) {
                 BinaryFormatter formatter = new BinaryFormatter();
                 FileStream stream = new FileStream(pathIn, FileMode.Open, FileAccess.Read);
@@ -49,7 +46,7 @@ namespace deepwaterooo.tetris3d {
                 
                 return data;
             } else {
-                Debug.LogError("Save file not found in pathIn: " + pathIn);
+                Debug.LogError("LoadGame() Save file not found in pathIn: " + pathIn);
                 return null;
             }
         } 

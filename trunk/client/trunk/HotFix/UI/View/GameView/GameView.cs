@@ -421,10 +421,12 @@ namespace HotFix.UI {
         }
 
         public void SpawnGhostTetromino() {
-            GameObject tmpTetromino = GameObject.FindGameObjectWithTag("currentActiveTetromino");
+            Debug.Log(TAG + " SpawnGhostTetromino");
+            // GameObject tmpTetromino = GameObject.FindGameObjectWithTag("currentActiveTetromino");
             ViewManager.ghostTetromino = PoolHelper.GetFromPool(GameObjectHelper.GetGhostTetrominoType(ViewManager.nextTetromino),
                                                                 ViewManager.nextTetromino.transform.position,
                                                                 ViewManager.nextTetromino.transform.rotation, Vector3.one);
+            ComponentHelper.GetGhostComponent(ViewManager.ghostTetromino).enabled = true;
         }
         void Update() {
             ViewModel.UpdateScore();
@@ -520,10 +522,13 @@ namespace HotFix.UI {
 #region GameViewCallbacks
 // 游戏主面板中7个按钮的点击回调
         public void OnClickUndButton() { // 新系统,需要适配这套系统
-            Debug.Log(TAG + ": onUndoGame()");
+            Debug.Log(TAG + "onUndoGame() isDuringUndo: " + isDuringUndo);
+// TODO: THERE IS A onUndoGame() irresponsible bug here to be fixed            
             if (isDuringUndo) return ;
+            Debug.Log(TAG + " (ViewModel.buttonInteractableList[2] == 0): " + (ViewModel.buttonInteractableList[2] == 0));
+            Debug.Log(TAG + " (ViewModel.buttonInteractableList[2] == 0 || GloData.Instance.isChallengeMode && ViewModel.undoCnter.Value == 0): " + (ViewModel.buttonInteractableList[2] == 0 || GloData.Instance.isChallengeMode && ViewModel.undoCnter.Value == 0));
+            if (ViewModel.buttonInteractableList[2] == 0 || GloData.Instance.isChallengeMode && ViewModel.undoCnter.Value == 0) return;
             isDuringUndo = true;
-            if (ViewModel.buttonInteractableList[2] == 0 || ViewModel.undoCnter.Value == 0) return;
 
             StringBuilder path = new StringBuilder("");
             if (ViewModel.gameMode.Value > 0)
@@ -597,7 +602,7 @@ namespace HotFix.UI {
             // Debug.Log(TAG + " ViewModel.buttonInteractableList[0]: " + ViewModel.buttonInteractableList[0]); 
             if (ViewModel.buttonInteractableList[0] == 0) return;
 
-            ViewModel.playFirstTetromino(previewTetromino, previewTetromino2, cycledPreviewTetromino);
+            ViewModel.playFirstTetromino(previewTetromino, previewTetromino2);
 
             currentActiveTetrominoPrepare();
             
@@ -610,7 +615,7 @@ namespace HotFix.UI {
             Debug.Log(TAG + " playSecondTetromino");
             Debug.Log(TAG + " ViewModel.buttonInteractableList[1]: " + ViewModel.buttonInteractableList[1]); 
             if (ViewModel.buttonInteractableList[1] == 0) return;
-            ViewModel.playSecondTetromino(previewTetromino, previewTetromino2, cycledPreviewTetromino);
+            ViewModel.playSecondTetromino(previewTetromino, previewTetromino2);
 
             currentActiveTetrominoPrepare();
             gameStarted = true;
@@ -633,10 +638,13 @@ namespace HotFix.UI {
 // 这只是众多重构过程中的一个小节,无关任何其它. 爱表哥,爱生活!!!            
             // ViewModel.UpdateGrid(ViewManager.nextTetromino); 
             
+            Debug.Log(TAG + ": gridOcc[][][] BEFORE Land BEFORE UpdateGrid(), BEFORE onGameSave()"); 
+            MathUtilP.printBoard(Model.gridOcc);  // Model.
+
             Model.UpdateGrid(ViewManager.nextTetromino); 
 
-            Debug.Log(TAG + ": gridOcc[][][] aft Land aft UpdateGrid(), bef onGameSave()"); 
-            MathUtil.printBoard(Model.gridOcc);  // Model.
+            Debug.Log(TAG + ": gridOcc[][][] AFTER Land  Update AFTER UpdteGrid(), BEFORE onGameSave()"); 
+            MathUtilP.printBoard(Model.gridOcc);  // Model.
             // Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), bef onGameSave()"); 
             // MathUtil.printBoard(gridClr);  // Model.
 
@@ -691,7 +699,7 @@ namespace HotFix.UI {
 
 // 因为ViewManager.nextTetromino是静态的,将相关逻辑移到这个类里来管理, 不可以这样      
         void onActiveTetrominoMove(TetrominoMoveEventInfo info) { // MoveDown:所有事件都是有效的
-            Debug.Log(TAG + " onActiveTetrominoMove");
+            // Debug.Log(TAG + " onActiveTetrominoMove");
             ViewManager.nextTetromino.transform.position += info.delta;
             isMoveValid = Model.CheckIsValidPosition();
             if (isMoveValid)

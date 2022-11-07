@@ -261,12 +261,13 @@ namespace HotFix.UI {
         }
 
         public void onGameSave() {
-            Debug.Log(TAG + ": onGameSave()");
+            // Debug.Log(TAG + ": onGameSave()");
 // TODO这也是那个时候写得逻辑不对称的乱代码,要归位到真正用它的地方,而不是摆放在这里            
             if (tmpTransform == null) // Bug: 再检查一下这个到底是怎么回事
                 tmpTransform = new GameObject().transform;
 // TODO: 这里有个游戏数据保存的大版块BUG需要被修复,先把其它游戏逻辑连通
             StringBuilder path = new StringBuilder("");
+            Debug.Log(TAG + " onGameSave() ((MenuViewModel)ParentViewModel).saveGamePathFolderName: " + ((MenuViewModel)ParentViewModel).saveGamePathFolderName);
             if (gameMode.Value > 0) {
                 path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName + "game.save"); 
             } else {
@@ -295,8 +296,7 @@ namespace HotFix.UI {
         }
 
         public void playFirstTetromino(GameObject previewTetromino,
-                                       GameObject previewTetromino2,
-                                       GameObject cycledPreviewTetromino) {
+                                       GameObject previewTetromino2) {
 // 在生成新的一两预览前将现两个预览保存起来
             prevPreview = comTetroType.Value;
             prevPreview2 = eduTetroType.Value;
@@ -324,8 +324,7 @@ namespace HotFix.UI {
         }
 
         public void playSecondTetromino(GameObject previewTetromino,
-                                        GameObject previewTetromino2,
-                                        GameObject cycledPreviewTetromino) {
+                                        GameObject previewTetromino2) {
             prevPreview = comTetroType.Value;
             prevPreview2 = eduTetroType.Value;
             nextTetrominoType.Value = eduTetroType.Value; // 记忆功能

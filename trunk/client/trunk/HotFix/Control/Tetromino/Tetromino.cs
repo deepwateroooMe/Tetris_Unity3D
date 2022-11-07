@@ -30,7 +30,7 @@ namespace HotFix.Control {
             rotateDelta = Vector3.zero;
         }
         public void Start () {
-            Debug.Log(TAG + ": Start()");
+            // Debug.Log(TAG + ": Start()");
             fallSpeed = ViewManager.GameView.ViewModel.fallSpeed;
 
             // EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onTetrominoMove); 
@@ -39,7 +39,7 @@ namespace HotFix.Control {
             // EventManager.Instance.RegisterListener<FallFastEventInfo>(onTetrominoFallFast);
         }
         public void OnDisable() { // TODO:方法还不有适配
-            Debug.Log(TAG + ": OnDisable()");
+            // Debug.Log(TAG + ": OnDisable()");
             // if (EventManager.Instance != null) {
                 // EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onTetrominoMove);
                 // EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onTetrominoRotate);
@@ -76,7 +76,7 @@ namespace HotFix.Control {
         }
 
         public void MoveDown() {
-            Debug.Log(TAG + ": MoveDown()"); 
+            // Debug.Log(TAG + ": MoveDown()"); 
             // if (movedImmediateVertical) {
             //     if (buttonDownWaitTimerVertical < buttonDownWaitMax) {
             //         buttonDownWaitTimerVertical += Time.deltaTime;

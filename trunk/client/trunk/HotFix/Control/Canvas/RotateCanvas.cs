@@ -44,7 +44,7 @@ namespace HotFix.Control {
         }
 // 希望把每个类里所注册的事件及个数等固定,这件再有BUG的时候,会对自己的游戏逻辑比较熟悉
         public void Start() { 
-            Debug.Log(TAG + " Start");
+            // Debug.Log(TAG + " Start");
 // Canvas: Toggled
             EventManager.Instance.RegisterListener<CanvasToggledEventInfo>(onCanvasToggled); 
 // Tetrominon: Spawned, Move, Rotate, Land,
@@ -79,14 +79,14 @@ namespace HotFix.Control {
         }
 
         void onActiveTetrominoMoveRotate(TetrominoValidMMInfo info) { // 这个信息没有带变量,不知道移动位置
-            Debug.Log(TAG + " onActiveTetrominoMove");
+            // Debug.Log(TAG + " onActiveTetrominoMove");
             if (info.type.Equals("move") && (int)info.delta.y != 0) { // 平移画布只上下移动            
                 ViewManager.moveCanvas.gameObject.transform.position += new Vector3(0, info.delta.y, 0);
                 ViewManager.rotateCanvas.gameObject.transform.position += new Vector3(0, info.delta.y, 0);
             }
         }
         void onActiveTetrominoLand(TetrominoLandEventInfo info) {
-            Debug.Log(TAG + " onActiveTetrominoLand");
+            // Debug.Log(TAG + " onActiveTetrominoLand");
             // ViewManager.rotateCanvas.transform.position += new Vector3(0, 1, 0); // 向上移动一格至[0, 0, 0]
             ViewManager.rotateCanvas.SetActive(false); // 这里没有失活
             ViewManager.moveCanvas.transform.position = new Vector3(2.0f, 11.0f, 2f);
@@ -108,7 +108,7 @@ namespace HotFix.Control {
 
 // TODO: 适配器适配的方法太少,会导致一堆的资源泄露?        
         public void OnDisable() {
-            Debug.Log(TAG + " OnDisable");
+            // Debug.Log(TAG + " OnDisable");
 // Canvas: Toggled
             EventManager.Instance.UnregisterListener<CanvasToggledEventInfo>(onCanvasToggled); 
 // Tetrominon: Spawned, Move, Rotate, Land,

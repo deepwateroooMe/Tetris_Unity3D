@@ -23,5 +23,6 @@ namespace HotFix {
             ViewManager.InitializeStartUI();
             // yield return WaitForEndOfFrame;
         }
+
     }
 }

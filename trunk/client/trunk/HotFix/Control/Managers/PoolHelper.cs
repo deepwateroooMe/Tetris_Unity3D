@@ -40,63 +40,69 @@ namespace HotFix.Control {
             else type = prefab.GetComponent<TetrominoType>().type;
             minosDic.Add(type, prefab.gameObject);
             Stack<GameObject> stack = new Stack<GameObject>();
-            bool isTetro = name.StartsWith("Tetromino");
-            bool isGhost = name.StartsWith("shadow");
             for (int i = 0; i < 10; i++) {
 				GameObject oneInstance = GameObject.Instantiate(prefab.gameObject).gameObject;
                 oneInstance.name = name;
-                if (isTetro) {
-                    ComponentHelper.AddTetroComponent(oneInstance);
-                    Tetromino tetromino = ComponentHelper.GetTetroComponent(oneInstance);
-                    ComponentHelper.GetTetroComponent(oneInstance).enabled = false;
-                    foreach (Transform oneMino in prefab) {
-                        oneMino.gameObject.tag = "mino";
-                    }
-// 这里的意思是说,我的预设在序列化与反序列化的过程中,某些数据是没有保存的.
-// 可以使用JsonUtility来序列化与反序列化预设中的相关数据,使之不至于丢失?
-// 因现在我的预设简单,数据量少,一个标签,一个得分,可以简单地在热更新工程中设定,暂且不补这块儿                    
-                    TetrominoType itype = oneInstance.GetComponent<TetrominoType>();
-					itype.score = 0;
-					switch (name) {
-                    case "TetrominoI":
-                        itype.score = 300;
-                        // scoreDic.Add(name, 300);
-                        break;
-                    case "TetrominoJ":
-                        itype.score = 350;
-                        // scoreDic.Add(name, 350);
-                        break;
-                    case "TetrominoL":
-                        itype.score = 350;
-                        // scoreDic.Add(name, 350);
-                        break;
-                    case "TetrominoO":
-                        itype.score = 300;
-                        // scoreDic.Add(name, 300);
-                        break;
-                    case "TetrominoS":
-                        itype.score = 500;
-                        // scoreDic.Add(name, 500);
-                        break;
-                    case "TetrominoT":
-                        itype.score = 400;
-                        // scoreDic.Add(name, 400);
-                        break;
-                    case "TetrominoZ":
-                        itype.score = 500;
-                        // scoreDic.Add(name, 500);
-                        break;
-					}
-					// scoreDic.Add(name, itype.score);
-				}
-				else if (isGhost) {
-                    ComponentHelper.AddGhostComponent(oneInstance); 
-                }
+                InstantiateNewTetrominoPrepare(oneInstance);
                 oneInstance.transform.SetParent(ViewManager.tetrosPool.transform, true); 
-                oneInstance.SetActive(false);
+                oneInstance.gameObject.SetActive(false);
                 stack.Push(oneInstance);
             }
             pool.Add(type, stack);
+        }
+        
+        private static void InstantiateNewTetrominoPrepare(GameObject go) {
+            string name = go.gameObject.name;
+            bool isTetro = name.StartsWith("Tetromino");
+            bool isGhost = name.StartsWith("shadow");
+            if (isTetro) {
+                ComponentHelper.AddTetroComponent(go);
+                // Tetromino tetromino = ComponentHelper.GetTetroComponent(go);
+                ComponentHelper.GetTetroComponent(go).enabled = false;
+                foreach (Transform oneMino in go.transform) {
+                    oneMino.gameObject.tag = "mino";
+                }
+// 这里的意思是说,我的预设在序列化与反序列化的过程中,某些数据是没有保存的.
+// 可以使用JsonUtility来序列化与反序列化预设中的相关数据,使之不至于丢失?
+// 因现在我的预设简单,数据量少,一个标签,一个得分,可以简单地在热更新工程中设定,暂且不补这块儿                    
+                TetrominoType itype = go.GetComponent<TetrominoType>();
+                itype.score = 0;
+                switch (name) {
+                case "TetrominoI":
+                    itype.score = 300;
+                    // scoreDic.Add(name, 300);
+                    break;
+                case "TetrominoJ":
+                    itype.score = 350;
+                    // scoreDic.Add(name, 350);
+                    break;
+                case "TetrominoL":
+                    itype.score = 350;
+                    // scoreDic.Add(name, 350);
+                    break;
+                case "TetrominoO":
+                    itype.score = 300;
+                    // scoreDic.Add(name, 300);
+                    break;
+                case "TetrominoS":
+                    itype.score = 500;
+                    // scoreDic.Add(name, 500);
+                    break;
+                case "TetrominoT":
+                    itype.score = 400;
+                    // scoreDic.Add(name, 400);
+                    break;
+                case "TetrominoZ":
+                    itype.score = 500;
+                    // scoreDic.Add(name, 500);
+                    break;
+                }
+                // scoreDic.Add(name, itype.score);
+            } else if (isGhost) {
+// 因为BtnsCanvasView最开始读的时候,很多时候容易抛脚本onEnable()生命周期函数回调的空异常,这里仍先把它失活,原本原则上讲应该是可以不必要的
+                ComponentHelper.AddGhostComponent(go);
+                ComponentHelper.GetGhostComponent(go).enabled = false;
+            } 
         }
 
         public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, int color = 0) {
@@ -104,8 +110,11 @@ namespace HotFix.Control {
             GameObject objInstance = null;
             if (st.Count > 0) 
                 objInstance = st.Pop();
-            else 
+            else {
                 objInstance = GameObject.Instantiate(minosDic[type]); 
+// 对 tetromino 和 ghostTetromino 进行脚本的加载等相关处理
+                InstantiateNewTetrominoPrepare(objInstance);
+            }
             objInstance.transform.position = pos;
             objInstance.transform.rotation = rotation;
 
@@ -128,8 +137,22 @@ namespace HotFix.Control {
             GameObject objInstance = null;
             if (st.Count > 0) 
                 objInstance = st.Pop();
-            else 
-                objInstance = GameObject.Instantiate(minosDic[type]); 
+            else {
+                objInstance = GameObject.Instantiate(minosDic[type]);
+                InstantiateNewTetrominoPrepare(objInstance);
+            }
+// TODO: sometimes, there is a bug here saying it's destroyed exception            
+            // Debug.Log(TAG + " (objInstance == null): " + (objInstance == null));
+            while (objInstance == null) {
+                objInstance = GameObject.Instantiate(minosDic[type]);
+                InstantiateNewTetrominoPrepare(objInstance);
+            }
+            if (objInstance == null) {
+                Debug.Log(TAG + " (objInstance == null): " + (objInstance == null));
+                MathUtilP.print(pos);
+                MathUtilP.print(rotation);
+                MathUtilP.print(localScale);
+            }
             objInstance.transform.position = pos;
             objInstance.transform.rotation = rotation;
 
@@ -173,14 +196,12 @@ namespace HotFix.Control {
                     }
                 }
             }
-            
             // if (type == "shapeJ") { // J ==> green
             //     foreach (Transform child in objInstance.transform) {
             //         child.gameObject.GetComponent<Renderer>().material.mainTexture = greenTexture;
             //         // Debug.Log(TAG + " child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString: " + child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString()); 
             //     }
             // } // OK
-
             if (localScale == null)
                 objInstance.transform.localScale = Vector3.one;
             else
@@ -195,8 +216,10 @@ namespace HotFix.Control {
             GameObject objInstance = null;
             if (st.Count > 0) {
                 objInstance = st.Pop();
-            } else
+            } else {
                 objInstance = GameObject.Instantiate(minosDic[type]); 
+                InstantiateNewTetrominoPrepare(objInstance);
+            }
             objInstance.transform.position = pos;
             objInstance.transform.rotation = rotation;
             objInstance.transform.localScale = localScale;
@@ -218,13 +241,6 @@ namespace HotFix.Control {
                 gameObject.transform.position = defaultPos;
                 pool[type].Push(gameObject);
             } else GameObject.DestroyImmediate(gameObject);
-            // if (gameObject.activeSelf) {
-            //     gameObject.SetActive(false);
-            //     if (pool[type].Count < 10) {
-            //         gameObject.transform.position = defaultPos;
-            //         pool[type].Push(gameObject);
-            //     } else GameObject.DestroyImmediate(gameObject);
-            // } 
         }
 
         public static GameObject GetFromPool(string type) {
@@ -232,8 +248,10 @@ namespace HotFix.Control {
             if (pool.ContainsKey(type) && pool[type].Count > 0) {
                 objInstance = pool[type].Pop();
                 objInstance.SetActive(true);
-            } else  
+            } else {
                 objInstance = GameObject.Instantiate(minosDic[type]);
+                InstantiateNewTetrominoPrepare(objInstance);
+            } 
             return objInstance;
         }
 
@@ -279,14 +297,13 @@ namespace HotFix.Control {
         }
 
         public static void recycleGhostTetromino() {
+            Debug.Log(TAG + " recycleGhostTetromino");
             if (ViewManager.ghostTetromino != null) {
+                Debug.Log(TAG + " ViewManager.ghostTetromino.name: " + ViewManager.ghostTetromino.name);
                 ViewManager.ghostTetromino.tag = "Untagged";
+                ComponentHelper.GetGhostComponent(ViewManager.ghostTetromino).enabled = false;
                 ReturnToPool(ViewManager.ghostTetromino, ViewManager.ghostTetromino.GetComponent<TetrominoType>().type);
             }
         }
     }
 }
-
-
-
-

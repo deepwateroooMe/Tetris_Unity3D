@@ -48,6 +48,9 @@ namespace Framework.Core {
         public Type LoadType(string typeName) {
             Type type = assembly.GetTypes().FirstOrDefault(t => t.FullName == typeName);
             if (type == null) {
+// 因为这里用到了这个类,就可以从这里为入口,找到我怎么才能把日志导出来,UnityEditor里的日志实在是太难看了
+// 这时原问题是,我再定义自己的类的话所有添加日志的地方都要改?而我同样不可以打破现在两个不同域之间的日志连通
+// 想要一个可以拦截unity Debug.Log的方法                
                 DebugHelper.LogError(string.Format("Cant't find Class by class name:'{0}'", typeName), true);
                 throw new Exception(string.Format("Cant't find Class by class name:'{0}'", typeName));
             }

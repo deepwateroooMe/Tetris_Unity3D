@@ -101,23 +101,23 @@ namespace Framework.Util {
         }
 
         public void OpenFile() {
-            try {
-                if (_fs != null) 
-                    CloseFile();
-                var dirPerMonth = Path.Combine(baseDir, baseName + DateTime.Now.ToString("yyyyMM"));
-                if (!Directory.Exists(dirPerMonth))
-                    Directory.CreateDirectory(dirPerMonth);
-                string filePath = Path.Combine(dirPerMonth, FileName + "-" + index + ".log");
-                // LogManager.AddList(filePath);
-                _fs = new FileStream(filePath, FileMode.Append);
-                _sw = new StreamWriter(_fs);
-                _sw.AutoFlush = true;
-                // _fileTime = File.GetCreationTime(filePath);    
-                _fileTime = DateTime.Now;
-                // UnityEngine.Debug.LogWarning("OpenFile " + filePath);
-            } catch (Exception e) {
-                Debugger.ShowError(() => e.Message + e.StackTrace);
-            }
+           try {
+               if (_fs != null) 
+                   CloseFile();
+               var dirPerMonth = Path.Combine(baseDir, baseName + DateTime.Now.ToString("yyyyMM"));
+               if (!Directory.Exists(dirPerMonth))
+                   Directory.CreateDirectory(dirPerMonth);
+               string filePath = Path.Combine(dirPerMonth, FileName + "-" + index + ".log");
+               // LogManager.AddList(filePath);
+               _fs = new FileStream(filePath, FileMode.Append);
+               _sw = new StreamWriter(_fs);
+               _sw.AutoFlush = true;
+               // _fileTime = File.GetCreationTime(filePath);    
+               _fileTime = DateTime.Now;
+               // UnityEngine.Debug.LogWarning("OpenFile " + filePath);
+           } catch (Exception e) {
+               Debugger.ShowError(() => e.Message + e.StackTrace);
+           }
         }
 
         public void CloseFile(bool zipOld = false) {

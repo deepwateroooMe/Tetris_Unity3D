@@ -18,15 +18,15 @@ namespace Framework.Util {
         public static string RootPath = "Log";
 
         public static ILogFile GetLogFile(string name) {
-            if (!ILogFiles.ContainsKey(name)) {
-                var result = new LogFile(Path.Combine(LogConstant.Rootpath, RootPath), name);
-                ILogFiles[name] = result;
-                LogList.Add(result);
-                result.Name = name;
-                return result;
-            } else {
-                return ILogFiles[name];
-            }
+           if (!ILogFiles.ContainsKey(name)) {
+               var result = new LogFile(Path.Combine(LogConstant.Rootpath, RootPath), name);
+               ILogFiles[name] = result;
+               LogList.Add(result);
+               result.Name = name;
+               return result;
+           } else {
+               return ILogFiles[name];
+           }
         }
         public static void CloseAll() {
             foreach (var log in LogList) {

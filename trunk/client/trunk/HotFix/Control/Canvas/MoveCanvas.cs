@@ -42,7 +42,7 @@ namespace HotFix.Control {
         }
 
         public void Start() { 
-            Debug.Log(TAG + " Start");
+            // Debug.Log(TAG + " Start");
 // Canvas: Toggled
             EventManager.Instance.RegisterListener<CanvasToggledEventInfo>(onCanvasToggled); 
 // Tetrominon: Spawned, Move, Rotate, Land,
@@ -72,14 +72,14 @@ namespace HotFix.Control {
         
 // 经典模式下,或是启蒙模式游戏已经开始,激活按钮布
         void onActiveTetrominoSpawn(TetrominoSpawnedEventInfo info) {
-            Debug.Log(TAG + " onActiveTetrominoSpawn");
+            // Debug.Log(TAG + " onActiveTetrominoSpawn");
             if (ViewManager.MenuView.ViewModel.gameMode > 0 || ViewManager.MenuView.ViewModel.gameMode == 0) 
 // TODO: FOR GAMEMODE = 0, GameView里清除掉帮助启动的逻辑
                 ViewManager.moveCanvas.SetActive(true); 
         }
         
         void onActiveTetrominoMoveRotate(TetrominoValidMMInfo info) { // 这个信息没有带变量,不知道移动位置
-            Debug.Log(TAG + " onActiveTetrominoMove");
+            // Debug.Log(TAG + " onActiveTetrominoMove");
             if (info.type.Equals("move") && (int)info.delta.y != 0) { // 平移画布只上下移动            
                 ViewManager.moveCanvas.gameObject.transform.position += new Vector3(0, info.delta.y, 0);
                 ViewManager.rotateCanvas.gameObject.transform.position += new Vector3(0, info.delta.y, 0);
@@ -87,7 +87,7 @@ namespace HotFix.Control {
         }
 
         void onActiveTetrominoLand(TetrominoLandEventInfo info) {
-            Debug.Log(TAG + " onActiveTetrominoLand");
+            // Debug.Log(TAG + " onActiveTetrominoLand");
             ViewManager.moveCanvas.transform.position = new Vector3(2.0f, 11.0f, 2f);
             ViewManager.rotateCanvas.transform.position = new Vector3(2.0f, 11.0f, 2f);
             if (ViewManager.GameView.ViewModel.gameMode.Value == 0)            
@@ -104,7 +104,7 @@ namespace HotFix.Control {
         }
 
         public void OnDisable() {
-            Debug.Log(TAG + " OnDisable");
+            // Debug.Log(TAG + " OnDisable");
 // Canvas: Toggled
             EventManager.Instance.UnregisterListener<CanvasToggledEventInfo>(onCanvasToggled); 
 // Tetrominon: Spawned, Move, Rotate, Land,

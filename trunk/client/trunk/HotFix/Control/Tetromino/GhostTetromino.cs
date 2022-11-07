@@ -23,7 +23,7 @@ namespace HotFix.Control {
             // EventManager.Instance.RegisterListener<TetrominoSpawnedEventInfo>(onTetrominoSpawned);
 // significat delays
             // EventManager.Instance.RegisterListener<TetrominoValidMMInfo>(onTetrominoMoveRotate);
-            EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onTetrominoLand);
+            // EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onTetrominoLand);
         } 
 
 // 作为一个阴影方块砖,它所有需要做的就是首先找到自己的摆放位置;再监听当前方块砖的位置变化,暂时不管它
@@ -51,11 +51,12 @@ namespace HotFix.Control {
         //         transform.Rotate(info.delta);
         // }
         void onTetrominoLand(TetrominoLandEventInfo info) {
-			OnDisable();
+			// OnDisable();
 // TODO: 这里不知道是什么原因回收不成功            
-            PoolHelper.recycleGhostTetromino(); 
+            // PoolHelper.recycleGhostTetromino(); 
         }
-        
+
+// TODO: BUG 有时候阴影在当前方块砖的上面        
         public void MoveDown() {
             while (CheckIsValidPosition()) 
                 transform.position += new Vector3(0, -1, 0);
@@ -91,7 +92,7 @@ namespace HotFix.Control {
             Debug.Log(TAG + " OnDisable()");
             // EventManager.Instance.UnregisterListener<TetrominoSpawnedEventInfo>(onTetrominoSpawned);
             // EventManager.Instance.UnregisterListener<TetrominoValidMMInfo>(onTetrominoMoveRotate);
-            EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onTetrominoLand);
+            // EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onTetrominoLand);
         }
     }
 }

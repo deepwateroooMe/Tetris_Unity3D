@@ -139,8 +139,9 @@ namespace HotFix.Control {
                 // Debug.Log(TAG + " y: " + y); 
                 for (int x = 0; x < m; x++) {
                     z = -1;
-                    Debug.Log("X" + x + ":      " + gridOcc[x][y][++z] + "    " + gridOcc[x][y][++z] + "    " + gridOcc[x][y][++z] + "    " + gridOcc[x][y][++z] + "    " + gridOcc[x][y][++z]);
+                    Debug.Log("X" + x + ":    " + gridOcc[x][y][++z] + "  " + gridOcc[x][y][++z] + "  " + gridOcc[x][y][++z] + "  " + gridOcc[x][y][++z] + "  " + gridOcc[x][y][++z]);
                 }
+                Debug.Log("======= === =======");
             }
         }
 
