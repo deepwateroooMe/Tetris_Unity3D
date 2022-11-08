@@ -63,7 +63,7 @@ namespace HotFix.Control {
                 if (cubes[i].activeSelf) {
                     if (cubes[i].GetComponent<MinoType>().color != Model.baseCubes[i]) {
                         cubes[i].GetComponent<MinoType>().color = Model.baseCubes[i];
-                        cubes[i].gameObject.GetComponent<Renderer>().sharedMaterial = PoolHelper.materials[Model.baseCubes[i]];
+                        cubes[i].gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[Model.baseCubes[i]];
                     }
                 }
             }
@@ -93,7 +93,7 @@ namespace HotFix.Control {
                         Debug.Log(TAG + " idx: " + idx);
                         Debug.Log(TAG + " Model.prevIdx[i]: " + Model.prevIdx[i]);
                         Debug.Log(TAG + " Model.prevSkin[i]: " + Model.prevSkin[i]);
-                        Debug.Log(TAG + " PoolHelper.materials[Model.prevSkin[i]].ToString(): " + PoolHelper.materials[Model.prevSkin[i]].ToString());
+                        Debug.Log(TAG + " ViewManager.materials[Model.prevSkin[i]].ToString(): " + ViewManager.materials[Model.prevSkin[i]].ToString());
 
                         i++;
                         
@@ -106,9 +106,9 @@ namespace HotFix.Control {
         }
         
         int getChallengedMaterialIdx(Material material) {
-            int n = PoolHelper.materials.Length;
+            int n = ViewManager.materials.Count;
             for (int i = 0; i < n; i++) {
-                if (PoolHelper.materials[i] == material)
+                if (ViewManager.materials[i] == material)
                     return i;
                 else continue;
             }
@@ -120,7 +120,7 @@ namespace HotFix.Control {
             for (int i = 0; i < 4; i++) {
                 if (Model.prevIdx[i] == -1) return;
                 Debug.Log(TAG + " Model.prevIdx[i]: " + Model.prevIdx[i]);
-                cubes[Model.prevIdx[i]].gameObject.GetComponent<Renderer>().sharedMaterial = PoolHelper.materials[Model.prevSkin[i]];
+                cubes[Model.prevIdx[i]].gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[Model.prevSkin[i]];
 
                 Debug.Log(TAG + " Model.prevIdx[i]: " + Model.prevIdx[i]);
                 Debug.Log(TAG + " Model.prevSkin[i]: " + Model.prevSkin[i]); 

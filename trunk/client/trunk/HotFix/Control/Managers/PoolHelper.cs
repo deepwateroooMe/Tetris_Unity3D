@@ -23,14 +23,17 @@ namespace HotFix.Control {
         private static Vector3 defaultPos = new Vector3(-100, -100, -100); 
         private static Vector3 previewTetrominoScale = new Vector3(6f, 6f, 6f); 
 
-// TODO: 这些材质的打包与填充初始化        
-        public static Material [] materials; // [red, green, blue, yellow]
-        public static Material [] colors;
-
+// // TODO: 这些材质的打包与填充初始化        
+//         public static Material [] materials; // [red, green, blue, yellow]
+//         public static Material [] colors;    // [blue, colorB, oliveC, purple,  brown, white, red, black,  green, pinkY, Yello]
+        //   0      1                3               5           8       9             11
         public static void Initialize() {
             minosDic = new Dictionary<string, GameObject>();
             pool = new Dictionary<string, Stack<GameObject>>();
             // scoreDic = new Dictionary<string, int>();
+// 初始化挑战模式下的颜色材质等相关资源
+            ViewManager.materials = new Dictionary<int, Material>();
+            ViewManager.colors = new Dictionary<int, Material>();
         }
 
         public static void fillPool(Transform prefab) {
@@ -130,7 +133,7 @@ namespace HotFix.Control {
                 && type.Substring(0, 4).Equals("mino")
                 && !type.Substring(0, 5).Equals("minoP")) { // isChallengeMode = true, gameMode = 0
                 objInstance.GetComponent<MinoType>().color = color;
-                objInstance.GetComponent<Renderer>().sharedMaterial = materials[color];
+                objInstance.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[color];
             }
             objInstance.transform.SetParent(ViewManager.tetroParent.transform, false); // default set here 吧
             return objInstance;
@@ -181,11 +184,11 @@ namespace HotFix.Control {
                             || cnt == 0) {
                             ++cnt;
                             child.gameObject.GetComponent<MinoType>().color = randomColor1;
-                            child.gameObject.GetComponent<Renderer>().sharedMaterial = materials[randomColor1];
+                            child.gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[randomColor1];
                             Debug.Log(TAG + " child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString: " + child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString()); 
                         } else {
                             child.gameObject.GetComponent<MinoType>().color = randomColor2;
-                            child.gameObject.GetComponent<Renderer>().sharedMaterial = materials[randomColor2];
+                            child.gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[randomColor2];
                             Debug.Log(TAG + " child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString: " + child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString()); 
                         }
                     }
@@ -196,7 +199,7 @@ namespace HotFix.Control {
 
                     foreach (Transform child in objInstance.transform) {
                         child.gameObject.GetComponent<MinoType>().color = randomColor;
-                        child.gameObject.GetComponent<Renderer>().sharedMaterial = materials[randomColor];
+                        child.gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[randomColor];
                     }
                 }
             }
@@ -231,7 +234,7 @@ namespace HotFix.Control {
             objInstance.GetComponent<TetrominoType>().color = color;
             foreach (Transform child in objInstance.transform) {
                 child.gameObject.GetComponent<MinoType>().color = color;
-                child.gameObject.GetComponent<Renderer>().sharedMaterial = materials[color];
+                child.gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[color];
             }
             objInstance.transform.SetParent(ViewManager.tetroParent.transform, false); // default set here 吧
             return objInstance;
@@ -245,18 +248,6 @@ namespace HotFix.Control {
                 pool[type].Push(gameObject);
             } else GameObject.DestroyImmediate(gameObject);
         }
-
-        // public static GameObject GetFromPool(string type) {
-        //     GameObject objInstance = null;
-        //     if (pool.ContainsKey(type) && pool[type].Count > 0) {
-        //         objInstance = pool[type].Pop();
-        //         objInstance.SetActive(true);
-        //     } else {
-        //         objInstance = GameObject.Instantiate(minosDic[type]);
-        //         InstantiateNewTetrominoPrepare(objInstance);
-        //     } 
-        //     return objInstance;
-        // }
 
         public static void recyclePreviewTetrominos(GameObject go) {
             preparePreviewTetrominoRecycle(go);
@@ -292,6 +283,7 @@ namespace HotFix.Control {
                 ReturnToPool(ViewManager.ghostTetromino, ViewManager.ghostTetromino.GetComponent<TetrominoType>().type);
             }
         }
+        
 // CoroutineHelper这个帮助类对协程的适配做得不到位,这个方法现在还不能用            
         public static void ReturnToPool(GameObject gameObject, string type, float delay) {
             CoroutineHelper.StartCoroutine(DelayedReturnToPool(gameObject, type, delay));

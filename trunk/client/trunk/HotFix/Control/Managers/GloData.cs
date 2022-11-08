@@ -17,7 +17,7 @@ namespace HotFix.Control {
         private int _gridSize = 5;
         private int _gridXSize = 9;
         private int _gridZSize = 9;
-        private int _tetrominoCnter = 0;
+        private int _tetroCnter = 0;
         private int _challengeLevel = 0;
         
         public int layerScore = 8000;
@@ -31,7 +31,7 @@ namespace HotFix.Control {
             _isChallengeMode = false;
             _saveGamePathFolderName = "";
             _gridSize = 5; //-1
-            _tetrominoCnter = 0;
+            _tetroCnter = 0;
         }
 
         public bool loadSavedGame {
@@ -90,12 +90,12 @@ namespace HotFix.Control {
                 _gridZSize = value;
             }
         }
-        public int tetrominoCnter {
+        public int tetroCnter {
             get {
-                return _tetrominoCnter;
+                return _tetroCnter;
             }
             set {
-                _tetrominoCnter = value;
+                _tetroCnter = value;
             }
         }
         public int challengeLevel {

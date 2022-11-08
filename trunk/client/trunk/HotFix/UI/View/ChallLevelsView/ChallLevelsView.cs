@@ -111,21 +111,21 @@ namespace HotFix.UI {
                 GloData.Instance.gridSize = 5;
                 GloData.Instance.gridXSize = 5;
                 GloData.Instance.gridZSize = 5;
-                GloData.Instance.tetrominoCnter = 22;
+                GloData.Instance.tetroCnter = 22;
                 break;
             case 2:
                 GloData.Instance.challengeLevel = 2;
                 GloData.Instance.gridSize = 7;
                 GloData.Instance.gridXSize = 7;
                 GloData.Instance.gridZSize = 7;
-                GloData.Instance.tetrominoCnter = 22;
+                GloData.Instance.tetroCnter = 22;
                 GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
                 break;
             case 3:
                 GloData.Instance.challengeLevel = 3;
                 GloData.Instance.gridXSize = 9;
                 GloData.Instance.gridZSize = 7;
-                GloData.Instance.tetrominoCnter = 22;
+                GloData.Instance.tetroCnter = 22;
                 GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
                 break;
             case 4:
@@ -133,14 +133,14 @@ namespace HotFix.UI {
                 GloData.Instance.gridSize = 8;
                 GloData.Instance.gridXSize = 8;
                 GloData.Instance.gridZSize = 8;
-                GloData.Instance.tetrominoCnter = 22;
+                GloData.Instance.tetroCnter = 22;
                 GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
                 break;
             case 5:
                 GloData.Instance.challengeLevel = 5;
                 GloData.Instance.gridXSize = 8;
                 GloData.Instance.gridZSize = 9;
-                GloData.Instance.tetrominoCnter = 22;
+                GloData.Instance.tetroCnter = 22;
                 GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
                 break;
             case 6:
@@ -148,7 +148,7 @@ namespace HotFix.UI {
                 GloData.Instance.gridSize = 9;
                 GloData.Instance.gridXSize = 9;
                 GloData.Instance.gridZSize = 9;
-                GloData.Instance.tetrominoCnter = 42;
+                GloData.Instance.tetroCnter = 42;
                 GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
                 break;
             case 7:
@@ -156,14 +156,14 @@ namespace HotFix.UI {
                 // GloData.Instance.gridSize = 7; // WHY commented out ??? to be fixed
                 GloData.Instance.gridXSize = 10;
                 GloData.Instance.gridZSize = 9;
-                GloData.Instance.tetrominoCnter = 42;
+                GloData.Instance.tetroCnter = 42;
                 GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
                 break;
             case 8:
                 GloData.Instance.challengeLevel = 8;
                 GloData.Instance.gridXSize = 9;
                 GloData.Instance.gridZSize = 7;
-                GloData.Instance.tetrominoCnter = 42;
+                GloData.Instance.tetroCnter = 42;
                 GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
                 break;
             case 9:
@@ -171,14 +171,14 @@ namespace HotFix.UI {
                 GloData.Instance.gridSize = 8;
                 GloData.Instance.gridXSize = 8;
                 GloData.Instance.gridZSize = 8;
-                GloData.Instance.tetrominoCnter = 42;
+                GloData.Instance.tetroCnter = 42;
                 GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
                 break;
             case 10:
                 GloData.Instance.challengeLevel = 10;
                 GloData.Instance.gridXSize = 8;
                 GloData.Instance.gridZSize = 9;
-                GloData.Instance.tetrominoCnter = 42;
+                GloData.Instance.tetroCnter = 42;
                 GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
                 break;
             case 11:
@@ -186,21 +186,21 @@ namespace HotFix.UI {
                 GloData.Instance.gridSize = 5;
                 GloData.Instance.gridXSize = 5;
                 GloData.Instance.gridZSize = 5;
-                GloData.Instance.tetrominoCnter = 22;
+                GloData.Instance.tetroCnter = 22;
                 break;
             case 12:
                 GloData.Instance.challengeLevel = 12;
                 GloData.Instance.gridSize = 7;
                 GloData.Instance.gridXSize = 7;
                 GloData.Instance.gridZSize = 7;
-                GloData.Instance.tetrominoCnter = 22;
+                GloData.Instance.tetroCnter = 22;
                 GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
                 break;
             case 13:
                 GloData.Instance.challengeLevel = 13;
                 GloData.Instance.gridXSize = 9;
                 GloData.Instance.gridZSize = 7;
-                GloData.Instance.tetrominoCnter = 22;
+                GloData.Instance.tetroCnter = 22;
                 GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
                 break;
             case 14:
@@ -208,14 +208,14 @@ namespace HotFix.UI {
                 GloData.Instance.gridSize = 8;
                 GloData.Instance.gridXSize = 8;
                 GloData.Instance.gridZSize = 8;
-                GloData.Instance.tetrominoCnter = 22;
+                GloData.Instance.tetroCnter = 22;
                 GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
                 break;
             case 15:
                 GloData.Instance.challengeLevel = 15;
                 GloData.Instance.gridXSize = 8;
                 GloData.Instance.gridZSize = 9;
-                GloData.Instance.tetrominoCnter = 22;
+                GloData.Instance.tetroCnter = 22;
                 GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
                 break;
             }

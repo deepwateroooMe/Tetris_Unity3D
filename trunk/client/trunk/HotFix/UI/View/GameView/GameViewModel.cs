@@ -50,7 +50,7 @@ namespace HotFix.UI {
         public BindableProperty<Vector3> cameraPos = new BindableProperty<Vector3>();
         public BindableProperty<Quaternion> cameraRot = new BindableProperty<Quaternion>();
 // for CHALLENGING MODE ONLY: 对于关级中可用的方块砖的数目,撤销次数,以及交换次数进行必要的限制
-        public BindableProperty<int> tetrominoCnter = new BindableProperty<int>();
+        public BindableProperty<int> tetroCnter = new BindableProperty<int>();
         public BindableProperty<int> undoCnter = new BindableProperty<int>();
         public BindableProperty<int> swapCnter = new BindableProperty<int>();
         private static Coroutine deleteMinoAtCoroutine;
@@ -95,7 +95,7 @@ namespace HotFix.UI {
             Debug.Log(TAG + ": onUndoGame()");
             isDuringUndo = true;
 
-            ++tetrominoCnter.Value;
+            ++tetroCnter.Value;
             --undoCnter.Value;
             Array.Clear(buttonInteractableList, 0, buttonInteractableList.Length);
             recycleThreeMajorTetromino(ViewManager.GameView.previewTetromino, ViewManager.GameView.previewTetromino2);
@@ -173,7 +173,7 @@ namespace HotFix.UI {
             cameraPos.Value = new Vector3(11.01f, 21.297f, 0.88f);
             cameraRot.Value = Quaternion.Euler(new Vector3(483.091f, -263.118f, -538.141f));
 
-            tetrominoCnter.Value = 0;
+            tetroCnter.Value = GloData.Instance.tetroCnter;
             undoCnter.Value = 5;
             swapCnter.Value = 5;
             

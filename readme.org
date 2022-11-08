@@ -13,6 +13,7 @@
 [[./pic/readme_20221105_142752.png]]
 
 - *TODO:*
+- 要想个办法怎么把材质等相关加载到热更新程序域里去
 -  CHALLENGING mode paritcle system NOT integrated yet; materials and colors for CHALLENGING mode to be integrated.
 - 现在前两个模式的BUG已经修得差不多了,现在打很久可能才会遇见一个bug
 - 有时候,某个方块砖在某自旋转画面上延那个轴的两个按钮转不动, 现加必要的日志,改天再遇到,希望能把它们再遇到的BUG都改正过来

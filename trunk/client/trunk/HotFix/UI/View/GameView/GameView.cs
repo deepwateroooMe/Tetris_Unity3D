@@ -32,6 +32,7 @@ namespace HotFix.UI {
         Text scoText; // Score Text
         Text lvlText; // Level Text
         Text linText; // Line Text
+        GameObject linTextDes; // Line Text Description: LINE
 // ComTetroView 按钮控件
         GameObject pvBtnOne; // ptoBtn 
 // EduTetroView 按钮控件
@@ -56,6 +57,13 @@ namespace HotFix.UI {
         Button saveBtn; // save
         Button nosvBtn; // not saving
         Button cancBtn; // cancel: back to pause Panel
+
+// isChallengeMode:
+        GameObject comLevelView;
+        GameObject goalPanel;
+        Text swapCnter;
+        Text undoCnter;
+        Text tetroCnter;
         
 // 私有的当前视图的元件? 暂时添加上AudioSouce元件顺承原混作一团的逻辑(感觉它不该是被AudioManager管才对吗?)
         public Canvas hud_canvas;
@@ -95,6 +103,141 @@ namespace HotFix.UI {
 
 // TODO:对按钮,更该用状态来管理,而不是彻底看不见,应该设置为可见不可点击回调        
         public Dictionary<GameObject, bool> btnState;
+
+        // 游戏主场景: 得分等游戏进展框,自动观察视图模型的数据自动,刷新
+        void onGameModeChanged(int pre, int cur) {
+            // Debug.Log(TAG + " onGameModeChanged");
+            if (cur > 0) {
+                eduTetroView.SetActive(false); 
+                swaBtn.SetActive(false);
+                undoBtn.SetActive(false); // 不可撤销(挑战模式是仍可以再考虑)
+            } else if (cur == 0 && GloData.Instance.isChallengeMode) { // 挑战模式 下
+                linText.gameObject.SetActive(false);
+                linTextDes.SetActive(false); // LINE 
+                initializeChallengingMode();
+// 每个层级的底坐: 这里可能还需要更多的控件索引,因为底座需要能够更新材质                
+                ViewManager.basePlane.SetActive(true);  
+            }
+        }
+        void initializeChallengingMode() {
+            comLevelView.SetActive(true);
+            goalPanel.SetActive(true);
+        }
+
+#region Initialize
+        protected override void OnInitialize() {
+            base.OnInitialize();
+            RegisterListeners();
+
+            baseBoard5 = GameObject.FindChildByName("BaseBoard5");
+            setAllBaseBoardInactive();
+// 当视图想要通过视图模型来获取父视图模型的数据时,实际上当前视图模型还没能启动好,还没有设置好其父视图模型,所以会得到空,要换种写法
+            switch (ViewManager.MenuView.ViewModel.gridWidth) { // 大方格的类型
+            case 3:
+                //     baseBoard3.SetActive(true);
+                //     break;
+            case 4:
+                //     baseBoard4.SetActive(true);
+                //     break;
+            case 5:
+                baseBoard5.SetActive(true);
+                break;
+            }  
+// 游戏得分文本框
+            linTextDes = GameObject.FindChildByName("linTxtDes");
+            scoText = GameObject.FindChildByName("scoTxt").GetComponent<Text>();
+            lvlText = GameObject.FindChildByName("lvlTxt").GetComponent<Text>();
+            linText = GameObject.FindChildByName("linTxt").GetComponent<Text>();
+// 预览两块方块砖的按钮
+            comTetroView = GameObject.FindChildByName("ComTetroView");
+            eduTetroView = GameObject.FindChildByName("EduTetroView");
+            pvBtnOne = GameObject.FindChildByName("ptoBtn");
+            pvBtnOne.GetComponent<Button>().onClick.AddListener(playFirstTetromino); 
+            pvBtnTwo = GameObject.FindChildByName("pteBtn");
+            pvBtnTwo.GetComponent<Button>().onClick.AddListener(playSecondTetromino);
+// 游戏主界面面板上的几个按钮            
+            togBtn = GameObject.FindChildByName("togBtn");
+            togBtn.GetComponent<Button>().onClick.AddListener(OnClickTogButton); // toggle moveCanvas rotateCanvas
+            pauBtn = GameObject.FindChildByName("pauBtn");
+            pauBtn.GetComponent<Button>().onClick.AddListener(OnClickPauButton);
+            swaBtn = GameObject.FindChildByName("swaBtn");
+            swaBtn.GetComponent<Button>().onClick.AddListener(onSwapPreviewTetrominos);
+
+            falBtn = GameObject.FindChildByName("falBtn");
+            falBtn.GetComponent<Button>().onClick.AddListener(OnClickFalButton);
+            undoBtn = GameObject.FindChildByName("undBtn");
+            undoBtn.GetComponent<Button>().onClick.AddListener(OnClickUndButton);
+// pausePanel里的5个按钮
+            pausePanel = GameObject.FindChildByName("MidMenuView"); // MidMenuView: 它仍然是空父节点GameView的众多子节点之一
+            resBtn = GameObject.FindChildByName("resBtn").GetComponent<Button>();
+            resBtn.onClick.AddListener(OnClickResButton);
+            manBtn = GameObject.FindChildByName("manBtn").GetComponent<Button>();
+            manBtn.onClick.AddListener(OnClickManButton);
+
+            savBtn = GameObject.FindChildByName("savBtn").GetComponent<Button>();
+            savBtn.onClick.AddListener(OnClickSavButton);
+            guiBtn = GameObject.FindChildByName("guiBtn").GetComponent<Button>();
+            guiBtn.onClick.AddListener(OnClickGuiButton);
+            creBtn = GameObject.FindChildByName("creBtn").GetComponent<Button>();
+            creBtn.onClick.AddListener(OnClickCreButton);
+// Save current game or not panel
+            saveGameOrNotPanel = GameObject.FindChildByName("SaveGameOrNotPanel");
+            saveBtn = GameObject.FindChildByName("saveBtn").GetComponent<Button>(); // save
+            // saveBtn.onClick.AddListener(OnClickSaveButton);
+            saveBtn.onClick.AddListener(onYesToSaveGame);
+            nosvBtn = GameObject.FindChildByName("nosvBtn").GetComponent<Button>(); // not saving
+            nosvBtn.onClick.AddListener(onNoToNotSaveGame);
+            cancBtn = GameObject.FindChildByName("cancBtn").GetComponent<Button>(); // cancel: back to pause Panel
+            cancBtn.onClick.AddListener(OnClickCancButton);
+
+// isChallengeMode:
+            comLevelView = GameObject.FindChildByName("comLevelTexts");
+            goalPanel = GameObject.FindChildByName("goalPanel");
+            swapCnter = GameObject.FindChildByName("swapCnter").GetComponent<Text>();
+            undoCnter = GameObject.FindChildByName("undoCnter").GetComponent<Text>();
+            tetroCnter = GameObject.FindChildByName("tetroCnter").GetComponent<Text>();
+            
+            cycledPreviewTetromino = new GameObject();
+            delta = Vector3.zero;
+
+// 启动并控制游戏主场景面板上几个按钮的是否可点击状态
+            btnState = new Dictionary<GameObject, bool>() {
+                {pvBtnOne, true}, // comTetroView button
+                {pvBtnTwo, true}, // eduTetroView button
+                {swaBtn, true},   // swap
+                {undoBtn, true},  // undo
+                {togBtn, true},   // toggle
+                {falBtn, true},   // fall fast
+                {pauBtn, true}    // pause game
+            };
+        }
+        void RegisterListeners() {
+            Debug.Log(TAG + " RegisterListeners");
+            // if (ViewModel.gameMode.Value == 0) { // 启蒙模式下特有的几个物件
+            //     // EventManager.Instance.RegisterListener<SwapPreviewsEventInfo>(onSwapPreviewTetrominos); // 也没有音效什么的,白传一遍,暂且如此,将来配点音乐
+            //     EventManager.Instance.RegisterListener<UndoGameEventInfo>(onUndoGame); 
+            //     EventManager.UndoButtonClicked += onUndoGame;
+            //     EventManager.SwapButtonClicked += onSwapPreviewTetrominos;
+            // }
+            EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
+            EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
+            EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
+            EventManager.Instance.RegisterListener<SaveGameEventInfo>(SaveGame); 
+        }
+        public void OnDisable() {
+            Debug.Log(TAG + ": OnDisable()");
+            // if (ViewModel.gameMode.Value == 0) {
+            //     // EventManager.Instance.UnregisterListener<SwapPreviewsEventInfo>(onSwapPreviewTetrominos);
+            //     EventManager.Instance.UnregisterListener<UndoGameEventInfo>(onUndoGame); 
+            //     EventManager.UndoButtonClicked -= onUndoGame;
+            //     EventManager.SwapButtonClicked -= onSwapPreviewTetrominos;
+            // }                
+            EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove);
+            EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
+            EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
+            EventManager.Instance.UnregisterListener<SaveGameEventInfo>(SaveGame); 
+        }
+#endregion
 
         public void SpawnnextTetromino() {
             Debug.Log(TAG + ": SpawnnextTetromino()");
@@ -215,7 +358,7 @@ namespace HotFix.UI {
                 // Model.baseCubes = new int[Model.gridXWidth * Model.gridZWidth];
                 // Model.prevSkin = new int[4];
                 // Model.prevIdx = new int[4];
-                // tetrominoCnter = GloData.Instance.tetrominoCnter;
+                // tetroCnter = GloData.Instance.tetroCnter;
                 // Model.grid = new Transform[Model.gridXWidth, Model.gridHeight, Model.gridZWidth];
                 // Model.gridOcc = new int[Model.gridXWidth, Model.gridHeight, Model.gridZWidth];
                 // Model.gridClr = new int[Model.gridXWidth, Model.gridHeight, Model.gridZWidth];
@@ -671,7 +814,7 @@ namespace HotFix.UI {
                 CoroutineHelperP.StartCoroutine(ModelMono.Instance.DeleteRowCoroutine()); // the case
 
 // 后面一部分,只在持战模式下,当剩余的方块砖的数目为0时才游戏结束
-            if (Model.CheckIsAboveGrid(ComponentHelper.GetTetroComponent(ViewManager.nextTetromino)) || GloData.Instance.isChallengeMode && ViewModel.tetrominoCnter.Value == 0) {
+            if (Model.CheckIsAboveGrid(ComponentHelper.GetTetroComponent(ViewManager.nextTetromino)) || GloData.Instance.isChallengeMode && ViewModel.tetroCnter.Value == 0) {
                 GameOver();
             }
 
@@ -719,114 +862,7 @@ namespace HotFix.UI {
                 ViewManager.nextTetromino.transform.Rotate(Vector3.zero - info.delta);
             }
         }
-#endregion
-        
-#region Initialize
-        protected override void OnInitialize() {
-            base.OnInitialize();
-            RegisterListeners();
-
-            baseBoard5 = GameObject.FindChildByName("BaseBoard5");
-            setAllBaseBoardInactive();
-// 当视图想要通过视图模型来获取父视图模型的数据时,实际上当前视图模型还没能启动好,还没有设置好其父视图模型,所以会得到空,要换种写法
-            switch (ViewManager.MenuView.ViewModel.gridWidth) { // 大方格的类型
-            case 3:
-                //     baseBoard3.SetActive(true);
-                //     break;
-            case 4:
-                //     baseBoard4.SetActive(true);
-                //     break;
-            case 5:
-                baseBoard5.SetActive(true);
-                break;
-            }  
-// 游戏得分文本框
-            scoText = GameObject.FindChildByName("scoTxt").GetComponent<Text>();
-            lvlText = GameObject.FindChildByName("lvlTxt").GetComponent<Text>();
-            linText = GameObject.FindChildByName("linTxt").GetComponent<Text>();
-// 预览两块方块砖的按钮
-            comTetroView = GameObject.FindChildByName("ComTetroView");
-            eduTetroView = GameObject.FindChildByName("EduTetroView");
-            pvBtnOne = GameObject.FindChildByName("ptoBtn");
-            pvBtnOne.GetComponent<Button>().onClick.AddListener(playFirstTetromino); 
-            pvBtnTwo = GameObject.FindChildByName("pteBtn");
-            pvBtnTwo.GetComponent<Button>().onClick.AddListener(playSecondTetromino);
-// 游戏主界面面板上的几个按钮            
-            togBtn = GameObject.FindChildByName("togBtn");
-            togBtn.GetComponent<Button>().onClick.AddListener(OnClickTogButton); // toggle moveCanvas rotateCanvas
-            pauBtn = GameObject.FindChildByName("pauBtn");
-            pauBtn.GetComponent<Button>().onClick.AddListener(OnClickPauButton);
-            swaBtn = GameObject.FindChildByName("swaBtn");
-            swaBtn.GetComponent<Button>().onClick.AddListener(onSwapPreviewTetrominos);
-
-            falBtn = GameObject.FindChildByName("falBtn");
-            falBtn.GetComponent<Button>().onClick.AddListener(OnClickFalButton);
-            undoBtn = GameObject.FindChildByName("undBtn");
-            undoBtn.GetComponent<Button>().onClick.AddListener(OnClickUndButton);
-// pausePanel里的5个按钮
-            pausePanel = GameObject.FindChildByName("MidMenuView"); // MidMenuView: 它仍然是空父节点GameView的众多子节点之一
-            resBtn = GameObject.FindChildByName("resBtn").GetComponent<Button>();
-            resBtn.onClick.AddListener(OnClickResButton);
-            manBtn = GameObject.FindChildByName("manBtn").GetComponent<Button>();
-            manBtn.onClick.AddListener(OnClickManButton);
-
-            savBtn = GameObject.FindChildByName("savBtn").GetComponent<Button>();
-            savBtn.onClick.AddListener(OnClickSavButton);
-            guiBtn = GameObject.FindChildByName("guiBtn").GetComponent<Button>();
-            guiBtn.onClick.AddListener(OnClickGuiButton);
-            creBtn = GameObject.FindChildByName("creBtn").GetComponent<Button>();
-            creBtn.onClick.AddListener(OnClickCreButton);
-// Save current game or not panel
-            saveGameOrNotPanel = GameObject.FindChildByName("SaveGameOrNotPanel");
-            saveBtn = GameObject.FindChildByName("saveBtn").GetComponent<Button>(); // save
-            // saveBtn.onClick.AddListener(OnClickSaveButton);
-            saveBtn.onClick.AddListener(onYesToSaveGame);
-            nosvBtn = GameObject.FindChildByName("nosvBtn").GetComponent<Button>(); // not saving
-            nosvBtn.onClick.AddListener(onNoToNotSaveGame);
-            cancBtn = GameObject.FindChildByName("cancBtn").GetComponent<Button>(); // cancel: back to pause Panel
-            cancBtn.onClick.AddListener(OnClickCancButton);
-
-            cycledPreviewTetromino = new GameObject();
-            delta = Vector3.zero;
-
-// 启动并控制游戏主场景面板上几个按钮的是否可点击状态
-            btnState = new Dictionary<GameObject, bool>() {
-                {pvBtnOne, true}, // comTetroView button
-                {pvBtnTwo, true}, // eduTetroView button
-                {swaBtn, true},   // swap
-                {undoBtn, true},  // undo
-                {togBtn, true},   // toggle
-                {falBtn, true},   // fall fast
-                {pauBtn, true}    // pause game
-            };
-        }
-        void RegisterListeners() {
-            Debug.Log(TAG + " RegisterListeners");
-            // if (ViewModel.gameMode.Value == 0) { // 启蒙模式下特有的几个物件
-            //     // EventManager.Instance.RegisterListener<SwapPreviewsEventInfo>(onSwapPreviewTetrominos); // 也没有音效什么的,白传一遍,暂且如此,将来配点音乐
-            //     EventManager.Instance.RegisterListener<UndoGameEventInfo>(onUndoGame); 
-            //     EventManager.UndoButtonClicked += onUndoGame;
-            //     EventManager.SwapButtonClicked += onSwapPreviewTetrominos;
-            // }
-            EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
-            EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
-            EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
-            EventManager.Instance.RegisterListener<SaveGameEventInfo>(SaveGame); 
-        }
-        public void OnDisable() {
-            Debug.Log(TAG + ": OnDisable()");
-            // if (ViewModel.gameMode.Value == 0) {
-            //     // EventManager.Instance.UnregisterListener<SwapPreviewsEventInfo>(onSwapPreviewTetrominos);
-            //     EventManager.Instance.UnregisterListener<UndoGameEventInfo>(onUndoGame); 
-            //     EventManager.UndoButtonClicked -= onUndoGame;
-            //     EventManager.SwapButtonClicked -= onSwapPreviewTetrominos;
-            // }                
-            EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove);
-            EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
-            EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
-            EventManager.Instance.UnregisterListener<SaveGameEventInfo>(SaveGame); 
-        }
-#endregion
+#endregion        
 
 // TODO: 可能更好的办法是去主工程基类中去全局控制,现先这样        
         private bool revealed = false;
@@ -837,9 +873,10 @@ namespace HotFix.UI {
             ViewModel.currentScore.OnValueChanged += onCurrentScoreChanged;
             ViewModel.currentLevel.OnValueChanged += onCurrentLevelChanged;
             ViewModel.numLinesCleared.OnValueChanged += onNumLinesCleared;
-// TODO: CHALLENGE MODE: COUNTERS
-            // ViewModel.tetrominoCnter.OnValueChanged += 
-            
+// CHALLENGE MODE: COUNTERS
+            ViewModel.tetroCnter.OnValueChanged += onTetroCnterChanged;
+            ViewModel.swapCnter.OnValueChanged += onSwapCnterChanged;
+            ViewModel.undoCnter.OnValueChanged += onUndoCnterChanged;
 // TODO: 为了触发第一次的回调,稍微绕了一下,需要更为优雅的设置方法
             ViewManager.MenuView.ViewModel.mgameMode.OnValueChanged += onGameModeChanged; 
             if (ViewModel.gameMode.Value != ViewManager.MenuView.ViewModel.mgameMode.Value)
@@ -853,6 +890,15 @@ namespace HotFix.UI {
 
             Start(); // 开始游戏
             revealed = true;
+        }
+        void onTetroCnterChanged(int pre, int cur) {
+            tetroCnter.text = cur.ToString();
+        }
+        void onSwapCnterChanged(int pre, int cur) {
+            swapCnter.text = cur.ToString();
+        }
+        void onUndoCnterChanged(int pre, int cur) {
+            undoCnter.text = cur.ToString();
         }
         void onCameraPosChanged(Vector3 pre, Vector3 cur) {
             Debug.Log(TAG + " onCameraPosChanged");
@@ -869,15 +915,6 @@ namespace HotFix.UI {
         }
         void onEduTetroTypeChanged(String pre, string cur) {
             Debug.Log(TAG + " onEduTetroTypeChanged");
-        }
-// 游戏主场景: 得分等游戏进展框,自动观察视图模型的数据自动,刷新
-        void onGameModeChanged(int pre, int cur) {
-            // Debug.Log(TAG + " onGameModeChanged");
-            if (cur > 0) {
-                eduTetroView.SetActive(false); 
-                swaBtn.SetActive(false);
-                undoBtn.SetActive(false); // 不可撤销(挑战模式是仍可以再考虑)
-            }
         }
         void onCurrentScoreChanged(int pre, int cur) {
             scoText.text = cur.ToString();

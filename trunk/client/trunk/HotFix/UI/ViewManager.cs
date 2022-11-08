@@ -63,14 +63,18 @@ namespace HotFix.UI {
                         moveCanvas.SetActive(false); 
                         ComponentHelper.AddRotateCanvasComponent(rotateCanvas);
                         rotateCanvas.SetActive(false);
+// Prefabs and particles pool
                         PoolHelper.Initialize(); // 部分相关逻辑提练到静态帮助类里去定义和完成
                         tetrosPool = go.FindChildByName("tetrosPool");
                         tetroParent = go.FindChildByName("TetrominosContainer");
-                        GameObject parent = go.FindChildByName("Prefabs");
+                        GameObject parent = go.FindChildByName("Prefabs"); 
                         foreach (Transform child in parent.transform) {
                             PoolHelper.fillPool(child);
                         }
                         parent.SetActive(false);
+// for CHALLENGE MODE:
+                        basePlane = go.FindChildByName("basePlane"); 
+                        basePlane.SetActive(false);
                     }, EAssetBundleUnloadLevel.Never);
         }
 
@@ -86,6 +90,10 @@ namespace HotFix.UI {
         public static Sprite directionsImg;
         public static Sprite rotationsImg;
         public static GameObject minoPS;
+// for CHALLENGE MODE
+        public static GameObject basePlane;
+        public static Dictionary<int, Material> materials; // 这么写是为了适配原来的源码 
+        public static Dictionary<int, Material> colors;
 #endregion
 
         static IEnumerator GetRectSize(RectTransform rt) { // 自己添加到这里的
