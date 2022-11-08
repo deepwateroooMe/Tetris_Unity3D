@@ -131,7 +131,6 @@ namespace HotFix.Control {
         }
 
         public static void printBoard(int[][][] gridOcc) {
-            // Debug.Log(TAG + ": printBoard gridOcc[,,]:"); 
             bool empty = true;
             int z = 0;
             for (int y = 0; y < n; y++) {
@@ -141,7 +140,7 @@ namespace HotFix.Control {
                     z = -1;
                     Debug.Log("X" + x + ":    " + gridOcc[x][y][++z] + "  " + gridOcc[x][y][++z] + "  " + gridOcc[x][y][++z] + "  " + gridOcc[x][y][++z] + "  " + gridOcc[x][y][++z]);
                 }
-                Debug.Log("======= === =======");
+                Debug.Log("=========== === ======="); // just so that the board looks more reasonable and helps debug
             }
         }
 

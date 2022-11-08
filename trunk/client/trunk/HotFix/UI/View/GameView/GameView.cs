@@ -686,7 +686,9 @@ namespace HotFix.UI {
             
 // TODO那么,这下面的逻辑是放在哪里处理的呢?            
 // nextTetromino 的相关处理
-            PoolHelper.recycleGhostTetromino(); 
+            PoolHelper.recycleGhostTetromino();
+
+// ViewManager.nextTetromino: 再想一下,它是在这里回收的吗,ModelMono里是如何处理它的呢?            
             ViewManager.nextTetromino.tag = "Untagged";
             Tetromino tetromino = ComponentHelper.GetTetroComponent(ViewManager.nextTetromino);
             ViewModel.currentScore.Value += tetromino.GetComponent<TetrominoType>().score;

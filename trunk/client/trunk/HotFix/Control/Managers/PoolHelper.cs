@@ -55,6 +55,7 @@ namespace HotFix.Control {
             string name = go.gameObject.name;
             bool isTetro = name.StartsWith("Tetromino");
             bool isGhost = name.StartsWith("shadow");
+            bool isMino = name.StartsWith("mino") && !name.StartsWith("minoPS");
             if (isTetro) {
                 ComponentHelper.AddTetroComponent(go);
                 // Tetromino tetromino = ComponentHelper.GetTetroComponent(go);
@@ -102,15 +103,21 @@ namespace HotFix.Control {
 // 因为BtnsCanvasView最开始读的时候,很多时候容易抛脚本onEnable()生命周期函数回调的空异常,这里仍先把它失活,原本原则上讲应该是可以不必要的
                 ComponentHelper.AddGhostComponent(go);
                 ComponentHelper.GetGhostComponent(go).enabled = false;
-            } 
+            } else if (isMino) {
+                if (go.GetComponent<MinoType>() == null) {
+                    go.AddComponent<MinoType>();
+                    go.GetComponent<MinoType>().type = name;
+                }
+            }
         }
 
         public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, int color = 0) {
             Stack<GameObject> st = pool[type];
             GameObject objInstance = null;
-            if (st.Count > 0) 
+            if (st.Count > 0) {
                 objInstance = st.Pop();
-            else {
+                objInstance.SetActive(true);
+            } else {
                 objInstance = GameObject.Instantiate(minosDic[type]); 
 // 对 tetromino 和 ghostTetromino 进行脚本的加载等相关处理
                 InstantiateNewTetrominoPrepare(objInstance);
@@ -125,8 +132,6 @@ namespace HotFix.Control {
                 objInstance.GetComponent<MinoType>().color = color;
                 objInstance.GetComponent<Renderer>().sharedMaterial = materials[color];
             }
-            
-            objInstance.SetActive(true);
             objInstance.transform.SetParent(ViewManager.tetroParent.transform, false); // default set here 吧
             return objInstance;
         }
@@ -135,18 +140,18 @@ namespace HotFix.Control {
             Debug.Log(TAG + " GetFromPool() type: " + type);
             Stack<GameObject> st = pool[type];
             GameObject objInstance = null;
-            if (st.Count > 0) 
+            if (st.Count > 0) {
                 objInstance = st.Pop();
-            else {
+                while (objInstance == null && st.Count > 0) {
+                    objInstance = st.Pop();
+                }
+            }
+            objInstance.SetActive(true);
+            if (objInstance == null) {                
                 objInstance = GameObject.Instantiate(minosDic[type]);
                 InstantiateNewTetrominoPrepare(objInstance);
             }
 // TODO: sometimes, there is a bug here saying it's destroyed exception            
-            // Debug.Log(TAG + " (objInstance == null): " + (objInstance == null));
-            while (objInstance == null) {
-                objInstance = GameObject.Instantiate(minosDic[type]);
-                InstantiateNewTetrominoPrepare(objInstance);
-            }
             if (objInstance == null) {
                 Debug.Log(TAG + " (objInstance == null): " + (objInstance == null));
                 MathUtilP.print(pos);
@@ -192,7 +197,6 @@ namespace HotFix.Control {
                     foreach (Transform child in objInstance.transform) {
                         child.gameObject.GetComponent<MinoType>().color = randomColor;
                         child.gameObject.GetComponent<Renderer>().sharedMaterial = materials[randomColor];
-                        // Debug.Log(TAG + " child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString: " + child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString()); 
                     }
                 }
             }
@@ -206,7 +210,6 @@ namespace HotFix.Control {
                 objInstance.transform.localScale = Vector3.one;
             else
                 objInstance.transform.localScale = (Vector3)localScale;
-            objInstance.SetActive(true);
             objInstance.transform.SetParent(ViewManager.tetroParent.transform, false); // default set here 吧
             return objInstance;
         }
@@ -216,6 +219,7 @@ namespace HotFix.Control {
             GameObject objInstance = null;
             if (st.Count > 0) {
                 objInstance = st.Pop();
+                objInstance.SetActive(true);
             } else {
                 objInstance = GameObject.Instantiate(minosDic[type]); 
                 InstantiateNewTetrominoPrepare(objInstance);
@@ -229,7 +233,6 @@ namespace HotFix.Control {
                 child.gameObject.GetComponent<MinoType>().color = color;
                 child.gameObject.GetComponent<Renderer>().sharedMaterial = materials[color];
             }
-            objInstance.SetActive(true);
             objInstance.transform.SetParent(ViewManager.tetroParent.transform, false); // default set here 吧
             return objInstance;
         }
@@ -243,33 +246,17 @@ namespace HotFix.Control {
             } else GameObject.DestroyImmediate(gameObject);
         }
 
-        public static GameObject GetFromPool(string type) {
-            GameObject objInstance = null;
-            if (pool.ContainsKey(type) && pool[type].Count > 0) {
-                objInstance = pool[type].Pop();
-                objInstance.SetActive(true);
-            } else {
-                objInstance = GameObject.Instantiate(minosDic[type]);
-                InstantiateNewTetrominoPrepare(objInstance);
-            } 
-            return objInstance;
-        }
-
-// CoroutineHelper这个帮助类对协程的适配做得不到位,这个方法现在还不能用            
-        public static void ReturnToPool(GameObject gameObject, string type, float delay) {
-           CoroutineHelper.StartCoroutine(DelayedReturnToPool(gameObject, type, delay));
-        }
-        static IEnumerator DelayedReturnToPool(GameObject gameObject, string type, float delayTime) {
-            while (delayTime > 0f) {
-                yield return null;
-                // If the instance was deactivated while waiting here, just quit
-                if (!gameObject.activeInHierarchy) {
-                    yield break;
-                }
-                delayTime -= Time.deltaTime;
-            }
-            ReturnToPool(gameObject, type);
-        }
+        // public static GameObject GetFromPool(string type) {
+        //     GameObject objInstance = null;
+        //     if (pool.ContainsKey(type) && pool[type].Count > 0) {
+        //         objInstance = pool[type].Pop();
+        //         objInstance.SetActive(true);
+        //     } else {
+        //         objInstance = GameObject.Instantiate(minosDic[type]);
+        //         InstantiateNewTetrominoPrepare(objInstance);
+        //     } 
+        //     return objInstance;
+        // }
 
         public static void recyclePreviewTetrominos(GameObject go) {
             preparePreviewTetrominoRecycle(go);
@@ -304,6 +291,21 @@ namespace HotFix.Control {
                 ComponentHelper.GetGhostComponent(ViewManager.ghostTetromino).enabled = false;
                 ReturnToPool(ViewManager.ghostTetromino, ViewManager.ghostTetromino.GetComponent<TetrominoType>().type);
             }
+        }
+// CoroutineHelper这个帮助类对协程的适配做得不到位,这个方法现在还不能用            
+        public static void ReturnToPool(GameObject gameObject, string type, float delay) {
+            CoroutineHelper.StartCoroutine(DelayedReturnToPool(gameObject, type, delay));
+        }
+        static IEnumerator DelayedReturnToPool(GameObject gameObject, string type, float delayTime) {
+            while (delayTime > 0f) {
+                yield return null;
+                // If the instance was deactivated while waiting here, just quit
+                if (!gameObject.activeInHierarchy) {
+                    yield break;
+                }
+                delayTime -= Time.deltaTime;
+            }
+            ReturnToPool(gameObject, type);
         }
     }
 }

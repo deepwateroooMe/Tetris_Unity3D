@@ -138,14 +138,15 @@ namespace HotFix.Control {
             // yield return null;
         }
 
-// TODO: 这里的逻辑还有很多问题,估计后来还会有很多BUG在这里.但暂时改到这里,等熟悉游戏和源码后会更好改        
+// TODO: 这里的逻辑还有很多问题,估计后来还会有很多BUG在这里.但暂时改到这里,等熟悉游戏和源码后会更好改
+// TODO:　当有两层底层需要同时消除的时候,有一个BUG这里两行都没有消除        
         public static System.Collections.IEnumerator DeleteMinoAtCoroutine(int y) { 
             // Debug.Log(TAG + ": DeleteMinoAtCoroutine() start");
             isDeleteMNinoAtCoroutineRunning = true;
             
             if (minoPSList.Count > 0)
                 minoPSList.Clear();
-
+// 这里只是想要展示有这些方格需要消除,但仍然还没有消息
             yield return CoroutineHelperP.StartCoroutine(displayConnectedParticleEffects(y));
             
             for (int x = 0; x < Model.gridXWidth; x++) {
@@ -185,6 +186,7 @@ namespace HotFix.Control {
                                     PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
                                     // }
                                     Model.grid[x][y][z] = null;
+                                    Debug.Log(TAG + " (Model.grid[x][y][z] == null): " + (Model.grid[x][y][z] == null));
                                 }
                             } else { // (Model.grid[x][y][z].parent == null)
                                 GameObject.Destroy(Model.grid[x][y][z]);
@@ -194,8 +196,8 @@ namespace HotFix.Control {
                     }
                 }
             }
-            yield return null;
             isDeleteMNinoAtCoroutineRunning = false;
+            yield return null;
         }
 
 		static System.Collections.IEnumerator displayConnectedParticleEffects (int y) {
@@ -206,13 +208,15 @@ namespace HotFix.Control {
                         if (Model.grid[x][y][z] != null && Model.grid[x][y][z].childCount == 0) {
                             MathUtilP.print(x, y, z);
                             GameObject connectedEffectTmp = PoolHelper.GetFromPool("minoPS", new Vector3(x, y, z), Quaternion.identity, Vector3.one);
-                            connectedEffectTmp.transform.SetParent(Model.grid[x][y][z], false);
+                            connectedEffectTmp.transform.SetParent(ViewManager.tetroParent.transform, false);
+                            connectedEffectTmp.transform.rotation = Quaternion.identity; // 运行时它仍然有微小转动
+                            MathUtilP.print(connectedEffectTmp.transform.position);
                             minoPSList.Add(connectedEffectTmp);
                         }
                     }
 // TODO: 感觉这里还有点儿不通,时间不够长,粒子系统展示得不完整            
             yield return _waitForSeconds;
-
+            
             // Debug.Log(TAG + "  minoPSList.Count: " +  minoPSList.Count);
             for (int i = minoPSList.Count - 1; i >= 0; i--) {
                 minoPSList[i].transform.parent = null;
@@ -377,6 +381,3 @@ namespace HotFix.Control {
         } 
     }
 }
-
-
-
