@@ -220,7 +220,7 @@ namespace HotFix.UI {
                 break;
             }
             ViewManager.GameView.Reveal();
-            Hide();
+            Hide(); // 没有隐藏起来是因为材质没有准备好,其它地为的空异常
         }
         void OnClickOneButton() {
             CallBackHelper(1);

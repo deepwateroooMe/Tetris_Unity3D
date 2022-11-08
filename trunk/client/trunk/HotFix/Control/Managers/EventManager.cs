@@ -24,10 +24,11 @@ namespace HotFix.Control {
         public Dictionary<System.Delegate, EventListener> delegateLookupMap;
 
         private Vector3 delta;
+
         private TetrominoSpawnedEventInfo spawnedInfo;
         private TetrominoMoveEventInfo moveInfo;
         private TetrominoRotateEventInfo rotateInfo;
-        private TetrominoValidMMInfo validInfo;
+        private TetrominoValidMMInfo validInfo; // valid Move Rotate
         private TetrominoLandEventInfo landInfo;
 
         private GameEnterEventInfo enterInfo;
@@ -55,7 +56,6 @@ namespace HotFix.Control {
         }
 
         public void RegisterListener<T>(EventListener<T> listener) where T : EventInfo { 
-            // + ", callback: " + listener: 是ILRuntime热更新里面所用的Action什么的not-read friendly
             // Debug.Log(TAG + ": RegisterListener(): T: " + typeof(T)); 
             EventListener internalDelegate = (el) => { // 注意: 即便不同类(不同对象)对所感兴趣的同类事件的监听回调方法同名,这里仍然会被定义为不同的键
                 // Debug.Log(TAG + " RegisterListener<T>:　(typeof(T)): " + typeof(T)); // EventManager (typeof(T)): HotFix.Control.CanvasToggledEventInfo
@@ -96,8 +96,8 @@ namespace HotFix.Control {
             // Debug.Log(TAG + " UnregisterListener() delegatesMap.Count after: " + delegatesMap.Count
             //           + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
         }
-// 事件:不带任何增量信息的
-        public void FireEvent(string type) {
+        
+        public void FireEvent(string type) { // 事件:不带任何增量信息的
             Debug.Log(TAG + ": FireEvent() type: " + type); 
             switch (type) {
             case "entergame":
@@ -117,13 +117,18 @@ namespace HotFix.Control {
                 return;
             }
         }
+        
         public void FireEvent(string type, string isMove, Vector3 delta) { 
+            Debug.Log(TAG + "FireEvent() type: " + type + "; isMove: " + isMove);
+            MathUtilP.print(delta);
             validInfo.type = isMove;
             validInfo.delta = delta;
             FireEvent(validInfo); // "validMR"
         }
+
         public void FireEvent(string type, Vector3 delta) {
             Debug.Log(TAG + ": FireEvent() type + delta. type: " + type); 
+            MathUtilP.print(delta);
             switch (type) {
             case "spawned":
                 spawnedInfo.delta = delta;

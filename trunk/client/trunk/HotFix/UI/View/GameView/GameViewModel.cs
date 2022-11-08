@@ -102,6 +102,8 @@ namespace HotFix.UI {
 
             StringBuilder type = new StringBuilder("");
             if (ModelMono.hasDeletedMinos) {
+// TODO: THERE IS A BUG AFTER onUndoGame() saying null exception about score?
+                Debug.Log(TAG + " gameData.score: " + gameData.score);
                 currentScore.Value  = gameData.score;
                 currentLevel.Value  = gameData.level;
                 numLinesCleared.Value  = gameData.lines;
