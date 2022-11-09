@@ -61,6 +61,7 @@ namespace HotFix.UI {
 // isChallengeMode:
         GameObject comLevelView;
         GameObject goalPanel;
+        GameObject initCubes;
         Text swapCnter;
         Text undoCnter;
         Text tetroCnter;
@@ -97,16 +98,17 @@ namespace HotFix.UI {
         private StringBuilder type = new StringBuilder("");
 
         public ModelMono modelMono;
-// 挑战模式下:当方块砖落地的时候,地板的着色会跟着改变?        
-        public delegate void TetrominoChallengeLandingDelegate();
-        public static TetrominoChallengeLandingDelegate changeBaseCubesSkin;
+
+// // 挑战模式下:当方块砖落地的时候,地板的着色会跟着改变?        
+//         public delegate void TetrominoChallengeLandingDelegate();
+//         public static TetrominoChallengeLandingDelegate changeBaseCubesSkin;
 
 // TODO:对按钮,更该用状态来管理,而不是彻底看不见,应该设置为可见不可点击回调        
         public Dictionary<GameObject, bool> btnState;
 
         // 游戏主场景: 得分等游戏进展框,自动观察视图模型的数据自动,刷新
         void onGameModeChanged(int pre, int cur) {
-            // Debug.Log(TAG + " onGameModeChanged");
+            Debug.Log(TAG + " onGameModeChanged(): " + " cur: " + cur);
             if (cur > 0) {
                 eduTetroView.SetActive(false); 
                 swaBtn.SetActive(false);
@@ -115,8 +117,10 @@ namespace HotFix.UI {
                 linText.gameObject.SetActive(false);
                 linTextDes.SetActive(false); // LINE 
                 initializeChallengingMode();
+
 // 每个层级的底坐: 这里可能还需要更多的控件索引,因为底座需要能够更新材质                
-                ViewManager.basePlane.SetActive(true);  
+                ViewManager.basePlane.SetActive(true);
+                ComponentHelper.AddBBSkinComponent(ViewManager.basePlane);
             }
         }
         void initializeChallengingMode() {
@@ -339,38 +343,66 @@ namespace HotFix.UI {
             SpawnnextTetromino();   
         }
 
+        private static float levelGoalDisplayTime = 1.2f;
+        private WaitForSeconds _waitForSeconds = new WaitForSeconds(levelGoalDisplayTime);
         IEnumerator displayChallengeGoal() {
-			// guiManager.InitLevelGoal();
-			//yield return _waitForSeconds;
-			// goalPanel.SetActive(false);
-			yield return null;
+            Debug.Log(TAG + " displayChallengeGoal()");
+// TODO: 这里还有点儿准备工作是说,面板里的内容需要更改一下
+			//guiManager.InitLevelGoal(); 
+			yield return _waitForSeconds;
+			goalPanel.SetActive(false);
+        }
+        void loadInitCubesforChallengeMode() {
+            initCubes = GameObject.FindGameObjectWithTag("InitCubes");
+            Debug.Log(TAG + ": cubes positions()");
+            if (initCubes != null) {
+                Debug.Log(TAG + " loadInitCubesforChallengeMode() initCubes.transform.childCount: " + initCubes.transform.childCount);
+                
+                Model.UpdateGrid(initCubes);
+
+                Debug.Log(TAG + ": gridOcc()"); 
+                MathUtil.printBoard(Model.gridOcc);
+                Debug.Log(TAG + ": gridClr()");
+                MathUtil.printBoard(Model.gridClr);
+            }
         }
         public void Start() { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
             Debug.Log(TAG + ": Start()");
-
-// 在这里初始化模型数据 ?
-            // CoroutineHelperP.StartCoroutine(displayChallengeGoal());
+            
+// TODO: 在这里初始化模型数据 ? 这个显示不成功, 就是coroutine的那个等一秒没有执行成功
+            CoroutineHelperP.StartCoroutine(displayChallengeGoal());
 
             if (GloData.Instance.isChallengeMode) {
-                // isChallengeMode = true;
-                // Model.gridXWidth = GloData.Instance.gridXSize;
-                // Model.gridZWidth = GloData.Instance.gridZSize;
-                // Model.baseCubes = new int[Model.gridXWidth * Model.gridZWidth];
-                // Model.prevSkin = new int[4];
-                // Model.prevIdx = new int[4];
+                ViewModel.isChallengeMode = true;
+                Model.gridXWidth = GloData.Instance.gridXSize;
+                Model.gridZWidth = GloData.Instance.gridZSize;
+                Model.baseCubes = new int[Model.gridXWidth * Model.gridZWidth];
+                Model.prevSkin = new int[4];
+                Model.prevIdx = new int[4];
                 // tetroCnter = GloData.Instance.tetroCnter;
                 // Model.grid = new Transform[Model.gridXWidth, Model.gridHeight, Model.gridZWidth];
                 // Model.gridOcc = new int[Model.gridXWidth, Model.gridHeight, Model.gridZWidth];
                 // Model.gridClr = new int[Model.gridXWidth, Model.gridHeight, Model.gridZWidth];
-                // MathUtil.resetColorBoard();
-                
-                // loadInitCubesforChallengeMode();
+                Model.grid = new Transform[Model.gridXWidth][][];
+                Model.gridOcc = new int[Model.gridXWidth][][];
+                Model.gridClr = new int[Model.gridXWidth][][];
+                for (int i = 0; i < Model.gridXWidth; i++) {
+                    Model.grid[i] = new Transform[Model.gridHeight][];
+                    Model.gridOcc[i] = new int [Model.gridHeight][];
+                    Model.gridClr[i] = new int [Model.gridHeight][];
+                    for (int j = 0; j < Model.gridHeight; j++) {
+                        Model.grid[i][j] = new Transform[Model.gridZWidth];
+                        Model.gridOcc[i][j] = new int [Model.gridZWidth];
+                        Model.gridClr[i][j] = new int [Model.gridZWidth];
+                    }
+                }
+                MathUtilP.resetColorBoard();
+                // loadInitCubesforChallengeMode(); // cmt for tmp, 在其它关卡的时候需要这些东西 
             } else {
                 Model.gridWidth = GloData.Instance.gridSize;
                 Model.gridXWidth = GloData.Instance.gridSize;
                 Model.gridZWidth = GloData.Instance.gridSize;
                 
-                // Model.grid = new Transform[5][Model.gridHeight][5];
                 Model.grid = new Transform [5][][]; 
                 Model.gridOcc = new int [5][][]; 
                 Model.gridClr = new int [5][][]; 
@@ -384,10 +416,7 @@ namespace HotFix.UI {
                         Model.gridClr[i][j] = new int [5];
                     }
                 }
-                // MathUtilP.initiateThreeDArray(Model.gridOcc, 5, Model.gridHeight, 5);
-                // MathUtilP.initiateThreeDArray(Model.gridClr, 5, Model.gridHeight, 5);
-
-                // MathUtilP.resetColorBoard();  // cmt for tmp
+                MathUtilP.resetColorBoard();  // cmt for tmp
             } 
             
             // if (gameMode == 0 && !isChallengeMode) { 
@@ -791,17 +820,17 @@ namespace HotFix.UI {
             // Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), bef onGameSave()"); 
             // MathUtil.printBoard(gridClr);  // Model.
 
-            // Debug.Log(TAG + " (GloData.Instance.isChallengeMode): " + (GloData.Instance.isChallengeMode));
-            if (GloData.Instance.isChallengeMode) {
-                if (ChallengeRules.isValidLandingPosition()) {
-                    changeBaseCubesSkin(); // 为什么会进到这里面来
-                } else { // print color board
-                    Debug.Log(TAG + ": color board before game Over()");
-                    MathUtil.printBoard(Model.gridClr);
-                    // Debug.Log(TAG + ": Game Over()"); 
-                    GameOver();
-                }
-            }
+            // // Debug.Log(TAG + " (GloData.Instance.isChallengeMode): " + (GloData.Instance.isChallengeMode));
+            // if (GloData.Instance.isChallengeMode) {
+            //     if (ChallengeRules.isValidLandingPosition()) {
+            //         changeBaseCubesSkin(); // 为什么会进到这里面来
+            //     } else { // print color board
+            //         Debug.Log(TAG + ": color board before game Over()");
+            //         MathUtil.printBoard(Model.gridClr);
+            //         // Debug.Log(TAG + ": Game Over()"); 
+            //         // GameOver(); // 为什么这里是game over ?
+            //     }
+            // }
 
             ViewModel.onGameSave();
             // ViewModel.onActiveTetrominoLand(info); // ViewModel.onGameSave();

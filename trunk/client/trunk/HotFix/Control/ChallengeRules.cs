@@ -44,35 +44,33 @@ namespace HotFix.Control {
         }
 
         public static bool isTetrominoMatchingNeighbour() {
-            Debug.Log(TAG + ": isTetrominoMatchingNeighbour()");
             bool isMatching = false;
+            int curMinoColor = -1;
             foreach (Transform mino in ViewManager.nextTetromino.transform) {
                 isMatching = false;
                 if (mino.CompareTag("mino")) {
+                    curMinoColor = mino.gameObject.GetComponent<MinoType>().color;
+                    Debug.Log(TAG + " isTetrominoMatchingNeighbour() curMinoColor: " + curMinoColor);
                     Vector3 pos = MathUtil.Round(mino.position);
                     int x = (int)Mathf.Round(pos.x);
                     int y = (int)Mathf.Round(pos.y);
                     int z = (int)Mathf.Round(pos.z);
-                    Debug.Log(TAG + " x: " + x); 
-                    Debug.Log(TAG + " y: " + y); 
-                    Debug.Log(TAG + " z: " + z);
-                    Debug.Log(TAG + " (!isNeighboursExist(x, y, z)): " + (!isNeighboursExist(x, y, z)));
-                    if (!isNeighboursExist(x, y, z)) continue; // 这个格有效，检查下一个格
-                    isMatching = isMatchingAnyNeighbour(x, y, z);
+                    MathUtilP.print(x, y, z);
+// 这一步的检查太多余了,不要                    
+                    // Debug.Log(TAG + " (!isNeighboursExist(x, y, z)): " + (!isNeighboursExist(x, y, z)));
+                    // if (!isNeighboursExist(x, y, z)) continue; // 这个格的上下左右前后都没有邻居[只有要板还没有检查]
+                    isMatching = isMatchingAnyNeighbour(x, y, z, curMinoColor);
                     Debug.Log(TAG + " isMatchingAnyNeighbour(): " + isMatching); 
                     if (isMatching) {
                         ++matchingCnter;
-
                         Debug.Log(TAG + " matchingCnter: " + matchingCnter);
-                        Debug.Log(TAG + " GloData.Instance.challengeLevel: " + GloData.Instance.challengeLevel);
+                        // Debug.Log(TAG + " GloData.Instance.challengeLevel: " + GloData.Instance.challengeLevel);
                         Debug.Log(TAG + " isSolo: " + isSolo);
-                        Debug.Log(TAG + " (GloData.Instance.challengeLevel > 10 && matchingCnter >= 2): " + (GloData.Instance.challengeLevel > 10 && matchingCnter >= 2)); 
-
+                        Debug.Log(TAG + " (GloData.Instance.challengeLevel > 10 && matchingCnter >= 2): "
+                                  + (GloData.Instance.challengeLevel > 10 && matchingCnter >= 2)); 
                         if (GloData.Instance.challengeLevel < 11 || isSolo
-                            || (GloData.Instance.challengeLevel > 10 && matchingCnter >= 2)) {
-                            Debug.Log(TAG + ": return true"); 
+                            || (GloData.Instance.challengeLevel > 10 && matchingCnter >= 2)) 
                             return true;
-                        }
                     } 
                 }
             }
@@ -147,13 +145,15 @@ namespace HotFix.Control {
 
         public static bool isBottomLayerSkinMatches () {
             Debug.Log(TAG + ": isBottomLayerSkinMatches()"); 
+            // getBottomLayerMinosIdx(); // 这都写得什么乱七八糟的
+            clearBottomIdxArray();
+
+            int minY = getMinYLayerIdx(); // ViewManager.nextTetromino 当前方块砖的所有立方体中最低一层的y idx
+            // Debug.Log(TAG + " minY: " + minY); 
+            if (minY > 0) return false; // ViewManager.nextTetromino 当前立方体最低层不接触地板,直接返回
             getBottomLayerMinosIdx();
             for (int i = 0; i < 4; i++) {
-                if (bottomIdx[i] == -1) {
-                    // if (GloData.Instance.challengeLevel < 11)
-                    return false;
-                    // else continue;
-                } 
+                if (bottomIdx[i] == -1) return false;
                 int [] pos = MathUtil.getIndex(bottomIdx[i]);
                 MathUtil.print(pos);
                 if (pos[1] == 0) {
@@ -162,9 +162,8 @@ namespace HotFix.Control {
                     if (Model.baseCubes[getMinoPosCubeArrIndex(pos[0], pos[2])] == Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color) {
                         ++matchingCnter;
                         Debug.Log(TAG + " matchingCnter: " + matchingCnter); 
-                        if (GloData.Instance.challengeLevel < 11 || isSolo || (GloData.Instance.challengeLevel > 10 && matchingCnter >= 2)) {
+                        if (GloData.Instance.challengeLevel < 11 || isSolo || (GloData.Instance.challengeLevel > 10 && matchingCnter >= 2)) 
                             return true;
-                        }
                     }
                 }
                 // else if (pos[1] > 0 && Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color == Model.grid[pos[0], pos[1]-1, pos[2]].gameObject.GetComponent<MinoType>().color)
@@ -200,22 +199,20 @@ namespace HotFix.Control {
         }
         
         public static void getBottomLayerMinosIdx() {
-            // Debug.Log(TAG + ": getBottomLayerMinosIdx()"); 
+            // Debug.Log(TAG + ": getBottomLayerMinosIdx()");
+// 因为调用的地方不止一处,暂时仍放着            
             clearBottomIdxArray();
-            int minY = getMinYLayerIdx();
+            int minY = getMinYLayerIdx(); // ViewManager.nextTetromino 当前方块砖的所有立方体中最低一层的y idx
             Debug.Log(TAG + " minY: " + minY); 
             int i = 0;
             foreach (Transform mino in ViewManager.nextTetromino.transform) {
                 if (mino.CompareTag("mino")) {
                     Vector3 pos = MathUtil.Round(mino.position);
-                    if ((int)pos.y == minY) {
-                        // bottomIdx[i++] = MathUtil.getIndex(pos);
-                        bottomIdx[i] = MathUtil.getIndex(pos);
-                        Debug.Log(TAG + " bottomIdx[i]: " + bottomIdx[i]);
-                        i++;
-                    }
+                    if ((int)pos.y == minY) 
+                        bottomIdx[i++] = MathUtil.getIndex(pos);
                 }
             }
+            MathUtilP.print(bottomIdx);
         }
         public static int getMinYLayerIdx() {
             Debug.Log(TAG + ": getMinYLayerIdx()"); 
@@ -230,9 +227,8 @@ namespace HotFix.Control {
             Debug.Log(TAG + ": clearBottomIdxArray()"); 
             if (bottomIdx != null) {
                 Array.Clear(bottomIdx, 0, 5);
-                for (int i = 0; i < 5; i++) {
+                for (int i = 0; i < 5; i++) 
                     bottomIdx[i] = -1;
-                }
             }
         }
         
@@ -281,67 +277,62 @@ namespace HotFix.Control {
             }
             return false;
         }
-
-        public static bool isMatchingAnyNeighbour(int x, int y, int z) { // getting the values through a hard way, get from board faster ?
-            Debug.Log(TAG + ": isMatchingAnyNeighbour()"); 
-            
+ 
+        public static bool isMatchingAnyNeighbour(int x, int y, int z, int curMinoColor) { // 至少有一个邻居存在,是否匹配任何邻居邻接面的材质? v: curMinoColor
+            Debug.Log(TAG + ": isMatchingAnyNeighbour()" + " curMinoColor: " + curMinoColor); 
             if (x-1 >= 0 && Model.grid[x-1][y][z] != null
-                && Model.grid[x-1][y][z].parent.gameObject != ViewManager.nextTetromino) {
-                // if (x-1 >= 0 && Model.GetTransformAtGridPosition(new Vector3(x-1, y, z)) != null
-                // && Model.GetTransformAtGridPosition(new Vector3(x-1, y, z)).parent.gameObject != ViewManager.nextTetromino) {
-                // if (Model.GetTransformAtGridPosition(new Vector3(x-1, y, z)).gameObject.GetComponent<MinoType>().color
-                if (Model.grid[x-1][y][z].gameObject.GetComponent<MinoType>().color
-                    == Model.grid[x][y][z].gameObject.GetComponent<MinoType>().color)
+                && Model.grid[x-1][y][z].parent.gameObject != ViewManager.nextTetromino
+                && Model.grid[x-1][y][z].gameObject.GetComponent<MinoType>().color == curMinoColor)
                     return true;
-            }
             if (x+1 < Model.gridXWidth && Model.grid[x+1][y][z] != null
-                && Model.grid[x+1][y][z].parent.gameObject != ViewManager.nextTetromino) {
-                if (Model.grid[x+1][y][z].gameObject.GetComponent<MinoType>().color
-                    == Model.grid[x][y][z].gameObject.GetComponent<MinoType>().color)
+                && Model.grid[x+1][y][z].parent.gameObject != ViewManager.nextTetromino
+                && Model.grid[x+1][y][z].gameObject.GetComponent<MinoType>().color == curMinoColor)
                     return true;
-            }
             if (z-1 >= 0 && Model.grid[x][y][z-1] != null
-                && Model.grid[x][y][z-1].parent.gameObject != ViewManager.nextTetromino) {
-                if (Model.grid[x][y][z-1].gameObject.GetComponent<MinoType>().color
-                    == Model.grid[x][y][z].gameObject.GetComponent<MinoType>().color)
+                && Model.grid[x][y][z-1].parent.gameObject != ViewManager.nextTetromino
+                && Model.grid[x][y][z-1].gameObject.GetComponent<MinoType>().color == curMinoColor)
                     return true;
-            }
             if (z+1 < Model.gridZWidth && Model.grid[x][y][z+1] != null
-                && Model.grid[x][y][z+1].parent.gameObject != ViewManager.nextTetromino) {
-                if (Model.grid[x][y][z+1].gameObject.GetComponent<MinoType>().color
-                    == Model.grid[x][y][z].gameObject.GetComponent<MinoType>().color)
+                && Model.grid[x][y][z+1].parent.gameObject != ViewManager.nextTetromino
+                && Model.grid[x][y][z+1].gameObject.GetComponent<MinoType>().color == curMinoColor)
                     return true;
-            }
             if (y-1 >= 0 && Model.grid[x][y-1][z] != null
-                && Model.grid[x][y-1][z].parent.gameObject != ViewManager.nextTetromino) {
-                if (Model.grid[x][y-1][z].gameObject.GetComponent<MinoType>().color
-                    == Model.grid[x][y][z].gameObject.GetComponent<MinoType>().color)
+                && Model.grid[x][y-1][z].parent.gameObject != ViewManager.nextTetromino
+                && Model.grid[x][y-1][z].gameObject.GetComponent<MinoType>().color == curMinoColor)
                     return true;
-            }
+// TODO: BUG:为什么不检查 y+1 ? 因为同样存在这可能性这个小立方体方格是侧插进去的,那它的上面就有小立方体值得检查, to be tested
+            if (y+1 < Model.gridHeight && Model.grid[x][y+1][z] != null
+                && Model.grid[x][y+1][z].parent.gameObject != ViewManager.nextTetromino
+                && Model.grid[x][y+1][z].gameObject.GetComponent<MinoType>().color == curMinoColor)
+                return true;
             return false;
         }
         
-        public static bool isNeighboursExist(int x, int y, int z) {
-            if (x-1 >= 0 && Model.GetTransformAtGridPosition(new Vector3(x-1, y, z)) != null
-                && Model.GetTransformAtGridPosition(new Vector3(x-1, y, z)).parent.gameObject != ViewManager.nextTetromino)
-                return true;
-            if (x+1 < Model.gridXWidth && Model.GetTransformAtGridPosition(new Vector3(x+1, y, z)) != null
-                && Model.GetTransformAtGridPosition(new Vector3(x+1, y, z)).parent.gameObject != ViewManager.nextTetromino)
-                return true;
-            if (z-1 >= 0 && Model.GetTransformAtGridPosition(new Vector3(x, y, z-1)) != null
-                && Model.GetTransformAtGridPosition(new Vector3(x, y, z-1)).parent.gameObject != ViewManager.nextTetromino)
-                return true;
-            if (z+1 < Model.gridZWidth && Model.GetTransformAtGridPosition(new Vector3(x, y, z+1)) != null
-                && Model.GetTransformAtGridPosition(new Vector3(x, y, z+1)).parent.gameObject != ViewManager.nextTetromino)
-                return true;
-            if (y-1 >= 0 && Model.GetTransformAtGridPosition(new Vector3(x, y-1, z)) != null
-                && Model.GetTransformAtGridPosition(new Vector3(x, y-1, z)).parent.gameObject != ViewManager.nextTetromino)
-                return true;
-            return false;
-        }
-
         static int getMinoPosCubeArrIndex(float x, float z) {
             return (int)(Mathf.Round(x) + Model.gridXWidth * Mathf.Round(z)); // y = 0
         }
+
+//         public static bool isNeighboursExist(int x, int y, int z) { // 对于当前方格来说,是否有邻接的非空任何实物立方体存在? [这里没有检查地板图案]
+//             if (x-1 >= 0 && Model.GetTransformAtGridPosition(new Vector3(x-1, y, z)) != null
+//                 && Model.GetTransformAtGridPosition(new Vector3(x-1, y, z)).parent.gameObject != ViewManager.nextTetromino)
+//                 return true;
+//             if (x+1 < Model.gridXWidth && Model.GetTransformAtGridPosition(new Vector3(x+1, y, z)) != null
+//                 && Model.GetTransformAtGridPosition(new Vector3(x+1, y, z)).parent.gameObject != ViewManager.nextTetromino)
+//                 return true;
+//             if (z-1 >= 0 && Model.GetTransformAtGridPosition(new Vector3(x, y, z-1)) != null
+//                 && Model.GetTransformAtGridPosition(new Vector3(x, y, z-1)).parent.gameObject != ViewManager.nextTetromino)
+//                 return true;
+//             if (z+1 < Model.gridZWidth && Model.GetTransformAtGridPosition(new Vector3(x, y, z+1)) != null
+//                 && Model.GetTransformAtGridPosition(new Vector3(x, y, z+1)).parent.gameObject != ViewManager.nextTetromino)
+//                 return true;
+//             if (y-1 >= 0 && Model.GetTransformAtGridPosition(new Vector3(x, y-1, z)) != null
+//                 && Model.GetTransformAtGridPosition(new Vector3(x, y-1, z)).parent.gameObject != ViewManager.nextTetromino)
+//                 return true;
+// // TODO: BUG:为什么不检查 y+1 ? 因为同样存在这可能性这个小立方体方格是侧插进去的,那它的上面就有小立方体值得检查, to be tested
+//             if (y+1 < Model.Height && Model.GetTransformAtGridPosition(new Vector3(x, y+1, z)) != null
+//                 && Model.GetTransformAtGridPosition(new Vector3(x, y+1, z)).parent.gameObject != ViewManager.nextTetromino)
+//                 return true;
+//             return false; 
+//         }
     }
 }

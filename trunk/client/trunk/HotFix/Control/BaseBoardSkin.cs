@@ -21,24 +21,25 @@ namespace HotFix.Control {
         
         void OnEnable() {
             Debug.Log(TAG + ": OnEnable()");
-            Debug.Log(TAG + " gameObject.name: " + gameObject.name);
-            GameView.changeBaseCubesSkin += onChallengeTetrominoLand;
+            // GameView.changeBaseCubesSkin += onChallengeTetrominoLand;
             ModelMono.updateBaseCubesSkin += updateSkin;
             EventManager.Instance.RegisterListener<UndoGameEventInfo>(onUndoGame); 
+            EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 
         }
 
         void OnDisable() {
-            Debug.Log(TAG + ": OnDisable()");
             Debug.Log(TAG + " gameObject.name: " + gameObject.name);
-            GameView.changeBaseCubesSkin -= onChallengeTetrominoLand;
+            EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 
+            // GameView.changeBaseCubesSkin -= onChallengeTetrominoLand;
             ModelMono.updateBaseCubesSkin -= updateSkin;
             EventManager.Instance.UnregisterListener<UndoGameEventInfo>(onUndoGame); 
         }
 
         void Start() {
+            Debug.Log(TAG + " Start()");
             Model.baseCubes = new int [Model.gridXWidth * Model.gridZWidth];
-
             int n = Model.gridXWidth * Model.gridZWidth;
+            Debug.Log(TAG + " n: " + n);
             int x = 0, z = 0;
             for (int i = 0; i < n; i++) {
                 Model.baseCubes[i] = cubes[i].GetComponent<MinoType>().color;
@@ -71,9 +72,10 @@ namespace HotFix.Control {
             MathUtilP.printBoard(Model.baseCubes);
         }
 
-        void onChallengeTetrominoLand() {
-            Debug.Log(TAG + ": onChallengeTetrominoLand()");
-            Debug.Log(TAG + ": baseCubes colors after nextTetromino landed BEF update:"); 
+        // void onChallengeTetrominoLand() {
+        void onActiveTetrominoLand(TetrominoLandEventInfo info) {
+            // Debug.Log(TAG + ": onChallengeTetrominoLand()"); // 
+            Debug.Log(TAG + " onActiveTetrominoLand() : baseCubes colors after nextTetromino landed BEF update:"); 
             MathUtilP.printBoard(Model.baseCubes);
             
             int i = 0;
@@ -86,17 +88,14 @@ namespace HotFix.Control {
                         
                         Model.prevIdx[i] = idx;
                         Model.prevSkin[i] = getChallengedMaterialIdx(cubes[idx].gameObject.GetComponent<Renderer>().sharedMaterial);
-
+// 将地板板砖的材质更换为当前所接触立方体的材质 
                         cubes[idx].gameObject.GetComponent<Renderer>().sharedMaterial = mino.gameObject.GetComponent<Renderer>().sharedMaterial;
                         Model.baseCubes[idx] = mino.gameObject.GetComponent<MinoType>().color;
-
-                        Debug.Log(TAG + " idx: " + idx);
-                        Debug.Log(TAG + " Model.prevIdx[i]: " + Model.prevIdx[i]);
-                        Debug.Log(TAG + " Model.prevSkin[i]: " + Model.prevSkin[i]);
-                        Debug.Log(TAG + " ViewManager.materials[Model.prevSkin[i]].ToString(): " + ViewManager.materials[Model.prevSkin[i]].ToString());
-
+                        // Debug.Log(TAG + " idx: " + idx);
+                        // Debug.Log(TAG + " Model.prevIdx[i]: " + Model.prevIdx[i]);
+                        // Debug.Log(TAG + " Model.prevSkin[i]: " + Model.prevSkin[i]);
+                        // Debug.Log(TAG + " ViewManager.materials[Model.prevSkin[i]].ToString(): " + ViewManager.materials[Model.prevSkin[i]].ToString());
                         i++;
-                        
                         Debug.Log(TAG + " cubes[idx].gameObject.GetComponent<Renderer>().sharedMaterial.ToString(): " + cubes[idx].gameObject.GetComponent<Renderer>().sharedMaterial.ToString()); 
                     }
                 }

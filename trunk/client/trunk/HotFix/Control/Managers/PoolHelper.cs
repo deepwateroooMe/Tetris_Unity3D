@@ -23,19 +23,34 @@ namespace HotFix.Control {
         private static Vector3 defaultPos = new Vector3(-100, -100, -100); 
         private static Vector3 previewTetrominoScale = new Vector3(6f, 6f, 6f); 
 
-// // TODO: 这些材质的打包与填充初始化        
-//         public static Material [] materials; // [red, green, blue, yellow]
-//         public static Material [] colors;    // [blue, colorB, oliveC, purple,  brown, white, red, black,  green, pinkY, Yello]
-        //   0      1                3               5           8       9             11
         public static void Initialize() {
             minosDic = new Dictionary<string, GameObject>();
             pool = new Dictionary<string, Stack<GameObject>>();
             // scoreDic = new Dictionary<string, int>();
-// 初始化挑战模式下的颜色材质等相关资源
-            ViewManager.materials = new Dictionary<int, Material>();
+// 初始化挑战模式下的颜色材质等相关资源, 用字典这个数据结构就可以与原源码无缝衔接了
+            ViewManager.materials = new Dictionary<int, Material>(); 
             ViewManager.colors = new Dictionary<int, Material>();
         }
 
+        public static void LoadChallengeModeMaterials() { // 异步加载,当时字典仍为空
+            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "red", (go) => ViewManager.materials.Add(0, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "Green", (go) => ViewManager.materials.Add(1, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "blue", (go) => ViewManager.materials.Add(2, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "Yello", (go) => ViewManager.materials.Add(3, go));
+
+            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "blue", (go) => ViewManager.colors.Add(0, go)); // <<<<<<<<<< 这个用了两次?
+            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "colorB", (go) => ViewManager.colors.Add(1, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "oliveC", (go) => ViewManager.colors.Add(2, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "Purple", (go) => ViewManager.colors.Add(3, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "brown", (go) => ViewManager.colors.Add(4, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "white", (go) => ViewManager.colors.Add(5, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "red", (go) => ViewManager.colors.Add(6, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "black", (go) => ViewManager.colors.Add(7, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "Green", (go) => ViewManager.colors.Add(8, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "blue", (go) => ViewManager.colors.Add(9, go)); // <<<<<<<<<< 
+            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "pink", (go) => ViewManager.colors.Add(10, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "Yello", (go) => ViewManager.colors.Add(11, go));
+        }
         public static void fillPool(Transform prefab) {
             string type, name = prefab.gameObject.name;
             if (name.StartsWith("mino"))
@@ -164,10 +179,13 @@ namespace HotFix.Control {
             objInstance.transform.position = pos;
             objInstance.transform.rotation = rotation;
 
-            if (GloData.Instance.isChallengeMode && type.Substring(0, 9).Equals("Tetromino")) { // isChallengeMode = true, gameMode = 0
+            // if (GloData.Instance.isChallengeMode && type.Substring(0, 9).Equals("Tetromino")) { // isChallengeMode = true, gameMode = 0 这么写容易抛空
+            if (GloData.Instance.isChallengeMode && type.StartsWith("Tetromino")) { // isChallengeMode = true, gameMode = 0
                 int rand = 0, randomColor1 = 0, randomColor2 = 0, cnt = 0;
 
-                Debug.Log(TAG + " GloData.Instance.challengeLevel: " + GloData.Instance.challengeLevel);
+                // Debug.Log(TAG + " GloData.Instance.isChallengeMode: " + GloData.Instance.isChallengeMode);
+                // Debug.Log(TAG + " GloData.Instance.challengeLevel: " + GloData.Instance.challengeLevel);
+
 				if (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel > 10 && GloData.Instance.challengeLevel < 16) { // match 2
                     randomColor1 = UnityEngine.Random.Range(0, 4);
                     Debug.Log(TAG + " randomColor1: " + randomColor1); 
@@ -196,14 +214,22 @@ namespace HotFix.Control {
                     int randomColor = UnityEngine.Random.Range(0, 4);
                     objInstance.GetComponent<TetrominoType>().color = randomColor;
                     Debug.Log(TAG + " randomColor: " + randomColor); 
-
+                    Debug.Log(TAG + " ViewManager.materials.Count: " + ViewManager.materials.Count);
+                    Debug.Log(TAG + " ViewManager.colors.Count: " + ViewManager.colors.Count);
                     foreach (Transform child in objInstance.transform) {
+                        if (child.gameObject.GetComponent<MinoType>() == null)
+                            child.gameObject.AddComponent<MinoType>();
                         child.gameObject.GetComponent<MinoType>().color = randomColor;
-                        child.gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[randomColor];
+// 这里没有设置成功
+                        MeshRenderer minoRenderer = child.gameObject.GetComponent<MeshRenderer>();
+                        Material [] materials = minoRenderer.materials;
+                        materials[0] = ViewManager.materials[randomColor];
+                        minoRenderer.materials = materials;
+                        // child.gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[randomColor];
                     }
                 }
             }
-            // if (type == "shapeJ") { // J ==> green
+            // if (type == "shapeJ") { // J => green
             //     foreach (Transform child in objInstance.transform) {
             //         child.gameObject.GetComponent<Renderer>().material.mainTexture = greenTexture;
             //         // Debug.Log(TAG + " child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString: " + child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString()); 

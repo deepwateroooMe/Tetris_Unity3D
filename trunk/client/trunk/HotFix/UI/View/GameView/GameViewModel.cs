@@ -25,9 +25,6 @@ namespace HotFix.UI {
         public int gridHeight = 12; 
         public int gridWidth;
 
-        // public Transform [][][] grid; //= new Transform[gridWidth, gridHeight, gridWidth]; // STATIC
-        // public int [][][] gridOcc; //= new int[gridWidth, gridHeight, gridWidth];          // static
-
         public int scoreOneLine = 40;
         public int scoreTwoLine = 100;
         public int scoreThreeLine = 300;
@@ -53,6 +50,8 @@ namespace HotFix.UI {
         public BindableProperty<int> tetroCnter = new BindableProperty<int>();
         public BindableProperty<int> undoCnter = new BindableProperty<int>();
         public BindableProperty<int> swapCnter = new BindableProperty<int>();
+        public bool isChallengeMode;
+        
         private static Coroutine deleteMinoAtCoroutine;
         
         public static bool startingAtLevelZero;
@@ -226,7 +225,7 @@ namespace HotFix.UI {
             gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
             fallSpeed = 1.0f; // should be recorded too, here
 
-            if (gameMode.Value == 0)
+            if (gameMode.Value == 0 && Model.gridOcc != null)
                 Model.resetGridOccBoard();
             currentScore.Value = 0;
             currentLevel.Value = startingLevel;
@@ -297,8 +296,8 @@ namespace HotFix.UI {
                 Debug.Log(TAG + " buttonInteractableList[i]: i : " + i + ", " + buttonInteractableList[i]); 
         }
 
-        public void playFirstTetromino(GameObject previewTetromino,
-                                       GameObject previewTetromino2) {
+        public void playFirstTetromino(GameObject previewTetromino, GameObject previewTetromino2) {
+            tetroCnter.Value--;
 // 在生成新的一两预览前将现两个预览保存起来
             prevPreview = comTetroType.Value;
             prevPreview2 = eduTetroType.Value;
@@ -325,8 +324,8 @@ namespace HotFix.UI {
             }
         }
 
-        public void playSecondTetromino(GameObject previewTetromino,
-                                        GameObject previewTetromino2) {
+        public void playSecondTetromino(GameObject previewTetromino, GameObject previewTetromino2) {
+            tetroCnter.Value--;
             prevPreview = comTetroType.Value;
             prevPreview2 = eduTetroType.Value;
             nextTetrominoType.Value = eduTetroType.Value; // 记忆功能

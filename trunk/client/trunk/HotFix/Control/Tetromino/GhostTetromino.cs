@@ -89,7 +89,7 @@ namespace HotFix.Control {
         }
 
         public void OnDisable() {
-            Debug.Log(TAG + " OnDisable()");
+            // Debug.Log(TAG + " OnDisable()");
             // EventManager.Instance.UnregisterListener<TetrominoSpawnedEventInfo>(onTetrominoSpawned);
             // EventManager.Instance.UnregisterListener<TetrominoValidMMInfo>(onTetrominoMoveRotate);
             // EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onTetrominoLand);

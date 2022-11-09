@@ -80,7 +80,7 @@ namespace HotFix.UI {
             _loadSavedGame = false;
             _saveGamePathFolderName = "";
             _gridWidth = -1;
-            mgameMode.Value = 0;
+            mgameMode.Value = -1;
         }
         void DelegateSubscribe() {
         }

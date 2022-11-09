@@ -75,6 +75,7 @@ namespace HotFix.UI {
 // for CHALLENGE MODE:
                         basePlane = go.FindChildByName("basePlane"); 
                         basePlane.SetActive(false);
+                        PoolHelper.LoadChallengeModeMaterials();
                     }, EAssetBundleUnloadLevel.Never);
         }
 

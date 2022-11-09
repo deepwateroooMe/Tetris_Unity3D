@@ -30,7 +30,10 @@ namespace HotFix {
         public static AnimatorOverrideController LoadAnimatorOverrideController(string bundleName, string assetName, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {
             return Handle.LoadAnimatorOverrideController(bundleName, assetName, unloadLevel);
         }
-        public static RuntimeAnimatorController LoadRuntimeAnimatorController(string bundleName, string assetName, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {
+
+		internal static Material LoadMaterialAsyn(string v1, string v2) => throw new NotImplementedException();
+
+		public static RuntimeAnimatorController LoadRuntimeAnimatorController(string bundleName, string assetName, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {
             return Handle.LoadRuntimeAnimatorController(bundleName, assetName, unloadLevel);
         }
         public static AudioClip LoadAudioClip(string bundleName, string assetName, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {

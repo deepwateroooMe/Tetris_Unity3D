@@ -4,6 +4,10 @@ namespace HotFix.Control {
 
 	public class ComponentHelper : MonoBehaviour {
 
+// basePlane: BaseBoardSkin.cs
+		public static void AddBBSkinComponent(GameObject go) {
+			go.AddComponent<BaseBoardSkin>();
+		}
 // Tetromino GhostTetromino        
 		public static void AddTetroComponent(GameObject go) {
 			go.AddComponent<Tetromino>();
@@ -19,6 +23,10 @@ namespace HotFix.Control {
 			go.AddComponent<RotateCanvas>();
 		}
         
+// basePlane: BaseBoardSkin.cs
+		public static BaseBoardSkin GetBBSkinComponent(GameObject go) {
+			return go.GetComponent<BaseBoardSkin>();
+		}
 // Tetromino GhostTetromino        
 		public static Tetromino GetTetroComponent(GameObject go) {
             return go.GetComponent<Tetromino>();

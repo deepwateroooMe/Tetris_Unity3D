@@ -14,8 +14,6 @@ namespace HotFix.Control {
         private static int xm = GloData.Instance.gridXSize;
         private static int zm = GloData.Instance.gridZSize;
         private static int n = 12;
-        // private static int m = 5;
-        // private static int n = 12;
 
         public static int getIndex(int x, int y, int z) {
             int idx = (int)(m * m * y + m * z + x);
@@ -221,17 +219,14 @@ namespace HotFix.Control {
                 }
             }
         }
-
-        public static void initiateThreeDArray(int [][][] f, int x, int y, int z) {
-            f = new int [x][][];
-            for (int i = 0; i < x; i++) {
-                f[i] = new int [y][];
-                for (int j = 0; j < y; j++) 
-                    f[i][j] = new int [z];
-            }
-        }
+// 这么写运行时有问题
+        // public static void initiateThreeDArray(int [][][] f, int x, int y, int z) {
+        //     f = new int [x][][];
+        //     for (int i = 0; i < x; i++) {
+        //         f[i] = new int [y][];
+        //         for (int j = 0; j < y; j++) 
+        //             f[i][j] = new int [z];
+        //     }
+        // }
     }
 }
-
-
-
