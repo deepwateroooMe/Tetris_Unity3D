@@ -11,7 +11,7 @@ namespace Framework.Util {
 
         WaitForSeconds m_waitForOneSecond = new WaitForSeconds(1.0f);
 
-        public WaitForSeconds waitForOneSecond {
+        public WaitForSeconds WaitForOneSecond {
             get {
                 return m_waitForOneSecond;
             }

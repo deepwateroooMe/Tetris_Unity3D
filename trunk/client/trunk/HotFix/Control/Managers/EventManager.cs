@@ -30,11 +30,14 @@ namespace HotFix.Control {
         private TetrominoRotateEventInfo rotateInfo;
         private TetrominoValidMMInfo validInfo; // valid Move Rotate
         private TetrominoLandEventInfo landInfo;
-
+        private TetrominoChallLandInfo challLandInfo;
+        private UndoLastTetrominoInfo undoInfo;
+        
         private GameEnterEventInfo enterInfo;
         private GamePauseEventInfo pauseInfo;
         private GameResumeEventInfo resumeInfo;
         private CanvasToggledEventInfo canvasInfo;
+        private CubesMaterialEventInfo cubeMatInfo;
         
         public void Awake() {
             // Debug.Log(TAG + " Awake");
@@ -42,15 +45,18 @@ namespace HotFix.Control {
             delegateLookupMap = new Dictionary<System.Delegate, EventListener>();
             delta = Vector3.zero;
 
+            undoInfo = new UndoLastTetrominoInfo();
             spawnedInfo = new TetrominoSpawnedEventInfo();
             moveInfo = new TetrominoMoveEventInfo();
             rotateInfo = new TetrominoRotateEventInfo();
             landInfo = new TetrominoLandEventInfo();
-
+            challLandInfo = new TetrominoChallLandInfo();
+            
             canvasInfo = new CanvasToggledEventInfo();
             enterInfo = new GameEnterEventInfo();
             pauseInfo = new GamePauseEventInfo();
             resumeInfo = new GameResumeEventInfo();
+            cubeMatInfo = new CubesMaterialEventInfo();
             
             validInfo = new TetrominoValidMMInfo();
         }
@@ -58,7 +64,7 @@ namespace HotFix.Control {
         public void RegisterListener<T>(EventListener<T> listener) where T : EventInfo { 
             // Debug.Log(TAG + ": RegisterListener(): T: " + typeof(T)); 
             EventListener internalDelegate = (el) => { // 注意: 即便不同类(不同对象)对所感兴趣的同类事件的监听回调方法同名,这里仍然会被定义为不同的键
-                // Debug.Log(TAG + " RegisterListener<T>:　(typeof(T)): " + typeof(T)); // EventManager (typeof(T)): HotFix.Control.CanvasToggledEventInfo
+                Debug.Log(TAG + " RegisterListener<T>:　(typeof(T)): " + typeof(T)); // EventManager (typeof(T)): HotFix.Control.CanvasToggledEventInfo
                 listener((T)el);
             };
 
@@ -75,8 +81,8 @@ namespace HotFix.Control {
                 delegatesMap[typeof(T)] = tmpDelegate += internalDelegate; // 那么对于当前键，其值的内容再添加一个新的代理监听监听回调(注册回调方法的时候也是这么写的)
             } else
                 delegatesMap[typeof(T)] = internalDelegate;
-            // Debug.Log(TAG + " RegisterListener() delegatesMap.Count after: " + delegatesMap.Count
-            //           + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
+            Debug.Log(TAG + " RegisterListener() delegatesMap.Count after: " + delegatesMap.Count
+                      + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
         }
         
         public void UnregisterListener<T>(EventListener<T> listener) where T : EventInfo { // System.Action 这里并没有能真正移除掉监听，需要再理解、更改
@@ -93,8 +99,8 @@ namespace HotFix.Control {
                 }
                 delegateLookupMap.Remove(listener);
             }
-            // Debug.Log(TAG + " UnregisterListener() delegatesMap.Count after: " + delegatesMap.Count
-            //           + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
+            Debug.Log(TAG + " UnregisterListener() delegatesMap.Count after: " + delegatesMap.Count
+                      + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
         }
         
         public void FireEvent(string type) { // 事件:不带任何增量信息的
@@ -109,11 +115,20 @@ namespace HotFix.Control {
             case "resumegame":
                 FireEvent(resumeInfo);
                 return;
+            case "undo":
+                FireEvent(undoInfo);
+                return;
             case "land":
                 FireEvent(landInfo);
                 return;
+            case "challLand":
+                FireEvent(challLandInfo);
+                return;
             case "canvas":
                 FireEvent(canvasInfo);
+                return;
+            case "cubesMat":
+                FireEvent(cubeMatInfo);
                 return;
             }
         }

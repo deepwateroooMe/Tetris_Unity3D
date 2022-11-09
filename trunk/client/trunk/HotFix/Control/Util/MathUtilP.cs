@@ -154,30 +154,31 @@ namespace HotFix.Control {
         public static void printBoard(int[] color) {
             int n = color.Length;
             int x = 0, z = 0;
-            int [,] baseColor = new int [Model.gridXWidth, Model.gridZWidth];
-            for (int i = 0; i < Model.gridXWidth; i++) {
-                for (int j = 0; j < Model.gridZWidth; j++) {
-                    baseColor[i, j] = -1;
-                }
-            }
+            // int [,] baseColor = new int [Model.gridXWidth, Model.gridZWidth];
+            int [][] baseColor = new int [Model.gridXWidth][];
+            for (int i = 0; i < Model.gridXWidth; i++) 
+                baseColor[i] = new int [Model.gridZWidth];
+            for (int i = 0; i < Model.gridXWidth; i++) 
+                for (int j = 0; j < Model.gridZWidth; j++) 
+                    baseColor[i][j] = -1;
             for (int i = 0; i < n; i++) {
                 x = i % Model.gridXWidth;
                 z = i / Model.gridXWidth;
-                baseColor[x, z] = color[i];
+                baseColor[x][z] = color[i];
             }
 
             // Debug.Log(TAG + " Z0  " + "Z1   " + "Z2   " + "Z3   " + "Z4   " + "Z5   " + "Z6   " + "Z7   " + "Z8 "); 
             for (int i = 0; i < Model.gridXWidth; i++) {
                 int j = -1;
                 Debug.Log("X" + i + ":           " +
-                          baseColor[i, ++j] + "    " +
-                          baseColor[i, ++j] + "    " +
-                          baseColor[i, ++j] + "    " +
-                          baseColor[i, ++j] + "    " +
-                          // baseColor[i, ++j] + "    " +
-                          // baseColor[i, ++j] + "    " +
-                          // baseColor[i, ++j] + "    " +
-                          baseColor[i, ++j]);
+                          baseColor[i][++j] + "    " +
+                          baseColor[i][++j] + "    " +
+                          baseColor[i][++j] + "    " +
+                          baseColor[i][++j] + "    " +
+                          // baseColor[i][++j] + "    " +
+                          // baseColor[i][++j] + "    " +
+                          // baseColor[i][++j] + "    " +
+                          baseColor[i][++j]);
             }
         }
 

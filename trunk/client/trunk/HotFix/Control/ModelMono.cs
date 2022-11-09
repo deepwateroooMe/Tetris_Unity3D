@@ -1,4 +1,5 @@
 ﻿using deepwaterooo.tetris3d;
+using Framework.Util;
 using HotFix.UI;
 using System;
 using System.Collections.Generic;
@@ -28,8 +29,8 @@ namespace HotFix.Control {
 
         private CanvasMovedEventInfo canvasMovedInfo;
 
-        public delegate void BaseBoardSkinChangedDelegate();
-        public static BaseBoardSkinChangedDelegate updateBaseCubesSkin;
+        // public delegate void BaseBoardSkinChangedDelegate();
+        // public static BaseBoardSkinChangedDelegate updateBaseCubesSkin;
 
         // public static int lastTetroIndiScore = 0;
         
@@ -56,7 +57,7 @@ namespace HotFix.Control {
         //     Debug.Log(TAG + " onActiveTetrominoLand");
         //     lastTetroIndiScore = ComponentHelper.GetTetroComponent(info.unitGO).score;
         // }
-        // public void onActiveTetrominoMove(TetrominoMoveEventInfo info) { 
+        // public void onActiveTetrominoMove(TetrominoMoveEventInfo info) { 4
         //     Debug.Log(TAG + ": onActiveTetrominoMove()");
         //     ViewManager.nextTetromino.transform.position += info.delta; // -11 0 -11, 0 -11 0
         //     if (Model.CheckIsValidPosition()) {
@@ -214,7 +215,10 @@ namespace HotFix.Control {
                             minoPSList.Add(connectedEffectTmp);
                         }
                     }
-// TODO: 感觉这里还有点儿不通,时间不够长,粒子系统展示得不完整            
+// TODO: 感觉这里还有点儿不通,时间不够长,粒子系统展示得不完整: 这里仍然不工作,得想个办法
+            // yield return new WaitForSeconds(3);
+            // yield return CoroutineHelper.WaitForOneSecond;
+            // yield return GameObject.FindChild  IEnumeratorTools.WaitForOneSecond;
             yield return _waitForSeconds;
             
             // Debug.Log(TAG + "  minoPSList.Count: " +  minoPSList.Count);
@@ -375,7 +379,8 @@ namespace HotFix.Control {
             } // GloData.Instance.gameMode == 0
 
             if (y == 1 && BaseBoardSkin.isSkinChanged) { // debug
-                updateBaseCubesSkin();
+                EventManager.Instance.FireEvent("cubesMat");
+                // updateBaseCubesSkin();
             }
             // Debug.Log(TAG + " cnt: " + cnt); 
         } 

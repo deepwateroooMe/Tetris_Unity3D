@@ -10,7 +10,8 @@ using UnityEngine;
 namespace HotFix.Control {
 
     // 挑战模式: 每一关的底板的皮肤是动态更换的
-    public class BaseBoardSkin : SingletonMono<BaseBoardSkin> {
+    // public class BaseBoardSkin : SingletonMono<BaseBoardSkin> {
+    public class BaseBoardSkin : MonoBehaviour {
         private const string TAG = "BaseBoardSkin";
 
         public GameObject [] cubes;
@@ -18,25 +19,29 @@ namespace HotFix.Control {
         public static int [] color;
         
         private int idx = 0;
-        
-        void OnEnable() {
+
+        public void Awake() {
+            Debug.Log(TAG + " Awake()");
+            Start();
+        }
+        public void OnEnable() {
             Debug.Log(TAG + ": OnEnable()");
-            // GameView.changeBaseCubesSkin += onChallengeTetrominoLand;
-            ModelMono.updateBaseCubesSkin += updateSkin;
-            EventManager.Instance.RegisterListener<UndoGameEventInfo>(onUndoGame); 
-            EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 
+            Start();
         }
 
-        void OnDisable() {
+        public void OnDisable() {
             Debug.Log(TAG + " gameObject.name: " + gameObject.name);
-            EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 
-            // GameView.changeBaseCubesSkin -= onChallengeTetrominoLand;
-            ModelMono.updateBaseCubesSkin -= updateSkin;
+            EventManager.Instance.UnregisterListener<TetrominoChallLandInfo>(onActiveTetrominoLand); 
             EventManager.Instance.UnregisterListener<UndoGameEventInfo>(onUndoGame); 
+            EventManager.Instance.UnregisterListener<CubesMaterialEventInfo>(onCubesMaterialsChanged);
         }
 
-        void Start() {
+        public void Start() {
             Debug.Log(TAG + " Start()");
+            EventManager.Instance.RegisterListener<UndoGameEventInfo>(onUndoGame); 
+            EventManager.Instance.RegisterListener<TetrominoChallLandInfo>(onActiveTetrominoLand);
+            EventManager.Instance.RegisterListener<CubesMaterialEventInfo>(onCubesMaterialsChanged);
+
             Model.baseCubes = new int [Model.gridXWidth * Model.gridZWidth];
             int n = Model.gridXWidth * Model.gridZWidth;
             cubes = new GameObject[n];
@@ -44,10 +49,11 @@ namespace HotFix.Control {
             for (int j = 0; j < Model.gridZWidth; j++) 
                 for (int a = 0; a < Model.gridXWidth; a++) {// 这里字符串的使用太恐怖了
                     name.Length = 0;
-                    name.Append("Cube" + a + j);
+
+// TODO: BUG FOR deffient levels, because I did named them differenly last night                    
+                    name.Append("Cube" + a + j); // BUGS
                     cubes[j * Model.gridXWidth + a] = gameObject.FindChildByName(name.ToString());
                 }
-            Debug.Log(TAG + " n: " + n);
             int x = 0, z = 0;
             for (int i = 0; i < n; i++) {
                 Model.baseCubes[i] = cubes[i].GetComponent<MinoType>().color;
@@ -63,9 +69,8 @@ namespace HotFix.Control {
             }
         }
 
-        // private int n = Model.gridXWidth * Model.gridZWidth;
-        // int x = 0, z = 0, i = 0;
-        public void updateSkin() {
+        public void onCubesMaterialsChanged(CubesMaterialEventInfo info) {
+        // private void updateSkin() {
             Debug.Log(TAG + ": updateSkin()");
             int n = Model.gridXWidth * Model.gridZWidth;
             for (int i = 0; i < n; i++) {
@@ -80,10 +85,8 @@ namespace HotFix.Control {
             MathUtilP.printBoard(Model.baseCubes);
         }
 
-        // void onChallengeTetrominoLand() {
-        void onActiveTetrominoLand(TetrominoLandEventInfo info) {
-            // Debug.Log(TAG + ": onChallengeTetrominoLand()"); // 
-            Debug.Log(TAG + " onActiveTetrominoLand() : baseCubes colors after nextTetromino landed BEF update:"); 
+        void onActiveTetrominoLand(TetrominoChallLandInfo info) { 
+            Debug.Log(TAG + " onActiveTetrominoCHALLENGINGLand() : baseCubes colors after nextTetromino landed BEF update:"); 
             MathUtilP.printBoard(Model.baseCubes);
             
             int i = 0;

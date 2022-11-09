@@ -36,7 +36,7 @@ namespace HotFix.Control {
             ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "red", (go) => ViewManager.materials.Add(0, go));
             ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "Green", (go) => ViewManager.materials.Add(1, go));
             ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "blue", (go) => ViewManager.materials.Add(2, go));
-            ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "Yello", (go) => ViewManager.materials.Add(3, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "Yellow", (go) => ViewManager.materials.Add(3, go));
 
             // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "blue", (go) => ViewManager.colors.Add(0, go)); // <<<<<<<<<< 这个用了两次?
             // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "colorB", (go) => ViewManager.colors.Add(1, go));

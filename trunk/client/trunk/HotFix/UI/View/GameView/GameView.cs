@@ -57,7 +57,9 @@ namespace HotFix.UI {
         Button saveBtn; // save
         Button nosvBtn; // not saving
         Button cancBtn; // cancel: back to pause Panel
-
+// GAME OVER TMP PANEL;
+        GameObject gameOverPanel;
+        
 // isChallengeMode:
         GameObject comLevelView;
         GameObject goalPanel;
@@ -99,7 +101,7 @@ namespace HotFix.UI {
 
         public ModelMono modelMono;
 
-// // 挑战模式下:当方块砖落地的时候,地板的着色会跟着改变?        
+// // // 挑战模式下:当方块砖落地的时候,地板的着色会跟着改变?        
 //         public delegate void TetrominoChallengeLandingDelegate();
 //         public static TetrominoChallengeLandingDelegate changeBaseCubesSkin;
 
@@ -116,12 +118,15 @@ namespace HotFix.UI {
             } else if (cur == 0 && GloData.Instance.isChallengeMode) { // 挑战模式 下
                 linText.gameObject.SetActive(false);
                 linTextDes.SetActive(false); // LINE 
+
                 initializeChallengingMode();
                 lvlText.text = GloData.Instance.gameLevel.ToString();
 // 每个层级的底坐: 这里可能还需要更多的控件索引,因为底座需要能够更新材质                
                 ViewManager.basePlane.SetActive(true);
-// TODO: BaseBoardSkin这个模块好像没有调好,还有很多BUG                
-                ComponentHelper.AddBBSkinComponent(ViewManager.basePlane);
+
+// TODO: BaseBoardSkin这个模块好像没有调好,还有很多BUG
+                GameObject level1 = ViewManager.basePlane.gameObject.FindChildByName("level1");
+                ComponentHelper.AddBBSkinComponent(level1);
             }
         }
         void initializeChallengingMode() {
@@ -201,6 +206,7 @@ namespace HotFix.UI {
             swapCnter = GameObject.FindChildByName("swapCnter").GetComponent<Text>();
             undoCnter = GameObject.FindChildByName("undoCnter").GetComponent<Text>();
             tetroCnter = GameObject.FindChildByName("tetroCnter").GetComponent<Text>();
+            gameOverPanel = GameObject.FindChildByName("gameOverPanel");
             
             cycledPreviewTetromino = new GameObject();
             delta = Vector3.zero;
@@ -219,7 +225,6 @@ namespace HotFix.UI {
         void RegisterListeners() {
             Debug.Log(TAG + " RegisterListeners");
             // if (ViewModel.gameMode.Value == 0) { // 启蒙模式下特有的几个物件
-            //     // EventManager.Instance.RegisterListener<SwapPreviewsEventInfo>(onSwapPreviewTetrominos); // 也没有音效什么的,白传一遍,暂且如此,将来配点音乐
             //     EventManager.Instance.RegisterListener<UndoGameEventInfo>(onUndoGame); 
             //     EventManager.UndoButtonClicked += onUndoGame;
             //     EventManager.SwapButtonClicked += onSwapPreviewTetrominos;
@@ -227,12 +232,12 @@ namespace HotFix.UI {
             EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
             EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
             EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
+            EventManager.Instance.RegisterListener<UndoLastTetrominoInfo>(onUndoGame); 
             EventManager.Instance.RegisterListener<SaveGameEventInfo>(SaveGame); 
         }
         public void OnDisable() {
             Debug.Log(TAG + ": OnDisable()");
             // if (ViewModel.gameMode.Value == 0) {
-            //     // EventManager.Instance.UnregisterListener<SwapPreviewsEventInfo>(onSwapPreviewTetrominos);
             //     EventManager.Instance.UnregisterListener<UndoGameEventInfo>(onUndoGame); 
             //     EventManager.UndoButtonClicked -= onUndoGame;
             //     EventManager.SwapButtonClicked -= onSwapPreviewTetrominos;
@@ -241,6 +246,7 @@ namespace HotFix.UI {
             EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
             EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
             EventManager.Instance.UnregisterListener<SaveGameEventInfo>(SaveGame); 
+            EventManager.Instance.UnregisterListener<UndoLastTetrominoInfo>(onUndoGame); 
         }
 #endregion
 
@@ -380,10 +386,6 @@ namespace HotFix.UI {
                 Model.baseCubes = new int[Model.gridXWidth * Model.gridZWidth];
                 Model.prevSkin = new int[4];
                 Model.prevIdx = new int[4];
-                // tetroCnter = GloData.Instance.tetroCnter;
-                // Model.grid = new Transform[Model.gridXWidth, Model.gridHeight, Model.gridZWidth];
-                // Model.gridOcc = new int[Model.gridXWidth, Model.gridHeight, Model.gridZWidth];
-                // Model.gridClr = new int[Model.gridXWidth, Model.gridHeight, Model.gridZWidth];
                 Model.grid = new Transform[Model.gridXWidth][][];
                 Model.gridOcc = new int[Model.gridXWidth][][];
                 Model.gridClr = new int[Model.gridXWidth][][];
@@ -601,6 +603,13 @@ namespace HotFix.UI {
                                                                 ViewManager.nextTetromino.transform.rotation, Vector3.one);
             ComponentHelper.GetGhostComponent(ViewManager.ghostTetromino).enabled = true;
         }
+        public void GameOver() {
+            Debug.Log(TAG + ": GameOver()"); 
+            ViewModel.UpdateHighScore();
+            // SceneManager.LoadScene("GameOver");
+// TODO: 这里需要一个方便自己先看的临时有物面板
+            gameOverPanel.SetActive(true);
+        }
         void Update() {
             ViewModel.UpdateScore();
             UpdateUI(); // TODO COMMENT掉
@@ -612,11 +621,6 @@ namespace HotFix.UI {
             scoText.text = ViewModel.currentScore.ToString();
             lvlText.text = ViewModel.currentLevel.ToString();
             linText.text = ViewModel.numLinesCleared.ToString();
-        }
-        public void GameOver() {
-            Debug.Log(TAG + ": GameOver()"); 
-            ViewModel.UpdateHighScore();
-            // SceneManager.LoadScene("GameOver");
         }
 #region pausePanel Button Handlers
         // MidMenuView 里的5 个按钮, 以及的瑨延伸的3个按钮的点击回调
@@ -694,7 +698,10 @@ namespace HotFix.UI {
 
 #region GameViewCallbacks
 // 游戏主面板中7个按钮的点击回调
-        public void OnClickUndButton() { // 新系统,需要适配这套系统
+        public void OnClickUndButton() {
+            EventManager.Instance.FireEvent("undo");
+        }
+        public void onUndoGame(UndoLastTetrominoInfo info) { // 新系统,需要适配这套系统
             Debug.Log(TAG + " onUndoGame() isDuringUndo: " + isDuringUndo);
 // TODO: THERE IS A onUndoGame() irresponsible bug here to be fixed            
             if (isDuringUndo) return ;
@@ -728,7 +735,7 @@ namespace HotFix.UI {
             Debug.Log(TAG + " OnClickPauButton");
             Time.timeScale = 0f;
             EventManager.Instance.FireEvent("pausegame");
-            // ViewModel.PauseGame(); // 游戏暂停
+            // ViewModel.PauseGame(); // 游戏暂停Reg
             pausePanel.SetActive(true);
 // TODO : Bug: disable all Hud canvas buttons: swap etc
         }
@@ -751,9 +758,11 @@ namespace HotFix.UI {
             }
         }
         public void onSwapPreviewTetrominos () { // 这里需要下发指令到视图数据层,并根据随机数生成的新的tetromino来重新刷新UI
-            // Debug.Log(TAG + " onSwapPreviewTetrominos");
+            Debug.Log(TAG + " onSwapPreviewTetrominos");
             if (ViewModel.buttonInteractableList[2] == 0) return;
-            ViewModel.swapCnter.Value--;
+            Debug.Log(TAG + " ViewModel.swapCnter.Value: " + ViewModel.swapCnter.Value);
+            ViewModel.swapCnter.Value -= 1;
+            Debug.Log(TAG + " ViewModel.swapCnter.Value: " + ViewModel.swapCnter.Value);
             PoolHelper.recyclePreviewTetrominos(previewTetromino);
             PoolHelper.recyclePreviewTetrominos(previewTetromino2);
             SpawnPreviewTetromino();
@@ -830,17 +839,17 @@ namespace HotFix.UI {
             // Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), bef onGameSave()"); 
             // MathUtil.printBoard(gridClr);  // Model.
 
-            // // Debug.Log(TAG + " (GloData.Instance.isChallengeMode): " + (GloData.Instance.isChallengeMode));
-            // if (GloData.Instance.isChallengeMode) {
-            //     if (ChallengeRules.isValidLandingPosition()) {
-            //         changeBaseCubesSkin(); // 为什么会进到这里面来
-            //     } else { // print color board
-            //         Debug.Log(TAG + ": color board before game Over()");
-            //         MathUtil.printBoard(Model.gridClr);
-            //         // Debug.Log(TAG + ": Game Over()"); 
-            //         // GameOver(); // 为什么这里是game over ?
-            //     }
-            // }
+            if (GloData.Instance.isChallengeMode) {
+                if (ChallengeRules.isValidLandingPosition()) {
+                    EventManager.Instance.FireEvent("challLand");
+                } else { // print color board
+                    Debug.Log(TAG + ": color board before game Over()");
+                    MathUtil.printBoard(Model.gridClr);
+                    // Debug.Log(TAG + ": Game Over()"); 
+                    Debug.Log(TAG + " game over");
+                    GameOver(); // 为什么这里是game over ? 因为当前方块砖放错位置了,一定要适应周围小立方体的材质
+                }
+            }
 
             ViewModel.onGameSave();
             // ViewModel.onActiveTetrominoLand(info); // ViewModel.onGameSave();
@@ -934,7 +943,10 @@ namespace HotFix.UI {
             tetroCnter.text = cur.ToString();
         }
         void onSwapCnterChanged(int pre, int cur) {
+            Debug.Log(TAG + " onSwapCnterChanged");
+// TODO: 这里的值是变化了,但是UI没有刷新
             swapCnter.text = cur.ToString();
+            Debug.Log(TAG + " swapCnter.text: " + swapCnter.text);
         }
         void onUndoCnterChanged(int pre, int cur) {
             undoCnter.text = cur.ToString();

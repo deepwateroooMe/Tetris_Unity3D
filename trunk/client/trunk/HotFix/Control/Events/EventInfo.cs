@@ -34,6 +34,9 @@ namespace HotFix.Control {
         public const string TAG = "TetrominoRotateEventInfo"; 
         public Vector3 delta;
     }
+    public class UndoLastTetrominoInfo : EventInfo {
+        private const string TAG = "UndoLastTetrominoInfo"; 
+    }
     public class TetrominoValidMMInfo : EventInfo { // valid Move Rotate
         private const string TAG = "TetrominoValidMMInfo";
         public string type;
@@ -41,6 +44,9 @@ namespace HotFix.Control {
     }
     public class TetrominoLandEventInfo : EventInfo {     // land
         public const string TAG = "TetrominoLandEventInfo";
+    }
+    public class TetrominoChallLandInfo : EventInfo {     // Challenging landing
+        public const string TAG = "TetrominoChallLandInfo";
     }
 
 // Game Control: Enter, Start, Pause, Resume, Stop etc
@@ -69,6 +75,10 @@ namespace HotFix.Control {
     public class UndoGameEventInfo : EventInfo {          // Undo Game
         public const string TAG = "UndoGameEventInfo";
     }
+// baseCubes: cubes Materials updates
+    public class CubesMaterialEventInfo : EventInfo {
+        private const string TAG = "CubesMaterialEventInfo"; 
+    }
     // public class FallFastEventInfo : EventInfo {          // fallFast
     //     public const string TAG = "FallFastEventInfo";
     // }
@@ -84,7 +94,7 @@ namespace HotFix.Control {
         public const string TAG = "LevelButtonClickEventInfo";
         public GameObject unitGO;
     }
-// 没想明白当初为什么需要这个 ?    
+// TODO: 晚点儿可以把这个移除掉. 没想明白当初为什么需要这个 ?  
     public class PropertyChangedEventInfo : EventInfo {
         public string propertyName;
     }
