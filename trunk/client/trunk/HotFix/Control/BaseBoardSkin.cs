@@ -39,6 +39,14 @@ namespace HotFix.Control {
             Debug.Log(TAG + " Start()");
             Model.baseCubes = new int [Model.gridXWidth * Model.gridZWidth];
             int n = Model.gridXWidth * Model.gridZWidth;
+            cubes = new GameObject[n];
+            StringBuilder name = new StringBuilder("");
+            for (int j = 0; j < Model.gridZWidth; j++) 
+                for (int a = 0; a < Model.gridXWidth; a++) {// 这里字符串的使用太恐怖了
+                    name.Length = 0;
+                    name.Append("Cube" + a + j);
+                    cubes[j * Model.gridXWidth + a] = gameObject.FindChildByName(name.ToString());
+                }
             Debug.Log(TAG + " n: " + n);
             int x = 0, z = 0;
             for (int i = 0; i < n; i++) {

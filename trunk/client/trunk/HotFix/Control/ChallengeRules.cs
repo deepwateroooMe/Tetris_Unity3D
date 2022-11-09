@@ -311,28 +311,7 @@ namespace HotFix.Control {
         static int getMinoPosCubeArrIndex(float x, float z) {
             return (int)(Mathf.Round(x) + Model.gridXWidth * Mathf.Round(z)); // y = 0
         }
-
-//         public static bool isNeighboursExist(int x, int y, int z) { // 对于当前方格来说,是否有邻接的非空任何实物立方体存在? [这里没有检查地板图案]
-//             if (x-1 >= 0 && Model.GetTransformAtGridPosition(new Vector3(x-1, y, z)) != null
-//                 && Model.GetTransformAtGridPosition(new Vector3(x-1, y, z)).parent.gameObject != ViewManager.nextTetromino)
-//                 return true;
-//             if (x+1 < Model.gridXWidth && Model.GetTransformAtGridPosition(new Vector3(x+1, y, z)) != null
-//                 && Model.GetTransformAtGridPosition(new Vector3(x+1, y, z)).parent.gameObject != ViewManager.nextTetromino)
-//                 return true;
-//             if (z-1 >= 0 && Model.GetTransformAtGridPosition(new Vector3(x, y, z-1)) != null
-//                 && Model.GetTransformAtGridPosition(new Vector3(x, y, z-1)).parent.gameObject != ViewManager.nextTetromino)
-//                 return true;
-//             if (z+1 < Model.gridZWidth && Model.GetTransformAtGridPosition(new Vector3(x, y, z+1)) != null
-//                 && Model.GetTransformAtGridPosition(new Vector3(x, y, z+1)).parent.gameObject != ViewManager.nextTetromino)
-//                 return true;
-//             if (y-1 >= 0 && Model.GetTransformAtGridPosition(new Vector3(x, y-1, z)) != null
-//                 && Model.GetTransformAtGridPosition(new Vector3(x, y-1, z)).parent.gameObject != ViewManager.nextTetromino)
-//                 return true;
-// // TODO: BUG:为什么不检查 y+1 ? 因为同样存在这可能性这个小立方体方格是侧插进去的,那它的上面就有小立方体值得检查, to be tested
-//             if (y+1 < Model.Height && Model.GetTransformAtGridPosition(new Vector3(x, y+1, z)) != null
-//                 && Model.GetTransformAtGridPosition(new Vector3(x, y+1, z)).parent.gameObject != ViewManager.nextTetromino)
-//                 return true;
-//             return false; 
-//         }
     }
 }
+
+

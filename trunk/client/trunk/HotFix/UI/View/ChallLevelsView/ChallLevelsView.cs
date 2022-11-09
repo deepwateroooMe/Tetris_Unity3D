@@ -39,14 +39,39 @@ namespace HotFix.UI {
         Button attBtn;
         Button nitBtn;
         Button twtBtn;
-        
+
+        GameObject level1;
+        GameObject level2;
+        GameObject level3;
+        GameObject level4;
+        GameObject level5;
+
+        GameObject level6;
+        GameObject level7;
+        GameObject level8;
+        GameObject level9;
+        GameObject level10;
+
+        GameObject level11;
+        GameObject level12;
+        GameObject level13;
+        GameObject level14;
+        GameObject level15;
+
         protected override void OnInitialize() {
             base.OnInitialize();
 
             basicPanel = GameObject.FindChildByName("basicPanel");
             rightBtn = GameObject.FindChildByName("right").GetComponent<Button>();
-			rightBtn.onClick.AddListener(OnClickRightButton);
+			rightBtn.onClick.AddListener(OnClickRightButton); 
 
+            level1 = ViewManager.basePlane.gameObject.FindChildByName("level1");
+            level2 = ViewManager.basePlane.gameObject.FindChildByName("level2");
+            level3 = ViewManager.basePlane.gameObject.FindChildByName("level3");
+            level4 = ViewManager.basePlane.gameObject.FindChildByName("level4");
+            level5 = ViewManager.basePlane.gameObject.FindChildByName("level5");
+            level6 = ViewManager.basePlane.gameObject.FindChildByName("level6");
+    
             oneBtn = GameObject.FindChildByName("oneBtn").GetComponent<Button>();
             oneBtn.onClick.AddListener(OnClickOneButton);
             twoBtn = GameObject.FindChildByName("twoBtn").GetComponent<Button>();
@@ -107,6 +132,7 @@ namespace HotFix.UI {
         void CallBackHelper(int level) {
             switch (level) {
             case 1:
+                level1.SetActive(true);
                 GloData.Instance.challengeLevel = 1;
                 GloData.Instance.gridSize = 5;
                 GloData.Instance.gridXSize = 5;
@@ -114,6 +140,8 @@ namespace HotFix.UI {
                 GloData.Instance.tetroCnter = 22;
                 break;
             case 2:
+                level1.SetActive(false);
+                level2.SetActive(true);
                 GloData.Instance.challengeLevel = 2;
                 GloData.Instance.gridSize = 7;
                 GloData.Instance.gridXSize = 7;
@@ -122,6 +150,8 @@ namespace HotFix.UI {
                 GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
                 break;
             case 3:
+                level2.SetActive(false);
+                level3.SetActive(true);
                 GloData.Instance.challengeLevel = 3;
                 GloData.Instance.gridXSize = 9;
                 GloData.Instance.gridZSize = 7;
@@ -129,6 +159,8 @@ namespace HotFix.UI {
                 GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
                 break;
             case 4:
+                level3.SetActive(false);
+                level4.SetActive(true);
                 GloData.Instance.challengeLevel = 4;
                 GloData.Instance.gridSize = 8;
                 GloData.Instance.gridXSize = 8;
@@ -137,6 +169,8 @@ namespace HotFix.UI {
                 GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
                 break;
             case 5:
+                level4.SetActive(false);
+                level5.SetActive(true);
                 GloData.Instance.challengeLevel = 5;
                 GloData.Instance.gridXSize = 8;
                 GloData.Instance.gridZSize = 9;
@@ -144,6 +178,8 @@ namespace HotFix.UI {
                 GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
                 break;
             case 6:
+                level5.SetActive(false);
+                level6.SetActive(true);
                 GloData.Instance.challengeLevel = 6;
                 GloData.Instance.gridSize = 9;
                 GloData.Instance.gridXSize = 9;
@@ -219,6 +255,7 @@ namespace HotFix.UI {
                 GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
                 break;
             }
+            GloData.Instance.gameLevel = level;
             ViewManager.GameView.Reveal();
             Hide(); // 没有隐藏起来是因为材质没有准备好,其它地为的空异常
         }

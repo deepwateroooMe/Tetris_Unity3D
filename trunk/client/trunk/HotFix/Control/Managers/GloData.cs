@@ -19,6 +19,7 @@ namespace HotFix.Control {
         private int _gridZSize = 9;
         private int _tetroCnter = 0;
         private int _challengeLevel = 0;
+        private int _gameLevel = -1;
         
         public int layerScore = 8000;
         public int challengeLayerScore = 16000;
@@ -56,6 +57,14 @@ namespace HotFix.Control {
             }
             set {
                 _gameMode = value;
+            }
+        }
+        public int gameLevel {
+            get {
+                return _gameLevel;
+            }
+            set {
+                _gameLevel = value;
             }
         }
         public string saveGamePathFolderName {

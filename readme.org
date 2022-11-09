@@ -3,6 +3,10 @@
 #+author: deepwaterooo 
 
 * 游戏基本场景设计
+- CHALLENGING MODE: ALL kinds of bugs awaiting to be fixed. will work on them tomorrow.
+  
+[[./pic/readme_20221108_222757.png]]
+
 - debugging game flow, 现游戏的主场景如下(热更新程序域里的主要逻辑功能模块化管理主要工作完成,还没有debug游戏逻辑):
 现游戏框架与实现细节,除了将来的热更新服务器的服务端,其它任何部分都不再有任何挑战,只是时间问题,需要时间来整合持战模式和修改所有遇到过的BUG与细节.爱表哥,爱生活!!!
 - 在整合了更为优化方便读取的日志文件之后,游戏里的BUG已经基本上被自己清理干净了,只有两三个不容易重复的,希望下次再遇见能将它们一一解决掉.

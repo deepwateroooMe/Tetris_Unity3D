@@ -117,9 +117,10 @@ namespace HotFix.UI {
                 linText.gameObject.SetActive(false);
                 linTextDes.SetActive(false); // LINE 
                 initializeChallengingMode();
-
+                lvlText.text = GloData.Instance.gameLevel.ToString();
 // 每个层级的底坐: 这里可能还需要更多的控件索引,因为底座需要能够更新材质                
                 ViewManager.basePlane.SetActive(true);
+// TODO: BaseBoardSkin这个模块好像没有调好,还有很多BUG                
                 ComponentHelper.AddBBSkinComponent(ViewManager.basePlane);
             }
         }
@@ -694,7 +695,7 @@ namespace HotFix.UI {
 #region GameViewCallbacks
 // 游戏主面板中7个按钮的点击回调
         public void OnClickUndButton() { // 新系统,需要适配这套系统
-            Debug.Log(TAG + "onUndoGame() isDuringUndo: " + isDuringUndo);
+            Debug.Log(TAG + " onUndoGame() isDuringUndo: " + isDuringUndo);
 // TODO: THERE IS A onUndoGame() irresponsible bug here to be fixed            
             if (isDuringUndo) return ;
             Debug.Log(TAG + " (ViewModel.buttonInteractableList[2] == 0): " + (ViewModel.buttonInteractableList[2] == 0));
@@ -710,7 +711,8 @@ namespace HotFix.UI {
                             + "grid" + ViewModel.gridWidth + "/game.save");
             GameData gameData = SaveSystem.LoadGame(path.ToString());
             ViewModel.onUndoGame(gameData);
-            
+
+            Debug.Log(TAG + " (gameData.prevPreview != null): " + (gameData.prevPreview != null));
             if (gameData.prevPreview != null) { // 生成早了,会被视图模型又回收走了?
                 type.Length = 0;
                 string type2 = gameData.prevPreview2;
@@ -751,6 +753,7 @@ namespace HotFix.UI {
         public void onSwapPreviewTetrominos () { // 这里需要下发指令到视图数据层,并根据随机数生成的新的tetromino来重新刷新UI
             // Debug.Log(TAG + " onSwapPreviewTetrominos");
             if (ViewModel.buttonInteractableList[2] == 0) return;
+            ViewModel.swapCnter.Value--;
             PoolHelper.recyclePreviewTetrominos(previewTetromino);
             PoolHelper.recyclePreviewTetrominos(previewTetromino2);
             SpawnPreviewTetromino();
@@ -773,7 +776,10 @@ namespace HotFix.UI {
             Debug.Log(TAG + " playFirstTetromino");
             // Debug.Log(TAG + " ViewModel.buttonInteractableList[0]: " + ViewModel.buttonInteractableList[0]); 
             if (ViewModel.buttonInteractableList[0] == 0) return;
-
+            if (GloData.Instance.isChallengeMode) {
+                ViewModel.prevPreviewColor = previewTetromino.GetComponent<TetrominoType>().color;
+                ViewModel.prevPreviewColor2 = previewTetromino2.GetComponent<TetrominoType>().color;
+            }
             ViewModel.playFirstTetromino(previewTetromino, previewTetromino2);
 
             currentActiveTetrominoPrepare();
@@ -787,6 +793,10 @@ namespace HotFix.UI {
             Debug.Log(TAG + " playSecondTetromino");
             Debug.Log(TAG + " ViewModel.buttonInteractableList[1]: " + ViewModel.buttonInteractableList[1]); 
             if (ViewModel.buttonInteractableList[1] == 0) return;
+            if (GloData.Instance.isChallengeMode) {
+                ViewModel.prevPreviewColor = previewTetromino.GetComponent<TetrominoType>().color;
+                ViewModel.prevPreviewColor2 = previewTetromino2.GetComponent<TetrominoType>().color;
+            }
             ViewModel.playSecondTetromino(previewTetromino, previewTetromino2);
 
             currentActiveTetrominoPrepare();

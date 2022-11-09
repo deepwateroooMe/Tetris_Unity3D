@@ -33,23 +33,23 @@ namespace HotFix.Control {
         }
 
         public static void LoadChallengeModeMaterials() { // 异步加载,当时字典仍为空
-            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "red", (go) => ViewManager.materials.Add(0, go));
-            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "Green", (go) => ViewManager.materials.Add(1, go));
-            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "blue", (go) => ViewManager.materials.Add(2, go));
-            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "Yello", (go) => ViewManager.materials.Add(3, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "red", (go) => ViewManager.materials.Add(0, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "Green", (go) => ViewManager.materials.Add(1, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "blue", (go) => ViewManager.materials.Add(2, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "Yello", (go) => ViewManager.materials.Add(3, go));
 
-            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "blue", (go) => ViewManager.colors.Add(0, go)); // <<<<<<<<<< 这个用了两次?
-            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "colorB", (go) => ViewManager.colors.Add(1, go));
-            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "oliveC", (go) => ViewManager.colors.Add(2, go));
-            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "Purple", (go) => ViewManager.colors.Add(3, go));
-            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "brown", (go) => ViewManager.colors.Add(4, go));
-            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "white", (go) => ViewManager.colors.Add(5, go));
-            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "red", (go) => ViewManager.colors.Add(6, go));
-            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "black", (go) => ViewManager.colors.Add(7, go));
-            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "Green", (go) => ViewManager.colors.Add(8, go));
-            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "blue", (go) => ViewManager.colors.Add(9, go)); // <<<<<<<<<< 
-            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "pink", (go) => ViewManager.colors.Add(10, go));
-            ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "Yello", (go) => ViewManager.colors.Add(11, go));
+            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "blue", (go) => ViewManager.colors.Add(0, go)); // <<<<<<<<<< 这个用了两次?
+            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "colorB", (go) => ViewManager.colors.Add(1, go));
+            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "oliveC", (go) => ViewManager.colors.Add(2, go));
+            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "Purple", (go) => ViewManager.colors.Add(3, go));
+            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "brown", (go) => ViewManager.colors.Add(4, go));
+            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "white", (go) => ViewManager.colors.Add(5, go));
+            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "red", (go) => ViewManager.colors.Add(6, go));
+            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "black", (go) => ViewManager.colors.Add(7, go));
+            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "Green", (go) => ViewManager.colors.Add(8, go));
+            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "blue", (go) => ViewManager.colors.Add(9, go)); // <<<<<<<<<< 
+            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "pink", (go) => ViewManager.colors.Add(10, go));
+            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "Yello", (go) => ViewManager.colors.Add(11, go));
         }
         public static void fillPool(Transform prefab) {
             string type, name = prefab.gameObject.name;
@@ -220,12 +220,13 @@ namespace HotFix.Control {
                         if (child.gameObject.GetComponent<MinoType>() == null)
                             child.gameObject.AddComponent<MinoType>();
                         child.gameObject.GetComponent<MinoType>().color = randomColor;
-// 这里没有设置成功
-                        MeshRenderer minoRenderer = child.gameObject.GetComponent<MeshRenderer>();
-                        Material [] materials = minoRenderer.materials;
-                        materials[0] = ViewManager.materials[randomColor];
-                        minoRenderer.materials = materials;
-                        // child.gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[randomColor];
+// // 这里没有设置成功
+//                         MeshRenderer minoRenderer = child.gameObject.GetComponent<MeshRenderer>();
+//                         Material [] materials = minoRenderer.materials;
+//                         Debug.Log(TAG + " (ViewManager.materials[randomColor] == null): " + (ViewManager.materials[randomColor] == null));
+//                         materials[0] = ViewManager.materials[randomColor];
+//                         minoRenderer.materials = materials;
+                        child.gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[randomColor];
                     }
                 }
             }
@@ -243,7 +244,9 @@ namespace HotFix.Control {
             return objInstance;
         }
 
+// 这里是要怎么把很多种着色转换成四种着色?        
         public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3 localScale, int color) {
+            Debug.Log(TAG + " GetFromPool(): type: " + type + ", color: " + color);
             Stack<GameObject> st = pool[type];
             GameObject objInstance = null;
             if (st.Count > 0) {
