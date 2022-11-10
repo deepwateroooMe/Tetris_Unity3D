@@ -29,9 +29,6 @@ namespace HotFix.Control {
 
         private CanvasMovedEventInfo canvasMovedInfo;
 
-        // public delegate void BaseBoardSkinChangedDelegate();
-        // public static BaseBoardSkinChangedDelegate updateBaseCubesSkin;
-
         // public static int lastTetroIndiScore = 0;
         
         public void OnEnable() {
@@ -380,9 +377,9 @@ namespace HotFix.Control {
 
             if (y == 1 && BaseBoardSkin.isSkinChanged) { // debug
                 EventManager.Instance.FireEvent("cubesMat");
-                // updateBaseCubesSkin();
             }
             // Debug.Log(TAG + " cnt: " + cnt); 
         } 
     }
 }
+

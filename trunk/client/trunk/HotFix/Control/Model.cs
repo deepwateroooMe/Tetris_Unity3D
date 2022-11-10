@@ -47,12 +47,15 @@ namespace HotFix.Control {
                 if (pos.y >= 0 && pos.y < gridHeight && pos.x >= 0 && pos.x < gridXWidth && pos.z >= 0 && pos.z < gridZWidth) { 
                     grid[(int)pos.x][(int)pos.y][(int)pos.z] = mino;
                     gridOcc[(int)pos.x][(int)pos.y][(int)pos.z] = 1;
-                    if (GloData.Instance.isChallengeMode)
+                    if (GloData.Instance.isChallengeMode) {
+                        MathUtilP.print(pos);
                         // gridClr[(int)pos.x][(int)pos.y][(int)pos.z] = tetromino.GetComponent<TetrominoType>().color;
                         gridClr[(int)pos.x][(int)pos.y][(int)pos.z] = mino.GetComponent<MinoType>().color;
+                    }
                 }
             }
-            Debug.Log(TAG + "UpdateGrid() ViewManager.nextTetromino.name: " + tetromino.name);
+            if (ViewManager.nextTetromino != null)
+                Debug.Log(TAG + "UpdateGrid() ViewManager.nextTetromino.name: " + tetromino.name);
         }
 
         public static bool CheckIsValidPosition() { // check if physically fits into the grid

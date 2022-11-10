@@ -74,6 +74,7 @@ namespace HotFix.UI {
         public int prevPreviewColor2;
         public int previewTetrominoColor;
         public int previewTetromino2Color;
+        public int challengeLevel;
         
         // private SaveGameEventInfo saveGameInfo;
         public bool hasDeletedMinos = false;
@@ -156,7 +157,7 @@ namespace HotFix.UI {
             gridWidth = ((MenuViewModel)ParentViewModel).gridWidth;
             
             gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
-            fallSpeed = 0.5f;
+            fallSpeed = 3.0f;
             // saveForUndo = true;
             gameStarted = false;
 
@@ -175,6 +176,7 @@ namespace HotFix.UI {
             tetroCnter.Value = GloData.Instance.tetroCnter;
             undoCnter.Value = 5;
             swapCnter.Value = 5;
+            challengeLevel = GloData.Instance.challengeLevel;
             
             buttonInteractableList = new int [7];
             for (int i = 0; i < 7; i++)
@@ -211,7 +213,7 @@ namespace HotFix.UI {
             gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
             Debug.Log(TAG + " gameMode.Value: " + gameMode.Value);
 
-            fallSpeed = 0.5f; // should be recorded too, here
+            fallSpeed = 3.0f; // should be recorded too, here
             if (gameMode.Value == 0) {
                 Model.resetGridOccBoard();
                 saveForUndo = true;
@@ -223,7 +225,7 @@ namespace HotFix.UI {
         public void LoadNewGame() {
             Debug.Log(TAG + ": LoadNewGame()");
             gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
-            fallSpeed = 1.0f; // should be recorded too, here
+            fallSpeed = 3.0f; // should be recorded too, here
 
             if (gameMode.Value == 0 && Model.gridOcc != null)
                 Model.resetGridOccBoard();
@@ -360,7 +362,7 @@ namespace HotFix.UI {
         }
 
         public void UpdateSpeed() { 
-            fallSpeed = 1.0f - (float)currentLevel.Value  * 0.1f;
+            fallSpeed = 3.0f - (float)currentLevel.Value  * 0.1f;
         }
         
         public void recycleNextTetromino() { // 这个折成两部分来写

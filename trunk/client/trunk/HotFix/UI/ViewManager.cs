@@ -74,7 +74,7 @@ namespace HotFix.UI {
                         parent.SetActive(false);
 // for CHALLENGE MODE:
                         basePlane = go.FindChildByName("basePlane"); 
-                        basePlane.SetActive(false);
+                        // basePlane.SetActive(false);
                         PoolHelper.LoadChallengeModeMaterials();
                     }, EAssetBundleUnloadLevel.Never);
         }
@@ -89,7 +89,7 @@ namespace HotFix.UI {
         public static GameObject tetrosPool = null;
         public static GameObject tetroParent = null;
         public static Sprite directionsImg;
-        public static Sprite rotationsImg;
+		public static Sprite rotationsImg;
         public static GameObject minoPS;
 // for CHALLENGE MODE
         public static GameObject basePlane;

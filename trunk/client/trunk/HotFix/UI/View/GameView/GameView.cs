@@ -101,10 +101,6 @@ namespace HotFix.UI {
 
         public ModelMono modelMono;
 
-// // // 挑战模式下:当方块砖落地的时候,地板的着色会跟着改变?        
-//         public delegate void TetrominoChallengeLandingDelegate();
-//         public static TetrominoChallengeLandingDelegate changeBaseCubesSkin;
-
 // TODO:对按钮,更该用状态来管理,而不是彻底看不见,应该设置为可见不可点击回调        
         public Dictionary<GameObject, bool> btnState;
 
@@ -123,10 +119,6 @@ namespace HotFix.UI {
                 lvlText.text = GloData.Instance.gameLevel.ToString();
 // 每个层级的底坐: 这里可能还需要更多的控件索引,因为底座需要能够更新材质                
                 ViewManager.basePlane.SetActive(true);
-
-// TODO: BaseBoardSkin这个模块好像没有调好,还有很多BUG
-                GameObject level1 = ViewManager.basePlane.gameObject.FindChildByName("level1");
-                ComponentHelper.AddBBSkinComponent(level1);
             }
         }
         void initializeChallengingMode() {
@@ -381,8 +373,13 @@ namespace HotFix.UI {
 
             if (GloData.Instance.isChallengeMode) {
                 ViewModel.isChallengeMode = true;
+                Model.gridWidth = GloData.Instance.gridSize;
                 Model.gridXWidth = GloData.Instance.gridXSize;
                 Model.gridZWidth = GloData.Instance.gridZSize;
+
+                Debug.Log(TAG + " Model.gridXWidth: " + Model.gridXWidth);
+                Debug.Log(TAG + " Model.gridZWidth: " + Model.gridZWidth);
+
                 Model.baseCubes = new int[Model.gridXWidth * Model.gridZWidth];
                 Model.prevSkin = new int[4];
                 Model.prevIdx = new int[4];
@@ -400,7 +397,7 @@ namespace HotFix.UI {
                     }
                 }
                 MathUtilP.resetColorBoard();
-                // loadInitCubesforChallengeMode(); // cmt for tmp, 在其它关卡的时候需要这些东西 
+                loadInitCubesforChallengeMode(); // 某些挑战层级,是有些相对固定的立方体方块砖存在的,对他们进行加载和数据管理
             } else {
                 Model.gridWidth = GloData.Instance.gridSize;
                 Model.gridXWidth = GloData.Instance.gridSize;
@@ -621,6 +618,7 @@ namespace HotFix.UI {
             scoText.text = ViewModel.currentScore.ToString();
             lvlText.text = ViewModel.currentLevel.ToString();
             linText.text = ViewModel.numLinesCleared.ToString();
+            swapCnter.text = ViewModel.swapCnter.Value.ToString();
         }
 #region pausePanel Button Handlers
         // MidMenuView 里的5 个按钮, 以及的瑨延伸的3个按钮的点击回调
@@ -705,6 +703,9 @@ namespace HotFix.UI {
             Debug.Log(TAG + " onUndoGame() isDuringUndo: " + isDuringUndo);
 // TODO: THERE IS A onUndoGame() irresponsible bug here to be fixed            
             if (isDuringUndo) return ;
+// TODO: 对行列场景的处理
+            if (gameOverPanel.activeSelf)
+                gameOverPanel.SetActive(false);
             Debug.Log(TAG + " (ViewModel.buttonInteractableList[2] == 0): " + (ViewModel.buttonInteractableList[2] == 0));
             Debug.Log(TAG + " (ViewModel.buttonInteractableList[2] == 0 || GloData.Instance.isChallengeMode && ViewModel.undoCnter.Value == 0): " + (ViewModel.buttonInteractableList[2] == 0 || GloData.Instance.isChallengeMode && ViewModel.undoCnter.Value == 0));
             if (ViewModel.buttonInteractableList[2] == 0 || GloData.Instance.isChallengeMode && ViewModel.undoCnter.Value == 0) return;
@@ -757,11 +758,16 @@ namespace HotFix.UI {
                 EventManager.Instance.FireEvent("land");
             }
         }
+// TODO: BUG 这个计数没能及时反映到UI上的刷新        
         public void onSwapPreviewTetrominos () { // 这里需要下发指令到视图数据层,并根据随机数生成的新的tetromino来重新刷新UI
             Debug.Log(TAG + " onSwapPreviewTetrominos");
             if (ViewModel.buttonInteractableList[2] == 0) return;
             Debug.Log(TAG + " ViewModel.swapCnter.Value: " + ViewModel.swapCnter.Value);
-            ViewModel.swapCnter.Value -= 1;
+            --ViewModel.swapCnter.Value;
+
+            // 当 ViewModel.swapCnter.Value == 1的时候点击,就将这个按钮短暂失活,直到重新游戏或是下一关卡
+            if (ViewModel.swapCnter.Value == 0) // 
+                swaBtn.SetActive(false);
             Debug.Log(TAG + " ViewModel.swapCnter.Value: " + ViewModel.swapCnter.Value);
             PoolHelper.recyclePreviewTetrominos(previewTetromino);
             PoolHelper.recyclePreviewTetrominos(previewTetromino2);

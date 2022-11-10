@@ -42,25 +42,28 @@ namespace HotFix.Control {
             EventManager.Instance.RegisterListener<TetrominoChallLandInfo>(onActiveTetrominoLand);
             EventManager.Instance.RegisterListener<CubesMaterialEventInfo>(onCubesMaterialsChanged);
 
-            Model.baseCubes = new int [Model.gridXWidth * Model.gridZWidth];
+// 初始化: 我记得当有空白的地方是不允许移动的,要把那个地方的逻辑给找出来            
+            Model.baseCubes = new int [Model.gridXWidth * Model.gridZWidth]; // <<<<<<<<<<<<<<<<<<<< Model.baseCubes: int [], 地板砖的着色
             int n = Model.gridXWidth * Model.gridZWidth;
-            cubes = new GameObject[n];
+            cubes = new GameObject[n]; // 地板砖的 gameObject s
+
+// TODO: BUG FOR deffient levels, because I did named them differenly last night                    
             StringBuilder name = new StringBuilder("");
             for (int j = 0; j < Model.gridZWidth; j++) 
                 for (int a = 0; a < Model.gridXWidth; a++) {// 这里字符串的使用太恐怖了
                     name.Length = 0;
-
-// TODO: BUG FOR deffient levels, because I did named them differenly last night                    
-                    name.Append("Cube" + a + j); // BUGS
+                    if (GloData.Instance.gameLevel < 3)
+                        name.Append("Cube" + a + j);
+                    else name.Append("Cube" + a + "0 (" + j + ")"); 
                     cubes[j * Model.gridXWidth + a] = gameObject.FindChildByName(name.ToString());
                 }
+            
             int x = 0, z = 0;
             for (int i = 0; i < n; i++) {
                 Model.baseCubes[i] = cubes[i].GetComponent<MinoType>().color;
                 x = i % Model.gridXWidth;
                 z = i / Model.gridXWidth;
-                if (!cubes[i].activeSelf) {
-                    // Debug.Log(TAG + " (Model.grid == null): " + (Model.grid == null)); 
+                if (!cubes[i].activeSelf) { // 如果某一个方格失活,那么整个竖列都是不能穿过的
                     for (int y = 0; y < Model.gridHeight; y++) {
                         Model.grid[x][y][z] = null;
                         Model.gridOcc[x][y][z] = 9; // magic number, 9 to substitute -1

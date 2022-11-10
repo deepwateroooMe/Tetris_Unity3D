@@ -214,18 +214,12 @@ namespace HotFix.Control {
                     int randomColor = UnityEngine.Random.Range(0, 4);
                     objInstance.GetComponent<TetrominoType>().color = randomColor;
                     Debug.Log(TAG + " randomColor: " + randomColor); 
-                    Debug.Log(TAG + " ViewManager.materials.Count: " + ViewManager.materials.Count);
-                    Debug.Log(TAG + " ViewManager.colors.Count: " + ViewManager.colors.Count);
+                    // Debug.Log(TAG + " ViewManager.materials.Count: " + ViewManager.materials.Count);
+                    // Debug.Log(TAG + " ViewManager.colors.Count: " + ViewManager.colors.Count);
                     foreach (Transform child in objInstance.transform) {
                         if (child.gameObject.GetComponent<MinoType>() == null)
                             child.gameObject.AddComponent<MinoType>();
                         child.gameObject.GetComponent<MinoType>().color = randomColor;
-// // 这里没有设置成功
-//                         MeshRenderer minoRenderer = child.gameObject.GetComponent<MeshRenderer>();
-//                         Material [] materials = minoRenderer.materials;
-//                         Debug.Log(TAG + " (ViewManager.materials[randomColor] == null): " + (ViewManager.materials[randomColor] == null));
-//                         materials[0] = ViewManager.materials[randomColor];
-//                         minoRenderer.materials = materials;
                         child.gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[randomColor];
                     }
                 }

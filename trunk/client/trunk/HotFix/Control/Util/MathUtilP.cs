@@ -16,22 +16,36 @@ namespace HotFix.Control {
         private static int n = 12;
 
         public static int getIndex(int x, int y, int z) {
-            int idx = (int)(m * m * y + m * z + x);
+            // int idx = (int)(m * m * y + m * z + x);
+            xm = GloData.Instance.gridXSize;
+            zm = GloData.Instance.gridZSize;
+            int idx = (int)(xm * zm * y + xm * z + x);
             return idx;
         }
 
         public static int getIndex(float [] pos) {
+            xm = GloData.Instance.gridXSize;
+            zm = GloData.Instance.gridZSize;
             print(pos);
-            int idx = (int)(m * m * (int)pos[1] + m * (int)pos[0] + (int)pos[1]);
+            // int idx = (int)(m * m * (int)pos[1] + m * (int)pos[0] + (int)pos[1]);
+            int idx = (int)(xm * zm * (int)pos[1] + xm * (int)pos[2] + (int)pos[0]);
             return idx;
         }
     
         public static int getIndex(Vector3 pos) {
-            int idx = m * m * (int)pos.y + m * (int)pos.z + (int)pos.x;
+            // m = GloData.Instance.gridSize; // level3 某些情况下 两个四轴的是不同的
+            // int idx = m * m * (int)pos.y + m * (int)pos.z + (int)pos.x;
+// 因为每次调用的时候可能会关卡不同,所以每次都再更新一下确保数据正确            
+            xm = GloData.Instance.gridXSize;
+            zm = GloData.Instance.gridZSize;
+            int idx = xm * zm * (int)pos.y + xm * (int)pos.z + (int)pos.x;
             return idx;
         }
         public static int getIndex(Transform transform) { // this idx has NOT considered any rotation, so it could be wrong, should always use transform instead
-            int idx = m * m * (int)transform.position.y + m * (int)transform.position.z + (int)transform.position.x;
+            xm = GloData.Instance.gridXSize;
+            zm = GloData.Instance.gridZSize;
+            // int idx = m * m * (int)transform.position.y + m * (int)transform.position.z + (int)transform.position.x;
+            int idx = xm * zm * (int)transform.position.y + xm * (int)transform.position.z + (int)transform.position.x;
             return idx;
         }
         public static Vector3 getWorldPos(Transform transform, Vector3 pivot) {
@@ -44,9 +58,14 @@ namespace HotFix.Control {
             // Debug.Log(TAG + ": getIndex()");
             // Debug.Log(TAG + " m: " + m); 
             int [] result = new int[3];
-            result[0] = idx % (m * m) % m;
-            result[1] = idx / (m * m);
-            result[2] = idx % (m * m) / m;
+            // result[0] = idx % (m * m) % m;
+            // result[1] = idx / (m * m);
+            // result[2] = idx % (m * m) / m;
+            xm = GloData.Instance.gridXSize;
+            zm = GloData.Instance.gridZSize;
+            result[0] = idx % (xm * zm) % xm;
+            result[1] = idx / (xm * zm);
+            result[2] = idx % (xm * zm) / xm;
             return result;
         }
     
@@ -129,14 +148,20 @@ namespace HotFix.Control {
         }
 
         public static void printBoard(int[][][] gridOcc) {
+            xm = GloData.Instance.gridXSize;
+            zm = GloData.Instance.gridZSize;
             bool empty = true;
             int z = 0;
             for (int y = 0; y < n; y++) {
                 if (isBoardLayerEmpty(gridOcc, y)) return;
                 // Debug.Log(TAG + " y: " + y); 
-                for (int x = 0; x < m; x++) {
+                for (int x = 0; x < (GloData.Instance.isChallengeMode ? xm : m); x++) {
                     z = -1;
-                    Debug.Log("X" + x + ":    " + gridOcc[x][y][++z] + "  " + gridOcc[x][y][++z] + "  " + gridOcc[x][y][++z] + "  " + gridOcc[x][y][++z] + "  " + gridOcc[x][y][++z]);
+                    Debug.Log("X" + x + ":    "
+                              + gridOcc[x][y][++z] + "  " + gridOcc[x][y][++z] + "  " + gridOcc[x][y][++z]
+                              + "  " + gridOcc[x][y][++z] + "  " + gridOcc[x][y][++z]
+                              + "  " + gridOcc[x][y][++z] + "  " + gridOcc[x][y][++z]
+                        );
                 }
                 Debug.Log("=========== === ======="); // just so that the board looks more reasonable and helps debug
             }
@@ -145,7 +170,7 @@ namespace HotFix.Control {
         private static bool isBoardLayerEmpty(int [][][] f, int y) {
             for (int x = 0; x < m; x++) 
                 for (int z = 0; z < m; z++) {
-                    if (f[x][y][z] > 0)
+                    if (f[x][y][z] > 0 && f[x][y][z] != 9)
                         return false;
                 }
             return true;
@@ -154,7 +179,6 @@ namespace HotFix.Control {
         public static void printBoard(int[] color) {
             int n = color.Length;
             int x = 0, z = 0;
-            // int [,] baseColor = new int [Model.gridXWidth, Model.gridZWidth];
             int [][] baseColor = new int [Model.gridXWidth][];
             for (int i = 0; i < Model.gridXWidth; i++) 
                 baseColor[i] = new int [Model.gridZWidth];
@@ -175,8 +199,8 @@ namespace HotFix.Control {
                           baseColor[i][++j] + "    " +
                           baseColor[i][++j] + "    " +
                           baseColor[i][++j] + "    " +
-                          // baseColor[i][++j] + "    " +
-                          // baseColor[i][++j] + "    " +
+                          baseColor[i][++j] + "    " +
+                          baseColor[i][++j] + "    " +
                           // baseColor[i][++j] + "    " +
                           baseColor[i][++j]);
             }
@@ -220,14 +244,5 @@ namespace HotFix.Control {
                 }
             }
         }
-// 这么写运行时有问题
-        // public static void initiateThreeDArray(int [][][] f, int x, int y, int z) {
-        //     f = new int [x][][];
-        //     for (int i = 0; i < x; i++) {
-        //         f[i] = new int [y][];
-        //         for (int j = 0; j < y; j++) 
-        //             f[i][j] = new int [z];
-        //     }
-        // }
     }
 }

@@ -51,7 +51,7 @@ namespace HotFix.Control {
                 if (mino.CompareTag("mino")) {
                     curMinoColor = mino.gameObject.GetComponent<MinoType>().color;
                     Debug.Log(TAG + " isTetrominoMatchingNeighbour() curMinoColor: " + curMinoColor);
-                    Vector3 pos = MathUtil.Round(mino.position);
+                    Vector3 pos = MathUtilP.Round(mino.position);
                     int x = (int)Mathf.Round(pos.x);
                     int y = (int)Mathf.Round(pos.y);
                     int z = (int)Mathf.Round(pos.z);
@@ -154,8 +154,8 @@ namespace HotFix.Control {
             getBottomLayerMinosIdx();
             for (int i = 0; i < 4; i++) {
                 if (bottomIdx[i] == -1) return false;
-                int [] pos = MathUtil.getIndex(bottomIdx[i]);
-                MathUtil.print(pos);
+                int [] pos = MathUtilP.getIndex(bottomIdx[i]);
+                MathUtilP.print(pos);
                 if (pos[1] == 0) {
                     Debug.Log(TAG + " (Model.baseCubes[getMinoPosCubeArrIndex(pos[0], pos[2])] == Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color): "
                               + (Model.baseCubes[getMinoPosCubeArrIndex(pos[0], pos[2])] == Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color)); 
@@ -205,11 +205,14 @@ namespace HotFix.Control {
             int minY = getMinYLayerIdx(); // ViewManager.nextTetromino 当前方块砖的所有立方体中最低一层的y idx
             Debug.Log(TAG + " minY: " + minY); 
             int i = 0;
+// todo: bug; 这里有个BUG
             foreach (Transform mino in ViewManager.nextTetromino.transform) {
                 if (mino.CompareTag("mino")) {
-                    Vector3 pos = MathUtil.Round(mino.position);
+                    Vector3 pos = MathUtilP.Round(mino.position);
+
+                    MathUtilP.print(pos);
                     if ((int)pos.y == minY) 
-                        bottomIdx[i++] = MathUtil.getIndex(pos);
+                        bottomIdx[i++] = MathUtilP.getIndex(pos);
                 }
             }
             MathUtilP.print(bottomIdx);
@@ -260,7 +263,7 @@ namespace HotFix.Control {
                     while (j > 0 && Model.grid[i][j][k] == null) j--;
                     if (j > 0 && Model.gridClr[i][j][k] == color && Model.grid[i][j][k].parent.gameObject != ViewManager.nextTetromino) {
                         Debug.Log(TAG + ": i, j, k values: "); 
-                        MathUtil.print(i, j, k);
+                        MathUtilP.print(i, j, k);
                         // Debug.Log(TAG + " j: " + j); 
                         return true;
                     }
@@ -313,5 +316,4 @@ namespace HotFix.Control {
         }
     }
 }
-
 
