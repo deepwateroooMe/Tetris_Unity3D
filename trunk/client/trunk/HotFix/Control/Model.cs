@@ -170,15 +170,14 @@ namespace HotFix.Control {
         }
 
         public static bool IsFullRowAt(int y) {
-            // Debug.Log(TAG + ": IsFullRowAt()");
+            Debug.Log(TAG + ": IsFullRowAt()");
             for (int x = 0; x < gridXWidth; x++)
-                for (int j = 0; j < gridZWidth; j++) 
-                    if ( (!GloData.Instance.isChallengeMode && (grid[x][y][j] == null 
-                                                              || (grid[x][y][j].parent == ViewManager.ghostTetromino.transform && grid[x][y][j].parent != ViewManager.nextTetromino.transform))) 
-                         // if ( ((grid[x][y][j] == null && !GloData.Instance.isChallengeMode) || grid[x][y][j].parent != ViewManager.nextTetromino.transform)
+                for (int j = 0; j < gridZWidth; j++)
+                    if ( (!GloData.Instance.isChallengeMode
+                          && (grid[x][y][j] == null || (grid[x][y][j].parent == ViewManager.ghostTetromino.transform && grid[x][y][j].parent != ViewManager.nextTetromino.transform))) 
                          || (GloData.Instance.isChallengeMode && grid[x][y][j] == null && gridOcc[x][y][j] == 0) )
                         return false;
-            numberOfRowsThisTurn++;
+            numberOfRowsThisTurn++; // number of layers
             return true;
         }
 
@@ -300,6 +299,7 @@ namespace HotFix.Control {
             Debug.Log(TAG + ": IsFullQuadInLayerAt()");
             int quadSum = 0;
             bool isFullQuadInLayer = false;
+// 好像是把每层分成了四个小区,可以每小区单独先降一小区?            
             int [] activeZone = new int[4];
             Vector3 center = Vector3.zero;
             switch (GloData.Instance.challengeLevel) {
@@ -316,6 +316,7 @@ namespace HotFix.Control {
 
             int tmp = 0;
             zoneSum = 0;
+// (GloData.Instance.challengeLevel == 3)            
             if (GloData.Instance.challengeLevel == 3) { // 必须单独处理
                 // Debug.Log(TAG + " (int)center.x: " + (int)center.x); 
                 // Debug.Log(TAG + " (int)center.z: " + (int)center.z); 
@@ -412,9 +413,9 @@ namespace HotFix.Control {
                 return false;
             } // level 3 done
 
-            
-            // Debug.Log(TAG + " (int)center.x: " + (int)center.x); 
-            // Debug.Log(TAG + " (int)center.z: " + (int)center.z); 
+// (GloData.Instance.challengeLevel != 3)            
+            Debug.Log(TAG + " (int)center.x: " + (int)center.x); 
+            Debug.Log(TAG + " (int)center.z: " + (int)center.z); 
             tmp = 0;
             for (int j = 0; j <= (int)center.z; j++) {
                 if (gridOcc[(int)center.x][y][j] != 1) continue; // 0 or 9

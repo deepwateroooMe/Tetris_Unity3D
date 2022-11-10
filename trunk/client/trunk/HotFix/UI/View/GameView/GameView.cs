@@ -193,7 +193,7 @@ namespace HotFix.UI {
             cancBtn = GameObject.FindChildByName("cancBtn").GetComponent<Button>(); // cancel: back to pause Panel
             cancBtn.onClick.AddListener(OnClickCancButton);
 
-// isChallengeMode: 这里先前的问题是,当不把这个面板及时加进去,感觉像是没有在UI Canvas绘制系统中注册,当swapCnter值变化的时候,不能刷新UI
+// isChallengeMode: 这里先前的问题是,当不把这个面板及时加进去,感觉像是没有在UI Canvas绘制系统中注册,当swapCnter值变化的时候,不能刷新UI LOVE MY DEAR COUSIN !!!
             comLevelView = GameObject.FindChildByName("comLevelTexts");
             comLevelView.SetActive(false);
             goalPanel = GameObject.FindChildByName("goalPanel");
@@ -368,36 +368,6 @@ namespace HotFix.UI {
             }
         }
         public GameObject [] cubes; // baseCubesGO;
-        // void initateBaseCubesColors() {
-        //     // 当添加这个脚本的时候,还无法知道游戏关卡层级,所以必须换个地方起始初始化
-        //     Model.baseCubes = new int [Model.gridXWidth * Model.gridZWidth]; // <<<<<<<<<<<<<<<<<<<< Model.baseCubes: int [], 地板砖的着色
-        //     int n = Model.gridXWidth * Model.gridZWidth;
-        //     cubes = new GameObject[n]; // 地板砖的 gameObject s
-        //     StringBuilder name = new StringBuilder("");
-        //     for (int z = 0; z < Model.gridZWidth; z++) {
-        //         for (int x = 0; x < Model.gridXWidth; x++) {
-        //             name.Length = 0;
-        //             if (GloData.Instance.gameLevel < 3 || GloData.Instance.gameLevel == 11) // so far 1, 2, 11 three levels named this way
-        //                 name.Append("Cube" + x + z);
-        //             else name.Append("Cube" + x + "0 (" + z + ")"); 
-        //             cubes[z * Model.gridXWidth + x] = gameObject.FindChildByName(name.ToString());
-        //         }
-        //     }
-        //     int xx = 0, zz = 0;
-        //     for (int i = 0; i < n; i++) {
-        //         Model.baseCubes[i] = cubes[i].GetComponent<MinoType>().color;
-        //         xx = i % Model.gridXWidth;
-        //         zz = i / Model.gridXWidth;
-        //         if (!cubes[i].activeSelf) { // 如果某一个方格失活,那么整个竖列都是不能穿过的
-        //             for (int y = 0; y < Model.gridHeight; y++) {
-        //                 Model.grid[xx][y][zz] = null;
-        //                 Model.gridOcc[xx][y][zz] = 9; // magic number, 9 to substitute -1
-        //             }
-        //         }
-        //     }
-        //     Debug.Log(TAG + " Start() Model.baseCubes colors");
-        //     MathUtilP.print(Model.baseCubes);
-        // }
         public void Start() { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
             Debug.Log(TAG + ": Start()");
             
@@ -904,7 +874,10 @@ namespace HotFix.UI {
                 CoroutineHelperP.StartCoroutine(ModelMono.Instance.DeleteRowCoroutine()); // the case
 
 // 后面一部分,只在持战模式下,当剩余的方块砖的数目为0时才游戏结束
+            bool tmp = Model.CheckIsAboveGrid(ComponentHelper.GetTetroComponent(ViewManager.nextTetromino));
+            Debug.Log(TAG + " Model.CheckIsAboveGrid(ComponentHelper.GetTetroComponent(ViewManager.nextTetromino)): " + tmp);
             if (Model.CheckIsAboveGrid(ComponentHelper.GetTetroComponent(ViewManager.nextTetromino)) || GloData.Instance.isChallengeMode && ViewModel.tetroCnter.Value == 0) {
+                Debug.Log(TAG + " (ViewModel.tetroCnter.Value == 0): " + (ViewModel.tetroCnter.Value == 0));
                 GameOver();
             }
 

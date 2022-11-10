@@ -235,7 +235,7 @@ namespace HotFix.Control {
             for (int y = 0; y < Model.gridHeight; y++) {
 
                 isFullRowAtY = Model.IsFullRowAt(y);
-                // Debug.Log(TAG + " isFullRowAtY: " + isFullRowAtY); 
+                Debug.Log(TAG + " isFullRowAtY: " + isFullRowAtY); 
                 // if (IsFullRowAt(y)) {
                 if (isFullRowAtY) {
                     // 一定要控制同屏幕同时播放的粒子数量

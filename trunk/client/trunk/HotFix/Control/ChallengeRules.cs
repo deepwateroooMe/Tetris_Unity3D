@@ -77,7 +77,8 @@ namespace HotFix.Control {
                         // Debug.Log(TAG + " GloData.Instance.challengeLevel: " + GloData.Instance.challengeLevel);
                         Debug.Log(TAG + " isSolo: " + isSolo);
                         Debug.Log(TAG + " (GloData.Instance.challengeLevel > 10 && matchingCnter >= 2): "
-                                  + (GloData.Instance.challengeLevel > 10 && matchingCnter >= 2)); 
+                                  + (GloData.Instance.challengeLevel > 10 && matchingCnter >= 2));
+// [1,10]可是只                        
                         if (GloData.Instance.challengeLevel < 11 || isSolo
                             || (GloData.Instance.challengeLevel > 10 && matchingCnter >= 2)) 
                             return true;
