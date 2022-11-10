@@ -20,56 +20,25 @@ namespace HotFix.Control {
         
         private int idx = 0;
 
-        public void Awake() {
-            Debug.Log(TAG + " Awake()");
-            Start();
-        }
+        // public void Awake() {
+        //     // Debug.Log(TAG + " Awake()");
+        //     Start();
+        // }
         public void OnEnable() {
-            Debug.Log(TAG + ": OnEnable()");
+            // Debug.Log(TAG + ": OnEnable()");
             Start();
         }
-
-        public void OnDisable() {
-            Debug.Log(TAG + " gameObject.name: " + gameObject.name);
-            EventManager.Instance.UnregisterListener<TetrominoChallLandInfo>(onActiveTetrominoLand); 
-            EventManager.Instance.UnregisterListener<UndoGameEventInfo>(onUndoGame); 
-            EventManager.Instance.UnregisterListener<CubesMaterialEventInfo>(onCubesMaterialsChanged);
-        }
-
         public void Start() {
             Debug.Log(TAG + " Start()");
             EventManager.Instance.RegisterListener<UndoGameEventInfo>(onUndoGame); 
             EventManager.Instance.RegisterListener<TetrominoChallLandInfo>(onActiveTetrominoLand);
             EventManager.Instance.RegisterListener<CubesMaterialEventInfo>(onCubesMaterialsChanged);
-
-// // 当添加这个脚本的时候,还无法知道游戏关卡层级,所以必须换个地方起始初始化
-//             Model.baseCubes = new int [Model.gridXWidth * Model.gridZWidth]; // <<<<<<<<<<<<<<<<<<<< Model.baseCubes: int [], 地板砖的着色
-//             int n = Model.gridXWidth * Model.gridZWidth;
-//             cubes = new GameObject[n]; // 地板砖的 gameObject s
-//             StringBuilder name = new StringBuilder("");
-//             for (int j = 0; j < Model.gridZWidth; j++) 
-//                 for (int a = 0; a < Model.gridXWidth; a++) {// 这里字符串的使用太恐怖了
-//                     name.Length = 0;
-//                     if (GloData.Instance.gameLevel < 3 || GloData.Instance.gameLevel == 11) // so far 1, 2, 11 three levels named this way
-//                         name.Append("Cube" + a + j);
-//                     else name.Append("Cube" + a + "0 (" + j + ")"); 
-//                     cubes[j * Model.gridXWidth + a] = gameObject.FindChildByName(name.ToString());
-//                 }
-            
-//             int x = 0, z = 0;
-//             for (int i = 0; i < n; i++) {
-//                 Model.baseCubes[i] = cubes[i].GetComponent<MinoType>().color;
-//                 x = i % Model.gridXWidth;
-//                 z = i / Model.gridXWidth;
-//                 if (!cubes[i].activeSelf) { // 如果某一个方格失活,那么整个竖列都是不能穿过的
-//                     for (int y = 0; y < Model.gridHeight; y++) {
-//                         Model.grid[x][y][z] = null;
-//                         Model.gridOcc[x][y][z] = 9; // magic number, 9 to substitute -1
-//                     }
-//                 }
-//             }
-//             Debug.Log(TAG + " Start() Model.baseCubes colors");
-//             MathUtilP.print(Model.baseCubes);
+        }
+        public void OnDisable() {
+            Debug.Log(TAG + " gameObject.name: " + gameObject.name);
+            EventManager.Instance.UnregisterListener<TetrominoChallLandInfo>(onActiveTetrominoLand); 
+            EventManager.Instance.UnregisterListener<UndoGameEventInfo>(onUndoGame); 
+            EventManager.Instance.UnregisterListener<CubesMaterialEventInfo>(onCubesMaterialsChanged);
         }
         
         public void initateBaseCubesColors() {
@@ -101,6 +70,8 @@ namespace HotFix.Control {
             }
             Debug.Log(TAG + " initateBaseCubesColors() Model.baseCubes colors");
             MathUtilP.print(Model.baseCubes);
+            Debug.Log(TAG + " initateBaseCubesColors() Model.gridOcc: ");
+            MathUtilP.printBoard(Model.gridOcc);
         }
 
         public void onCubesMaterialsChanged(CubesMaterialEventInfo info) {

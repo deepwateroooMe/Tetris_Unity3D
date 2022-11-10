@@ -121,6 +121,7 @@ namespace HotFix.UI {
                 ViewManager.basePlane.SetActive(true);
             }
         }
+
         void initializeChallengingMode() {
             comLevelView.SetActive(true);
             goalPanel.SetActive(true);
@@ -192,8 +193,9 @@ namespace HotFix.UI {
             cancBtn = GameObject.FindChildByName("cancBtn").GetComponent<Button>(); // cancel: back to pause Panel
             cancBtn.onClick.AddListener(OnClickCancButton);
 
-// isChallengeMode:
+// isChallengeMode: 这里先前的问题是,当不把这个面板及时加进去,感觉像是没有在UI Canvas绘制系统中注册,当swapCnter值变化的时候,不能刷新UI
             comLevelView = GameObject.FindChildByName("comLevelTexts");
+            comLevelView.SetActive(false);
             goalPanel = GameObject.FindChildByName("goalPanel");
             swapCnter = GameObject.FindChildByName("swapCnter").GetComponent<Text>();
             undoCnter = GameObject.FindChildByName("undoCnter").GetComponent<Text>();
@@ -796,7 +798,8 @@ namespace HotFix.UI {
             if (ViewModel.buttonInteractableList[2] == 0) return;
             Debug.Log(TAG + " ViewModel.swapCnter.Value: " + ViewModel.swapCnter.Value);
             --ViewModel.swapCnter.Value;
-
+            // ViewModel.onSwapPreviewTetromino();
+            
             // 当 ViewModel.swapCnter.Value == 1的时候点击,就将这个按钮短暂失活,直到重新游戏或是下一关卡
             if (ViewModel.swapCnter.Value == 0) // 
                 swaBtn.SetActive(false);
@@ -867,12 +870,13 @@ namespace HotFix.UI {
 // 这只是众多重构过程中的一个小节,无关任何其它. 爱表哥,爱生活!!!            
             // ViewModel.UpdateGrid(ViewManager.nextTetromino); 
             
-            Debug.Log(TAG + ": gridOcc[][][] BEFORE Land BEFORE UpdateGrid(), BEFORE onGameSave()"); 
+            Debug.Log(TAG + ": gridOcc[][][] BEFORE Land BEFORE UpdateGrid()"); 
             MathUtilP.printBoard(Model.gridOcc);  // Model.
 
             Model.UpdateGrid(ViewManager.nextTetromino); 
 
-            Debug.Log(TAG + ": gridOcc[][][] AFTER Land  Update AFTER UpdteGrid(), BEFORE onGameSave()"); 
+            Debug.Log(TAG + ": gridOcc[][][] AFTER Land  Update AFTER UpdteGrid(); BEFORE onGameSave()"); 
+ 
             MathUtilP.printBoard(Model.gridOcc);  // Model.
             // Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), bef onGameSave()"); 
             // MathUtilP.printBoard(gridClr);  // Model.
@@ -930,13 +934,16 @@ namespace HotFix.UI {
 
 // 因为ViewManager.nextTetromino是静态的,将相关逻辑移到这个类里来管理, 不可以这样      
         void onActiveTetrominoMove(TetrominoMoveEventInfo info) { // MoveDown:所有事件都是有效的
-            // Debug.Log(TAG + " onActiveTetrominoMove");
+            Debug.Log(TAG + " onActiveTetrominoMove");
             ViewManager.nextTetromino.transform.position += info.delta;
             isMoveValid = Model.CheckIsValidPosition();
+            Debug.Log(TAG + " isMoveValid: " + isMoveValid);
+            MathUtilP.print(ViewManager.nextTetromino.transform.position);
             if (isMoveValid)
                 EventManager.Instance.FireEvent("validMR", "move", info.delta);
             else 
                 ViewManager.nextTetromino.transform.position -= info.delta;
+            MathUtilP.print(ViewManager.nextTetromino.transform.position);
         }
         void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
             // Debug.Log(TAG + ": onActiveTetrominoRotate()");

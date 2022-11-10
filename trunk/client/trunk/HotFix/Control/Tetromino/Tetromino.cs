@@ -72,7 +72,6 @@ namespace HotFix.Control {
             EventManager.Instance.FireEvent("land");
             ViewManager.nextTetromino.tag = "Untagged";
             ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).enabled = false;
-            //ViewManager.GameView.ViewModel.currentScore.Value += individualScore;            
         }
 
         public void MoveDown() {

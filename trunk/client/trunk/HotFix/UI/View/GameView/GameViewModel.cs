@@ -91,6 +91,10 @@ namespace HotFix.UI {
             DelegateSubscribe(); 
         }   
 
+        // public void onSwapPreviewTetromino() {
+        //     Debug.Log(TAG + " onSwapPreviewTetromino");
+        //     --swapCnter.Value;
+        // }
         public void onUndoGame(GameData gameData) { 
             Debug.Log(TAG + ": onUndoGame()");
             isDuringUndo = true;
@@ -101,13 +105,15 @@ namespace HotFix.UI {
             recycleThreeMajorTetromino(ViewManager.GameView.previewTetromino, ViewManager.GameView.previewTetromino2);
 
             StringBuilder type = new StringBuilder("");
+
+// 这些是任何时候都需要恢复的,而不是只在有消除的前提下
+            Debug.Log(TAG + " gameData.score: " + gameData.score);
+            currentScore.Value  = gameData.score;
+            currentLevel.Value  = gameData.level;
+            numLinesCleared.Value  = gameData.lines;
+
             if (ModelMono.hasDeletedMinos) {
 // TODO: THERE IS A BUG AFTER onUndoGame() saying null exception about score?
-                Debug.Log(TAG + " gameData.score: " + gameData.score);
-                currentScore.Value  = gameData.score;
-                currentLevel.Value  = gameData.level;
-                numLinesCleared.Value  = gameData.lines;
-
                 Debug.Log(TAG + ": onUndoGame() current board BEFORE respawn"); 
                 MathUtilP.printBoard(Model.gridOcc); 
 
@@ -214,8 +220,11 @@ namespace HotFix.UI {
             Debug.Log(TAG + " gameMode.Value: " + gameMode.Value);
 
             fallSpeed = 3.0f; // should be recorded too, here
+// 这个函数执行得比较晚,把我先前初始化好的矩阵数据给冲掉了?
+// TODO: BUG, 这里可能还会涉及到更多的BUG            
             if (gameMode.Value == 0) {
-                Model.resetGridOccBoard();
+                if (!isChallengeMode)
+                    Model.resetGridOccBoard();
                 saveForUndo = true;
             } else saveForUndo = false;
             currentScore.Value = 0;
@@ -227,7 +236,7 @@ namespace HotFix.UI {
             gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
             fallSpeed = 3.0f; // should be recorded too, here
 
-            if (gameMode.Value == 0 && Model.gridOcc != null)
+            if (gameMode.Value == 0 && Model.gridOcc != null && !isChallengeMode)
                 Model.resetGridOccBoard();
             currentScore.Value = 0;
             currentLevel.Value = startingLevel;
@@ -279,6 +288,7 @@ namespace HotFix.UI {
             }
 // TODO:这里还有BUG，也还有先前改过一个,大概撤销之后会生成几套预览的BUG, to be fixed           
             Debug.Log(TAG + " path.ToString(): " + path.ToString());
+            Debug.Log(TAG + " currentScore.Value: " + currentScore.Value);
             Debug.Log(TAG + " prevPreview: " + prevPreview);
             Debug.Log(TAG + " prevPreview2: " + prevPreview2);
             Debug.Log(TAG + " prevPreviewColor: " + prevPreviewColor);

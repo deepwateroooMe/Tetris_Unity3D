@@ -64,7 +64,7 @@ namespace HotFix.Control {
         public void RegisterListener<T>(EventListener<T> listener) where T : EventInfo { 
             // Debug.Log(TAG + ": RegisterListener(): T: " + typeof(T)); 
             EventListener internalDelegate = (el) => { // 注意: 即便不同类(不同对象)对所感兴趣的同类事件的监听回调方法同名,这里仍然会被定义为不同的键
-                Debug.Log(TAG + " RegisterListener<T>:　(typeof(T)): " + typeof(T)); // EventManager (typeof(T)): HotFix.Control.CanvasToggledEventInfo
+                // Debug.Log(TAG + " RegisterListener<T>:　(typeof(T)): " + typeof(T)); // EventManager (typeof(T)): HotFix.Control.CanvasToggledEventInfo
                 listener((T)el);
             };
 
