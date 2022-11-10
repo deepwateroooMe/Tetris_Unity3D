@@ -31,37 +31,36 @@ namespace HotFix.Control {
         private static StringBuilder type = new StringBuilder("");
         private static int randomTetromino;
 
-        public static void UpdateGrid(GameObject tetromino) { // update gridOcc, gridClr at the same time
+        public static void UpdateGrid(GameObject go) { // update gridOcc, gridClr at the same time
             for (int y = 0; y < gridHeight; y++) 
                 for (int z = 0; z < gridZWidth; z++) 
                     for (int x = 0; x < gridXWidth; x++)
-                        if (grid[x][y][z] != null && grid[x][y][z].parent == tetromino.transform) {
+                        if (grid[x][y][z] != null && grid[x][y][z].parent == go.transform) {
                             MathUtilP.print(x, y, z);
                             grid[x][y][z] = null; 
                             gridOcc[x][y][z]= 0;
                             if (GloData.Instance.isChallengeMode)
                                 gridClr[x][y][z]= -1; 
                         }
-            foreach (Transform mino in tetromino.transform) {
-                Vector3 pos = MathUtil.Round(mino.position);
+            foreach (Transform mino in go.transform) { // 当挑战模式更新地板砖的时候,这里就是地板砖的着色
+                Vector3 pos = MathUtilP.Round(mino.position);
                 if (pos.y >= 0 && pos.y < gridHeight && pos.x >= 0 && pos.x < gridXWidth && pos.z >= 0 && pos.z < gridZWidth) { 
                     grid[(int)pos.x][(int)pos.y][(int)pos.z] = mino;
                     gridOcc[(int)pos.x][(int)pos.y][(int)pos.z] = 1;
                     if (GloData.Instance.isChallengeMode) {
                         MathUtilP.print(pos);
-                        // gridClr[(int)pos.x][(int)pos.y][(int)pos.z] = tetromino.GetComponent<TetrominoType>().color;
                         gridClr[(int)pos.x][(int)pos.y][(int)pos.z] = mino.GetComponent<MinoType>().color;
                     }
                 }
             }
             if (ViewManager.nextTetromino != null)
-                Debug.Log(TAG + "UpdateGrid() ViewManager.nextTetromino.name: " + tetromino.name);
+				Debug.Log(TAG + "UpdateGrid() ViewManager.nextTetromino.name: " + ViewManager.nextTetromino.name);
         }
 
         public static bool CheckIsValidPosition() { // check if physically fits into the grid
             foreach (Transform mino in ViewManager.nextTetromino.transform) {
                 if (mino.CompareTag("mino")) {
-                    Vector3 pos = MathUtil.Round(mino.position);
+                    Vector3 pos = MathUtilP.Round(mino.position);
                     if (!CheckIsInsideGrid(pos) || CheckIsInsideBarials(pos)) {
                         return false;
                     }
@@ -238,7 +237,7 @@ namespace HotFix.Control {
         
         public static void resetGridAfterDisappearingNextTetromino(GameObject tetromino) {
             foreach (Transform mino in tetromino.transform) {
-                Vector3 pos = MathUtil.Round(mino.position);
+                Vector3 pos = MathUtilP.Round(mino.position);
                 if ((int)pos.y >= 0 && (int)pos.y < gridHeight && (int)pos.x >= 0 && (int)pos.x < gridXWidth && (int)pos.z >= 0 && (int)pos.z < gridZWidth) { 
                     grid[(int)pos.x][(int)pos.y][(int)pos.z] = null;
                     gridOcc[(int)pos.x][(int)pos.y][(int)pos.z] = 0;
@@ -248,9 +247,9 @@ namespace HotFix.Control {
 
         public static void resetSkinAfterDisappearingNextTetromino(GameObject tetromino) {
             foreach (Transform mino in tetromino.transform) {
-                Vector3 pos = MathUtil.Round(mino.position);
+                Vector3 pos = MathUtilP.Round(mino.position);
                 if ((int)pos.y == 0) { 
-                    baseCubes[MathUtil.getIndex(pos)] = prevSkin[ getSkinCubeIdx(MathUtil.getIndex(pos)) ]; 
+                    baseCubes[MathUtilP.getIndex(pos)] = prevSkin[ getSkinCubeIdx(MathUtilP.getIndex(pos)) ]; 
                 }
             }
         }
@@ -278,7 +277,7 @@ namespace HotFix.Control {
             for (int x = 0; x < gridXWidth; x++)
                 for (int j = 0; j < gridZWidth; j++) 
                     foreach (Transform mino in tetromino.transform) {
-                        Vector3 pos = MathUtil.Round(mino.position);
+                        Vector3 pos = MathUtilP.Round(mino.position);
                         //if (mino.CompareTag("mino" && pos.y > gridHeight - 1)) 
                         //if (mino.CompareTag("mino" && pos.y >= gridHeight - 1))
                         if (pos.y >= gridHeight - 1) // BUG: for game auto ended after first tetromino landing down
@@ -403,7 +402,7 @@ namespace HotFix.Control {
                         }
                     }
                     // Debug.Log(TAG + ": gridOcc[,,] aft detecting IsFullQuadInLayerAt(y)"); 
-                    // MathUtil.printBoard(Model.gridOcc); 
+                    // MathUtilP.printBoard(Model.gridOcc); 
                     
                     isFullQuadInLayer = true;
                     return true;

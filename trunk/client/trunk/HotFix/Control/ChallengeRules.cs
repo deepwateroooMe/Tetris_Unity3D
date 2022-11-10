@@ -30,15 +30,25 @@ namespace HotFix.Control {
                 isSolo = true;
 
             matchingCnter = 0;
-            if (isTetrominoMatchingNeighbour()) return true;
-
+// 检查与 上下左右前后 所有可能有接触面 的方向上的邻居着色是否匹配           
+            bool isTetrominoMatchingNeighbourV = isTetrominoMatchingNeighbour();
+            Debug.Log(TAG + " isTetrominoMatchingNeighbourV: " + isTetrominoMatchingNeighbourV);
+            // if (isTetrominoMatchingNeighbour()) return true;
+            if (isTetrominoMatchingNeighbourV) return true;
+// 如果是直接接触地板,是否匹配地板着色            
             // check bottom layer if bottom minos color match
             if (isBottomLayerSkinMatches()) {
+                Debug.Log(TAG + ": isValidLandingPosition() isBottomLayerSkinMatches(): TRUE");
                 return true;
             }
-            if (GloData.Instance.challengeLevel < 11 && !isColorExistOnContactableBoard(ViewManager.nextTetromino.GetComponent<TetrominoType>().color))
+// 在地板砖层(以及累加方块砖后的底层上表面上),是否存在有当前着色的合理解 ?            
+            bool isColorExistOnContactableBoardV = isColorExistOnContactableBoard(ViewManager.nextTetromino.GetComponent<TetrominoType>().color);
+            Debug.Log(TAG + " isColorExistOnContactableBoardV: " + isColorExistOnContactableBoardV);
+            // if (GloData.Instance.challengeLevel < 11 && !isColorExistOnContactableBoard(ViewManager.nextTetromino.GetComponent<TetrominoType>().color))
+            if (GloData.Instance.challengeLevel < 11 && !isColorExistOnContactableBoardV) {
+                Debug.Log(TAG + ": isValidLandingPosition() NO current color on Board");
                 return true;
-            else if (GloData.Instance.challengeLevel > 10 && !isThereSolutionOnBoard()) // 搜索确认是否 存在合理解
+            } else if (GloData.Instance.challengeLevel > 10 && !isThereSolutionOnBoard()) // 搜索确认是否 存在合理解
                 return true;
             return false;
         }
@@ -152,13 +162,17 @@ namespace HotFix.Control {
             // Debug.Log(TAG + " minY: " + minY); 
             if (minY > 0) return false; // ViewManager.nextTetromino 当前立方体最低层不接触地板,直接返回
             getBottomLayerMinosIdx();
+            if (bottomIdx[0] == -1) return false;
             for (int i = 0; i < 4; i++) {
-                if (bottomIdx[i] == -1) return false;
+                if (bottomIdx[i] == -1) continue;
+                // if (bottomIdx[i] == -1) return false; // 不能这么写,因为它可能最低层只有一个立方体,那么其它三个就是-1
                 int [] pos = MathUtilP.getIndex(bottomIdx[i]);
-                MathUtilP.print(pos);
                 if (pos[1] == 0) {
                     Debug.Log(TAG + " (Model.baseCubes[getMinoPosCubeArrIndex(pos[0], pos[2])] == Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color): "
-                              + (Model.baseCubes[getMinoPosCubeArrIndex(pos[0], pos[2])] == Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color)); 
+                              + (Model.baseCubes[getMinoPosCubeArrIndex(pos[0], pos[2])] == Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color));
+                    MathUtilP.print(pos);
+                    Debug.Log(TAG + " getMinoPosCubeArrIndex(pos[0], pos[2]): " + getMinoPosCubeArrIndex(pos[0], pos[2]));
+
                     if (Model.baseCubes[getMinoPosCubeArrIndex(pos[0], pos[2])] == Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color) {
                         ++matchingCnter;
                         Debug.Log(TAG + " matchingCnter: " + matchingCnter); 
@@ -243,7 +257,8 @@ namespace HotFix.Control {
 
             // check if exist in baseCubes
             Debug.Log(TAG + " isExistInBaseCubes(color): " + isExistInBaseCubes(color)); 
-            if (bottomIdx[0] == 0 && isExistInBaseCubes(color)) return true;
+            // if (bottomIdx[0] == 0 && isExistInBaseCubes(color)) return true; // BUG: 这里为什么要如此限制, 不是应该说y == 0吗
+            if (bottomIdx[0] / (Model.gridXWidth * Model.gridZWidth) == 0 && isExistInBaseCubes(color)) return true;
 
             // check if exist in contactable Higher layers: todo
             Debug.Log(TAG + " isExistInHigherLayers(color): " + isExistInHigherLayers(color)); 
@@ -316,4 +331,3 @@ namespace HotFix.Control {
         }
     }
 }
-

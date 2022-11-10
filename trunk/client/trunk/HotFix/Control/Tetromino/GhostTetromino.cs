@@ -67,13 +67,13 @@ namespace HotFix.Control {
 //             foreach (Transform mino in transform) {
 // // 感觉这里就是逻辑不完整
 //                 //if (mino.CompareTag("mino")) 
-//                 //    Vector3 pos = MathUtil.Round(mino.position);
+//                 //    Vector3 pos = MathUtilP.Round(mino.position);
 //             }
         }
 
         bool CheckIsValidPosition() {
             foreach (Transform mino in transform) {
-                Vector3 pos = MathUtil.Round(mino.position);
+                Vector3 pos = MathUtilP.Round(mino.position);
                 if (!Model.CheckIsInsideGrid(pos))
                     return false;
 

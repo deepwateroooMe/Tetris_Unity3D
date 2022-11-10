@@ -250,9 +250,9 @@ namespace HotFix.UI {
         }
         public bool myContains(Transform tmp, List<MinoData> children) {
             foreach (MinoData data in children)
-                if (MathUtil.Round(tmp.position) == MathUtil.Round(DeserializedTransform.getDeserializedTransPos(data.transform))) 
+                if (MathUtilP.Round(tmp.position) == MathUtilP.Round(DeserializedTransform.getDeserializedTransPos(data.transform))) 
 // 因为实时运行时存在微小转动.这里暂不检查旋转角度
-                    // && MathUtil.Round(tmp.rotation) == MathUtil.Round(DeserializedTransform.getDeserializedTransRot(data.transform)))
+                    // && MathUtilP.Round(tmp.rotation) == MathUtilP.Round(DeserializedTransform.getDeserializedTransRot(data.transform)))
                     return true;
             return false;
         }

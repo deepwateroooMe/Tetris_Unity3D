@@ -186,6 +186,7 @@ namespace HotFix.Control {
                 // Debug.Log(TAG + " GloData.Instance.isChallengeMode: " + GloData.Instance.isChallengeMode);
                 // Debug.Log(TAG + " GloData.Instance.challengeLevel: " + GloData.Instance.challengeLevel);
 
+// 这里要求说: [11, 15]这五关每个方块砖有两种不能的材质; (潜在的, [16, 20] 这些关卡可能每个方块砖有3或4种不同的材质?但是暂不再写这些了,写到11关完成)
 				if (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel > 10 && GloData.Instance.challengeLevel < 16) { // match 2
                     randomColor1 = UnityEngine.Random.Range(0, 4);
                     Debug.Log(TAG + " randomColor1: " + randomColor1); 

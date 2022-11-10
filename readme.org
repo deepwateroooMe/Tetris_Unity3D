@@ -5,6 +5,8 @@
 * 游戏基本场景设计
 - CHALLENGING MODE: ALL kinds of bugs awaiting to be fixed. will work on them tomorrow.
   
+[[./pic/readme_20221109_180107.png]]
+
 [[./pic/readme_20221108_222757.png]]
 
 - debugging game flow, 现游戏的主场景如下(热更新程序域里的主要逻辑功能模块化管理主要工作完成,还没有debug游戏逻辑):

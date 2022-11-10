@@ -48,9 +48,9 @@ namespace HotFix.UI {
             basicPanel = GameObject.FindChildByName("basicPanel");
             rightBtn = GameObject.FindChildByName("right").GetComponent<Button>();
 			rightBtn.onClick.AddListener(OnClickRightButton);
-
-            levels = new GameObject[7];
-            for (int i = 1; i < 7; i++) 
+// 目前只先实现这11 关,其它以后有机会再说
+            levels = new GameObject[12];
+            for (int i = 1; i < 12; i++) 
                 levels[i] = ViewManager.basePlane.gameObject.FindChildByName("level" + i);    
     
             oneBtn = GameObject.FindChildByName("oneBtn").GetComponent<Button>();
@@ -160,7 +160,7 @@ namespace HotFix.UI {
                 break;
             case 7:
                 GloData.Instance.challengeLevel = 7;
-                // GloData.Instance.gridSize = 7; // WHY commented out ??? to be fixed
+                // GloData.Instance.gridSize = 7; // WHY commented out
                 GloData.Instance.gridXSize = 10;
                 GloData.Instance.gridZSize = 9;
                 GloData.Instance.tetroCnter = 42;
@@ -287,7 +287,7 @@ namespace HotFix.UI {
             CallBackHelper(15);
         }
          void hideAllOtherLevelPanel(int level) {
-            for (int i = 1; i < 7; i++) 
+            for (int i = 1; i < 12; i++) 
                 if (i != level && levels[i].activeSelf)
                     levels[i].SetActive(false);
         }

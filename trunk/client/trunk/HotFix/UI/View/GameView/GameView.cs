@@ -360,11 +360,42 @@ namespace HotFix.UI {
                 Model.UpdateGrid(initCubes);
 
                 Debug.Log(TAG + ": gridOcc()"); 
-                MathUtil.printBoard(Model.gridOcc);
+                MathUtilP.printBoard(Model.gridOcc);
                 Debug.Log(TAG + ": gridClr()");
-                MathUtil.printBoard(Model.gridClr);
+                MathUtilP.printBoard(Model.gridClr);
             }
         }
+        public GameObject [] cubes; // baseCubesGO;
+        // void initateBaseCubesColors() {
+        //     // 当添加这个脚本的时候,还无法知道游戏关卡层级,所以必须换个地方起始初始化
+        //     Model.baseCubes = new int [Model.gridXWidth * Model.gridZWidth]; // <<<<<<<<<<<<<<<<<<<< Model.baseCubes: int [], 地板砖的着色
+        //     int n = Model.gridXWidth * Model.gridZWidth;
+        //     cubes = new GameObject[n]; // 地板砖的 gameObject s
+        //     StringBuilder name = new StringBuilder("");
+        //     for (int z = 0; z < Model.gridZWidth; z++) {
+        //         for (int x = 0; x < Model.gridXWidth; x++) {
+        //             name.Length = 0;
+        //             if (GloData.Instance.gameLevel < 3 || GloData.Instance.gameLevel == 11) // so far 1, 2, 11 three levels named this way
+        //                 name.Append("Cube" + x + z);
+        //             else name.Append("Cube" + x + "0 (" + z + ")"); 
+        //             cubes[z * Model.gridXWidth + x] = gameObject.FindChildByName(name.ToString());
+        //         }
+        //     }
+        //     int xx = 0, zz = 0;
+        //     for (int i = 0; i < n; i++) {
+        //         Model.baseCubes[i] = cubes[i].GetComponent<MinoType>().color;
+        //         xx = i % Model.gridXWidth;
+        //         zz = i / Model.gridXWidth;
+        //         if (!cubes[i].activeSelf) { // 如果某一个方格失活,那么整个竖列都是不能穿过的
+        //             for (int y = 0; y < Model.gridHeight; y++) {
+        //                 Model.grid[xx][y][zz] = null;
+        //                 Model.gridOcc[xx][y][zz] = 9; // magic number, 9 to substitute -1
+        //             }
+        //         }
+        //     }
+        //     Debug.Log(TAG + " Start() Model.baseCubes colors");
+        //     MathUtilP.print(Model.baseCubes);
+        // }
         public void Start() { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
             Debug.Log(TAG + ": Start()");
             
@@ -397,6 +428,7 @@ namespace HotFix.UI {
                     }
                 }
                 MathUtilP.resetColorBoard();
+                ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel)).initateBaseCubesColors();
                 loadInitCubesforChallengeMode(); // 某些挑战层级,是有些相对固定的立方体方块砖存在的,对他们进行加载和数据管理
             } else {
                 Model.gridWidth = GloData.Instance.gridSize;
@@ -843,14 +875,14 @@ namespace HotFix.UI {
             Debug.Log(TAG + ": gridOcc[][][] AFTER Land  Update AFTER UpdteGrid(), BEFORE onGameSave()"); 
             MathUtilP.printBoard(Model.gridOcc);  // Model.
             // Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), bef onGameSave()"); 
-            // MathUtil.printBoard(gridClr);  // Model.
+            // MathUtilP.printBoard(gridClr);  // Model.
 
             if (GloData.Instance.isChallengeMode) {
                 if (ChallengeRules.isValidLandingPosition()) {
                     EventManager.Instance.FireEvent("challLand");
                 } else { // print color board
                     Debug.Log(TAG + ": color board before game Over()");
-                    MathUtil.printBoard(Model.gridClr);
+                    MathUtilP.printBoard(Model.gridClr);
                     // Debug.Log(TAG + ": Game Over()"); 
                     Debug.Log(TAG + " game over");
                     GameOver(); // 为什么这里是game over ? 因为当前方块砖放错位置了,一定要适应周围小立方体的材质

@@ -41,7 +41,7 @@ namespace HotFix.Control {
                     if (!gridMatchesSavedParent(tmpParentGO, parentData.children)) {  // 先删除多余的，再补全缺失的
 // BUG:　这是我这次整合源码,不明白的时候自己又加上的,现去掉,再跑一遍                        
                         //foreach (Transform trans in tmpParentGO.transform) { // 先 删除多余的, 怀疑这一步是可以完全不要的
-                        //    MathUtil.print(MathUtil.Round(trans.position));
+                        //    MathUtilP.print(MathUtilP.Round(trans.position));
                         //    // Debug.Log(TAG + " (!myContains(trans, parentData.children)): " + (!myContains(trans, parentData.children))); 
                         //    if (!myContains(trans, parentData.children)) {
                         //        x = (int)Mathf.Round(trans.position.x);
@@ -55,8 +55,8 @@ namespace HotFix.Control {
                         //}
                         Debug.Log(TAG + " tmpParentGO.transform.childCount (deleted unwanted): " + tmpParentGO.transform.childCount);
                         foreach (MinoData minoData in parentData.children) {
-                            Vector3 posA = MathUtil.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform)); 
-                            MathUtil.print(posA);
+                            Vector3 posA = MathUtilP.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform)); 
+                            MathUtilP.print(posA);
                             x = (int)Mathf.Round(posA.x);
                             y = (int)Mathf.Round(posA.y);
                             z = (int)Mathf.Round(posA.z);
@@ -139,9 +139,9 @@ namespace HotFix.Control {
         
         private static bool myContains(Transform tmp, MinoDataCollection<TetrominoData, MinoData> children) {
             foreach (MinoData data in children)
-                if (MathUtil.Round(tmp.position) == MathUtil.Round(DeserializedTransform.getDeserializedTransPos(data.transform))) 
+                if (MathUtilP.Round(tmp.position) == MathUtilP.Round(DeserializedTransform.getDeserializedTransPos(data.transform))) 
 // 因为实时运行时存在微小转动.这里暂不检查旋转角度
-                    // && MathUtil.Round(tmp.rotation) == MathUtil.Round(DeserializedTransform.getDeserializedTransRot(data.transform)))
+                    // && MathUtilP.Round(tmp.rotation) == MathUtilP.Round(DeserializedTransform.getDeserializedTransRot(data.transform)))
                     return true;
             return false;
         }
@@ -181,11 +181,11 @@ namespace HotFix.Control {
                 x = (int)Mathf.Round(pos.x);
                 y = (int)Mathf.Round(pos.y);
                 z = (int)Mathf.Round(pos.z);
-                // MathUtil.print(x, y, z);
+                // MathUtilP.print(x, y, z);
                 if (Model.grid[x][y][z] != null && Model.grid[x][y][z].parent != null) { // // make sure parent matches first !
                     if (Model.grid[x][y][z].parent.gameObject.name == parentData.name &&
-                        MathUtil.Round(Model.grid[x][y][z].parent.position) == MathUtil.Round(DeserializedTransform.getDeserializedTransPos(parentData.transform))
-						//&& MathUtil.Round(Model.grid[x][y][z].parent.rotation) == MathUtil.Round(DeserializedTransform.getDeserializedTransRot(parentData.transform))
+                        MathUtilP.Round(Model.grid[x][y][z].parent.position) == MathUtilP.Round(DeserializedTransform.getDeserializedTransPos(parentData.transform))
+						//&& MathUtilP.Round(Model.grid[x][y][z].parent.rotation) == MathUtilP.Round(DeserializedTransform.getDeserializedTransRot(parentData.transform))
 						) { 
                         tmpParentGO = Model.grid[x][y][z].parent.gameObject;
                         Debug.Log(TAG + " tmpParentGO.name: " + tmpParentGO.name);

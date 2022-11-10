@@ -150,23 +150,23 @@ namespace HotFix.Control {
         public static void printBoard(int[][][] gridOcc) {
             xm = GloData.Instance.gridXSize;
             zm = GloData.Instance.gridZSize;
-            bool empty = true;
-            int z = 0;
+            bool empty = true, isChallengeMode = GloData.Instance.isChallengeMode;
+            // int z = 0;
+            StringBuilder s = new StringBuilder("");
             for (int y = 0; y < n; y++) {
                 if (isBoardLayerEmpty(gridOcc, y)) return;
                 // Debug.Log(TAG + " y: " + y); 
-                for (int x = 0; x < (GloData.Instance.isChallengeMode ? xm : m); x++) {
-                    z = -1;
-                    Debug.Log("X" + x + ":    "
-                              + gridOcc[x][y][++z] + "  " + gridOcc[x][y][++z] + "  " + gridOcc[x][y][++z]
-                              + "  " + gridOcc[x][y][++z] + "  " + gridOcc[x][y][++z]
-                              + "  " + gridOcc[x][y][++z] + "  " + gridOcc[x][y][++z]
-                        );
+                for (int x = 0; x < (isChallengeMode ? xm : m); x++) {
+                        s.Append("X" + x + ":    ");
+                    for (int z = 0; z < (isChallengeMode ? zm : m); z++) 
+                        if (gridOcc[x][y][z] == 9) s.Append("x  ");
+                        else s.Append(gridOcc[x][y][z] + "  ");
+                    Debug.Log(s.ToString());
+                    s.Length = 0;
                 }
-                Debug.Log("=========== === ======="); // just so that the board looks more reasonable and helps debug
+                Debug.Log("=========================================="); // just so that the board looks more reasonable and helps debug
             }
         }
-
         private static bool isBoardLayerEmpty(int [][][] f, int y) {
             for (int x = 0; x < m; x++) 
                 for (int z = 0; z < m; z++) {
@@ -191,19 +191,17 @@ namespace HotFix.Control {
                 baseColor[x][z] = color[i];
             }
 
+            StringBuilder s = new StringBuilder("");
             // Debug.Log(TAG + " Z0  " + "Z1   " + "Z2   " + "Z3   " + "Z4   " + "Z5   " + "Z6   " + "Z7   " + "Z8 "); 
             for (int i = 0; i < Model.gridXWidth; i++) {
-                int j = -1;
-                Debug.Log("X" + i + ":           " +
-                          baseColor[i][++j] + "    " +
-                          baseColor[i][++j] + "    " +
-                          baseColor[i][++j] + "    " +
-                          baseColor[i][++j] + "    " +
-                          baseColor[i][++j] + "    " +
-                          baseColor[i][++j] + "    " +
-                          // baseColor[i][++j] + "    " +
-                          baseColor[i][++j]);
+                s.Append("X" + i + ":    ");
+                for (int j = 0; j < Model.gridZWidth; j++)
+                    if (baseColor[i][j] == -1) s.Append("x  ");
+                    else s.Append(baseColor[i][j] + "  ");
+                Debug.Log(s.ToString());
+                s.Length = 0;
             }
+            Debug.Log(s.ToString());
         }
 
         public static void printBoard(List<int> gridOccOcc) {
