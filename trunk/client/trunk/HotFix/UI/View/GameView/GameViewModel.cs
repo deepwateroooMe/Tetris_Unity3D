@@ -397,19 +397,24 @@ namespace HotFix.UI {
             Debug.Log(TAG + ": GetRandomTetromino()"); 
 
             if (gameMode.Value == 0 && gridWidth == 3)
-                randomTetromino = UnityEngine.Random.Range(1, 7);
+                randomTetromino = UnityEngine.Random.Range(0, 11);
             else 
-                randomTetromino = UnityEngine.Random.Range(1, 8);
+                randomTetromino = UnityEngine.Random.Range(0, 12);
             StringBuilder tetrominoType = new StringBuilder("Tetromino");
             switch (randomTetromino) {
+            case 0: tetrominoType.Append("0"); break;
             case 1: tetrominoType.Append("J"); break;
             case 2: tetrominoType.Append("Z"); break; 
             case 3: tetrominoType.Append("L"); break;
             case 4: tetrominoType.Append("I"); break;
             case 5: tetrominoType.Append("O"); break;
-            case 6: tetrominoType.Append("T"); break;
-            default: // 7
-                tetrominoType.Append("S"); break; // 需要放一个相对难一点儿的在非启蒙模式下
+            case 6: tetrominoType.Append("C"); break;
+            case 7: tetrominoType.Append("S"); break;
+            case 8: tetrominoType.Append("T"); break;
+            case 9: tetrominoType.Append("B"); break;
+            case 10:tetrominoType.Append("R"); break;
+            default: // 11
+                tetrominoType.Append("Y"); break; // 需要放一个相对难一点儿的在非启蒙模式下
             }
             return tetrominoType.ToString();
         }

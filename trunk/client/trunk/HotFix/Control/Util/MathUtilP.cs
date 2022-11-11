@@ -178,6 +178,7 @@ namespace HotFix.Control {
 
         public static void printBoard(int[] color) {
             int n = color.Length;
+            Debug.Log(TAG + " n: " + n);
             int x = 0, z = 0;
             int [][] baseColor = new int [Model.gridXWidth][];
             for (int i = 0; i < Model.gridXWidth; i++) 
@@ -185,7 +186,7 @@ namespace HotFix.Control {
             for (int i = 0; i < Model.gridXWidth; i++) 
                 for (int j = 0; j < Model.gridZWidth; j++) 
                     baseColor[i][j] = -1;
-            for (int i = 0; i < n; i++) {
+            for (int i = 0; i < Model.gridXWidth * Model.gridZWidth; i++) {
                 x = i % Model.gridXWidth;
                 z = i / Model.gridXWidth;
                 baseColor[x][z] = color[i];
@@ -196,7 +197,7 @@ namespace HotFix.Control {
             for (int i = 0; i < Model.gridXWidth; i++) {
                 s.Append("X" + i + ":    ");
                 for (int j = 0; j < Model.gridZWidth; j++)
-                    if (baseColor[i][j] == -1) s.Append("x  ");
+                    if (baseColor[i][j] == -1) s.Append("x  "); // 是空的或是障碍物就全打X 
                     else s.Append(baseColor[i][j] + "  ");
                 Debug.Log(s.ToString());
                 s.Length = 0;

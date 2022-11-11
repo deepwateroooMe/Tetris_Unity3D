@@ -172,11 +172,15 @@ namespace HotFix.Control {
         public static bool IsFullRowAt(int y) {
             Debug.Log(TAG + ": IsFullRowAt()");
             for (int x = 0; x < gridXWidth; x++)
-                for (int j = 0; j < gridZWidth; j++)
-                    if ( (!GloData.Instance.isChallengeMode
-                          && (grid[x][y][j] == null || (grid[x][y][j].parent == ViewManager.ghostTetromino.transform && grid[x][y][j].parent != ViewManager.nextTetromino.transform))) 
-                         || (GloData.Instance.isChallengeMode && grid[x][y][j] == null && gridOcc[x][y][j] == 0) )
-                        return false;
+                for (int j = 0; j < gridZWidth; j++) {
+                    if (!GloData.Instance.isChallengeMode && grid[x][y][j] == null) return false;
+// changle mode
+                    if (grid[x][y][j] == null && gridOcc[x][y][j] == 0) return false;
+                    // if ( (!GloData.Instance.isChallengeMode
+                    //       && (grid[x][y][j] == null || grid[x][y][j].parent == ViewManager.ghostTetromino.transform && grid[x][y][j].parent != ViewManager.nextTetromino.transform)) 
+                    //      || (GloData.Instance.isChallengeMode && grid[x][y][j] == null && gridOcc[x][y][j] == 0) )
+                    //     return false;
+                }
             numberOfRowsThisTurn++; // number of layers
             return true;
         }
@@ -293,6 +297,15 @@ namespace HotFix.Control {
             else
                 return grid[(int)pos.x][(int)pos.y][(int)pos.z];
         }
+
+        public static bool isFullInLayerAt(int y) { // f: gridOcc
+            for (int i = 0; i < gridXWidth; i++)
+                for (int j = 0; j < gridZWidth; j++) {
+                    if (gridOcc[i][y][j] != 1 && gridOcc[i][y][j] != 9)
+                        return false;
+                }
+            return true;
+        }
         
         public static int zoneSum = 0;
         public static bool IsFullQuadInLayerAt (int y) {
@@ -316,60 +329,55 @@ namespace HotFix.Control {
 
             int tmp = 0;
             zoneSum = 0;
+
 // (GloData.Instance.challengeLevel == 3)            
             if (GloData.Instance.challengeLevel == 3) { // 必须单独处理
-                // Debug.Log(TAG + " (int)center.x: " + (int)center.x); 
-                // Debug.Log(TAG + " (int)center.z: " + (int)center.z); 
-                for (int i = 0; i <= (int)center.x; i++) {
+                Debug.Log(TAG + " (int)center.x: " + (int)center.x); 
+                Debug.Log(TAG + " (int)center.z: " + (int)center.z); 
+                for (int i = 0; i <= (int)center.x; i++) 
                     for (int j = 0; j <= (int)center.z; j++) {
                         if (gridOcc[i][y][j] == 0 || gridOcc[i][y][j] == 9) continue; 
                         ++tmp;
                     }
-                }
                 if (tmp == 13) {
                     activeZone[0] = 1;
                     ++zoneSum;
                 } //
                 tmp = 0;
-                for (int i = 0; i <= (int)center.x; i++) {
+                for (int i = 0; i <= (int)center.x; i++) 
                     for (int j = (int)center.z + 1; j < gridZWidth; j++) {
                         if (gridOcc[i][y][j] == 0 || gridOcc[i][y][j] == 9) continue; 
                         ++tmp;
                     }
-                }
                 if (tmp == 13) {
                     activeZone[1] = 1;
                     ++zoneSum;
                 } //
                 tmp = 0;
-                for (int i = (int)center.x + 1; i < gridXWidth; i++) {
+                for (int i = (int)center.x + 1; i < gridXWidth; i++) 
                     for (int j = 0; j <= (int)center.z; j++) {
                         if (gridOcc[i][y][j] == 0 || gridOcc[i][y][j] == 9) continue; 
                         ++tmp;
                     }
-                }
                 if (tmp == 13) {
                     activeZone[2] = 1;
                     ++zoneSum;
                 } //
                 tmp = 0;
-                for (int i = (int)center.x + 1; i < gridXWidth; i++) {
+                for (int i = (int)center.x + 1; i < gridXWidth; i++) 
                     for (int j = (int)center.z + 1; j < gridZWidth; j++) {
                         if (gridOcc[i][y][j] == 0 || gridOcc[i][y][j] == 9) continue; 
                         ++tmp;
                     }
-                }
                 if (tmp == 13) {
                     activeZone[3] = 1;
                     ++zoneSum;
                 }
-                // for (int i = 0; i < 4; i++) {
-                //     if (activeZone[i] == 1) {
-                //         Debug.Log(TAG + ": activeZone: "); 
-                //         Debug.Log(TAG + " i: " + i); 
-                //     }
-                //     Debug.Log(TAG + " zoneSum: " + zoneSum); 
-                // }
+                for (int i = 0; i < 4; i++) {
+                    if (activeZone[i] == 1) 
+                        Debug.Log(TAG + ": activeZone: " + " i: " + i); 
+                    Debug.Log(TAG + " zoneSum: " + zoneSum); 
+                }
                 if (zoneSum >= 2) {
                     for (int x = 0; x < 4; x++) {
                         if (activeZone[x] == 1) {
@@ -404,8 +412,9 @@ namespace HotFix.Control {
                             }
                         }
                     }
-                    // Debug.Log(TAG + ": gridOcc[,,] aft detecting IsFullQuadInLayerAt(y)"); 
-                    // MathUtilP.printBoard(Model.gridOcc); 
+// 分成四个小区，中线横竖都共用，至少有两个小区可以消除，那么就消除他们，同样是把1　＝＝＞2                    
+                    Debug.Log(TAG + ": gridOcc[,,] aft detecting IsFullQuadInLayerAt(y)"); 
+                    MathUtilP.printBoard(Model.gridOcc); 
                     
                     isFullQuadInLayer = true;
                     return true;
@@ -413,9 +422,13 @@ namespace HotFix.Control {
                 return false;
             } // level 3 done
 
+// 我昨天晚上还以为我以前已经把这些逻辑写完写好了,原来我只写到了这里.那么这次就把它尽快写完:
+// 主要是考虑: onUndoGame的时候如果有消除一块行,还是用原来的逻辑吗?
+            
 // (GloData.Instance.challengeLevel != 3)            
             Debug.Log(TAG + " (int)center.x: " + (int)center.x); 
-            Debug.Log(TAG + " (int)center.z: " + (int)center.z); 
+            Debug.Log(TAG + " (int)center.z: " + (int)center.z);
+// 不知道自己以前是什么神仙逻辑，下面这片代码就是看得头大看不懂在干什么。。。。
             tmp = 0;
             for (int j = 0; j <= (int)center.z; j++) {
                 if (gridOcc[(int)center.x][y][j] != 1) continue; // 0 or 9
@@ -460,7 +473,8 @@ namespace HotFix.Control {
                 if (activeZone[i] == 1)
                     Debug.Log(TAG + " i: " + i); 
             }
-            Debug.Log(TAG + " zoneSum: " + zoneSum); 
+            Debug.Log(TAG + " zoneSum: " + zoneSum);
+// level 4: 保留了 return true            
             if (zoneSum == 0) return false;
             if (zoneSum == 2 && (!(activeZone[0] + activeZone[1] == 2 || 
                                    activeZone[0] + activeZone[2] == 2 ||
@@ -468,40 +482,37 @@ namespace HotFix.Control {
                                    activeZone[1] + activeZone[3] == 2))) {
                 return false;
             }
-            // if (zoneSum == 4) { // Bug: TODO, NOT done yet, still need to check if the grids inside are all filled
+            // if (zoneSum == 4) { // Bug: TODO, NOT done yet, still need to check if the grids inside are all filled 这也是以前标记的,大概以前也就写到这里了
             //     for (int i = 0; i < 4; i++) {
             //         activeZone[i] = 0;
             //     }
             zoneSum = 0;
             if (GloData.Instance.challengeLevel == 4) {
                 if (activeZone[0] == 1) {
-                    Debug.Log(TAG + " (sumUpLeft((int)center.x, y, (int)center.z) == 10): " + (sumUpLeft((int)center.x, y, (int)center.z) == 10)); 
                     if (sumUpLeft((int)center.x, y, (int)center.z) == 10) {
                         ++zoneSum;
                     } else
                         activeZone[0] = 0;
                 }
                 if (activeZone[1] == 1) {
-                    Debug.Log(TAG + " (sumUpRight((int)center.x, y, (int)center.z) == 10): " + (sumUpRight((int)center.x, y, (int)center.z) == 10)); 
                     if (sumUpRight((int)center.x, y, (int)center.z) == 10) {
                         ++zoneSum;
                     } else 
                         activeZone[1] = 0;
                 }
                 if (activeZone[2] == 1) {
-                    Debug.Log(TAG + " (sumDownLeft((int)center.x, y, (int)center.z) == 10): " + (sumDownLeft((int)center.x, y, (int)center.z) == 10)); 
                     if (sumDownLeft((int)center.x, y, (int)center.z) == 10) {
                         ++zoneSum;
                     } else
                         activeZone[2] = 0;
                 }
                 if (activeZone[3] == 1) {
-                    Debug.Log(TAG + " (sumDownRight((int)center.x, y, (int)center.z) == 8): " + (sumDownRight((int)center.x, y, (int)center.z) == 8)); 
                     if (sumDownRight((int)center.x, y, (int)center.z) == 8) { 
                         ++zoneSum;
                     } else
                         activeZone[3] = 0;
                 }
+// level 4: return true 的情况会返回          
                 if (zoneSum == 4) {
                     isFullQuadInLayer = true;
                     return true;
@@ -538,6 +549,7 @@ namespace HotFix.Control {
                         activeZone[3] = 0;
                 }
                 Debug.Log(TAG + " zoneSum: " + zoneSum); 
+// level 5: return true 的情况会返回          
                 if (zoneSum == 4) {
                     isFullQuadInLayer = true;
                     return true;
@@ -551,7 +563,6 @@ namespace HotFix.Control {
                                    activeZone[1] + activeZone[3] == 2))) {
                 return false;
             }
-
             Debug.Log(TAG + " zoneSum: " + zoneSum); 
             if (zoneSum >= 2 && zoneSum < 4) { // == 2 or 3, 这里有大量重复的工作
                 tmp = 0;

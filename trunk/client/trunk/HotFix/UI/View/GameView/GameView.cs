@@ -599,11 +599,33 @@ namespace HotFix.UI {
         public void SpawnGhostTetromino() {
             Debug.Log(TAG + " SpawnGhostTetromino");
             // GameObject tmpTetromino = GameObject.FindGameObjectWithTag("currentActiveTetromino");
-            ViewManager.ghostTetromino = PoolHelper.GetFromPool(GameObjectHelper.GetGhostTetrominoType(ViewManager.nextTetromino),
+            ViewManager.ghostTetromino = PoolHelper.GetFromPool(GetGhostTetrominoType(ViewManager.nextTetromino),
                                                                 ViewManager.nextTetromino.transform.position,
                                                                 ViewManager.nextTetromino.transform.rotation, Vector3.one);
             ComponentHelper.GetGhostComponent(ViewManager.ghostTetromino).enabled = true;
         }
+        public string GetGhostTetrominoType(GameObject gameObject) { // ghostTetromino
+            Debug.Log(TAG + ": GetGhostTetrominoType()"); 
+            StringBuilder type = new StringBuilder("");
+            Debug.Log(TAG + " gameObject.name: " + gameObject.name); 
+            string tmp = gameObject.name.Substring(9, 1);
+            switch(tmp) {
+            case "0" : type.Append("shadow0"); break;
+            case "B" : type.Append("shadowB"); break;
+            case "C" : type.Append("shadowC"); break;
+            case "I" : type.Append("shadowI"); break;
+            case "J" : type.Append("shadowJ"); break;
+            case "L" : type.Append("shadowL"); break;
+            case "O" : type.Append("shadowO"); break;
+            case "R" : type.Append("shadowR"); break;
+            case "S" : type.Append("shadowS"); break;
+            case "T" : type.Append("shadowT"); break;
+            case "Y" : type.Append("shadowY"); break;
+            case "Z" : type.Append("shadowZ"); break;
+            }
+            return type.ToString(); 
+        }
+        
         public void GameOver() {
             Debug.Log(TAG + ": GameOver()"); 
             ViewModel.UpdateHighScore();

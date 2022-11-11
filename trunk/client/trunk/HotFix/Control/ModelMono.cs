@@ -26,7 +26,7 @@ namespace HotFix.Control {
 
         private static float connectionEffectDisplayTime = 2.0f; // ori: 1.1f
         private static WaitForSeconds _waitForSeconds = new WaitForSeconds(connectionEffectDisplayTime);
-
+        //private static StringBuilder type = new StringBuilder();
         private CanvasMovedEventInfo canvasMovedInfo;
 
         // public static int lastTetroIndiScore = 0;
@@ -82,11 +82,13 @@ namespace HotFix.Control {
             isDeleteRowCoroutineRunning = true;
 
             for (int y = 0; y < Model.gridHeight; y++) {
-                // Debug.Log(TAG + " y: " + y); 
-                // if (Model.IsFullFiveInLayerAt(y)) { 
+
+                if (GloData.Instance.isChallengeMode)
+                    Debug.Log(TAG + " Model.isFullInLayerAt(y): " + Model.isFullInLayerAt(y));
+
                 if ( (!GloData.Instance.isChallengeMode && Model.IsFullFiveInLayerAt(y))
-                     // || (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel > 2 && GloData.Instance.challengeLevel < 6 &&  Model.IsFullQuadInLayerAt(y)) ) { 
-                     || (GloData.Instance.isChallengeMode && Model.IsFullQuadInLayerAt(y)) ) { 
+                     // || (GloData.Instance.isChallengeMode && Model.IsFullQuadInLayerAt(y)) ) { // 以前的分四个小区的
+                     || (GloData.Instance.isChallengeMode && Model.isFullInLayerAt(y)) ) { 
 
                     Debug.Log(TAG + ": gridOcc[,,] IsFullQuadInLayerAt(y)"); 
                     MathUtilP.printBoard(Model.gridOcc); 
@@ -94,26 +96,36 @@ namespace HotFix.Control {
                     Model.isNumberOfRowsThisTurnUpdated = false;
                     // updateScoreEvent(); // commended now
 
-                    Debug.Log(TAG + " (GloData.Instance.isChallengeMode && Model.zoneSum == 4): " + (GloData.Instance.isChallengeMode && Model.zoneSum == 4)); 
-                    if (GloData.Instance.isChallengeMode && Model.zoneSum == 4) {
+// 这里不再细化这么四个分区了,就按最传统原始的一层一层地消除,每层的分数加多
+// 系统逻辑: 这里是不是得把1 ==>　2？ 暂时不考虑这些 
+
+                    if (GloData.Instance.isChallengeMode) {
                         DeleteMinoAt(y);
                         ScoreManager.currentScore += GloData.Instance.challengeLayerScore; // 分数再优化一下
                         yield return null;
                     } else {
                         ScoreManager.currentScore += GloData.Instance.layerScore; // 分数再优化一下
-                        Debug.Log(TAG + " (!isDeleteMNinoAtCoroutineRunning): " + (!isDeleteMNinoAtCoroutineRunning)); 
-                        if (!isDeleteMNinoAtCoroutineRunning) {
+                        if (!isDeleteMNinoAtCoroutineRunning) 
                             deleteMinoAtCoroutine = CoroutineHelperP.StartCoroutine(DeleteMinoAtCoroutine(y)); // commented for tmp
-                        }
                         yield return deleteMinoAtCoroutine;                        
                     }
+// 下面是以前的分小区的不完整未完成的代码
+                    // if (GloData.Instance.isChallengeMode && Model.zoneSum == 4) { 
+                    //     DeleteMinoAt(y);
+                    //     ScoreManager.currentScore += GloData.Instance.challengeLayerScore; // 分数再优化一下
+                    //     yield return null;
+                    // } else {
+                    //     ScoreManager.currentScore += GloData.Instance.layerScore; // 分数再优化一下
+                    //     if (!isDeleteMNinoAtCoroutineRunning) 
+                    //         deleteMinoAtCoroutine = CoroutineHelperP.StartCoroutine(DeleteMinoAtCoroutine(y)); // commented for tmp
+                    //     yield return deleteMinoAtCoroutine;                        
+                    // }
 
                     MoveAllRowsDown(y + 1);
                     --y;
 
                     hasDeletedMinos = true;
                 }
-                // yield return null;
             }
 
             Debug.Log(TAG + " hasDeletedMinos: " + hasDeletedMinos); 
@@ -268,17 +280,19 @@ namespace HotFix.Control {
                 MathUtilP.printBoard(Model.gridOcc); 
             }
         }
+// 这里并没有说,什么需要把1 ==>　2之类的,有这个必要吗?得验证一下才好........        
         public static void DeleteMinoAt(int y) {
             Debug.Log(TAG + ": DeleteMinoAt() start");
             for (int x = 0; x < Model.gridXWidth; x++) {
                 for (int  z = 0;  z < Model.gridZWidth;  z++) {
-                    if (GloData.Instance.gameMode > 0 || (GloData.Instance.gameMode == 0 && GloData.Instance.isChallengeMode)) { // GloData.Instance.gameMode > 0, 进行必要的回收, TODO: 只回收同一层的mino or Tetromino
+// GloData.Instance.gameMode > 0, 进行必要的回收, TODO: 只回收同一层的mino or Tetromino (以前标注的)
+                    if (GloData.Instance.gameMode > 0 || (GloData.Instance.gameMode == 0 && GloData.Instance.isChallengeMode)) { 
                         if (Model.gridOcc[x][y][z] == 1 && Model.grid[x][y][z] != null) {
+                            MathUtilP.print(x, y, z);
                             if (Model.grid[x][y][z].gameObject != null && Model.grid[x][y][z].parent != null && Model.grid[x][y][z].parent.gameObject != null
                                 && !Model.grid[x][y][z].parent.gameObject.CompareTag("InitCubes")
                                 && Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().childCnt == Model.grid[x][y][z].parent.childCount
-                                && isAllMinoInLayerY(Model.grid[x][y][z].parent, y)) { // 所有的mino都在同一y层
-                                // Debug.Log(TAG + ": x, y, z values: ");
+                                && isAllMinoInLayerY(Model.grid[x][y][z].parent, y)) { // 这个小方格的 父控件 的所有子立方体全部都在这一y层,就是,可以直接回收到资源池
                                 MathUtilP.print(x, y, z);
                                 Transform tmpParentTransform = Model.grid[x][y][z].parent;
                                 foreach (Transform mino in Model.grid[x][y][z].parent) {
@@ -291,11 +305,17 @@ namespace HotFix.Control {
                                         Model.gridClr[i][j][k] = -1;
                                     }
                                 }
-                                // PoolHelper.ReturnToPool(Model.grid[x][y][z].parent.gameObject, Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().type);
                                 PoolHelper.ReturnToPool(tmpParentTransform.gameObject, tmpParentTransform.gameObject.GetComponent<TetrominoType>().type);
-                            } else {
+                            } else { // 当前立方体的 父控件 的某个或某些子立方体不在当前层,仅只回收当前小立方体到资源池
                                 MathUtilP.print(x, y, z);
-                                PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
+// 在做预设的时候,有时候我的那些预设里的小立方体并没有标注清楚是什么类型,
+                                Debug.Log(TAG + " Model.grid[x][y][z].gameObject.name: " + Model.grid[x][y][z].gameObject.name);
+                                type.Length = 0;
+                                if (Model.grid[x][y][z].gameObject.name.StartsWith("mino"))
+                                    type.Append("mino" + Model.grid[x][y][z].gameObject.name.Substring(4, 1)); // Tetromino
+                                else type.Append("mino" + Model.grid[x][y][z].gameObject.name.Substring(9, 1)); // Tetromino
+                                Debug.Log(TAG + " type: " + type);
+                                PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, type.ToString());
                                 Model.grid[x][y][z] = null;
                                 if (GloData.Instance.isChallengeMode) {
                                     Model.gridOcc[x][y][z] = 0; 

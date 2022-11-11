@@ -44,18 +44,19 @@ namespace HotFix.Control {
         public void initateBaseCubesColors() {
             // 当添加这个脚本的时候,还无法知道游戏关卡层级,所以必须换个地方起始初始化
             Model.baseCubes = new int [Model.gridXWidth * Model.gridZWidth]; // <<<<<<<<<<<<<<<<<<<< Model.baseCubes: int [], 地板砖的着色
-            int n = Model.gridXWidth * Model.gridZWidth;
+            int n = Model.gridXWidth * Model.gridZWidth, idx = 0;
             cubes = new GameObject[n]; // 地板砖的 gameObject s
             StringBuilder name = new StringBuilder("");
-            for (int z = 0; z < Model.gridZWidth; z++) {
+            for (int z = 0; z < Model.gridZWidth; z++) 
                 for (int x = 0; x < Model.gridXWidth; x++) {
                     name.Length = 0;
                     if (GloData.Instance.gameLevel < 3 || GloData.Instance.gameLevel == 11) // so far 1, 2, 11 three levels named this way
                         name.Append("Cube" + x + z);
-                    else name.Append("Cube" + x + "0 (" + z + ")"); 
-                    cubes[z * Model.gridXWidth + x] = gameObject.FindChildByName(name.ToString());
+                    else name.Append("Cube" + x + "0 (" + z + ")");
+                    idx = z * Model.gridXWidth + x;
+                    cubes[idx] = gameObject.FindChildByName(name.ToString());
+                    cubes[idx].gameObject.transform.rotation = Quaternion.identity;
                 }
-            }
             int xx = 0, zz = 0;
             for (int i = 0; i < n; i++) {
                 Model.baseCubes[i] = cubes[i].GetComponent<MinoType>().color;
@@ -65,6 +66,7 @@ namespace HotFix.Control {
                     for (int y = 0; y < Model.gridHeight; y++) {
                         Model.grid[xx][y][zz] = null;
                         Model.gridOcc[xx][y][zz] = 9; // magic number, 9 to substitute -1
+                        Model.baseCubes[i] = -1;
                     }
                 }
             }

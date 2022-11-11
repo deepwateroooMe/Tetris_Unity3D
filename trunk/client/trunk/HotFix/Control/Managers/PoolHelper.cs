@@ -26,6 +26,8 @@ namespace HotFix.Control {
         public static void Initialize() {
             minosDic = new Dictionary<string, GameObject>();
             pool = new Dictionary<string, Stack<GameObject>>();
+            // ViewManager.scoreDic = new Dictionary<string, int>(14);
+            
             // scoreDic = new Dictionary<string, int>();
 // 初始化挑战模式下的颜色材质等相关资源, 用字典这个数据结构就可以与原源码无缝衔接了
             ViewManager.materials = new Dictionary<int, Material>(); 
@@ -69,6 +71,9 @@ namespace HotFix.Control {
             pool.Add(type, stack);
         }
         
+// 这里的意思是说,我的预设在序列化与反序列化的过程中,某些数据是没有保存的.
+// 可以使用JsonUtility来序列化与反序列化预设中的相关数据,使之不至于丢失?
+// 因现在我的预设简单,数据量少,一个标签,一个得分,可以简单地在热更新工程中设定,暂且不补这块儿                    
         private static void InstantiateNewTetrominoPrepare(GameObject go) {
             string name = go.gameObject.name;
             bool isTetro = name.StartsWith("Tetromino");
@@ -81,42 +86,6 @@ namespace HotFix.Control {
                 foreach (Transform oneMino in go.transform) {
                     oneMino.gameObject.tag = "mino";
                 }
-// 这里的意思是说,我的预设在序列化与反序列化的过程中,某些数据是没有保存的.
-// 可以使用JsonUtility来序列化与反序列化预设中的相关数据,使之不至于丢失?
-// 因现在我的预设简单,数据量少,一个标签,一个得分,可以简单地在热更新工程中设定,暂且不补这块儿                    
-                TetrominoType itype = go.GetComponent<TetrominoType>();
-                itype.score = 0;
-                switch (name) {
-                case "TetrominoI":
-                    itype.score = 300;
-                    // scoreDic.Add(name, 300);
-                    break;
-                case "TetrominoJ":
-                    itype.score = 350;
-                    // scoreDic.Add(name, 350);
-                    break;
-                case "TetrominoL":
-                    itype.score = 350;
-                    // scoreDic.Add(name, 350);
-                    break;
-                case "TetrominoO":
-                    itype.score = 300;
-                    // scoreDic.Add(name, 300);
-                    break;
-                case "TetrominoS":
-                    itype.score = 500;
-                    // scoreDic.Add(name, 500);
-                    break;
-                case "TetrominoT":
-                    itype.score = 400;
-                    // scoreDic.Add(name, 400);
-                    break;
-                case "TetrominoZ":
-                    itype.score = 500;
-                    // scoreDic.Add(name, 500);
-                    break;
-                }
-                // scoreDic.Add(name, itype.score);
             } else if (isGhost) {
 // 因为BtnsCanvasView最开始读的时候,很多时候容易抛脚本onEnable()生命周期函数回调的空异常,这里仍先把它失活,原本原则上讲应该是可以不必要的
                 ComponentHelper.AddGhostComponent(go);

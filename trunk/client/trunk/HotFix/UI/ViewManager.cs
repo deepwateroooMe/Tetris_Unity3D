@@ -64,12 +64,56 @@ namespace HotFix.UI {
                         ComponentHelper.AddRotateCanvasComponent(rotateCanvas);
                         rotateCanvas.SetActive(false);
 // Prefabs and particles pool
+                        scoreDic = new Dictionary<string, int>();
                         PoolHelper.Initialize(); // 部分相关逻辑提练到静态帮助类里去定义和完成
                         tetrosPool = go.FindChildByName("tetrosPool");
                         tetroParent = go.FindChildByName("TetrominosContainer");
                         GameObject parent = go.FindChildByName("Prefabs"); 
                         foreach (Transform child in parent.transform) {
                             PoolHelper.fillPool(child);
+							string name = child.gameObject.name;
+                            if (name.StartsWith("Tetromino")) {
+                                switch (name) {
+                                case "TetrominoI":
+                                    ViewManager.scoreDic.Add(name, 300);
+                                    break;
+                                case "TetrominoJ":
+                                    ViewManager.scoreDic.Add(name, 350);
+                                    break;
+                                case "TetrominoL":
+                                    ViewManager.scoreDic.Add(name, 350);
+                                    break;
+                                case "TetrominoO":
+                                    ViewManager.scoreDic.Add(name, 300);
+                                    break;
+                                case "TetrominoS":
+                                    ViewManager.scoreDic.Add(name, 500);
+                                    break;
+                                case "TetrominoT":
+                                    ViewManager.scoreDic.Add(name, 400);
+                                    break;
+                                case "TetrominoZ":
+                                    ViewManager.scoreDic.Add(name, 500);
+                                    break;
+                                case "Tetromino0": 
+                                    ViewManager.scoreDic.Add(name, 500);
+                                    break;
+                                case "TetrominoB": 
+                                    ViewManager.scoreDic.Add(name, 700);
+                                    break;
+                                case "TetrominoC": 
+                                    ViewManager.scoreDic.Add(name, 700);
+                                    break;
+                                case "TetrominoY": 
+                                    ViewManager.scoreDic.Add(name, 800);
+                                    break;
+                                case "TetrominoR": 
+                                    ViewManager.scoreDic.Add(name, 800);
+                                    break;
+                                default:
+                                    break;
+                                }
+                            }
                         }
                         parent.SetActive(false);
 // for CHALLENGE MODE:
@@ -91,6 +135,7 @@ namespace HotFix.UI {
         public static Sprite directionsImg;
 		public static Sprite rotationsImg;
         public static GameObject minoPS;
+        public static Dictionary<string, int> scoreDic;
 // for CHALLENGE MODE
         public static GameObject basePlane;
         public static Dictionary<int, Material> materials; // 这么写是为了适配原来的源码 
