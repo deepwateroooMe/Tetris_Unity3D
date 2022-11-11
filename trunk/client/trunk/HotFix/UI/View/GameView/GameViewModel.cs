@@ -112,8 +112,8 @@ namespace HotFix.UI {
             currentLevel.Value  = gameData.level;
             numLinesCleared.Value  = gameData.lines;
 
+            Debug.Log(TAG + " ModelMono.hasDeletedMinos: " + ModelMono.hasDeletedMinos);
             if (ModelMono.hasDeletedMinos) {
-// TODO: THERE IS A BUG AFTER onUndoGame() saying null exception about score?
                 Debug.Log(TAG + ": onUndoGame() current board BEFORE respawn"); 
                 MathUtilP.printBoard(Model.gridOcc); 
 

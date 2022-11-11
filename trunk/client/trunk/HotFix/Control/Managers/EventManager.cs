@@ -81,8 +81,8 @@ namespace HotFix.Control {
                 delegatesMap[typeof(T)] = tmpDelegate += internalDelegate; // 那么对于当前键，其值的内容再添加一个新的代理监听监听回调(注册回调方法的时候也是这么写的)
             } else
                 delegatesMap[typeof(T)] = internalDelegate;
-            Debug.Log(TAG + " RegisterListener() delegatesMap.Count after: " + delegatesMap.Count
-                      + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
+            // Debug.Log(TAG + " RegisterListener() delegatesMap.Count after: " + delegatesMap.Count
+            //           + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
         }
         
         public void UnregisterListener<T>(EventListener<T> listener) where T : EventInfo { // System.Action 这里并没有能真正移除掉监听，需要再理解、更改
@@ -99,8 +99,8 @@ namespace HotFix.Control {
                 }
                 delegateLookupMap.Remove(listener);
             }
-            Debug.Log(TAG + " UnregisterListener() delegatesMap.Count after: " + delegatesMap.Count
-                      + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
+            // Debug.Log(TAG + " UnregisterListener() delegatesMap.Count after: " + delegatesMap.Count
+            //           + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
         }
         
         public void FireEvent(string type) { // 事件:不带任何增量信息的
@@ -135,7 +135,7 @@ namespace HotFix.Control {
         
         public void FireEvent(string type, string isMove, Vector3 delta) { 
             Debug.Log(TAG + "FireEvent() type: " + type + "; isMove: " + isMove);
-            MathUtilP.print(delta);
+            // MathUtilP.print(delta);
             validInfo.type = isMove;
             validInfo.delta = delta;
             FireEvent(validInfo); // "validMR"
@@ -143,7 +143,7 @@ namespace HotFix.Control {
 
         public void FireEvent(string type, Vector3 delta) {
             Debug.Log(TAG + ": FireEvent() type + delta. type: " + type); 
-            MathUtilP.print(delta);
+            // MathUtilP.print(delta);
             switch (type) {
             case "spawned":
                 spawnedInfo.delta = delta;

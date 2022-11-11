@@ -74,32 +74,8 @@ namespace HotFix.Control {
             }
             return true;
         }
-        
-        public static bool CheckIsInsideGrid(Vector3 pos) {
-            return ((int)pos.x >= 0 && (int)pos.x < gridXWidth &&
-                    (int)pos.z >= 0 && (int)pos.z < gridZWidth && 
-                    (int)pos.y >= 0 && (int)pos.y < gridHeight); 
-        }
-        
-        public static bool CheckIsInsideBarials(Vector3 pos) {
-            // Debug.Log(TAG + ": CheckIsInsideBarials()");
-            int x = (int)pos.x;
-            int y = (int)pos.y;
-            int z = (int)pos.z;
-            return (gridOcc[x][y][z] == 9);
-        }
-
-// 这里:不是很懂什么时候会出现那个菜单 for tmp
-        public void UpdateLevel() {
-            // if (GameController.startingAtLevelZero || (!GameController.startingAtLevelZero && MainScene_ScoreManager.numLinesCleared / 10 > GameController.startingLevel)) 
-            //     GameController.currentLevel = MainScene_ScoreManager.numLinesCleared / 10;
-        }
-        public void UpdateSpeed() { 
-            // GameController.fallSpeed = 1.0f - (float)GameController.currentLevel * 0.1f;
-        }
-
+// 这里数的过程中:若是有满足条件(同行同列同对角线全满),会被标记为 2        
         public static bool IsFullFiveInLayerAt(int y) { 
-            // Debug.Log(TAG + ": IsFullFiveInLayerAt()");
             int tmpSum = 0;
             bool isFullFiveInLayer = false;
             for (int x = 0; x < gridXWidth; x++) {
@@ -166,16 +142,18 @@ namespace HotFix.Control {
                     }
                 }
             } // 数完另一条对角线
+            Debug.Log(TAG + ": IsFullFiveInLayerAt(): " + isFullFiveInLayer);
             return isFullFiveInLayer;
         }
 
         public static bool IsFullRowAt(int y) {
-            Debug.Log(TAG + ": IsFullRowAt()");
+            // Debug.Log(TAG + ": IsFullRowAt()");
             for (int x = 0; x < gridXWidth; x++)
                 for (int j = 0; j < gridZWidth; j++) {
                     if (!GloData.Instance.isChallengeMode && grid[x][y][j] == null) return false;
 // changle mode
-                    if (grid[x][y][j] == null && gridOcc[x][y][j] == 0) return false;
+                    if (grid[x][y][j] == null
+                        && (gridOcc[x][y][j] == 0 || GloData.Instance.isChallengeMode && gridOcc[x][y][j] == 2)) return false;
                     // if ( (!GloData.Instance.isChallengeMode
                     //       && (grid[x][y][j] == null || grid[x][y][j].parent == ViewManager.ghostTetromino.transform && grid[x][y][j].parent != ViewManager.nextTetromino.transform)) 
                     //      || (GloData.Instance.isChallengeMode && grid[x][y][j] == null && gridOcc[x][y][j] == 0) )
@@ -301,9 +279,12 @@ namespace HotFix.Control {
         public static bool isFullInLayerAt(int y) { // f: gridOcc
             for (int i = 0; i < gridXWidth; i++)
                 for (int j = 0; j < gridZWidth; j++) {
-                    if (gridOcc[i][y][j] != 1 && gridOcc[i][y][j] != 9)
+                    if (gridOcc[i][y][j] != 1 && gridOcc[i][y][j] != 9) {
+                        Debug.Log(TAG + " isFullInLayerAt():  FALSE");
                         return false;
+                    }
                 }
+            Debug.Log(TAG + " isFullInLayerAt():  TRUE");
             return true;
         }
         
@@ -833,6 +814,29 @@ namespace HotFix.Control {
             }
             Debug.Log(TAG + " res: " + res); 
             return res;
+        }
+        
+        public static bool CheckIsInsideGrid(Vector3 pos) {
+            return ((int)pos.x >= 0 && (int)pos.x < gridXWidth &&
+                    (int)pos.z >= 0 && (int)pos.z < gridZWidth && 
+                    (int)pos.y >= 0 && (int)pos.y < gridHeight); 
+        }
+        
+        public static bool CheckIsInsideBarials(Vector3 pos) {
+            // Debug.Log(TAG + ": CheckIsInsideBarials()");
+            int x = (int)pos.x;
+            int y = (int)pos.y;
+            int z = (int)pos.z;
+            return (gridOcc[x][y][z] == 9);
+        }
+
+// 这里:不是很懂什么时候会出现那个菜单 for tmp
+        public void UpdateLevel() {
+            // if (GameController.startingAtLevelZero || (!GameController.startingAtLevelZero && MainScene_ScoreManager.numLinesCleared / 10 > GameController.startingLevel)) 
+            //     GameController.currentLevel = MainScene_ScoreManager.numLinesCleared / 10;
+        }
+        public void UpdateSpeed() { 
+            // GameController.fallSpeed = 1.0f - (float)GameController.currentLevel * 0.1f;
         }
 
         public static string GetRandomTetromino() { // active Tetromino

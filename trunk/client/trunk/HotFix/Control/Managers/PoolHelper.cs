@@ -234,8 +234,11 @@ namespace HotFix.Control {
         }
 
         public static void ReturnToPool(GameObject gameObject, string type) {
+            Debug.Log(TAG + " ReturnToPool() type: " + type);
             if (gameObject.activeSelf) 
                 gameObject.SetActive(false);
+            if (!pool.ContainsKey(type)) 
+                pool[type] = new Stack<GameObject>();
             if (pool[type].Count < 10) {
                 gameObject.transform.position = defaultPos;
                 pool[type].Push(gameObject);

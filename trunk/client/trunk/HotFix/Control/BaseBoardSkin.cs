@@ -20,27 +20,6 @@ namespace HotFix.Control {
         
         private int idx = 0;
 
-        // public void Awake() {
-        //     // Debug.Log(TAG + " Awake()");
-        //     Start();
-        // }
-        public void OnEnable() {
-            // Debug.Log(TAG + ": OnEnable()");
-            Start();
-        }
-        public void Start() {
-            Debug.Log(TAG + " Start()");
-            EventManager.Instance.RegisterListener<UndoGameEventInfo>(onUndoGame); 
-            EventManager.Instance.RegisterListener<TetrominoChallLandInfo>(onActiveTetrominoLand);
-            EventManager.Instance.RegisterListener<CubesMaterialEventInfo>(onCubesMaterialsChanged);
-        }
-        public void OnDisable() {
-            Debug.Log(TAG + " gameObject.name: " + gameObject.name);
-            EventManager.Instance.UnregisterListener<TetrominoChallLandInfo>(onActiveTetrominoLand); 
-            EventManager.Instance.UnregisterListener<UndoGameEventInfo>(onUndoGame); 
-            EventManager.Instance.UnregisterListener<CubesMaterialEventInfo>(onCubesMaterialsChanged);
-        }
-        
         public void initateBaseCubesColors() {
             // 当添加这个脚本的时候,还无法知道游戏关卡层级,所以必须换个地方起始初始化
             Model.baseCubes = new int [Model.gridXWidth * Model.gridZWidth]; // <<<<<<<<<<<<<<<<<<<< Model.baseCubes: int [], 地板砖的着色
@@ -88,8 +67,8 @@ namespace HotFix.Control {
                     }
                 }
             }
-            Debug.Log(TAG + ": baseCubes colors after updateSkin"); 
-            MathUtilP.printBoard(Model.baseCubes);
+            // Debug.Log(TAG + ": baseCubes colors after updateSkin"); 
+            // MathUtilP.printBoard(Model.baseCubes);
         }
 
         void onActiveTetrominoLand(TetrominoChallLandInfo info) { 
@@ -154,6 +133,27 @@ namespace HotFix.Control {
         
         int getMinoPosCubeArrIndex(float x, float z) {
             return (int)(Mathf.Round(x) + GloData.Instance.gridXSize * Mathf.Round(z)); // y = 0
+        }
+
+        // public void Awake() {
+        //     // Debug.Log(TAG + " Awake()");
+        //     Start();
+        // }
+        public void OnEnable() {
+            // Debug.Log(TAG + ": OnEnable()");
+            Start();
+        }
+        public void Start() {
+            // Debug.Log(TAG + " Start()");
+            EventManager.Instance.RegisterListener<UndoGameEventInfo>(onUndoGame); 
+            EventManager.Instance.RegisterListener<TetrominoChallLandInfo>(onActiveTetrominoLand);
+            EventManager.Instance.RegisterListener<CubesMaterialEventInfo>(onCubesMaterialsChanged);
+        }
+        public void OnDisable() {
+            // Debug.Log(TAG + " gameObject.name: " + gameObject.name);
+            EventManager.Instance.UnregisterListener<TetrominoChallLandInfo>(onActiveTetrominoLand); 
+            EventManager.Instance.UnregisterListener<UndoGameEventInfo>(onUndoGame); 
+            EventManager.Instance.UnregisterListener<CubesMaterialEventInfo>(onCubesMaterialsChanged);
         }
     }
 }

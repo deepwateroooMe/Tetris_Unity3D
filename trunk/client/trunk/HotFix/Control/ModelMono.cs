@@ -9,7 +9,6 @@ using UnityEngine;
 
 namespace HotFix.Control {
 
-// 这个应该是GameViewModel才像,会再修改    
     public class ModelMono : SingletonMono<ModelMono> {
         private const string TAG = "ModelMono";
 
@@ -26,69 +25,17 @@ namespace HotFix.Control {
 
         private static float connectionEffectDisplayTime = 2.0f; // ori: 1.1f
         private static WaitForSeconds _waitForSeconds = new WaitForSeconds(connectionEffectDisplayTime);
-        //private static StringBuilder type = new StringBuilder();
         private CanvasMovedEventInfo canvasMovedInfo;
-
-        // public static int lastTetroIndiScore = 0;
         
-        public void OnEnable() {
-            Debug.Log(TAG + ": OnEnable()"); 
-            Debug.Log(TAG + " gameObject.name: " + gameObject.name);
-            Start();
-        }
-        public void Start() {
-            Debug.Log(TAG + " Start()");
-            // EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
-            // EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
-            // EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 
-        }
-        void OnDisable() {
-            Debug.Log(TAG + ": OnDisable()");
-            Debug.Log(TAG + " gameObject.name: " + gameObject.name);
-            // if (EventManager.Instance != null) {
-            //     EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
-            // EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
-            // }
-        }
-        // public void onActiveTetrominoLand(TetrominoLandEventInfo info) {
-        //     Debug.Log(TAG + " onActiveTetrominoLand");
-        //     lastTetroIndiScore = ComponentHelper.GetTetroComponent(info.unitGO).score;
-        // }
-        // public void onActiveTetrominoMove(TetrominoMoveEventInfo info) { 4
-        //     Debug.Log(TAG + ": onActiveTetrominoMove()");
-        //     ViewManager.nextTetromino.transform.position += info.delta; // -11 0 -11, 0 -11 0
-        //     if (Model.CheckIsValidPosition()) {
-        //         if (canvasMovedInfo == null) {
-        //             canvasMovedInfo = new CanvasMovedEventInfo();
-        //         }
-        //         canvasMovedInfo.delta = info.delta;
-        //         EventManager.Instance.FireEvent(canvasMovedInfo);
-        //         Model.UpdateGrid(ViewManager.nextTetromino);
-        //     } else {
-        //         ViewManager.nextTetromino.transform.position -= info.delta;
-        //     }
-        // }
-        // public void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
-        //     Debug.Log(TAG + ": onActiveTetrominoRotate()");
-        //     ViewManager.nextTetromino.transform.Rotate(info.delta);
-        //     if (Model.CheckIsValidPosition()) {
-        //         Model.UpdateGrid(ViewManager.nextTetromino); 
-        //     } else
-        //         ViewManager.nextTetromino.transform.Rotate(Vector3.zero - info.delta); 
-        // }
-
         public System.Collections.IEnumerator DeleteRowCoroutine() {
             Debug.Log(TAG + ": DeleteRowCoroutine()");
             isDeleteRowCoroutineRunning = true;
 
             for (int y = 0; y < Model.gridHeight; y++) {
 
-                if (GloData.Instance.isChallengeMode)
-                    Debug.Log(TAG + " Model.isFullInLayerAt(y): " + Model.isFullInLayerAt(y));
-
-                if ( (!GloData.Instance.isChallengeMode && Model.IsFullFiveInLayerAt(y))
-                     // || (GloData.Instance.isChallengeMode && Model.IsFullQuadInLayerAt(y)) ) { // 以前的分四个小区的
-                     || (GloData.Instance.isChallengeMode && Model.isFullInLayerAt(y)) ) { 
+                if ( (!GloData.Instance.isChallengeMode && GloData.Instance.gameMode == 0 && Model.IsFullFiveInLayerAt(y))
+                     || ((GloData.Instance.isChallengeMode || GloData.Instance.gameMode == 1) && Model.isFullInLayerAt(y)) ) { 
+                    // || (GloData.Instance.isChallengeMode && Model.IsFullQuadInLayerAt(y)) ) { // 以前的分四个小区的
 
                     Debug.Log(TAG + ": gridOcc[,,] IsFullQuadInLayerAt(y)"); 
                     MathUtilP.printBoard(Model.gridOcc); 
@@ -148,6 +95,7 @@ namespace HotFix.Control {
             // yield return null;
         }
 
+// 这里是要求要被消除的小立方体被标记为 2        
 // TODO: 这里的逻辑还有很多问题,估计后来还会有很多BUG在这里.但暂时改到这里,等熟悉游戏和源码后会更好改
 // TODO:　当有两层底层需要同时消除的时候,有一个BUG这里两行都没有消除        
         public static System.Collections.IEnumerator DeleteMinoAtCoroutine(int y) { 
@@ -175,7 +123,9 @@ namespace HotFix.Control {
                                         Model.grid[x][y][z].gameObject.AddComponent<MinoType>();
                                         Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type = type.Append("mino" + Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().type.Substring(9, 1)).ToString(); // Tetromino
                                         Model.grid[x][y][z].gameObject.name = type.ToString();
-                                    }
+                                    } else if (Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type.Equals(""))
+                                        Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type = type.Append("mino" + Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().type.Substring(9, 1)).ToString();
+// 这里很容易报空异常,因为我的预设里可能忘记给小立方体加类型了,或是运行的过程中怎样                                    
                                     tmp.GetChild(0).parent = null;
                                     // PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, type.ToString());
                                     PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
@@ -188,12 +138,16 @@ namespace HotFix.Control {
                                         Model.grid[x][y][z].gameObject.AddComponent<MinoType>();
                                         Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type = type.Append("mino" + Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().type.Substring(9, 1)).ToString();
                                         Model.grid[x][y][z].gameObject.name = type.ToString();
-                                    }
+                                    } else if (Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type.Equals(""))
+                                        Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type = type.Append("mino" + Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().type.Substring(9, 1)).ToString();
+                                        
                                     Debug.Log(TAG + " type.ToString(): " + type.ToString());
                                     // PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, type.ToString());
                                     // } else { // 当删除一个小立方体的时候,需要让其父控件知道,这个小立方体已经销毁了
                                     Model.grid[x][y][z].parent = null;
+// 这里很容易报空异常,因为我的预设里可能忘记给小立方体加类型了,或是运行的过程中怎样                                    
                                     PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
+                                    // PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.name);
                                     // }
                                     Model.grid[x][y][z] = null;
                                     Debug.Log(TAG + " (Model.grid[x][y][z] == null): " + (Model.grid[x][y][z] == null));
@@ -242,7 +196,7 @@ namespace HotFix.Control {
 
         public static void DeleteRow() { // 算法上仍然需要优化
             Debug.Log(TAG + ": DeleteRow() start");
-            // hasDeletedMinos = false; 
+            hasDeletedMinos = false; 
             bool isFullRowAtY = false;
             for (int y = 0; y < Model.gridHeight; y++) {
 
@@ -264,6 +218,9 @@ namespace HotFix.Control {
                     // m_ExplosionParticles.Play();
                     // m_ExplosionAudio.Play();
 
+// CHALLENGE　MODE: 因为有五次撤销功能,所以这里标记一下:就是1　==>　2
+                    if (GloData.Instance.isChallengeMode && y == 0)
+                        markLayerIn(y);
                     DeleteMinoAt(y);
                     if (GloData.Instance.gameMode > 0 || (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel < 3))
                        ScoreManager.currentScore += GloData.Instance.layerScore;
@@ -272,6 +229,9 @@ namespace HotFix.Control {
                         
                     MoveAllRowsDown(y + 1);
                     --y;
+
+                    hasDeletedMinos = true;
+                    Debug.Log(TAG + " hasDeletedMinos: " + hasDeletedMinos);
                 }
             }
 
@@ -280,51 +240,59 @@ namespace HotFix.Control {
                 MathUtilP.printBoard(Model.gridOcc); 
             }
         }
-// 这里并没有说,什么需要把1 ==>　2之类的,有这个必要吗?得验证一下才好........        
+        static void markLayerIn(int y) {
+            for (int i = 0; i < Model.gridXWidth; i++) 
+                for (int j = 0; j < Model.gridZWidth; j++) 
+                    Model.gridOcc[i][y][j] = 2;
+        }
+
+// gameMode == 1 经典模式:
+// gameMode == 0 && isChallengeMode : 标记2并需要能够undo        
         public static void DeleteMinoAt(int y) {
+            int gameMode = GloData.Instance.gameMode;
             Debug.Log(TAG + ": DeleteMinoAt() start");
             for (int x = 0; x < Model.gridXWidth; x++) {
                 for (int  z = 0;  z < Model.gridZWidth;  z++) {
 // GloData.Instance.gameMode > 0, 进行必要的回收, TODO: 只回收同一层的mino or Tetromino (以前标注的)
-                    if (GloData.Instance.gameMode > 0 || (GloData.Instance.gameMode == 0 && GloData.Instance.isChallengeMode)) { 
-                        if (Model.gridOcc[x][y][z] == 1 && Model.grid[x][y][z] != null) {
-                            MathUtilP.print(x, y, z);
-                            if (Model.grid[x][y][z].gameObject != null && Model.grid[x][y][z].parent != null && Model.grid[x][y][z].parent.gameObject != null
-                                && !Model.grid[x][y][z].parent.gameObject.CompareTag("InitCubes")
-                                && Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().childCnt == Model.grid[x][y][z].parent.childCount
-                                && isAllMinoInLayerY(Model.grid[x][y][z].parent, y)) { // 这个小方格的 父控件 的所有子立方体全部都在这一y层,就是,可以直接回收到资源池
-                                MathUtilP.print(x, y, z);
-                                Transform tmpParentTransform = Model.grid[x][y][z].parent;
-                                foreach (Transform mino in Model.grid[x][y][z].parent) {
-                                    int i = (int)Mathf.Round(mino.position.x);
-                                    int j = (int)Mathf.Round(mino.position.y);
-                                    int k = (int)Mathf.Round(mino.position.z);
-                                    Model.grid[i][j][k] = null;
-                                    if (GloData.Instance.isChallengeMode) {
-                                        Model.gridOcc[i][j][k] = 0; 
-                                        Model.gridClr[i][j][k] = -1;
-                                    }
-                                }
-                                PoolHelper.ReturnToPool(tmpParentTransform.gameObject, tmpParentTransform.gameObject.GetComponent<TetrominoType>().type);
-                            } else { // 当前立方体的 父控件 的某个或某些子立方体不在当前层,仅只回收当前小立方体到资源池
-                                MathUtilP.print(x, y, z);
-// 在做预设的时候,有时候我的那些预设里的小立方体并没有标注清楚是什么类型,
-                                Debug.Log(TAG + " Model.grid[x][y][z].gameObject.name: " + Model.grid[x][y][z].gameObject.name);
-                                type.Length = 0;
-                                if (Model.grid[x][y][z].gameObject.name.StartsWith("mino"))
-                                    type.Append("mino" + Model.grid[x][y][z].gameObject.name.Substring(4, 1)); // Tetromino
-                                else type.Append("mino" + Model.grid[x][y][z].gameObject.name.Substring(9, 1)); // Tetromino
-                                Debug.Log(TAG + " type: " + type);
-                                PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, type.ToString());
-                                Model.grid[x][y][z] = null;
+                    // if (gameMode > 0 || (GloData.Instance.gameMode == 0 && GloData.Instance.isChallengeMode)) { // 这个条件这里不要了 ?
+                    // if (Model.gridOcc[x][y][z] == 1 && Model.grid[x][y][z] != null) {
+                    if (Model.grid[x][y][z] != null
+                        && (gameMode > 0 && Model.gridOcc[x][y][z] == 1 || gameMode == 0 && Model.gridOcc[x][y][z] == 2)) {
+                        // MathUtilP.print(x, y, z);
+                        if (Model.grid[x][y][z].gameObject != null && Model.grid[x][y][z].parent != null && Model.grid[x][y][z].parent.gameObject != null
+                            && !Model.grid[x][y][z].parent.gameObject.CompareTag("InitCubes") // 这些不能消除
+                            && Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().childCnt == Model.grid[x][y][z].parent.childCount // 父控件是完整的
+                            && isAllMinoInLayerY(Model.grid[x][y][z].parent, y)) { // 这个小方格的 父控件 的所有子立方体全部都在这一y层,就是,可以直接回收到资源池
+                            // MathUtilP.print(x, y, z);
+                            Transform tmpParentTransform = Model.grid[x][y][z].parent;
+                            foreach (Transform mino in Model.grid[x][y][z].parent) {
+                                int i = (int)Mathf.Round(mino.position.x);
+                                int j = (int)Mathf.Round(mino.position.y);
+                                int k = (int)Mathf.Round(mino.position.z);
+                                Model.grid[i][j][k] = null;
                                 if (GloData.Instance.isChallengeMode) {
-                                    Model.gridOcc[x][y][z] = 0; 
-                                    Model.gridClr[x][y][z] = -1;
+                                    Model.gridOcc[i][j][k] = (y == Model.gridHeight-1 ? 0 : 2); // 0 ==> 2
+                                    Model.gridClr[i][j][k] = -1;
                                 }
+                            }
+                            PoolHelper.ReturnToPool(tmpParentTransform.gameObject, tmpParentTransform.gameObject.GetComponent<TetrominoType>().type);
+                        } else { // 当前立方体的 父控件 的某个或某些子立方体不在当前层,仅只回收当前小立方体到资源池
+                            MathUtilP.print(x, y, z);
+// 在做预设的时候,有时候我的那些预设里的小立方体并没有标注清楚是什么类型,
+                            type.Length = 0;
+                            if (Model.grid[x][y][z].gameObject.name.StartsWith("mino"))
+                                type.Append("mino" + Model.grid[x][y][z].gameObject.name.Substring(4, 1)); // Tetromino
+                            else type.Append("mino" + Model.grid[x][y][z].gameObject.name.Substring(9, 1)); // Tetromino
+                            PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, type.ToString());
+                            Model.grid[x][y][z] = null;
+                            if (GloData.Instance.isChallengeMode) {
+                                Model.gridOcc[x][y][z] = (y == Model.gridHeight-1 ? 0 : 2); // 0 ==> 2
+                                Model.gridClr[x][y][z] = -1;
                             }
                         }
                     }
                 }
+                // }
             }
         }
 
@@ -337,37 +305,65 @@ namespace HotFix.Control {
         }
         public static void MoveAllRowsDown(int y) {
             Debug.Log(TAG + ": MoveAllRowsDown()"); 
-            for (int i = y; i < Model.gridHeight; i++) {
+            for (int i = y; i < Model.gridHeight; i++) 
                 MoveRowDown(i);
-            }
+            MathUtilP.printBoard(Model.gridOcc);
         }
+        // public void MoveRowDown(int y) { // 之前的那个GameViewModel里（没有独立出Model, ModelMono之前的）相对运行得比较好的版本
+        //     if (gameMode.Value  > 0) {
+        //         for (int j = 0; j < gridWidth; j++)    
+        //             for (int x = 0; x < gridWidth; x++) {
+        //                 if (grid[x][y][j] != null) {
+        //                     grid[x][y-1][j] = grid[x][y][j];
+        //                     grid[x][y][j] = null;
+        //                     grid[x][y-1][j].position += new Vector3(0, -1, 0);
+        //                 }
+        //             }
+        //     } else { // gameMode.Value  == 0
+        //         for (int x = 0; x < gridWidth; x++) {
+        //             for (int z = 0; z < gridWidth; z++) {
+        //                 if (gridOcc[x][y-1][z] == 2) { // 下面是消毁掉了的，压下去
+        //                     gridOcc[x][y-1][z] = gridOcc[x][y][z];
+        //                     if (grid[x][y][z] != null) {
+        //                         grid[x][y-1][z] = grid[x][y][z];
+        //                         grid[x][y][z] = null;
+        //                         grid[x][y-1][z].position += new Vector3(0, -1, 0);
+        //                     }
+        //                     gridOcc[x][y][z] = y == gridHeight - 1 ? 0 : 2;
+        //                 }
+        //             }   
+        //         }
+        //     } // gameMode.Value  == 0
+        // } 
         public static void MoveRowDown(int y) {
             // Debug.Log(TAG + ": MoveRowDown()");
             int cnt = 0;
-            if (GloData.Instance.gameMode > 0 ||
-                (GloData.Instance.isChallengeMode &&
-                 (GloData.Instance.challengeLevel < 3 || GloData.Instance.challengeLevel > 5))) { // challenge mode level 1 2 6 7 8 9 10
+// CLASSIC MODE 和挑战模式下整片消除的            
+            // if (GloData.Instance.gameMode > 0 ||
+            //     (GloData.Instance.isChallengeMode &&
+            //      (GloData.Instance.challengeLevel < 3 || GloData.Instance.challengeLevel > 5))) { // challenge mode level 1 2 6 7 8 9 10
+            if (GloData.Instance.gameMode > 0) { // CLASSIC 模式下 
                 for (int j = 0; j < Model.gridZWidth; j++) {
                     for (int x = 0; x < Model.gridXWidth; x++) {
                         if (Model.grid[x][y][j] != null) {
                             Model.grid[x][y-1][j] = Model.grid[x][y][j];
                             Model.grid[x][y-1][j].position += new Vector3(0, -1, 0);
-                            Model.gridOcc[x][y-1][j] = Model.gridOcc[x][y][j];
-                            if (GloData.Instance.isChallengeMode) {
-                                Model.gridClr[x][y-1][j] = Model.gridClr[x][y][j];
-                            }
+                            Model.gridOcc[x][y-1][j] = Model.gridOcc[x][y][j];　// BUG　TODO这里对于被压下来的上一层如何处理没有标明
+                            Model.gridOcc[x][y][j] = 0; // 我现加的，最主要是考虑最顶层的会造成什么BUG
+                            // if (GloData.Instance.isChallengeMode) 
+                            //     Model.gridClr[x][y-1][j] = Model.gridClr[x][y][j];
                             Model.grid[x][y][j] = null;
 
                             // Debug.Log(TAG + " (y == 1): " + (y == 1));
                             // Debug.Log(TAG + " Model.baseCubes.Length: " + Model.baseCubes.Length); 
-                            if (y == 1 && GloData.Instance.isChallengeMode) { // still need to update baseboard skin accordingly
-                                Model.baseCubes[x + j * Model.gridXWidth] = Model.gridClr[x][y][j];
-                                BaseBoardSkin.isSkinChanged = true;
-                            }
+                            // if (y == 1 && GloData.Instance.isChallengeMode) { // still need to update baseboard skin accordingly
+                            //     Model.baseCubes[x + j * Model.gridXWidth] = Model.gridClr[x][y][j];
+                            //     BaseBoardSkin.isSkinChanged = true;
+                            // }
                         }
                     }
                 }
-            } else { // GloData.Instance.gameMode == 0
+            } else { // GloData.Instance.gameMode == 0: 启蒙模式，挑战模式，或是带有undo功能的模式下
                 for (int x = 0; x < Model.gridXWidth; x++) {
                     for (int z = 0; z < Model.gridZWidth; z++) {
                         if (Model.gridOcc[x][y-1][z] == 2) {
@@ -400,6 +396,51 @@ namespace HotFix.Control {
             }
             // Debug.Log(TAG + " cnt: " + cnt); 
         } 
+
+        public void OnEnable() {
+            // Debug.Log(TAG + ": OnEnable()"); 
+            // Debug.Log(TAG + " gameObject.name: " + gameObject.name);
+            Start();
+        }
+        public void Start() {
+            // Debug.Log(TAG + " Start()");
+            // EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
+            // EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
+            // EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 
+        }
+        void OnDisable() {
+            // Debug.Log(TAG + ": OnDisable()");
+            // Debug.Log(TAG + " gameObject.name: " + gameObject.name);
+            // if (EventManager.Instance != null) {
+            //     EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
+            // EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
+            // }
+        }
+        // public void onActiveTetrominoLand(TetrominoLandEventInfo info) {
+        //     Debug.Log(TAG + " onActiveTetrominoLand");
+        //     lastTetroIndiScore = ComponentHelper.GetTetroComponent(info.unitGO).score;
+        // }
+        // public void onActiveTetrominoMove(TetrominoMoveEventInfo info) { 4
+        //     Debug.Log(TAG + ": onActiveTetrominoMove()");
+        //     ViewManager.nextTetromino.transform.position += info.delta; // -11 0 -11, 0 -11 0
+        //     if (Model.CheckIsValidPosition()) {
+        //         if (canvasMovedInfo == null) {
+        //             canvasMovedInfo = new CanvasMovedEventInfo();
+        //         }
+        //         canvasMovedInfo.delta = info.delta;
+        //         EventManager.Instance.FireEvent(canvasMovedInfo);
+        //         Model.UpdateGrid(ViewManager.nextTetromino);
+        //     } else {
+        //         ViewManager.nextTetromino.transform.position -= info.delta;
+        //     }
+        // }
+        // public void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
+        //     Debug.Log(TAG + ": onActiveTetrominoRotate()");
+        //     ViewManager.nextTetromino.transform.Rotate(info.delta);
+        //     if (Model.CheckIsValidPosition()) {
+        //         Model.UpdateGrid(ViewManager.nextTetromino); 
+        //     } else
+        //         ViewManager.nextTetromino.transform.Rotate(Vector3.zero - info.delta); 
+        // }
     }
 }
-

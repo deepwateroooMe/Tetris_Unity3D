@@ -32,6 +32,8 @@ namespace deepwaterooo.tetris3d {
         }
 
         public static GameData LoadGame(string pathIn) {
+            Debug.Log(TAG + " LoadGame() pathIn: " + pathIn);
+            Debug.Log(TAG + " File.Exists(pathIn): " + File.Exists(pathIn));
             if (File.Exists(pathIn)) {
                 BinaryFormatter formatter = new BinaryFormatter();
                 FileStream stream = new FileStream(pathIn, FileMode.Open, FileAccess.Read);
@@ -52,3 +54,4 @@ namespace deepwaterooo.tetris3d {
         } 
     }
 }
+

@@ -65,7 +65,7 @@ namespace HotFix.Control {
                     int x = (int)Mathf.Round(pos.x);
                     int y = (int)Mathf.Round(pos.y);
                     int z = (int)Mathf.Round(pos.z);
-                    MathUtilP.print(x, y, z);
+                    // MathUtilP.print(x, y, z);
 // 这一步的检查太多余了,不要                    
                     // Debug.Log(TAG + " (!isNeighboursExist(x, y, z)): " + (!isNeighboursExist(x, y, z)));
                     // if (!isNeighboursExist(x, y, z)) continue; // 这个格的上下左右前后都没有邻居[只有要板还没有检查]
@@ -169,14 +169,14 @@ namespace HotFix.Control {
                 // if (bottomIdx[i] == -1) return false; // 不能这么写,因为它可能最低层只有一个立方体,那么其它三个就是-1
                 int [] pos = MathUtilP.getIndex(bottomIdx[i]);
                 if (pos[1] == 0) {
-                    Debug.Log(TAG + " (Model.baseCubes[getMinoPosCubeArrIndex(pos[0], pos[2])] == Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color): "
-                              + (Model.baseCubes[getMinoPosCubeArrIndex(pos[0], pos[2])] == Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color));
-                    MathUtilP.print(pos);
-                    Debug.Log(TAG + " getMinoPosCubeArrIndex(pos[0], pos[2]): " + getMinoPosCubeArrIndex(pos[0], pos[2]));
+                    // Debug.Log(TAG + " (Model.baseCubes[getMinoPosCubeArrIndex(pos[0], pos[2])] == Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color): "
+                    //           + (Model.baseCubes[getMinoPosCubeArrIndex(pos[0], pos[2])] == Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color));
+                    // MathUtilP.print(pos);
+                    // Debug.Log(TAG + " getMinoPosCubeArrIndex(pos[0], pos[2]): " + getMinoPosCubeArrIndex(pos[0], pos[2]));
 
                     if (Model.baseCubes[getMinoPosCubeArrIndex(pos[0], pos[2])] == Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color) {
                         ++matchingCnter;
-                        Debug.Log(TAG + " matchingCnter: " + matchingCnter); 
+                        // Debug.Log(TAG + " matchingCnter: " + matchingCnter); 
                         if (GloData.Instance.challengeLevel < 11 || isSolo || (GloData.Instance.challengeLevel > 10 && matchingCnter >= 2)) 
                             return true;
                     }
@@ -225,7 +225,7 @@ namespace HotFix.Control {
                 if (mino.CompareTag("mino")) {
                     Vector3 pos = MathUtilP.Round(mino.position);
 
-                    MathUtilP.print(pos);
+                    // MathUtilP.print(pos);
                     if ((int)pos.y == minY) 
                         bottomIdx[i++] = MathUtilP.getIndex(pos);
                 }
@@ -279,7 +279,7 @@ namespace HotFix.Control {
                     while (j > 0 && Model.grid[i][j][k] == null) j--;
                     if (j > 0 && Model.gridClr[i][j][k] == color && Model.grid[i][j][k].parent.gameObject != ViewManager.nextTetromino) {
                         Debug.Log(TAG + ": i, j, k values: "); 
-                        MathUtilP.print(i, j, k);
+                        // MathUtilP.print(i, j, k);
                         // Debug.Log(TAG + " j: " + j); 
                         return true;
                     }
