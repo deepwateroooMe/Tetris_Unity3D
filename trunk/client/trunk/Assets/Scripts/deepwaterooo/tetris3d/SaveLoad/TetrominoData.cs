@@ -22,9 +22,13 @@ namespace deepwaterooo.tetris3d {
             this.color = colortmp;
             transform = new SerializedTransform(parentTrans);
             children = new MinoDataCollection<TetrominoData, MinoData>(this);
+// 这里根据现在的逻辑需求,是需要添加颜色信息的            
             foreach (Transform mino in parentTrans) {
                 if (mino.CompareTag("mino")) {
-                    MinoData minoDataItem = new MinoData(mino, new StringBuilder("mino" + type.Substring(9, 1)).ToString()); // TetrominoX ==> minoX
+                    MinoData minoDataItem = new MinoData(mino,
+                                                         new StringBuilder("mino" + type.Substring(9, 1)).ToString(),
+                                                         colortmp
+                        ); // TetrominoX ==> minoX
                     children.Add(minoDataItem);
                 }
             }

@@ -106,9 +106,14 @@ namespace HotFix.Control {
         public static void print(Vector3 tmp) {
             Debug.Log(TAG + " tmp(x, y, z): " + tmp.x + ", " + tmp.y + ", " +tmp.z); 
         }
-
         public static void print(float x, float y, float z) {
             Debug.Log(TAG + " (x, y, z): " + x + ", " + y + ", " +z); 
+        }
+        public static void print(string msg, Vector3 tmp) {
+            Debug.Log(TAG + " " + msg + " tmp(x, y, z): " + tmp.x + ", " + tmp.y + ", " +tmp.z); 
+        }
+        public static void print(string msg, float x, float y, float z) {
+            Debug.Log(TAG + " " + msg + " (x, y, z): " + x + ", " + y + ", " +z); 
         }
 
         public static void print(Transform transform) {

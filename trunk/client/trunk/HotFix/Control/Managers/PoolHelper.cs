@@ -40,25 +40,28 @@ namespace HotFix.Control {
             ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "blue", (go) => ViewManager.materials.Add(2, go));
             ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "Yellow", (go) => ViewManager.materials.Add(3, go));
 
-            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "blue", (go) => ViewManager.colors.Add(0, go)); // <<<<<<<<<< 这个用了两次?
-            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "colorB", (go) => ViewManager.colors.Add(1, go));
-            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "oliveC", (go) => ViewManager.colors.Add(2, go));
-            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "Purple", (go) => ViewManager.colors.Add(3, go));
-            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "brown", (go) => ViewManager.colors.Add(4, go));
-            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "white", (go) => ViewManager.colors.Add(5, go));
-            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "red", (go) => ViewManager.colors.Add(6, go));
-            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "black", (go) => ViewManager.colors.Add(7, go));
-            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "Green", (go) => ViewManager.colors.Add(8, go));
-            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "blue", (go) => ViewManager.colors.Add(9, go)); // <<<<<<<<<< 
-            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "pink", (go) => ViewManager.colors.Add(10, go));
-            // ResourceHelper.LoadMaterialAsyn("ui/view/gameview", "Yello", (go) => ViewManager.colors.Add(11, go));
-        }
+            ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "red", (go) => ViewManager.colors.Add(0, go));  // 6
+            ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "Green", (go) => ViewManager.colors.Add(1, go));// 8
+            ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "blue", (go) => ViewManager.colors.Add(2, go)); // 0
+            ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "Yellow", (go) => ViewManager.colors.Add(3, go));// 11
+            ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "black", (go) => ViewManager.colors.Add(7, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "blue", (go) => ViewManager.colors.Add(9, go)); // <<<<<<<<<< 
+            ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "brown", (go) => ViewManager.colors.Add(4, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "colorB", (go) => ViewManager.colors.Add(6, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "oliveC", (go) => ViewManager.colors.Add(8, go)); // 8
+            ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "pink", (go) => ViewManager.colors.Add(10, go));
+            ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "Purple", (go) => ViewManager.colors.Add(11, go));// 11
+            ResourceHelper.LoadMaterialAsyn("ui/view/btnscanvasview", "white", (go) => ViewManager.colors.Add(5, go));
+        } 
         public static void fillPool(Transform prefab) {
             string type, name = prefab.gameObject.name;
             if (name.StartsWith("mino"))
                 type = prefab.GetComponent<deepwaterooo.tetris3d.MinoType>().type;
             else type = prefab.GetComponent<TetrominoType>().type;
-            minosDic.Add(type, prefab.gameObject);
+// TODO: 这里总是时不是地会报TetrominoX 预计添加失败            
+            // Debug.Log(TAG + " fillPool() name: " + name);
+            // Debug.Log(TAG + " fillPool() type: " + type);
+           minosDic.Add(type, prefab.gameObject);
             Stack<GameObject> stack = new Stack<GameObject>();
             for (int i = 0; i < 10; i++) {
 				GameObject oneInstance = GameObject.Instantiate(prefab.gameObject).gameObject;
@@ -98,7 +101,9 @@ namespace HotFix.Control {
             }
         }
 
-        public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, int color = 0) {
+// 这个方法是特定只取mino的吗?>        
+        public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, int color) {
+            Debug.Log(TAG + " GetFromPool() type: " + type);
             Stack<GameObject> st = pool[type];
             GameObject objInstance = null;
             if (st.Count > 0) {
@@ -111,13 +116,14 @@ namespace HotFix.Control {
             }
             objInstance.transform.position = pos;
             objInstance.transform.rotation = rotation;
-
 // 必要的情况下给小立方体更换皮肤材质
             if (GloData.Instance.isChallengeMode
                 && type.Substring(0, 4).Equals("mino")
                 && !type.Substring(0, 5).Equals("minoP")) { // isChallengeMode = true, gameMode = 0
                 objInstance.GetComponent<MinoType>().color = color;
-                objInstance.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[color];
+// BUG: 当是其它除了这四种之外的就会出错?
+                    objInstance.GetComponent<Renderer>().sharedMaterial = ViewManager.colors[color];
+                    // objInstance.GetComponent<Renderer>().sharedMaterial = ViewManager.colors[color];
             }
             objInstance.transform.SetParent(ViewManager.tetroParent.transform, false); // default set here 吧
             return objInstance;
@@ -172,11 +178,11 @@ namespace HotFix.Control {
                             || cnt == 0) {
                             ++cnt;
                             child.gameObject.GetComponent<MinoType>().color = randomColor1;
-                            child.gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[randomColor1];
+                            child.gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.colors[randomColor1];
                             Debug.Log(TAG + " child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString: " + child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString()); 
                         } else {
                             child.gameObject.GetComponent<MinoType>().color = randomColor2;
-                            child.gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[randomColor2];
+                            child.gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.colors[randomColor2];
                             Debug.Log(TAG + " child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString: " + child.gameObject.GetComponent<Renderer>().sharedMaterial.ToString()); 
                         }
                     }
@@ -184,13 +190,11 @@ namespace HotFix.Control {
                     int randomColor = UnityEngine.Random.Range(0, 4);
                     objInstance.GetComponent<TetrominoType>().color = randomColor;
                     Debug.Log(TAG + " randomColor: " + randomColor); 
-                    // Debug.Log(TAG + " ViewManager.materials.Count: " + ViewManager.materials.Count);
-                    // Debug.Log(TAG + " ViewManager.colors.Count: " + ViewManager.colors.Count);
                     foreach (Transform child in objInstance.transform) {
                         if (child.gameObject.GetComponent<MinoType>() == null)
                             child.gameObject.AddComponent<MinoType>();
                         child.gameObject.GetComponent<MinoType>().color = randomColor;
-                        child.gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[randomColor];
+                        child.gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.colors[randomColor];
                     }
                 }
             }
@@ -227,7 +231,7 @@ namespace HotFix.Control {
             objInstance.GetComponent<TetrominoType>().color = color;
             foreach (Transform child in objInstance.transform) {
                 child.gameObject.GetComponent<MinoType>().color = color;
-                child.gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[color];
+                child.gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.colors[color];
             }
             objInstance.transform.SetParent(ViewManager.tetroParent.transform, false); // default set here 吧
             return objInstance;

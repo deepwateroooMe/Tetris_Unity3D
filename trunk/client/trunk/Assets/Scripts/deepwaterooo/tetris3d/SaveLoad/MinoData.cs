@@ -42,10 +42,11 @@ namespace deepwaterooo.tetris3d {
             this.type = "";
         }
 
-        public MinoData(Transform trans, string type) {
+        public MinoData(Transform trans, string type, int color) {
             this.type = type;
             this.idx = MathUtil.getIndex(trans);
             this.transform = new SerializedTransform(trans);
+            this.color = color;
         }
 
         public void reset() {

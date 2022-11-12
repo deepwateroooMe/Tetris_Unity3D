@@ -160,7 +160,9 @@ namespace HotFix.UI {
         // enable: undoButton
         void Initialization() {
             this.ParentViewModel = (MenuViewModel)ViewManager.MenuView.BindingContext; // 父视图模型: 菜单视图模型
-            gridWidth = ((MenuViewModel)ParentViewModel).gridWidth;
+            // gridWidth = ((MenuViewModel)ParentViewModel).gridWidth;
+// TODO: LEVEL 3: 必须重写这里
+            gridWidth = GloData.Instance.gridSize;
             
             gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
             fallSpeed = 3.0f;

@@ -5,6 +5,7 @@ using Framework.Util;
 using System.Collections;
 using HotFix.Control;
 using UnityEngine.EventSystems;
+using deepwaterooo.tetris3d;
 
 namespace HotFix.UI {
 
@@ -70,7 +71,10 @@ namespace HotFix.UI {
                         tetroParent = go.FindChildByName("TetrominosContainer");
                         GameObject parent = go.FindChildByName("Prefabs"); 
                         foreach (Transform child in parent.transform) {
-                            PoolHelper.fillPool(child);
+                            // if (child.gameObject.name.Equals("TetrominoX")) // 直接将这个移除了
+                            //     PoolHelper.minosDic.Add("TetrominoX", child.gameObject);
+                            // else
+                                PoolHelper.fillPool(child);
 							string name = child.gameObject.name;
                             if (name.StartsWith("Tetromino")) {
                                 switch (name) {
@@ -116,6 +120,11 @@ namespace HotFix.UI {
                             }
                         }
                         parent.SetActive(false);
+// // 手动创建和添加一个TetrominoX: 再换到需要用的方法里去写
+//                         GameObject tetrox = new GameObject();
+//                         tetrox.AddComponent<TetrominoType>();
+//                         tetrox.GetComponent<TetrominoType>().type = "TetrominoX";
+//                         PoolHelper.minosDic.Add("TetrominoX", tetrox);
 // for CHALLENGE MODE:
                         basePlane = go.FindChildByName("basePlane"); 
                         // basePlane.SetActive(false);
