@@ -56,7 +56,7 @@ namespace HotFix.Control {
         public static void fillPool(Transform prefab) {
             string type, name = prefab.gameObject.name;
             if (name.StartsWith("mino"))
-                type = prefab.GetComponent<deepwaterooo.tetris3d.MinoType>().type;
+                type = prefab.GetComponent<MinoType>().type;
             else type = prefab.GetComponent<TetrominoType>().type;
 // TODO: 这里总是时不是地会报TetrominoX 预计添加失败            
             // Debug.Log(TAG + " fillPool() name: " + name);
@@ -93,17 +93,19 @@ namespace HotFix.Control {
 // 因为BtnsCanvasView最开始读的时候,很多时候容易抛脚本onEnable()生命周期函数回调的空异常,这里仍先把它失活,原本原则上讲应该是可以不必要的
                 ComponentHelper.AddGhostComponent(go);
                 ComponentHelper.GetGhostComponent(go).enabled = false;
-            } else if (isMino) {
-                if (go.GetComponent<MinoType>() == null) {
-                    go.AddComponent<MinoType>();
-                    go.GetComponent<MinoType>().type = name;
-                }
             }
+			//else if (isMino) { // 因为预设准备完整了,这里就不需要了
+   //             if (go.GetComponent<MinoType>() == null) {
+   //                 go.AddComponent<MinoType>();
+   //                 go.GetComponent<MinoType>().type = name;
+   //             }
+   //         }
         }
 
 // 这个方法是特定只取mino的吗?>        
         public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, int color) {
             Debug.Log(TAG + " GetFromPool() type: " + type);
+            Debug.Log(TAG + " color: " + color);
             Stack<GameObject> st = pool[type];
             GameObject objInstance = null;
             if (st.Count > 0) {
@@ -122,8 +124,11 @@ namespace HotFix.Control {
                 && !type.Substring(0, 5).Equals("minoP")) { // isChallengeMode = true, gameMode = 0
                 objInstance.GetComponent<MinoType>().color = color;
 // BUG: 当是其它除了这四种之外的就会出错?
-                    objInstance.GetComponent<Renderer>().sharedMaterial = ViewManager.colors[color];
-                    // objInstance.GetComponent<Renderer>().sharedMaterial = ViewManager.colors[color];
+                // if (objInstance.GetComponent<Renderer>() == null)
+                //     Debug.Log(TAG + " (objInstance.GetComponent<Renderer>() == null): " + (objInstance.GetComponent<Renderer>() == null));
+                // if (color < 0 || color > 11)
+                //     Debug.Log(TAG + " ViewManager.colors[color]: " + ViewManager.colors[color]);
+                objInstance.GetComponent<Renderer>().sharedMaterial = ViewManager.colors[color];
             }
             objInstance.transform.SetParent(ViewManager.tetroParent.transform, false); // default set here 吧
             return objInstance;

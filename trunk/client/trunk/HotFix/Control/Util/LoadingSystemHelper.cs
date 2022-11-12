@@ -48,7 +48,7 @@ namespace HotFix.Control {
                 if (isThereAnyExistChild(parentData)) { // 存在
                     Debug.Log(TAG + " (!gridMatchesSavedParent(tmpParentGO, parentData.children)): " + (!gridMatchesSavedParent(tmpParentGO, parentData.children))); 
                     if (!gridMatchesSavedParent(tmpParentGO, parentData.children)) {  // 先删除多余的，再补全缺失的
-// // BUG:　这是我这次整合源码,不明白的时候自己又加上的,现去掉,再跑一遍                        
+// // BUG:这是不需要的了:　这是我这次整合源码,不明白的时候自己又加上的,现去掉,再跑一遍                        
 //                         foreach (Transform trans in tmpParentGO.transform) { // 先 删除多余的, 怀疑这一步是可以完全不要的(但是可能的情况下是消除某层后从上面层落下来的)
 //                            MathUtilP.print(MathUtilP.Round(trans.position));
 //                            // Debug.Log(TAG + " (!myContains(trans, parentData.children)): " + (!myContains(trans, parentData.children))); 
@@ -78,8 +78,11 @@ namespace HotFix.Control {
                                                                               DeserializedTransform.getDeserializedTransRot(minoData.transform),
                                                                               minoData.color);
                                 tmpMinoGO.tag = "mino";
+                                Model.grid[x][y][z] = tmpMinoGO.transform;
+                                Model.gridOcc[x][y][z] = 1;
                                 tmpMinoGO.transform.parent = tmpParentGO.transform;
                             }
+// 这里的写法不合理(容易加多),换上面的方法写: 用补的,只补缺的,就不会多出来几粒
                             // if (Model.grid[x][y][z] == null
                             //     ||  Model.grid[x][y][z].parent != null && Model.grid[x][y][z].parent.gameObject != tmpParentGO) { // 当前为空,或是从上面落下来的其它的
                             //     GameObject tmpMinoGO = PoolHelper.GetFromPool(minoData.type,

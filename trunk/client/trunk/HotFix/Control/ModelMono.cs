@@ -279,11 +279,6 @@ namespace HotFix.Control {
                         } else { // 当前立方体的 父控件 的某个或某些子立方体不在当前层,仅只回收当前小立方体到资源池
                             // MathUtilP.print(x, y, z);
 // 在做预设的时候,有时候我的那些预设里的小立方体并没有标注清楚是什么类型,
-                            // type.Length = 0;
-                            // if (Model.grid[x][y][z].gameObject.name.StartsWith("mino"))
-                            //     type.Append("mino" + Model.grid[x][y][z].gameObject.name.Substring(4, 1)); // Tetromino
-                            // else type.Append("mino" + Model.grid[x][y][z].gameObject.name.Substring(9, 1)); // Tetromino
-                            // PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, type.ToString());
                             Model.grid[x][y][z].parent = null; // 需要先解除这个父子控件关系,否则父控件永远以为这个子立方体存在存活
                             PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
                             Model.grid[x][y][z] = null;

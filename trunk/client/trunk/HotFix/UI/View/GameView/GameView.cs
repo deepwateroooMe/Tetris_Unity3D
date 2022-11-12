@@ -442,9 +442,9 @@ namespace HotFix.UI {
 // ViewManager.nextTetromino: 在接下来消除的过程中，它的部分或是全部立方体可能会被消除，所以要早点儿处理
             ViewManager.nextTetromino.tag = "Untagged";
             Tetromino tetromino = ComponentHelper.GetTetroComponent(ViewManager.nextTetromino);
-            ViewModel.currentScore.Value += tetromino.GetComponent<TetrominoType>().score;
+            ViewModel.currentScore.Value += ViewManager.scoreDic[ViewManager.nextTetromino.name];
+            // ViewModel.currentScore.Value += tetromino.GetComponent<TetrominoType>().score;
             tetromino.enabled = false;
-            // ViewManager.GameView.ViewModel.currentScore.Value += tetromino.individualScore;            
 
             PoolHelper.recycleGhostTetromino();
 

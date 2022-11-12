@@ -79,25 +79,25 @@ namespace HotFix.UI {
                             if (name.StartsWith("Tetromino")) {
                                 switch (name) {
                                 case "TetrominoI":
-                                    ViewManager.scoreDic.Add(name, 300);
+                                    ViewManager.scoreDic.Add(name, 500);
                                     break;
                                 case "TetrominoJ":
-                                    ViewManager.scoreDic.Add(name, 350);
+                                    ViewManager.scoreDic.Add(name, 500);
                                     break;
                                 case "TetrominoL":
-                                    ViewManager.scoreDic.Add(name, 350);
+                                    ViewManager.scoreDic.Add(name, 600);
                                     break;
                                 case "TetrominoO":
-                                    ViewManager.scoreDic.Add(name, 300);
+                                    ViewManager.scoreDic.Add(name, 500);
                                     break;
                                 case "TetrominoS":
-                                    ViewManager.scoreDic.Add(name, 500);
+                                    ViewManager.scoreDic.Add(name, 600);
                                     break;
                                 case "TetrominoT":
-                                    ViewManager.scoreDic.Add(name, 400);
+                                    ViewManager.scoreDic.Add(name, 600);
                                     break;
                                 case "TetrominoZ":
-                                    ViewManager.scoreDic.Add(name, 500);
+                                    ViewManager.scoreDic.Add(name, 600);
                                     break;
                                 case "Tetromino0": 
                                     ViewManager.scoreDic.Add(name, 500);
