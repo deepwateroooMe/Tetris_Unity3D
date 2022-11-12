@@ -1,4 +1,4 @@
-% Created 2022-11-08 Tue 22:23
+% Created 2022-11-12 Sat 09:46
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -37,14 +37,24 @@
 \label{sec-1}
 \begin{itemize}
 \item CHALLENGING MODE: ALL kinds of bugs awaiting to be fixed. will work on them tomorrow.
+\item working on identified bugs.前几天估算时间的时候没有意识到之前自己的游戏逻辑并没有写完整,还是想尽快把挑战模式下的游戏逻辑按照原计划实现出相对理想的状态,这几天会把游戏逻辑补充完整,并尽量同步修复意识到的bug
+\item 考虑热更新服务器该如何处理
 \end{itemize}
 
-\includegraphics[width=.9\linewidth]{./pic/readme_20221108_222757.png}
+\includegraphics[width=.9\linewidth]{./pic/readme_20221112_072532.png}
 
 \begin{itemize}
 \item debugging game flow, 现游戏的主场景如下(热更新程序域里的主要逻辑功能模块化管理主要工作完成,还没有debug游戏逻辑):
 \end{itemize}
 现游戏框架与实现细节,除了将来的热更新服务器的服务端,其它任何部分都不再有任何挑战,只是时间问题,需要时间来整合持战模式和修改所有遇到过的BUG与细节.爱表哥,爱生活!!!
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221111_222732.png}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221110_112552.png}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221109_180107.png}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221108_222757.png}
 \begin{itemize}
 \item 在整合了更为优化方便读取的日志文件之后,游戏里的BUG已经基本上被自己清理干净了,只有两三个不容易重复的,希望下次再遇见能将它们一一解决掉.
 \item 从明天开始,将精中精力整合挑战模式下的11关,最开始的一两关因为挑战模式下的诸多整合问题,可能会进展相对迟缓一点儿,也需要在最开始的一两关解决掉整合过程中重构过程中所造成的绝大部分相关BUG, 等这一步走完,接下来的将会容易很多.希望能够用几天的时间把这块儿做完,都是琐碎的细节,并不存在技术上的挑战/

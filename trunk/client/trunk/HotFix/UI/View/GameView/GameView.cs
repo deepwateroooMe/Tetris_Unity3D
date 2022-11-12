@@ -553,7 +553,7 @@ namespace HotFix.UI {
             // ViewModel.onSwapPreviewTetromino();
             
             // 当 ViewModel.swapCnter.Value == 1的时候点击,就将这个按钮短暂失活,直到重新游戏或是下一关卡
-            if (ViewModel.swapCnter.Value == 0) // 
+            if (ViewModel.swapCnter.Value == 0 && GloData.Instance.isChallengeMode) // 
                 swaBtn.SetActive(false);
             Debug.Log(TAG + " ViewModel.swapCnter.Value: " + ViewModel.swapCnter.Value);
             PoolHelper.recyclePreviewTetrominos(previewTetromino);

@@ -48,29 +48,26 @@ namespace HotFix.Control {
                 if (isThereAnyExistChild(parentData)) { // 存在
                     Debug.Log(TAG + " (!gridMatchesSavedParent(tmpParentGO, parentData.children)): " + (!gridMatchesSavedParent(tmpParentGO, parentData.children))); 
                     if (!gridMatchesSavedParent(tmpParentGO, parentData.children)) {  // 先删除多余的，再补全缺失的
-// // BUG:这是不需要的了:　这是我这次整合源码,不明白的时候自己又加上的,现去掉,再跑一遍                        
-//                         foreach (Transform trans in tmpParentGO.transform) { // 先 删除多余的, 怀疑这一步是可以完全不要的(但是可能的情况下是消除某层后从上面层落下来的)
-//                            MathUtilP.print(MathUtilP.Round(trans.position));
-//                            // Debug.Log(TAG + " (!myContains(trans, parentData.children)): " + (!myContains(trans, parentData.children))); 
-//                            if (!myContains(trans, parentData.children)) {
-//                                x = (int)Mathf.Round(trans.position.x);
-//                                y = (int)Mathf.Round(trans.position.y);
-//                                z = (int)Mathf.Round(trans.position.z);
-//                                Model.grid[x][y][z].parent = null;
-//                                GameObject.Destroy(Model.grid[x][y][z].gameObject); // todo how
-//                                Model.gridOcc[x][y][z] = 0;
-//                                Model.grid[x][y][z] = null;
-//                            }
-//                         }
-                        // Debug.Log(TAG + " tmpParentGO.transform.childCount (deleted unwanted): " + tmpParentGO.transform.childCount);
+// 先 删除多余的, 这一步是必要的,因为当有消除父控件的子立方体可能往下掉变形了,需要先删除掉下去了变形了的
+// 应该说更好的办法是直接改变这些掉下去了而导致位置变化的小立方体回归原位,但是暂时先这么写吧                        
+                        foreach (Transform trans in tmpParentGO.transform) { 
+                           if (!myContains(trans, parentData.children)) {
+                               x = (int)Mathf.Round(trans.position.x);
+                               y = (int)Mathf.Round(trans.position.y);
+                               z = (int)Mathf.Round(trans.position.z);
+                               Model.grid[x][y][z].parent = null;
+                               PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
+                               Model.gridOcc[x][y][z] = 0;
+                               Model.grid[x][y][z] = null;
+                           }
+                        }
+                        Debug.Log(TAG + " tmpParentGO.transform.childCount (AFTER deleted unwanted): " + tmpParentGO.transform.childCount);
                         foreach (MinoData minoData in parentData.children) {
                             Vector3 posA = MathUtilP.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform)); 
-                            // MathUtilP.print(posA);
                             x = (int)Mathf.Round(posA.x);
                             y = (int)Mathf.Round(posA.y);
                             z = (int)Mathf.Round(posA.z);
                             MathUtilP.print(x, y, z);
-                            
 // 这里的写法不合理(容易加多),换一种方法写: 用补的,只补缺的,就不会多出来几粒
                             if (!containsMino(tmpParentGO, x, y, z)) {
                                 GameObject tmpMinoGO = PoolHelper.GetFromPool(minoData.type,
@@ -78,11 +75,14 @@ namespace HotFix.Control {
                                                                               DeserializedTransform.getDeserializedTransRot(minoData.transform),
                                                                               minoData.color);
                                 tmpMinoGO.tag = "mino";
+                                tmpMinoGO.GetComponent<MinoType>().type = minoData.type;
+                                tmpMinoGO.GetComponent<MinoType>().color = minoData.color;
                                 Model.grid[x][y][z] = tmpMinoGO.transform;
                                 Model.gridOcc[x][y][z] = 1;
-                                tmpMinoGO.transform.parent = tmpParentGO.transform;
+                                tmpMinoGO.transform.SetParent(tmpParentGO.transform, true);
+                                // tmpMinoGO.transform.parent = tmpParentGO.transform; // 感觉这里的父子关系好像没能真正建立正确,是分成两个父控件的???
                             }
-// 这里的写法不合理(容易加多),换上面的方法写: 用补的,只补缺的,就不会多出来几粒
+// 这里的写法不合理(容易加多),换上面的方法写: 用补的,只补缺的,就不会多出来几粒:
                             // if (Model.grid[x][y][z] == null
                             //     ||  Model.grid[x][y][z].parent != null && Model.grid[x][y][z].parent.gameObject != tmpParentGO) { // 当前为空,或是从上面落下来的其它的
                             //     GameObject tmpMinoGO = PoolHelper.GetFromPool(minoData.type,
@@ -100,25 +100,31 @@ namespace HotFix.Control {
                             // }
                         }
                     }
-                    Debug.Log(TAG + " tmpParentGO.transform.childCount (filled needed -- final): " + tmpParentGO.transform.childCount);
+                    Debug.Log(TAG + " tmpParentGO.transform.childCount (AFTER filled disappeared -- final): " + tmpParentGO.transform.childCount);
                 } else { // 重新生成                                           // 空 shapeX Tetromino_X : Universal
                     GameObject tmpGameObject = PoolHelper.GetFromPool("TetrominoX",
                                                                       DeserializedTransform.getDeserializedTransPos(parentData.transform), 
                                                                       DeserializedTransform.getDeserializedTransRot(parentData.transform),
                                                                       Vector3.one);
+                    tmpGameObject.GetComponent<TetrominoType>().type = parentData.type;
+                    tmpGameObject.GetComponent<TetrominoType>().color = parentData.color;
+                    tmpGameObject.name = parentData.name;
                     childCounter = 0;
                     foreach (MinoData minoData in parentData.children) {
+                        if (minoData.color == -1)
+                            Debug.Log(TAG + " (minoData.color == -1) parentData.name: " + parentData.name);
                         GameObject tmpMinoGO = PoolHelper.GetFromPool(minoData.type,
                                                                       DeserializedTransform.getDeserializedTransPos(minoData.transform), 
                                                                       DeserializedTransform.getDeserializedTransRot(minoData.transform),
                                                                       minoData.color);
-                        tmpMinoGO.transform.parent = tmpGameObject.transform;
+                        tmpMinoGO.transform.SetParent(tmpGameObject.transform, true);
+                        // tmpMinoGO.transform.parent = tmpGameObject.transform;
                         x = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).x);
                         y = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).y);
                         z = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).z);
-                        // fix for bug 5: fill in a Mino into board in y where there are more minos are above the filled in one
                         tmpMinoGO.tag = "mino";
-                        Debug.Log(TAG + " isColumnFromHereEmpty(x, y, z): " + isColumnFromHereEmpty(x, y, z));
+                        tmpMinoGO.GetComponent<MinoType>().type = minoData.type;
+                        tmpMinoGO.GetComponent<MinoType>().color = minoData.color;
                         if (isColumnFromHereEmpty(x, y, z)) {
                             Model.grid[x][y][z] = tmpMinoGO.transform;
                             Model.gridOcc[x][y][z] = 1;
@@ -222,6 +228,5 @@ namespace HotFix.Control {
             }
             return false;
         }
-        
     }
 }
