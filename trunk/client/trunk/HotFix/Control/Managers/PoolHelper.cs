@@ -250,6 +250,7 @@ namespace HotFix.Control {
                 pool[type] = new Stack<GameObject>();
             if (pool[type].Count < 10) {
                 gameObject.transform.position = defaultPos;
+                gameObject.transform.SetParent(ViewManager.tetrosPool.transform);
                 pool[type].Push(gameObject);
             } else GameObject.DestroyImmediate(gameObject);
         }

@@ -36,14 +36,18 @@ namespace Framework.MVVM {
             pos = transform.rotation * (transform.position - pivot) + pivot;
             return pos;
         }
-    
         public static int [] getIndex(int idx) {
-            // Debug.Log(TAG + ": getIndex()");
-            // Debug.Log(TAG + " m: " + m); 
             int [] result = new int[3];
             result[0] = idx % (m * m) % m;
             result[1] = idx / (m * m);
             result[2] = idx % (m * m) / m;
+            return result;
+        }
+        public static int [] getIndex(int idx, int xm, int zm, int y =  12) {
+            int [] result = new int[3];
+            result[0] = idx % (xm * zm) % xm;
+            result[1] = idx / (xm * zm);
+            result[2] = idx % (xm * zm) / xm;
             return result;
         }
     

@@ -119,36 +119,15 @@ namespace HotFix.Control {
                                 if (Model.grid[x][y][z].parent.childCount == 1) {
                                     Transform tmp = Model.grid[x][y][z].parent;
                                     type.Length = 0;
-//                                     if (Model.grid[x][y][z].gameObject.GetComponent<MinoType>() == null) {
-//                                         Model.grid[x][y][z].gameObject.AddComponent<MinoType>();
-//                                         Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type = type.Append("mino" + Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().type.Substring(9, 1)).ToString(); // Tetromino
-//                                         Model.grid[x][y][z].gameObject.name = type.ToString();
-//                                     } else if (Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type.Equals(""))
-//                                         Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type = type.Append("mino" + Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().type.Substring(9, 1)).ToString();
-// // 这里很容易报空异常,因为我的预设里可能忘记给小立方体加类型了,或是运行的过程中怎样                                    
                                     tmp.GetChild(0).parent = null;
-                                    // PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, type.ToString());
                                     PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
                                     GameObject.Destroy(tmp.gameObject);
                                     Model.grid[x][y][z] = null;
                                     tmp = null;
                                 } else { // childCount > 1
                                     type.Length = 0;
-                                    // if (Model.grid[x][y][z].gameObject.GetComponent<MinoType>() == null) {
-                                    //     Model.grid[x][y][z].gameObject.AddComponent<MinoType>();
-                                    //     Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type = type.Append("mino" + Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().type.Substring(9, 1)).ToString();
-                                    //     Model.grid[x][y][z].gameObject.name = type.ToString();
-                                    // } else if (Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type.Equals(""))
-                                    //     Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type = type.Append("mino" + Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().type.Substring(9, 1)).ToString();
-                                        
-                                    Debug.Log(TAG + " type.ToString(): " + type.ToString());
-                                    // PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, type.ToString());
-                                    // } else { // 当删除一个小立方体的时候,需要让其父控件知道,这个小立方体已经销毁了
                                     Model.grid[x][y][z].parent = null;
-// 这里很容易报空异常,因为我的预设里可能忘记给小立方体加类型了,或是运行的过程中怎样                                    
                                     PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
-                                    // PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.name);
-                                    // }
                                     Model.grid[x][y][z] = null;
                                     Debug.Log(TAG + " (Model.grid[x][y][z] == null): " + (Model.grid[x][y][z] == null));
                                 }
@@ -276,7 +255,7 @@ namespace HotFix.Control {
                                 }
                             }
                             PoolHelper.ReturnToPool(tmpParentTransform.gameObject, tmpParentTransform.gameObject.GetComponent<TetrominoType>().type);
-                        } else { // 当前立方体的 父控件 的某个或某些子立方体不在当前层,仅只回收当前小立方体到资源池
+                        } else if (!Model.grid[x][y][z].parent.gameObject.CompareTag("InitCubes")) { // 当前立方体的 父控件 的某个或某些子立方体不在当前层,仅只回收当前小立方体到资源池
                             // MathUtilP.print(x, y, z);
 // 在做预设的时候,有时候我的那些预设里的小立方体并没有标注清楚是什么类型,
                             Model.grid[x][y][z].parent = null; // 需要先解除这个父子控件关系,否则父控件永远以为这个子立方体存在存活

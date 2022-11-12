@@ -79,8 +79,8 @@ namespace HotFix.Control {
                                 tmpMinoGO.GetComponent<MinoType>().color = minoData.color;
                                 Model.grid[x][y][z] = tmpMinoGO.transform;
                                 Model.gridOcc[x][y][z] = 1;
-                                tmpMinoGO.transform.SetParent(tmpParentGO.transform, true);
-                                // tmpMinoGO.transform.parent = tmpParentGO.transform; // 感觉这里的父子关系好像没能真正建立正确,是分成两个父控件的???
+                                // tmpMinoGO.transform.SetParent(tmpParentGO.transform, true); // 还是会有那个BUG,并没有从本质上解决这个问题 
+                                tmpMinoGO.transform.parent = tmpParentGO.transform; // 感觉这里的父子关系好像没能真正建立正确,是分成两个父控件的???
                             }
 // 这里的写法不合理(容易加多),换上面的方法写: 用补的,只补缺的,就不会多出来几粒:
                             // if (Model.grid[x][y][z] == null

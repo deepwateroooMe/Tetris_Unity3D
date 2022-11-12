@@ -56,7 +56,6 @@ namespace HotFix.Control {
         }
 
         public void onCubesMaterialsChanged(CubesMaterialEventInfo info) {
-        // private void updateSkin() {
             Debug.Log(TAG + ": updateSkin()");
             int n = Model.gridXWidth * Model.gridZWidth;
             for (int i = 0; i < n; i++) {
@@ -72,9 +71,8 @@ namespace HotFix.Control {
         }
 
         void onActiveTetrominoLand(TetrominoChallLandInfo info) { 
-            Debug.Log(TAG + " onActiveTetrominoLand() : baseCubes colors after nextTetromino landed BEF update:"); 
-            MathUtilP.printBoard(Model.baseCubes);
-            
+            // Debug.Log(TAG + " onActiveTetrominoLand() : baseCubes colors after nextTetromino landed BEF update:"); 
+            // MathUtilP.printBoard(Model.baseCubes);
             int i = 0;
             resetPrevSkin();
             foreach (Transform mino in ViewManager.nextTetromino.transform) {
@@ -93,12 +91,12 @@ namespace HotFix.Control {
                         // Debug.Log(TAG + " Model.prevSkin[i]: " + Model.prevSkin[i]);
                         // Debug.Log(TAG + " ViewManager.materials[Model.prevSkin[i]].ToString(): " + ViewManager.materials[Model.prevSkin[i]].ToString());
                         i++;
-                        Debug.Log(TAG + " cubes[idx].gameObject.GetComponent<Renderer>().sharedMaterial.ToString(): " + cubes[idx].gameObject.GetComponent<Renderer>().sharedMaterial.ToString()); 
+                        // Debug.Log(TAG + " cubes[idx].gameObject.GetComponent<Renderer>().sharedMaterial.ToString(): " + cubes[idx].gameObject.GetComponent<Renderer>().sharedMaterial.ToString()); 
                     }
                 }
             }
-            Debug.Log(TAG + ": baseCubes colors after nextTetromino landed & UPDATED"); 
-            MathUtilP.printBoard(Model.baseCubes);
+            // Debug.Log(TAG + ": baseCubes colors after nextTetromino landed & UPDATED"); 
+            // MathUtilP.printBoard(Model.baseCubes);
         }
         
         int getChallengedMaterialIdx(Material material) {

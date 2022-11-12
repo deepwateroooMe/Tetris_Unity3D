@@ -58,8 +58,8 @@ namespace HotFix.Control {
         }
 
         public static bool CheckIsValidPosition() { // check if physically fits into the grid
-            Debug.Log(TAG + " CheckIsValidPosition");
-            MathUtilP.print(ViewManager.nextTetromino.transform.position);
+            // Debug.Log(TAG + " CheckIsValidPosition");
+            // MathUtilP.print(ViewManager.nextTetromino.transform.position);
             foreach (Transform mino in ViewManager.nextTetromino.transform) {
                 if (mino.CompareTag("mino")) {
                     Vector3 pos = MathUtilP.Round(mino.position);

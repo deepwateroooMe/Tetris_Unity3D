@@ -43,11 +43,11 @@ namespace deepwaterooo.tetris3d {
         public bool saveForUndo; // 区分教育模式与经典模式 
         public bool isChallengeMode;
 
+        private bool [][][] vis;
         private TetrominoData curParentData;
-		// private List<bool> vis;
 
 		public GameData(bool isChallengeMode, GameObject go, GameObject ghostTetromino, Transform tmpTransform,
-                        int gameMode, int currentScore, int currentLevel, int numLinesCleared, int gridWidth,
+                        int gameMode, int currentScore, int currentLevel, int numLinesCleared, int gridXWidth, int gridZWidth,
                         string prevPreview, string prevPreview2,
                         string nextTetrominoType, string previewTetrominoType, string previewTetromino2Type,
                         bool saveForUndo, Transform[][][] gd, int[][][] gridClr,
@@ -81,19 +81,15 @@ namespace deepwaterooo.tetris3d {
 
 			grid = new List<MinoData>();
 			parentList = new List<TetrominoData>();
-			// int listSize = Model.gridHeight * Model.gridWidth * Model.gridWidth;
-			int listSize = 12 * gridWidth * gridWidth;
+			int listSize = 12 * gridXWidth * gridZWidth;
             Debug.Log(TAG + " listSize: " + listSize);
 
-			// vis = new bool [gridWidth][][];
-			// for (int i = 0; i < gridWidth; i++) {
-			//     vis[i] = new bool [12][];
-			//     for (int j = 0; j < 12; j++)
-			//         vis[i][j] = new bool[gridWidth];
-			// }
-			// vis = new List<bool> ();
-			// for (int i = 0; i < listSize; i++) 
-			//     vis.Add(false);
+			vis = new bool [gridXWidth][][];
+			for (int i = 0; i < gridXWidth; i++) {
+			    vis[i] = new bool [12][];
+			    for (int j = 0; j < 12; j++)
+			        vis[i][j] = new bool[gridZWidth];
+			}
 
 			bool isCurrentlyActiveTetromino = false;
 			for (int i = 0; i < listSize; i++) {
@@ -115,8 +111,7 @@ namespace deepwaterooo.tetris3d {
 							y = (int)Mathf.Round(mino.position.y);
 							z = (int)Mathf.Round(mino.position.z);
 							color = gridClr[x][y][z];
-							// vis[x][y][z] = true;
-							// vis[MathUtil.getIndex(x, y, z)] = true;
+							vis[x][y][z] = true;
 							break;
 						}
 					}
@@ -125,42 +120,38 @@ namespace deepwaterooo.tetris3d {
 			}
 			// dealing with Game Data: gird
 			for (int i = 0; i < listSize; i++) {
-				pos = MathUtil.getIndex(i);
+				pos = MathUtil.getIndex(i, gridXWidth, gridZWidth, 12);
 				x = pos[0];
 				y = pos[1];
 				z = pos[2];
-				if (gd[x][y][z] != null && gd[x][y][z].parent != null) {
-					MathUtil.print(x, y, z);
-
+				if (gd[x][y][z] != null && !vis[x][y][z] && gd[x][y][z].parent != null) {
+					// MathUtil.print(x, y, z);
 					if ((ghostTetromino == null || (gd[x][y][z].parent != ghostTetromino.transform))
 						&& (go == null || gd[x][y][z].parent != go.transform)) {
 
-						Debug.Log(TAG + " (!myContains(gd[x][y][z].parent)): " + (!myContains(gd[x][y][z].parent)));
-						if (!myContains(gd[x][y][z].parent)) {
+						// Debug.Log(TAG + " (!myContains(gd[x][y][z].parent)): " + (!myContains(gd[x][y][z].parent)));
+						// if (!myContains(gd[x][y][z].parent)) {
 
-							// todo: 晚点儿这里会需要更多的逻辑                    
-							color = gridClr[x][y][z];
-							// Debug.Log(TAG + " color: " + color); 
-							TetrominoData tmp = new TetrominoData(gd[x][y][z].parent,
-																  gd[x][y][z].parent.gameObject.name,
-																  // new StringBuilder("Tetromino").Append(gd[x][y][z].parent.gameObject.name.Substring(9, 1)).ToString(),
-																  gd[x][y][z].parent.gameObject.name, color);
+                        // todo: 晚点儿这里会需要更多的逻辑                    
+                        color = gridClr[x][y][z];
+                        TetrominoData tmp = new TetrominoData(gd[x][y][z].parent,
+                                                              gd[x][y][z].parent.gameObject.name,
+                                                              gd[x][y][z].parent.gameObject.name, color);
 
-							Debug.Log(TAG + " gd[x][y][z].parent.gameObject.name (in parentList): " + gd[x][y][z].parent.gameObject.name);
-							Debug.Log(TAG + " gd[x][y][z].parent.childCount: " + gd[x][y][z].parent.childCount); 
-							// Debug.Log(TAG + " tmp.children.Count (in saved parent TetrominoData): " + tmp.children.Count); 
-							foreach (MinoData mino in tmp.children) {
-							    MathUtil.print(MathUtil.getIndex(mino.idx));
-							}
-							// foreach (Transform mino in gd[x][y][z].parent.transform) {
-							//     x = (int)Mathf.Round(mino.position.x);
-							//     y = (int)Mathf.Round(mino.position.y);
-							//     z = (int)Mathf.Round(mino.position.z);
-							//     vis[MathUtil.getIndex(x, y, z)] = true;
-							//     // vis[x][y][z] = true;
-							// }
-							parentList.Add(tmp);
-						}
+                        Debug.Log(TAG + " gd[x][y][z].parent.gameObject.name (in parentList): " + gd[x][y][z].parent.gameObject.name);
+                        Debug.Log(TAG + " gd[x][y][z].parent.childCount: " + gd[x][y][z].parent.childCount); 
+                        // Debug.Log(TAG + " tmp.children.Count (in saved parent TetrominoData): " + tmp.children.Count); 
+                        // foreach (MinoData mino in tmp.children) {
+                        //     MathUtil.print(MathUtil.getIndex(mino.idx));
+                        // }
+                        foreach (Transform mino in gd[x][y][z].parent.transform) {
+                            x = (int)Mathf.Round(mino.position.x);
+                            y = (int)Mathf.Round(mino.position.y);
+                            z = (int)Mathf.Round(mino.position.z);
+                            vis[x][y][z] = true;
+                        }
+                        parentList.Add(tmp);
+						// }
 					}
 				}
 			}
@@ -168,17 +159,17 @@ namespace deepwaterooo.tetris3d {
             
         }        
         
-        private bool myContains(Transform tmp) { // 目前只比较了parent，later是有可能需要比较children的
-            using (List<TetrominoData>.Enumerator enumerator = parentList.GetEnumerator()) {
-                while (enumerator.MoveNext()) {
-                    TetrominoData data = enumerator.Current;
-                    if (tmp.gameObject.name == data.name & // 不同名字、形状的两个Tetromino 可以有相同的 pos rot
-                        tmp.position == DeserializedTransform.getDeserializedTransPos(data.transform) &&
-                        tmp.rotation == DeserializedTransform.getDeserializedTransRot(data.transform))
-                        return true;
-                }
-            }
-            return false;
-        }
+        // private bool myContains(Transform tmp) { // 目前只比较了parent，later是有可能需要比较children的
+        //     using (List<TetrominoData>.Enumerator enumerator = parentList.GetEnumerator()) {
+        //         while (enumerator.MoveNext()) {
+        //             TetrominoData data = enumerator.Current;
+        //             if (tmp.gameObject.name == data.name & // 不同名字、形状的两个Tetromino 可以有相同的 pos rot
+        //                 tmp.position == DeserializedTransform.getDeserializedTransPos(data.transform) &&
+        //                 tmp.rotation == DeserializedTransform.getDeserializedTransRot(data.transform))
+        //                 return true;
+        //         }
+        //     }
+        //     return false;
+        // }
     }   
 }

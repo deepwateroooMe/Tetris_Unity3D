@@ -23,7 +23,8 @@ namespace HotFix.Control {
             new Vector3(90f, 0f, 0f), new Vector3(180f, 0f, 0f), new Vector3(-90f, 0f, 0f), new Vector3(-180f, 0f, 0f), // x
             new Vector3(0f, 0f, 90f), new Vector3(0f, 0f, 180f), new Vector3(0f, 0f, -90f), new Vector3(0f, 0f, -180f)  // z   
         };
-        
+
+// TODO: WHEN THERE IS BARRIER CUGES, MATERIALS COULD BE MATCHED VALIDATING FOR VALID LANDLING POSITIONS        
         public static bool isValidLandingPosition() {
             Debug.Log(TAG + ": isValidLandingPosition()");
             if (ViewManager.nextTetromino.transform.childCount == 1)

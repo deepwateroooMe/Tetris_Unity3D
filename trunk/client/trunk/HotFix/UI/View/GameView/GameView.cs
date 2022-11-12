@@ -498,11 +498,13 @@ namespace HotFix.UI {
             MathUtilP.printBoard(Model.gridOcc);  // Model.
             
             StringBuilder path = new StringBuilder("");
+// TODO: 关于保存路径的BUG
             if (ViewModel.gameMode.Value > 0)
                 path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName + "/game.save");
             else
                 path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName
-                            + "grid" + ViewModel.gridWidth + "/game.save");
+                            + (GloData.Instance.isChallengeMode ? "challenge/level" + GloData.Instance.gameLevel.ToString() : ViewModel.gridSize.ToString())
+                            + "/game.save");
             GameData gameData = SaveSystem.LoadGame(path.ToString());
             ViewModel.onUndoGame(gameData);
 
@@ -690,7 +692,7 @@ namespace HotFix.UI {
             ViewManager.nextTetromino.tag = "currentActiveTetromino";
             ViewManager.nextTetromino.transform.rotation = Quaternion.identity;
             ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).enabled = true;
-            if (ViewModel.gameMode.Value == 0 && (ViewModel.gridWidth == 3 || ViewModel.gridWidth == 4)) {
+            if (ViewModel.gameMode.Value == 0 && (ViewModel.gridSize == 3 || ViewModel.gridSize == 4)) {
                 ViewManager.nextTetromino.transform.localPosition = new Vector3(1.0f, ViewModel.gridHeight - 1f, 1.0f);
             } else 
                 ViewManager.nextTetromino.transform.localPosition = nextTetrominoSpawnPos;

@@ -23,7 +23,10 @@ namespace HotFix.UI {
         public float fallSpeed { set; get; }
 
         public int gridHeight = 12; 
-        public int gridWidth;
+
+        public int gridSize;
+        private int gridXSize;
+        private int gridZSize;
 
         public int scoreOneLine = 40;
         public int scoreTwoLine = 100;
@@ -160,9 +163,7 @@ namespace HotFix.UI {
         // enable: undoButton
         void Initialization() {
             this.ParentViewModel = (MenuViewModel)ViewManager.MenuView.BindingContext; // 父视图模型: 菜单视图模型
-            // gridWidth = ((MenuViewModel)ParentViewModel).gridWidth;
-// TODO: LEVEL 3: 必须重写这里
-            gridWidth = GloData.Instance.gridSize;
+            gridSize = GloData.Instance.gridSize;
             
             gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
             fallSpeed = 3.0f;
@@ -200,7 +201,7 @@ namespace HotFix.UI {
             //     if (gameMode > 0)
             //         path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName + "/game.save");
             //     else 
-            //         path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName + "/grid" + gridWidth + "/game.save");
+            //         path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName + "/grid" + gridSize + "/game.save");
             //     if (loadSavedGame) {
             //         LoadGame(path.ToString());
             //     } else {
@@ -286,7 +287,10 @@ namespace HotFix.UI {
                 path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName + "game.save"); 
             } else {
                 path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName
-                            + "grid" + gridWidth + "/game.save"); 
+                            + (GloData.Instance.isChallengeMode ? "challenge/level" + GloData.Instance.gameLevel.ToString() : gridSize.ToString())
+                            + "/game.save");
+                // path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName
+                //             + "grid" + gridSize + "/game.save"); 
             }
 // TODO:这里还有BUG，也还有先前改过一个,大概撤销之后会生成几套预览的BUG, to be fixed           
             Debug.Log(TAG + " path.ToString(): " + path.ToString());
@@ -298,7 +302,7 @@ namespace HotFix.UI {
             Debug.Log(TAG + " comTetroType.Value: " + comTetroType.Value);
 
             GameData gameData = new GameData(GloData.Instance.isChallengeMode, ViewManager.nextTetromino, ViewManager.ghostTetromino, tmpTransform,
-                                             gameMode.Value, currentScore.Value, currentLevel.Value, numLinesCleared.Value, gridWidth,
+                                             gameMode.Value, currentScore.Value, currentLevel.Value, numLinesCleared.Value, Model.gridXWidth, Model.gridZWidth,
                                              prevPreview, prevPreview2,
                                              nextTetrominoType.Value, comTetroType.Value, eduTetroType.Value,
                                              saveForUndo, Model.grid, Model.gridClr, prevPreviewColor, prevPreviewColor2, previewTetrominoColor, previewTetromino2Color); 
@@ -398,7 +402,7 @@ namespace HotFix.UI {
         public string GetRandomTetromino() { // active Tetromino 
             Debug.Log(TAG + ": GetRandomTetromino()"); 
 
-            if (gameMode.Value == 0 && gridWidth == 3)
+            if (gameMode.Value == 0 && gridSize == 3)
                 randomTetromino = UnityEngine.Random.Range(0, 11);
             else 
                 randomTetromino = UnityEngine.Random.Range(0, 12);
@@ -475,7 +479,3 @@ namespace HotFix.UI {
 #endregion
     }
 }
-
-
-
-
