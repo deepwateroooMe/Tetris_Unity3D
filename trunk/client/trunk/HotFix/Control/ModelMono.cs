@@ -214,9 +214,9 @@ namespace HotFix.Control {
                     // hasDeletedMinos = true; // Bug: I commented this out, supposedly it's for DeleteRowCoroutine only                    
                         
                     // m_ExplosionParticles.transform.position = new Vector3(2.5f, y, 2.5f); 
-                    // m_ExplosionParticles.gameObject.SetActive(true);
+                    // m_ExplosionParticles.gameObject.SetActive(true); ...
                     // m_ExplosionParticles.Play();
-                    // m_ExplosionAudio.Play();
+                    // m_ExplosionAudio.Play(); ...
 
 // CHALLENGE　MODE: 因为有五次撤销功能,所以这里标记一下:就是1　==>　2
                     if (GloData.Instance.isChallengeMode && y == 0)
