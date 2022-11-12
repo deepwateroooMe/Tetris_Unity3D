@@ -306,32 +306,8 @@ namespace HotFix.Control {
                 MoveRowDown(i);
             MathUtilP.printBoard(Model.gridOcc);
         }
-        // public void MoveRowDown(int y) { // 之前的那个GameViewModel里（没有独立出Model, ModelMono之前的）相对运行得比较好的版本
-        //     if (gameMode.Value  > 0) {
-        //         for (int j = 0; j < gridWidth; j++)    
-        //             for (int x = 0; x < gridWidth; x++) {
-        //                 if (grid[x][y][j] != null) {
-        //                     grid[x][y-1][j] = grid[x][y][j];
-        //                     grid[x][y][j] = null;
-        //                     grid[x][y-1][j].position += new Vector3(0, -1, 0);
-        //                 }
-        //             }
-        //     } else { // gameMode.Value  == 0
-        //         for (int x = 0; x < gridWidth; x++) {
-        //             for (int z = 0; z < gridWidth; z++) {
-        //                 if (gridOcc[x][y-1][z] == 2) { // 下面是消毁掉了的，压下去
-        //                     gridOcc[x][y-1][z] = gridOcc[x][y][z];
-        //                     if (grid[x][y][z] != null) {
-        //                         grid[x][y-1][z] = grid[x][y][z];
-        //                         grid[x][y][z] = null;
-        //                         grid[x][y-1][z].position += new Vector3(0, -1, 0);
-        //                     }
-        //                     gridOcc[x][y][z] = y == gridHeight - 1 ? 0 : 2;
-        //                 }
-        //             }   
-        //         }
-        //     } // gameMode.Value  == 0
-        // } 
+        
+// 这里修个BUg: 说当一个方块砖因为内部其它立方体的原因被悬空挂在什么地方;当当前立方体被悬空的其它立方体消除后,当前立方体需要能够自由落体下降; 这块逻辑需要补上
         public static void MoveRowDown(int y) {
             // Debug.Log(TAG + ": MoveRowDown()");
             int cnt = 0;
@@ -347,53 +323,80 @@ namespace HotFix.Control {
                             Model.grid[x][y-1][j].position += new Vector3(0, -1, 0);
                             Model.gridOcc[x][y-1][j] = Model.gridOcc[x][y][j];　// BUG　TODO这里对于被压下来的上一层如何处理没有标明
                             Model.gridOcc[x][y][j] = 0; // 我现加的，最主要是考虑最顶层的会造成什么BUG
-                            // if (GloData.Instance.isChallengeMode) 
-                            //     Model.gridClr[x][y-1][j] = Model.gridClr[x][y][j];
                             Model.grid[x][y][j] = null;
-
-                            // Debug.Log(TAG + " (y == 1): " + (y == 1));
-                            // Debug.Log(TAG + " Model.baseCubes.Length: " + Model.baseCubes.Length); 
-                            // if (y == 1 && GloData.Instance.isChallengeMode) { // still need to update baseboard skin accordingly
-                            //     Model.baseCubes[x + j * Model.gridXWidth] = Model.gridClr[x][y][j];
-                            //     BaseBoardSkin.isSkinChanged = true;
-                            // }
                         }
                     }
                 }
             } else { // GloData.Instance.gameMode == 0: 启蒙模式，挑战模式，或是带有undo功能的模式下
+// TODO BUG:　LOGIC MODULE:                
+// 当当前立方体仅且只剩自已(BUG TODO: 只要有消除就需要检查是否可以继续下落,哪怕只消除了一个立方体,还剩 七 个小立方体,先前想到的逻辑不完整),检查是否可以下落
+// 是否,在前面有过消除的前提下,前再检查一遍,还是说之后消除呢?
                 for (int x = 0; x < Model.gridXWidth; x++) {
                     for (int z = 0; z < Model.gridZWidth; z++) {
-                        if (Model.gridOcc[x][y-1][z] == 2) {
-                            ++cnt;
+                        if (Model.gridOcc[x][y-1][z] == 2) { // 如果下面一层是需要消除或是曾经消除过的空格,将当前非空立方体下移
                             Model.gridOcc[x][y-1][z] = Model.gridOcc[x][y][z];
-                            if (Model.grid[x][y][z] != null) {
-                                Model.grid[x][y-1][z] = Model.grid[x][y][z];
-                                Model.grid[x][y][z] = null;
-                                Model.grid[x][y-1][z].position += new Vector3(0, -1, 0);
-                                if (GloData.Instance.isChallengeMode) {
-                                    Model.gridClr[x][y-1][z] = Model.gridClr[x][y][z];
-
-                                    // Debug.Log(TAG + " (y == 1): " + (y == 1));
-                                    // Debug.Log(TAG + " Model.baseCubes.Length: " + Model.baseCubes.Length); 
-                                    if (y == 1) { // still need to update baseboard skin accordingly
-                                        Model.baseCubes[x + z * Model.gridXWidth] = Model.gridClr[x][y][z];
-                                        BaseBoardSkin.isSkinChanged = true;
+                            if (Model.grid[x][y][z] != null) 
+                                moveMinoDownOneGridHelper(x,  y, z);
+                            Model.gridOcc[x][y][z] = y == Model.gridHeight - 1 ? 0 : 2;
+                        }
+                        else if (Model.gridOcc[x][y-1][z] == 0 && Model.gridOcc[x][y][z] == 1 // 下一格为 空,上层当前格为 非空,检查是否可以掉落
+                                 && Model.grid[x][y][z] != null && canFallDeeper(Model.grid[x][y][z].parent)) {
+                            if (Model.grid[x][y][z].parent == null) // 独个立方体,只将当前格下移
+                                moveMinoDownOneGridHelper(x,  y, z);
+                            else { // 当将格的父控件可以继续下降一格: 这里应该可以换个方法(以父控件整体来)写,但是暂时如此吧
+                                foreach (Transform mino in Model.grid[x][y][z].parent) {
+                                    if (mino.CompareTag("mino")) {
+                                        Vector3 pos = MathUtilP.Round(mino.position);
+                                        int i = (int)Math.Round(mino.position.x);
+                                        int j = (int)Math.Round(mino.position.y);
+                                        int k = (int)Math.Round(mino.position.z);
+                                        moveMinoDownOneGridHelper(x,  y, z);
                                     }
                                 }
-                                Model.grid[x][y][z] = null;
                             }
-                            Model.gridOcc[x][y][z] = y == Model.gridHeight - 1 ? 0 : 2;
                         }
                     }   
                 }
             } // GloData.Instance.gameMode == 0
-
-            if (y == 1 && BaseBoardSkin.isSkinChanged) { // debug
+            if (y == 1 && BaseBoardSkin.isSkinChanged)  // debug
                 EventManager.Instance.FireEvent("cubesMat");
+        }
+        
+        private static void moveMinoDownOneGridHelper(int x, int y, int z) {
+            Model.grid[x][y-1][z] = Model.grid[x][y][z];
+            Model.grid[x][y][z] = null;
+            Model.grid[x][y-1][z].position += new Vector3(0, -1, 0);
+            if (GloData.Instance.isChallengeMode) {
+                Model.gridClr[x][y-1][z] = Model.gridClr[x][y][z];
+                if (y == 1) { // still need to update baseboard skin accordingly
+                    Model.baseCubes[x + z * Model.gridXWidth] = Model.gridClr[x][y][z];
+                    BaseBoardSkin.isSkinChanged = true;
+                }
             }
-            // Debug.Log(TAG + " cnt: " + cnt); 
-        } 
-
+            Model.grid[x][y][z] = null;
+        }
+        
+// 补充逻辑: 添加检查有过消除后的方块砖是否可以继续下降一格? 仿Tetromino MoveDown()的方法来写        
+        private static bool canFallDeeper(Transform p) { // can current parent Transform fall down 1 more layer ?
+            if (p == null) return true;
+            p.position += new Vector3 (0, -1, 0);
+            foreach (Transform mino in p) {
+                if (mino.CompareTag("mino")) {
+                    Vector3 pos = MathUtilP.Round(mino.position);
+                    int x = (int)Math.Round(mino.position.x);
+                    int y = (int)Math.Round(mino.position.y);
+                    int z = (int)Math.Round(mino.position.z);
+                    if (!Model.CheckIsInsideGrid(pos)) return false;  // 落到格外不行
+                    if (Model.GetTransformAtGridPosition(pos) != null // 0 || 2 当前格是可以降落的
+                        && Model.GetTransformAtGridPosition(pos).parent != p) {
+                        return false;
+                    }
+                }
+            }
+            p.position -= new Vector3 (0, -1, 0);
+            return true;
+        }
+        
         public void OnEnable() {
             // Debug.Log(TAG + ": OnEnable()"); 
             // Debug.Log(TAG + " gameObject.name: " + gameObject.name);

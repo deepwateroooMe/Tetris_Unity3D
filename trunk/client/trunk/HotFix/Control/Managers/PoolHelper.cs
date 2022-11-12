@@ -94,12 +94,12 @@ namespace HotFix.Control {
                 ComponentHelper.AddGhostComponent(go);
                 ComponentHelper.GetGhostComponent(go).enabled = false;
             }
-			//else if (isMino) { // 因为预设准备完整了,这里就不需要了
-   //             if (go.GetComponent<MinoType>() == null) {
-   //                 go.AddComponent<MinoType>();
-   //                 go.GetComponent<MinoType>().type = name;
-   //             }
-   //         }
+           //  else if (isMino) { // 因为预设准备完整了,这里就不需要了
+           //     if (go.GetComponent<MinoType>() == null) {
+           //         go.AddComponent<MinoType>();
+           //         go.GetComponent<MinoType>().type = name;
+           //     }
+           // }
         }
 
 // 这个方法是特定只取mino的吗?>        
@@ -196,8 +196,8 @@ namespace HotFix.Control {
                     objInstance.GetComponent<TetrominoType>().color = randomColor;
                     Debug.Log(TAG + " randomColor: " + randomColor); 
                     foreach (Transform child in objInstance.transform) {
-                        if (child.gameObject.GetComponent<MinoType>() == null)
-                            child.gameObject.AddComponent<MinoType>();
+                        // if (child.gameObject.GetComponent<MinoType>() == null) // 这些不再需要了
+                        //     child.gameObject.AddComponent<MinoType>();
                         child.gameObject.GetComponent<MinoType>().color = randomColor;
                         child.gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.colors[randomColor];
                     }

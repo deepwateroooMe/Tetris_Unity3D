@@ -6,13 +6,15 @@
 - CHALLENGING MODE: ALL kinds of bugs awaiting to be fixed. will work on them tomorrow.
 - working on identified bugs.前几天估算时间的时候没有意识到之前自己的游戏逻辑并没有写完整,还是想尽快把挑战模式下的游戏逻辑按照原计划实现出相对理想的状态,这几天会把游戏逻辑补充完整,并尽量同步修复意识到的bug
 - 考虑热更新服务器该如何处理
-  
-[[./pic/readme_20221111_222732.png]]
 
-[[./pic/readme_20221110_112552.png]]
+[[./pic/readme_20221112_072532.png]]
 
 - debugging game flow, 现游戏的主场景如下(热更新程序域里的主要逻辑功能模块化管理主要工作完成,还没有debug游戏逻辑):
 现游戏框架与实现细节,除了将来的热更新服务器的服务端,其它任何部分都不再有任何挑战,只是时间问题,需要时间来整合持战模式和修改所有遇到过的BUG与细节.爱表哥,爱生活!!!
+
+[[./pic/readme_20221111_222732.png]]
+
+[[./pic/readme_20221110_112552.png]]
 
 [[./pic/readme_20221109_180107.png]]
 
