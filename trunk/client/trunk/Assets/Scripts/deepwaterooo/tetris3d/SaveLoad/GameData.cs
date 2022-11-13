@@ -73,7 +73,6 @@ namespace deepwaterooo.tetris3d {
                 listSize = 12 * gridXWidth * gridZWidth;
 			} else listSize = 12 * gridXWidth * gridXWidth;
 
-			Debug.Log(TAG + " (gameMode == 0): " + (gameMode == 0));
 			if (gameMode == 0) {
 				this.prevPreview = prevPreview;
 				this.prevPreview2 = prevPreview2;

@@ -84,25 +84,22 @@ namespace HotFix.UI {
 
 #region EDUCATIONAL CLASSIC CHALLENGE MODES
         void OnClickEduButton() { // EDUCATIONAL
-            GloData.Instance.saveGamePathFolderName = "educational";
-            GloData.Instance.gameMode = 0;
+// TODO BUG: 这个还残存了些BUG没有改完            
+            ViewModel.gameMode = 0; 
+
             menuViewPanel.SetActive(false);
             educaModesViewPanel.SetActive(true);
-            ViewModel.gameMode = 0; // UI点击事件触发视图模型的数据变更, 通过视图模型为桥梁传给子视图模型使用数据
         }
         void OnClickClaButton() { // CLASSIC MODE
-            GloData.Instance.saveGamePathFolderName = "classic";
-            GloData.Instance.gameMode = 1;
             ViewModel.gameMode = 1;
             ViewModel.gridWidth = 5;
+
             prepareEnteringNewGame();
         }
         void OnClickChaButton() { // CHALLENGE MODE
-            GloData.Instance.saveGamePathFolderName = "challenge";
-            GloData.Instance.gameMode = 0;
-            GloData.Instance.isChallengeMode = true;
-
             ViewModel.gameMode = 0; // to match above previously
+            ViewModel.isChallengeMode = true;
+            
             ViewManager.ChallLevelsView.Reveal();
             Hide();
         }
@@ -112,39 +109,31 @@ namespace HotFix.UI {
         void ActiveToggle() {
             if (thrToggle.isOn) {
                 ViewModel.gridWidth = 3;
-                GloData.Instance.gridSize = 3;
-                GloData.Instance.gridXSize = 3;
-                GloData.Instance.gridZSize = 3;
             } else if (furToggle.isOn) { 
-                GloData.Instance.gridSize = 4;
-                GloData.Instance.gridXSize = 4;
-                GloData.Instance.gridZSize = 4;
                 ViewModel.gridWidth = 4;
             } else if (fivToggle.isOn) {
-                GloData.Instance.gridSize = 5;
-                GloData.Instance.gridXSize = 5;
-                GloData.Instance.gridZSize = 5;
                 ViewModel.gridWidth = 5;
             }
         }
         void OnClickConButton() {
-            Debug.Log(TAG + " OnClickConButton");
             // 检查是否存有先前游戏进度数据,有则弹窗;无直接进游戏界面,这一小步暂时跳过
             ActiveToggle();
-// BUG TODO: 当有保存的文件存在,不知道为什么它就自动进入到了新游戏            
-// TODO: 检查客户端是否存有同户的进展文件:有显示提示框,提示是否需要加载保存的进展;没有直接进入新游戏视图
-            bool tmp = isSavedFileExist();
-            Debug.Log(TAG + " tmp: " + tmp);
-// TODO: 感觉这里有个更直接快速的但凡一toggle某个的时候就自动触发的观察者模式,改天再写
+
             educaModesViewPanel.SetActive(false);
-            // if (isSavedFileExist()) {
-            if (tmp) {
-                newContinuePanel.SetActive(true); // BUG 没有显示
-                Debug.Log(TAG + " newContinuePanel.activeSelf: " + newContinuePanel.activeSelf);
+            if (File.Exists(GloData.Instance.getFilePath())) {
+                Debug.Log(TAG + " OnClickConButton() THERE IS a SAVED GAME");
+// TODO: BUG 这里被 因为 gameMode而引起的改变已经掩盖掉了 ?                
+                newContinuePanel.SetActive(true); 
             } else {
-                Debug.Log(TAG + " OnClickConButton() else");
                 prepareEnteringNewGame();
             }
+        }
+        void prepareEnteringNewGame() {
+            EventManager.Instance.FireEvent("entergame"); // Audio
+            ViewManager.GameView.Reveal(); // 放在前面是因为调用需要一点儿时间
+            menuViewPanel.SetActive(true); // 需要激活,方便从其它视图回退到主菜单视图
+            newContinuePanel.SetActive(false);
+            Hide(); 
         }
 #endregion        
 
@@ -153,9 +142,10 @@ namespace HotFix.UI {
             prepareEnteringNewGame();
         }
         void OnClickContinueButton() { // Load Saved Game
-// TODO: load saved game
+            // 设置标记
+            ViewModel.loadGame.Value = true;
+
             ViewManager.GameView.Reveal();
-// TODO: 这里要等视图加载完成后,加载游戏进度数据 ?
             newContinuePanel.SetActive(false);
             menuViewPanel.SetActive(true); // 需要激活,方便从其它视图回退到主菜单视图
             Hide();
@@ -163,29 +153,6 @@ namespace HotFix.UI {
         void OnClickCancelButton() { // back to main menu
             newContinuePanel.SetActive(false);
             educaModesViewPanel.SetActive(true);
-        }
-        void prepareEnteringNewGame() {
-            Debug.Log(TAG + " prepareEnteringNewGame");
-
-            EventManager.Instance.FireEvent("entergame");
-            ViewManager.GameView.Reveal(); // 放在前面是因为调用需要一点儿时间
-            menuViewPanel.SetActive(true); // 需要激活,方便从其它视图回退到主菜单视图
-            newContinuePanel.SetActive(false);
-            Hide(); 
-        }
-        private bool isSavedFileExist() {
-            Debug.Log(TAG + ": isSavedFileExist()");
-            StringBuilder currentPath = new StringBuilder("");
-            if (ViewModel.gameMode > 0)
-                currentPath.Append(Application.persistentDataPath + ViewModel.saveGamePathFolderName + "/game.save");
-            else 
-                currentPath.Append(Application.persistentDataPath + ViewModel.saveGamePathFolderName + "/grid"
-                                   + ViewModel.gridWidth + "/game.save");
-            Debug.Log(TAG + " currentPath: " + currentPath.ToString());
-            Debug.Log(TAG + " (File.Exists(currentPath.ToString())): " + (File.Exists(currentPath.ToString())));
-            if (File.Exists(currentPath.ToString()))
-                return true;
-            return false;
         }
 #endregion        
     }

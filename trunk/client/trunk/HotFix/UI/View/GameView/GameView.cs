@@ -192,55 +192,32 @@ namespace HotFix.UI {
             } else initCubes = new GameObject();
         }
         public GameObject [] cubes; // baseCubesGO;
+
         public void Start() { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
             Debug.Log(TAG + ": Start()");
-            
-// TODO: 在这里初始化模型数据 ? 这个显示不成功, 就是coroutine的那个等一秒没有执行成功
-            CoroutineHelperP.StartCoroutine(displayChallengeGoal());
 
-            if (ViewModel.isChallengeMode)
+            if (ViewModel.isChallengeMode) {
+                CoroutineHelperP.StartCoroutine(displayChallengeGoal());
                 loadInitCubesforChallengeMode();
-            else initCubes = new GameObject();
-            
-            // if (gameMode == 0 && !isChallengeMode) { 
-            //     // guiManager.setAllBaseBoardInactive();
-            //     switch (Model.gridWidth) {
-            //     case 3:
-            //         guiManager.baseBoard3.SetActive(true);
-            //         MainScene_GUIManager.baseBoard = guiManager.baseBoard3;
-            //         break;
-            //     case 4:
-            //         guiManager.baseBoard4.SetActive(true);
-            //         MainScene_GUIManager.baseBoard = guiManager.baseBoard4;
-            //         break;
-            //     case 5:
-            //         guiManager.baseBoard5.SetActive(true);
-            //         MainScene_GUIManager.baseBoard = guiManager.baseBoard5;
-            //         break;
-            //     }
-            // }
-            // tmpTransform = emptyGO.transform;
+            } else initCubes = new GameObject();
+// // checking
+//             if (!string.IsNullOrEmpty(GloData.Instance.saveGamePathFolderName)) {
 
-            if (!string.IsNullOrEmpty(GloData.Instance.saveGamePathFolderName)) {
-// // cmt for tmp
 //                 // if (!GloData.Instance.isChallengeMode)
 //                 gameMode = GloData.Instance.gameMode;
 //                 // else
 //                 //     gameMode = 1;
-                // loadSavedGame = GloData.Instance.loadSavedGame;
-                // type.Length = 0;
-                // if (ViewModel.gameMode.Value > 0 || GloData.Instance.isChallengeMode) // clear flag
-                //     type.Append(Application.persistentDataPath + "/" + GloData.Instance.saveGamePathFolderName + "/game.save");
-                // else 
-                //     type.Append(Application.persistentDataPath + "/" + GloData.Instance.saveGamePathFolderName + "/grid" + Model.gridWidth + "/game.save");
-                if (GloData.Instance.loadSavedGame) {
-                    // LoadGame(type.ToString());
-                } else {
-                    LoadNewGame();
-                }
-            } else {
+//                 loadSavedGame = GloData.Instance.loadSavedGame;
+//                 type.Length = 0;
+
+//                 if (GloData.Instance.loadSavedGame) {
+//                     // LoadGame(type.ToString());
+//                 } else {
+//                     LoadNewGame();
+//                 }
+//             } else {
                 LoadNewGame();
-            }
+            // }
             
 // TODO: 这里有个加载原保存过的游戏的过程            
             // if (!string.IsNullOrEmpty(((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName)) {
@@ -292,9 +269,8 @@ namespace HotFix.UI {
 
         void LoadGame(string path) {  // when load Scene load game: according to gameMode
             // Debug.Log(TAG + ": LoadGame()");
-            GameData gameData = deepwaterooo.tetris3d.SaveSystem.LoadGame(path);
+            GameData gameData = SaveSystem.LoadGame(path);
             StringBuilder type = new StringBuilder("");
-            // Debug.Log(TAG + " (gameData.nextTetrominoData != null): " + (gameData.nextTetrominoData != null)); 
             if (gameData.nextTetrominoData != null) {
                 ViewManager.nextTetromino = PoolHelper.GetFromPool(
                     type.Append(gameData.nextTetrominoData.type).ToString(),
@@ -364,7 +340,8 @@ namespace HotFix.UI {
 
             if (ViewModel.isChallengeMode)
                 ViewModel.onGameSave(initCubes.transform);
-            else ViewModel.onGameSave(null);
+            else if (ViewModel.gameMode.Value == 0) // 经典模式下不再保存游戏进展; 当且仅当用户要求保存游戏的时候才保存
+                ViewModel.onGameSave(null);
 
             Debug.Log(TAG + " (ViewModel.gameMode.Value == 0 && !GloData.Instance.isChallengeMode): " + (ViewModel.gameMode.Value == 0 && !GloData.Instance.isChallengeMode));
 
@@ -451,15 +428,7 @@ namespace HotFix.UI {
             Debug.Log(TAG + ": gridOcc[][][] BEFORE ViewModel.onUndoGame(gameData)"); 
             MathUtilP.printBoard(Model.gridOcc);  
             
-            StringBuilder path = new StringBuilder("");
-// TODO: 关于保存路径的BUG
-            if (ViewModel.gameMode.Value > 0)
-                path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName + "/game.save");
-            else
-                path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName
-                            + (GloData.Instance.isChallengeMode ? "challenge/level" + GloData.Instance.gameLevel.ToString() : "educational/grid" + ViewModel.gridSize.ToString())
-                            + "/game.save");
-            GameData gameData = SaveSystem.LoadGame(path.ToString());
+            GameData gameData = SaveSystem.LoadGame(GloData.Instance.getFilePath());
             ViewModel.onUndoGame(gameData);
 
             if (gameData.prevPreview != null) { // 生成早了,会被视图模型又回收走了?
@@ -623,8 +592,8 @@ namespace HotFix.UI {
             Time.timeScale = 1.0f;
             if (ViewModel.gameMode.Value == 1)
                 gameStarted = false;
-// TODO: BUG: still have to check this due to auto Save
-            string path = new StringBuilder(Application.persistentDataPath).Append("/").Append(((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName).Append("/game.save").ToString();
+            
+            string path = GloData.Instance.getFilePath();
             if (File.Exists(path)) {
                 try {
                     File.Delete(path);
@@ -967,3 +936,4 @@ namespace HotFix.UI {
 #endregion
     }
 }
+

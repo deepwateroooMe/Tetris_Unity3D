@@ -50,48 +50,62 @@ namespace HotFix.Control {
                                 continue;
 // 以 方块砖 为单位回收到资源池里去                            
                             Transform tmpRefParent = null;
+
+                            if (grid[x][y][z].parent != null && (grid[x][y][z].parent.gameObject == null || Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>() == null))
+                                MathUtilP.print("(grid[x][y][z].parent != null && ( null || null)", x, y, z);
+
+                            // Debug.Log(TAG + " (grid[x][y][z].parent != null && grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().childCnt == grid[x][y][z].parent.childCount): " + (grid[x][y][z].parent != null && grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().childCnt == grid[x][y][z].parent.childCount));
+                            Debug.Log(TAG + " (grid[x][y][z].parent == null): " + (grid[x][y][z].parent == null));
+
                             if (grid[x][y][z].parent != null && grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().childCnt == grid[x][y][z].parent.childCount) {
                                 tmpRefParent = grid[x][y][z].parent;
                                 foreach (Transform mino in grid[x][y][z].parent) {
                                     int i = (int)Mathf.Round(mino.position.x);
                                     int j = (int)Mathf.Round(mino.position.y);
                                     int k = (int)Mathf.Round(mino.position.z);
-                                    if (j >= 0 && j < gridHeight && i >= 0 && i < gridXWidth && k >= 0 && k < gridZWidth) 
+                                    if (j >= 0 && j < gridHeight && i >= 0 && i < gridXWidth && k >= 0 && k < gridZWidth) {
+                                        MathUtilP.print(i, j , k);
                                         if (grid[i][j][k] != null) {
                                             grid[i][j][k] = null;
                                             gridOcc[i][j][k] = 0;
                                             if (GloData.Instance.isChallengeMode) gridClr[i][j][k] = -1;
                                         }
+                                    }
                                 }
                                 PoolHelper.ReturnToPool(tmpRefParent.gameObject, tmpRefParent.gameObject.GetComponent<TetrominoType>().type);
                             } else if (grid[x][y][z].parent == null) { // 单独一个立方体的回收
-                                if (grid[x][y][z].parent.gameObject != null)
+                                if (grid[x][y][z].gameObject != null) {
+                                    MathUtilP.print(x, y, z);
                                     PoolHelper.ReturnToPool(grid[x][y][z].gameObject, grid[x][y][z].gameObject.GetComponent<MinoType>().type);
+                                    //grid[x][y][z].gameObject = null;
+                                }
                                 grid[x][y][z] = null;
                                 gridOcc[x][y][z] = 0;
                                 if (GloData.Instance.isChallengeMode) gridClr[x][y][z] = -1;
-                            } else {
-                                tmpRefParent = grid[x][y][z].parent;
+                            } else { // 方块砖的 子立方体 不全,有过消除
+                                tmpRefParent = grid[x][y][z].parent; 
                                 foreach (Transform mino in grid[x][y][z].parent) {
                                     int i = (int)Mathf.Round(mino.position.x);
                                     int j = (int)Mathf.Round(mino.position.y);
                                     int k = (int)Mathf.Round(mino.position.z);
                                     if (j >= 0 && j < gridHeight && i >= 0 && i < gridXWidth && k >= 0 && k < gridZWidth) 
                                         if (grid[i][j][k] != null) {
-                                            if (grid[i][j][k].gameObject != null)
+                                            MathUtilP.print(x, y, z);
+                                            if (grid[i][j][k].gameObject != null) {
                                                 PoolHelper.ReturnToPool(grid[x][y][z].gameObject, grid[x][y][z].gameObject.GetComponent<MinoType>().type);
-                                            if (j >= 0 && j < gridHeight && i >= 0 && i < gridXWidth && k >= 0 && k < gridZWidth) {
-                                                grid[i][j][k] = null;
-                                                gridOcc[i][j][k] = 0;
-                                                if (GloData.Instance.isChallengeMode) gridClr[i][j][k] = -1;
+                                                //grid[i][j][k].gameObject = null;
                                             }
+                                            grid[i][j][k] = null;
+                                            gridOcc[i][j][k] = 0;
+                                            if (GloData.Instance.isChallengeMode) gridClr[i][j][k] = -1;
                                         }
                                 }
                             }
-                            tmpRefParent = null;
+                            GameObject.Destroy(tmpRefParent.gameObject);
+                            tmpRefParent = null; // 这么并没有消除无子立方体的空父件
                         }
                     }
-            Debug.Log(TAG + " clearUpGrid()");
+            Debug.Log(TAG + " AFTER cleanUpGameBroad() Model.gridOcc[x][y][z]");
             MathUtilP.printBoard(gridOcc);
         }
         
@@ -141,7 +155,8 @@ namespace HotFix.Control {
             }
             return true;
         }
-// 这里数的过程中:若是有满足条件(同行同列同对角线全满),会被标记为 2        
+// 这里数的过程中:若是有满足条件(同行同列同对角线全满),会被标记为 2
+// BUG TODO: 这里总是最先消除最底层,这是不对的.应该同时消除每一层,再不断往下降        
         public static bool IsFullFiveInLayerAt(int y) { 
             int tmpSum = 0;
             bool isFullFiveInLayer = false;

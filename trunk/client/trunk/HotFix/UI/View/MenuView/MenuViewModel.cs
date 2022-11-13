@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Text;
 using Framework.MVVM;
+using HotFix.Control;
 using UnityEngine;
 
 namespace HotFix.UI {
@@ -8,17 +9,14 @@ namespace HotFix.UI {
     public class MenuViewModel : ViewModelBase {
         private const string TAG = "MenuViewModel";
 
-        // 这里想要把视图相关数据放入视图模型中来,其它视图类同
-        // 可能还是需要把主游戏视图合并为一个相对更大的视图,方便绑定一个ViewModel;
-        
         private bool _loadSavedGame;
-        private int _gameMode = 0; // 因为其它视图也想要访问这些数据,考虑如何变为全局数据,供其它视图可读访问
+        private int _gameMode = 0; 
         public BindableProperty<int> mgameMode = new BindableProperty<int>();
-        private string _saveGamePathFolderName;
-        private int _gridWidth; //= 5;
+        public BindableProperty<bool> loadGame = new BindableProperty<bool>();
 
-        // 以前自己不怎么懂得使用设计模式,所以更的是用公用API提供给需要使用的调用者,但实际上就可以实现成观察者模式,数据变更自动通知
-        // 改写为观察者模式: 好像这里不方便呀,是UI事件驱动, 不是视图模型的数据驱动UI
+        private int _gridSize; 
+        private bool _isChallengeMode = false;
+        
         public bool loadSavedGame {
             get {
                 return _loadSavedGame;
@@ -27,29 +25,31 @@ namespace HotFix.UI {
                 _loadSavedGame = value;
             }
         }
+        public bool isChallengeMode {
+            get {
+                return _isChallengeMode;
+            }
+            set {
+                _isChallengeMode = value;
+            }
+        }
         public int gameMode {
             get {
                 return _gameMode;
             }
             set {
                 _gameMode = value;
+                GloData.Instance.gameMode = _gameMode;
                 // mgameMode.Value = value;
-            }
-        }
-        public string saveGamePathFolderName {
-            get {
-                return _saveGamePathFolderName;
-            }
-            set {
-                _saveGamePathFolderName = value;
             }
         }
         public int gridWidth {
             get {
-                return _gridWidth;
+                return _gridSize;
             }
             set {
-                _gridWidth = value;
+                _gridSize = value;
+                onGridWithSet(_gridSize);
             }
         }
 
@@ -60,17 +60,22 @@ namespace HotFix.UI {
             DelegateSubscribe();
         }
 
-        public void onGameModeSelected(int gameMode) {
-            _gameMode = gameMode;
-            switch (gameMode) {
-            case 0:
-                _saveGamePathFolderName = "educational";
+        private void onGridWithSet(int width) {
+            switch (width) {
+            case 3:
+                GloData.Instance.gridSize = 3;
+                GloData.Instance.gridXSize = 3;
+                GloData.Instance.gridZSize = 3;
                 break;
-            case 1:
-                _saveGamePathFolderName = "classic";
+            case 4:
+                GloData.Instance.gridSize = 4;
+                GloData.Instance.gridXSize = 4;
+                GloData.Instance.gridZSize = 4;
                 break;
-            case 2:
-                _saveGamePathFolderName = "challenge";
+            case 5:
+                GloData.Instance.gridSize = 5;
+                GloData.Instance.gridXSize = 5;
+                GloData.Instance.gridZSize = 5;
                 break;
             }
         }
@@ -78,8 +83,7 @@ namespace HotFix.UI {
         void Initialization() {
             _gameMode = 0;
             _loadSavedGame = false;
-            _saveGamePathFolderName = "";
-            _gridWidth = -1;
+            _gridSize = -1;
             mgameMode.Value = -1;
         }
         void DelegateSubscribe() {
@@ -109,22 +113,8 @@ namespace HotFix.UI {
             
         }
 
-        private bool isSavedFileExist() {
-            Debug.Log(TAG + ": isSavedFileExist()");
-            StringBuilder currentPath = new StringBuilder("");
-            if (_gameMode > 0)
-                currentPath.Append(Application.persistentDataPath + "/" + _saveGamePathFolderName + "/game.save");
-            else 
-                currentPath.Append(Application.persistentDataPath + "/" + _saveGamePathFolderName + "grid" + _gridWidth + "/game.save");
-            Debug.Log(TAG + " currentPath: " + currentPath.ToString()); 
-            if (File.Exists(currentPath.ToString()))
-                return true;
-            return false;
-        }
-        
         public void toggleSettings() {
             
         }
     }
 }
-

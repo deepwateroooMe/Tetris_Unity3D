@@ -16,7 +16,7 @@ namespace HotFix.Control {
         private bool _isChallengeMode = false;
         private int _gameMode = 0;
         private string _saveGamePathFolderName;
-// 想写成 BindableProperty的形式,晚些时候再改
+
         private int _gridSize = 5;
         private int _gridXSize = 9;
         private int _gridZSize = 9;
@@ -28,16 +28,6 @@ namespace HotFix.Control {
         public BindableProperty<bool> gameStarted = new BindableProperty<bool>();
         public int layerScore = 9170;
         public int challengeLayerScore = 16700;
-        
-        // void OnEnable() { // <<<<<<<<<<<<<<<<<<<< 怎么会有这个方法呢,没有必要的呀
-        //     Debug.Log(TAG + ": OnEnable()");
-        //     _gameMode = 0;
-        //     _loadSavedGame = false;
-        //     _isChallengeMode = false;
-        //     _saveGamePathFolderName = "";
-        //     _gridSize = 5; //-1
-        //     _tetroCnter = 0;
-        // }
 
         public bool loadSavedGame {
             get {
@@ -61,6 +51,7 @@ namespace HotFix.Control {
             }
             set {
                 _gameMode = value;
+                onGameModeSelected(_gameMode);
             }
         }
         public int gameLevel {
@@ -118,6 +109,35 @@ namespace HotFix.Control {
             set {
                 _challengeLevel = value;
             }
+        }
+        
+        private void onGameModeSelected(int gameMode) {
+            _gameMode = gameMode;
+            switch (gameMode) {
+            case 0:
+                _saveGamePathFolderName = "educational/grid";
+                break;
+            case 1: // 因为经典模式下也是有层级的
+                _saveGamePathFolderName = "classic/level";
+                break;
+            case 2:
+                isChallengeMode = true;
+                _saveGamePathFolderName = "challenge/level";
+                break;
+            }
+        }
+
+        public string getFilePath() {
+            StringBuilder path = new StringBuilder();
+            if (gameMode > 0) 
+                path.Append(Application.persistentDataPath + "/" + _saveGamePathFolderName
+                            + _gameLevel + "/game.save"); 
+            else 
+                path.Append(Application.persistentDataPath + "/" + _saveGamePathFolderName 
+                            + (isChallengeMode ? _gameLevel.ToString() : _gridSize.ToString())
+                            + "/game.save");
+            Debug.Log(TAG + " getFilePath() path.ToString(): " + path.ToString());
+            return path.ToString();
         }
     }
 }

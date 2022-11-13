@@ -59,7 +59,7 @@ namespace HotFix.UI {
         private static Coroutine deleteMinoAtCoroutine;
         
         public static bool startingAtLevelZero;
-        public static int startingLevel;
+        public static int startingLevel = 1;
     
         private int numberOfRowsThisTurn = 0;
 
@@ -118,8 +118,10 @@ namespace HotFix.UI {
 
             Debug.Log(TAG + " ModelMono.hasDeletedMinos: " + ModelMono.hasDeletedMinos);
             if (ModelMono.hasDeletedMinos) {
-                // Debug.Log(TAG + ": onUndoGame() current board BEFORE respawn"); 
-                // MathUtilP.printBoard(Model.gridOcc); 
+
+                Debug.Log(TAG + ": onUndoGame() current board BEFORE respawn"); 
+                MathUtilP.printBoard(Model.gridOcc); 
+
                 Model.cleanUpGameBroad();
 // 这部分的逻辑独立到一个文件中去了,免得当前文件过大不好管理                 
                 Debug.Log(TAG + " gameData.parentList.Count: " + gameData.parentList.Count);
@@ -162,11 +164,17 @@ namespace HotFix.UI {
         // onActiveTetrominoLand: slam down, move down, except undoButton
         // disableAllButtons();
         // enable: undoButton
+        void onGameLevelChanged(int pre, int cur) {
+            Debug.Log(TAG + " onGameLevelChanged");
+            GloData.Instance.gameLevel = cur;
+        }        
         void Initialization() {
             this.ParentViewModel = (MenuViewModel)ViewManager.MenuView.BindingContext; // 父视图模型: 菜单视图模型
             gridSize = GloData.Instance.gridSize;
-            
             gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
+            currentLevel.OnValueChanged += onGameLevelChanged;
+            currentLevel.Value = 1;
+                
             fallSpeed = 3.0f;
             // saveForUndo = true;
             gameStarted = false;
@@ -270,12 +278,12 @@ namespace HotFix.UI {
             LoadNewGame();
             // }
             currentLevel.Value = startingLevel;
-            startingHighScore = PlayerPrefs.GetInt("highscore");
-            startingHighScore2 = PlayerPrefs.GetInt("highscore2");
-            startingHighScore3 = PlayerPrefs.GetInt("highscore3");
+            // startingHighScore = PlayerPrefs.GetInt("highscore");
+            // startingHighScore2 = PlayerPrefs.GetInt("highscore2");
+            // startingHighScore3 = PlayerPrefs.GetInt("highscore3");
         }
 
-// Coroutine: 才是真正解决问题的办法,暂时如此        
+        // Coroutine: 才是真正解决问题的办法,暂时如此        
         public void OnFinishReveal() {
             Debug.Log(TAG + " OnFinishReveal");
             gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
@@ -339,20 +347,6 @@ namespace HotFix.UI {
 // TODO这也是那个时候写得逻辑不对称的乱代码,要归位到真正用它的地方,而不是摆放在这里            
             if (tmpTransform == null) // Bug: 再检查一下这个到底是怎么回事
                 tmpTransform = new GameObject().transform;
-// TODO: 这里有个游戏数据保存的大版块BUG需要被修复,先把其它游戏逻辑连通
-            StringBuilder path = new StringBuilder("");
-            Debug.Log(TAG + " onGameSave() ((MenuViewModel)ParentViewModel).saveGamePathFolderName: " + ((MenuViewModel)ParentViewModel).saveGamePathFolderName);
-            if (gameMode.Value > 0) {
-                path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName + "game.save"); 
-            } else {
-                path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName
-                            + (GloData.Instance.isChallengeMode ? "challenge/level" + GloData.Instance.gameLevel.ToString() : "educational/grid" + gridSize.ToString())
-                            + "/game.save");
-                // path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName
-                //             + "grid" + gridSize + "/game.save"); 
-            }
-// TODO:这里还有BUG，也还有先前改过一个,大概撤销之后会生成几套预览的BUG, to be fixed           
-            Debug.Log(TAG + " path.ToString(): " + path.ToString());
             Debug.Log(TAG + " currentScore.Value: " + currentScore.Value);
             Debug.Log(TAG + " prevPreview: " + prevPreview);
             Debug.Log(TAG + " prevPreview2: " + prevPreview2);
@@ -374,7 +368,7 @@ namespace HotFix.UI {
                                          nextTetrominoType.Value, comTetroType.Value, eduTetroType.Value,
                                          saveForUndo, Model.grid, Model.gridClr, prevPreviewColor, prevPreviewColor2, previewTetrominoColor, previewTetromino2Color,
                                          initCubeParentTrans);
-            SaveSystem.SaveGame(path.ToString(), gameData);
+            SaveSystem.SaveGame(GloData.Instance.getFilePath(), gameData);
         }
 
         public void printbuttonInteractableList() {

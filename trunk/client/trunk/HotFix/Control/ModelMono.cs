@@ -27,52 +27,92 @@ namespace HotFix.Control {
         private static WaitForSeconds _waitForSeconds = new WaitForSeconds(connectionEffectDisplayTime);
         private CanvasMovedEventInfo canvasMovedInfo;
         
+        public static void DeleteRow() { // 算法上仍然需要优化
+            Debug.Log(TAG + ": DeleteRow() start");
+            hasDeletedMinos = false; 
+            bool isFullRowAtY = false;
+            int visDeleteJ = -1;
+
+            for (int y = 0; y < Model.gridHeight; y++) {
+                visDeleteJ = -1;
+
+                for (int j = y; j < Model.gridHeight; j++) { // 中间同时处理多层 12 层
+
+                    isFullRowAtY = Model.IsFullRowAt(j);
+                    Debug.Log(TAG + " isFullRowAtY: " + isFullRowAtY); 
+                    // if (IsFullRowAt(j)) {
+                    if (isFullRowAtY) {
+                        if (visDeleteJ == -1)
+                            visDeleteJ = j;
+
+                        if (GloData.Instance.isChallengeMode && j == 0) // isChallengeMode 有撤销功能
+                            markLayerIn(j);
+
+                        Debug.Log(TAG + ": gridOcc[,,] IsFullFiveInLayerAt(j)_EDU || isFullInLayerAt(j)_OTHER"); 
+                        MathUtilP.printBoard(Model.gridOcc); 
+
+                        DeleteMinoAt(j);
+                        if (GloData.Instance.gameMode > 0 || (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel < 3))
+                            ScoreManager.currentScore += GloData.Instance.layerScore;
+                        else
+                            ScoreManager.currentScore += GloData.Instance.challengeLayerScore;
+                        
+                        hasDeletedMinos = true;
+                        // Debug.Log(TAG + " hasDeletedMinos: " + hasDeletedMinos);
+                    }
+                }
+                if (visDeleteJ != -1) { // 如果这次遍历里最低是在visDeleteJ 层有消除,那么从这层再开始下移和遍历
+                    MoveAllRowsDown(visDeleteJ + 1);
+                    y = visDeleteJ - 1;
+                } else break; // 可以直接这里退出吗,还有残余的 2吗?
+            }
+
+            if (BaseBoardSkin.isSkinChanged) { // debugging
+                Debug.Log(TAG + ": Model.gridOcc[,,] aft DeleteRow done"); 
+                MathUtilP.printBoard(Model.gridOcc); 
+            }
+        }
+        
         public System.Collections.IEnumerator DeleteRowCoroutine() {
             Debug.Log(TAG + ": DeleteRowCoroutine()");
             isDeleteRowCoroutineRunning = true;
+            int visDeleteJ = -1;
 
-            for (int y = 0; y < Model.gridHeight; y++) {
+            for (int y = 0; y < Model.gridHeight; y++) { // 仍然是从 最底层 往上层 process, 但是每层的时候都同时处理多个层,而不是永远只先处理最底层,这不合理
+                // Debug.Log(TAG + " DeleteRowCoroutine() y: " + y);
+                visDeleteJ = -1;
 
-                if ( (!GloData.Instance.isChallengeMode && GloData.Instance.gameMode == 0 && Model.IsFullFiveInLayerAt(y))
-                     || ((GloData.Instance.isChallengeMode || GloData.Instance.gameMode == 1) && Model.isFullInLayerAt(y)) ) { 
-                    // || (GloData.Instance.isChallengeMode && Model.IsFullQuadInLayerAt(y)) ) { // 以前的分四个小区的
+                for (int j = y; j < Model.gridHeight; j++) { // 中间同时处理多层 12 层
+                    // Debug.Log(TAG + "  DeleteRowCoroutine() j: " + j);
 
-                    Debug.Log(TAG + ": gridOcc[,,] IsFullQuadInLayerAt(y)"); 
-                    MathUtilP.printBoard(Model.gridOcc); 
+                    if ( (!GloData.Instance.isChallengeMode && GloData.Instance.gameMode == 0 && Model.IsFullFiveInLayerAt(j))
+                         || ((GloData.Instance.isChallengeMode || GloData.Instance.gameMode == 1) && Model.isFullInLayerAt(j)) ) { 
+                        if (visDeleteJ == -1)
+                            visDeleteJ = j;
 
-                    Model.isNumberOfRowsThisTurnUpdated = false;
-                    // updateScoreEvent(); // commended now
+                        Debug.Log(TAG + ": gridOcc[,,] IsFullFiveInLayerAt(j)_EDU || isFullInLayerAt(j)_OTHER"); 
+                        MathUtilP.printBoard(Model.gridOcc); 
 
-// 这里不再细化这么四个分区了,就按最传统原始的一层一层地消除,每层的分数加多
-// 系统逻辑: 这里是不是得把1 ==>　2？ 暂时不考虑这些 
+                        Model.isNumberOfRowsThisTurnUpdated = false;
 
-                    if (GloData.Instance.isChallengeMode) {
-                        DeleteMinoAt(y);
-                        ViewManager.GameView.ViewModel.currentScore.Value += GloData.Instance.challengeLayerScore; // 分数再优化一下
-                        yield return null;
-                    } else {
-                        ViewManager.GameView.ViewModel.currentScore.Value += GloData.Instance.layerScore; // 分数再优化一下
-                        if (!isDeleteMNinoAtCoroutineRunning) 
-                            deleteMinoAtCoroutine = CoroutineHelperP.StartCoroutine(DeleteMinoAtCoroutine(y)); // commented for tmp
-                        yield return deleteMinoAtCoroutine;                        
+                        if (GloData.Instance.isChallengeMode) {
+                            DeleteMinoAt(j);
+                            ViewManager.GameView.ViewModel.currentScore.Value += GloData.Instance.challengeLayerScore; // 分数再优化一下
+                            yield return null;
+                        } else {
+                            ViewManager.GameView.ViewModel.currentScore.Value += GloData.Instance.layerScore; // 分数再优化一下
+                            if (!isDeleteMNinoAtCoroutineRunning) 
+                                deleteMinoAtCoroutine = CoroutineHelperP.StartCoroutine(DeleteMinoAtCoroutine(j)); // commented for tmp
+                            yield return deleteMinoAtCoroutine;                        
+                        }
+
+                        hasDeletedMinos = true;
                     }
-// 下面是以前的分小区的不完整未完成的代码
-                    // if (GloData.Instance.isChallengeMode && Model.zoneSum == 4) { 
-                    //     DeleteMinoAt(y);
-                    //     ScoreManager.currentScore += GloData.Instance.challengeLayerScore; // 分数再优化一下
-                    //     yield return null;
-                    // } else {
-                    //     ScoreManager.currentScore += GloData.Instance.layerScore; // 分数再优化一下
-                    //     if (!isDeleteMNinoAtCoroutineRunning) 
-                    //         deleteMinoAtCoroutine = CoroutineHelperP.StartCoroutine(DeleteMinoAtCoroutine(y)); // commented for tmp
-                    //     yield return deleteMinoAtCoroutine;                        
-                    // }
-
-                    MoveAllRowsDown(y + 1);
-                    --y;
-
-                    hasDeletedMinos = true;
                 }
+                if (visDeleteJ != -1) { // 如果这次遍历里最低是在visDeleteJ 层有消除,那么从这层再开始下移和遍历
+                    MoveAllRowsDown(visDeleteJ + 1);
+                    y = visDeleteJ - 1;
+                } else break; // 可以直接这里退出吗,还有残余的 2吗?
             }
 
             Debug.Log(TAG + " hasDeletedMinos: " + hasDeletedMinos); 
@@ -173,52 +213,6 @@ namespace HotFix.Control {
             yield return null;
         }
 
-        public static void DeleteRow() { // 算法上仍然需要优化
-            Debug.Log(TAG + ": DeleteRow() start");
-            hasDeletedMinos = false; 
-            bool isFullRowAtY = false;
-            for (int y = 0; y < Model.gridHeight; y++) {
-
-                isFullRowAtY = Model.IsFullRowAt(y);
-                Debug.Log(TAG + " isFullRowAtY: " + isFullRowAtY); 
-                // if (IsFullRowAt(y)) {
-                if (isFullRowAtY) {
-                    // 一定要控制同屏幕同时播放的粒子数量
-                    // 1.同屏的粒子数量一定要控制在200以内，每个粒子的发射数量不要超过50个。
-                    // 2.尽量减少粒子的面积，面积越大就会越卡。
-                    // 3.粒子最好不要用Alfa Test（但是有的特效又不能不用，这个看美术吧）
-                    //   粒子的贴图用黑底的这种，然后用Particles/Additive 这种Shader，贴图必须要2的幂次方，这样渲染的效率会高很多。个人建议 粒子特效的贴图在64左右，千万不要太大。
-                    // // 让游戏中真正要播放粒子特效的时候，粒子不用在载入它的贴图，也不用实例化，仅仅是执行一下SetActive(true)。
-                    // SetActive(true)的时候就不会执行粒子特效的Awake()方法，但是它会执行OnEnable方法。
-                    // hasDeletedMinos = true; // Bug: I commented this out, supposedly it's for DeleteRowCoroutine only                    
-                        
-                    // m_ExplosionParticles.transform.position = new Vector3(2.5f, y, 2.5f); 
-                    // m_ExplosionParticles.gameObject.SetActive(true); ...
-                    // m_ExplosionParticles.Play();
-                    // m_ExplosionAudio.Play(); ... dammit git
-
-// CHALLENGE　MODE: 因为有五次撤销功能,所以这里标记一下:就是1　==>　2
-                    if (GloData.Instance.isChallengeMode && y == 0)
-                        markLayerIn(y);
-                    DeleteMinoAt(y);
-                    if (GloData.Instance.gameMode > 0 || (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel < 3))
-                       ScoreManager.currentScore += GloData.Instance.layerScore;
-                    else
-                        ScoreManager.currentScore += GloData.Instance.challengeLayerScore;
-                        
-                    MoveAllRowsDown(y + 1);
-                    --y;
-
-                    hasDeletedMinos = true;
-                    Debug.Log(TAG + " hasDeletedMinos: " + hasDeletedMinos);
-                }
-            }
-
-            if (BaseBoardSkin.isSkinChanged) { // debugging
-                Debug.Log(TAG + ": Model.gridOcc[,,] aft DeleteRow done"); 
-                MathUtilP.printBoard(Model.gridOcc); 
-            }
-        }
         static void markLayerIn(int y) {
             for (int i = 0; i < Model.gridXWidth; i++) 
                 for (int j = 0; j < Model.gridZWidth; j++) 
@@ -237,7 +231,6 @@ namespace HotFix.Control {
                     // if (Model.gridOcc[x][y][z] == 1 && Model.grid[x][y][z] != null) {
                     if (Model.grid[x][y][z] != null
                         && (gameMode > 0 && Model.gridOcc[x][y][z] == 1 || gameMode == 0 && Model.gridOcc[x][y][z] == 2)) { // 这些不能消除 Model.grid[x][y][z] = 8
-// TODO: BUG: 很奇怪,当删除C 8个中的4个,怎么会
                         if (Model.grid[x][y][z].gameObject != null && Model.grid[x][y][z].parent != null && Model.grid[x][y][z].parent.gameObject != null
                             && Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().childCnt == Model.grid[x][y][z].parent.childCount // 父控件是完整的
                             && isAllMinoInLayerY(Model.grid[x][y][z].parent, y)) { // 这个小方格的 父控件 的所有子立方体全部都在这一y层,就是,可以直接回收到资源池
@@ -254,9 +247,9 @@ namespace HotFix.Control {
                             }
                             PoolHelper.ReturnToPool(tmpParentTransform.gameObject, tmpParentTransform.gameObject.GetComponent<TetrominoType>().type);
 // 当前立方体的 父控件 的某个或某些子立方体不在当前层,仅只回收当前小立方体到资源池
-                        } else { 
-// 在做预设的时候,有时候我的那些预设里的小立方体并没有标注清楚是什么类型,
-                            // MathUtilP.print("DeleteMinoAt()", x, y, z);
+// TODO: 这里仍然要区分是否有父控件,是否为父控件的最后一个立方体,因为它负有消除父控件的责任.要不然,残余一堆父控件在那里
+                        } else {
+                            Transform tmpParentTransform = Model.grid[x][y][z].parent;
                             Model.grid[x][y][z].parent = null; // 需要先解除这个父子控件关系,否则父控件永远以为这个子立方体存在存活
                             PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
                             Model.grid[x][y][z] = null;
@@ -264,6 +257,8 @@ namespace HotFix.Control {
                                 Model.gridOcc[x][y][z] = (y == Model.gridHeight-1 ? 0 : 2); // 0 ==> 2
                                 Model.gridClr[x][y][z] = -1;
                             }
+                            if (tmpParentTransform.childCount == 0 && tmpParentTransform.gameObject != null)
+                                GameObject.Destroy(tmpParentTransform.gameObject);
                         }
                     }
                 }
