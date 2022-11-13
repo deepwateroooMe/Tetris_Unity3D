@@ -26,7 +26,7 @@ namespace HotFix.Control {
 
 // TODO: WHEN THERE IS BARRIER CUGES, MATERIALS COULD BE MATCHED VALIDATING FOR VALID LANDLING POSITIONS        
         public static bool isValidLandingPosition() {
-            Debug.Log(TAG + ": isValidLandingPosition()");
+            Debug.Log(TAG + ": isValidLandingPosition(): ");
             if (ViewManager.nextTetromino.transform.childCount == 1)
                 isSolo = true;
 
@@ -51,6 +51,7 @@ namespace HotFix.Control {
                 return true;
             } else if (GloData.Instance.challengeLevel > 10 && !isThereSolutionOnBoard()) // 搜索确认是否 存在合理解
                 return true;
+            Debug.Log(TAG + ": isValidLandingPosition(): FALSE");
             return false;
         }
 

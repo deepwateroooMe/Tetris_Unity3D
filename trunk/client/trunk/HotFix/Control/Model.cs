@@ -31,6 +31,30 @@ namespace HotFix.Control {
         private static StringBuilder type = new StringBuilder("");
         private static int randomTetromino;
 
+// 对于标签为InitCubes的来说,暂时的游戏逻辑设置为不可以消除,但VALICATE为可接触
+        public static void UpdateInitCubes(GameObject go) {
+            for (int y = 0; y < gridHeight; y++) // 不知道在InitCubes里能够起什么作用,先扔这里
+                for (int z = 0; z < gridZWidth; z++) 
+                    for (int x = 0; x < gridXWidth; x++)
+                        if (grid[x][y][z] != null && grid[x][y][z].parent == go.transform) {
+                            MathUtilP.print(x, y, z);
+                            grid[x][y][z] = null; 
+                            gridOcc[x][y][z]= 0;
+                            if (GloData.Instance.isChallengeMode)
+                                gridClr[x][y][z]= -1; 
+                        }
+            foreach (Transform mino in go.transform) { // 当挑战模式更新地板砖的时候,这里就是地板砖的着色
+                Vector3 pos = MathUtilP.Round(mino.position);
+                if (pos.y >= 0 && pos.y < gridHeight && pos.x >= 0 && pos.x < gridXWidth && pos.z >= 0 && pos.z < gridZWidth) { 
+                    grid[(int)pos.x][(int)pos.y][(int)pos.z] = mino;
+                    gridOcc[(int)pos.x][(int)pos.y][(int)pos.z] = 8; // 逻辑暂定为 不可消除,但可接触
+                    if (GloData.Instance.isChallengeMode) 
+                        gridClr[(int)pos.x][(int)pos.y][(int)pos.z] = mino.GetComponent<MinoType>().color;
+                }
+            }
+            Debug.Log(TAG + " UpdateInitCubes() Model.gridClr[][][]");
+            MathUtilP.printBoard(gridClr);
+        }
         public static void UpdateGrid(GameObject go) { // update gridOcc, gridClr at the same time
             for (int y = 0; y < gridHeight; y++) 
                 for (int z = 0; z < gridZWidth; z++) 
@@ -47,10 +71,8 @@ namespace HotFix.Control {
                 if (pos.y >= 0 && pos.y < gridHeight && pos.x >= 0 && pos.x < gridXWidth && pos.z >= 0 && pos.z < gridZWidth) { 
                     grid[(int)pos.x][(int)pos.y][(int)pos.z] = mino;
                     gridOcc[(int)pos.x][(int)pos.y][(int)pos.z] = 1;
-                    if (GloData.Instance.isChallengeMode) {
-                        MathUtilP.print(pos);
+                    if (GloData.Instance.isChallengeMode) 
                         gridClr[(int)pos.x][(int)pos.y][(int)pos.z] = mino.GetComponent<MinoType>().color;
-                    }
                 }
             }
             if (ViewManager.nextTetromino != null)

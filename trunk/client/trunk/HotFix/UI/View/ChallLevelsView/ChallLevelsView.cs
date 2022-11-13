@@ -230,9 +230,10 @@ namespace HotFix.UI {
 
 // BaseBoardSkin.cs MonoBehaviour
             GameObject go = ViewManager.basePlane.gameObject.FindChildByName("level" + level);
-            if (ComponentHelper.GetBBSkinComponent(go) == null)
+            if (ComponentHelper.GetBBSkinComponent(go) == null) {
+                Debug.Log(TAG + " (ComponentHelper.GetBBSkinComponent(go) == null): " + (ComponentHelper.GetBBSkinComponent(go) == null));
                 ComponentHelper.AddBBSkinComponent(go);
-
+            }
             levels[level].SetActive(true);
             hideAllOtherLevelPanel(level);
             ViewManager.GameView.Reveal();

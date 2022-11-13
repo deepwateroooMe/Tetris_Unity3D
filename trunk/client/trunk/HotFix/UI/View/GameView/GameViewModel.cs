@@ -186,6 +186,64 @@ namespace HotFix.UI {
             undoCnter.Value = 5;
             swapCnter.Value = 5;
             challengeLevel = GloData.Instance.challengeLevel;
+
+            isChallengeMode = GloData.Instance.isChallengeMode;
+            // Debug.Log(TAG + " isChallengeMode: " + isChallengeMode);
+
+// 其实说到底,这些东西原本还是应该放在ViewModel里的,只是独立出去能够这现在这个文件弄小一点儿方便操作查找            
+            if (GloData.Instance.isChallengeMode) {
+                Model.gridWidth = GloData.Instance.gridSize;
+                Model.gridXWidth = GloData.Instance.gridXSize;
+                Model.gridZWidth = GloData.Instance.gridZSize;
+
+                Debug.Log(TAG + " Model.gridXWidth: " + Model.gridXWidth);
+                Debug.Log(TAG + " Model.gridZWidth: " + Model.gridZWidth);
+// 相对于重新起始,可能有可以重置的方法
+                Model.baseCubes = new int[Model.gridXWidth * Model.gridZWidth];
+                Model.prevSkin = new int[4];
+                Model.prevIdx = new int[4];
+                Model.grid = new Transform[Model.gridXWidth][][];
+                Model.gridOcc = new int[Model.gridXWidth][][];
+                Model.gridClr = new int[Model.gridXWidth][][];
+                for (int i = 0; i < Model.gridXWidth; i++) {
+                    Model.grid[i] = new Transform[Model.gridHeight][];
+                    Model.gridOcc[i] = new int [Model.gridHeight][];
+                    Model.gridClr[i] = new int [Model.gridHeight][];
+                    for (int j = 0; j < Model.gridHeight; j++) {
+                        Model.grid[i][j] = new Transform[Model.gridZWidth];
+                        Model.gridOcc[i][j] = new int [Model.gridZWidth];
+                        Model.gridClr[i][j] = new int [Model.gridZWidth];
+                    }
+                }
+
+                Debug.Log(TAG + ": gridOcc()"); 
+                MathUtilP.printBoard(Model.gridOcc);
+                Debug.Log(TAG + ": gridClr()");
+                MathUtilP.printBoard(Model.gridClr);
+
+                // MathUtilP.resetColorBoard();
+                ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel)).initateBaseCubesColors();
+                //loadInitCubesforChallengeMode(); // 某些挑战层级,是有些相对固定的立方体方块砖存在的,对他们进行加载和数据管理
+            } else {
+                Model.gridWidth = GloData.Instance.gridSize;
+                Model.gridXWidth = GloData.Instance.gridSize;
+                Model.gridZWidth = GloData.Instance.gridSize;
+                
+                Model.grid = new Transform [5][][]; 
+                Model.gridOcc = new int [5][][]; 
+                Model.gridClr = new int [5][][]; // 这些都是狗屁不通的占位符,要不然呆会儿GameViewModel.onGameSave()一大堆报错
+                for (int i = 0; i < 5; i++) {
+                    Model.grid[i] = new Transform[Model.gridHeight][];
+                    Model.gridOcc[i] = new int [Model.gridHeight][];
+                    Model.gridClr[i] = new int [Model.gridHeight][];
+                    for (int j = 0; j < Model.gridHeight; j++) {
+                        Model.grid[i][j] = new Transform[5];
+                        Model.gridOcc[i][j] = new int [5];
+                        Model.gridClr[i][j] = new int [5];
+                    }
+                }
+                // MathUtilP.resetColorBoard();  // cmt for tmp
+            } 
             
             buttonInteractableList = new int [7];
             for (int i = 0; i < 7; i++)
@@ -275,7 +333,7 @@ namespace HotFix.UI {
             UpdateSpeed();
         }
 
-        public void onGameSave() {
+        public void onGameSave(Transform initCubeParentTrans) {
             // Debug.Log(TAG + ": onGameSave()");
 // TODO这也是那个时候写得逻辑不对称的乱代码,要归位到真正用它的地方,而不是摆放在这里            
             if (tmpTransform == null) // Bug: 再检查一下这个到底是怎么回事
@@ -287,7 +345,7 @@ namespace HotFix.UI {
                 path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName + "game.save"); 
             } else {
                 path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName
-                            + (GloData.Instance.isChallengeMode ? "challenge/level" + GloData.Instance.gameLevel.ToString() : gridSize.ToString())
+                            + (GloData.Instance.isChallengeMode ? "challenge/level" + GloData.Instance.gameLevel.ToString() : "educational/grid" + gridSize.ToString())
                             + "/game.save");
                 // path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName
                 //             + "grid" + gridSize + "/game.save"); 
@@ -300,12 +358,21 @@ namespace HotFix.UI {
             Debug.Log(TAG + " prevPreviewColor: " + prevPreviewColor);
             Debug.Log(TAG + " prevPreviewColor2: " + prevPreviewColor2);
             Debug.Log(TAG + " comTetroType.Value: " + comTetroType.Value);
-
-            GameData gameData = new GameData(GloData.Instance.isChallengeMode, ViewManager.nextTetromino, ViewManager.ghostTetromino, tmpTransform,
-                                             gameMode.Value, currentScore.Value, currentLevel.Value, numLinesCleared.Value, Model.gridXWidth, Model.gridZWidth,
-                                             prevPreview, prevPreview2,
-                                             nextTetrominoType.Value, comTetroType.Value, eduTetroType.Value,
-                                             saveForUndo, Model.grid, Model.gridClr, prevPreviewColor, prevPreviewColor2, previewTetrominoColor, previewTetromino2Color); 
+            GameData gameData = null;
+            if (isChallengeMode) gameData = new GameData(GloData.Instance.isChallengeMode, ViewManager.nextTetromino, ViewManager.ghostTetromino, tmpTransform,
+                                                         gameMode.Value, currentScore.Value, currentLevel.Value, numLinesCleared.Value,
+                                                         Model.gridXWidth, Model.gridZWidth,
+                                                         prevPreview, prevPreview2,
+                                                         nextTetrominoType.Value, comTetroType.Value, eduTetroType.Value,
+                                                         saveForUndo, Model.grid, Model.gridClr, prevPreviewColor, prevPreviewColor2, previewTetrominoColor, previewTetromino2Color,
+                                                         initCubeParentTrans);
+            else gameData = new GameData(GloData.Instance.isChallengeMode, ViewManager.nextTetromino, ViewManager.ghostTetromino, tmpTransform,
+                                         gameMode.Value, currentScore.Value, currentLevel.Value, numLinesCleared.Value,
+                                         Model.gridWidth, -1,
+                                         prevPreview, prevPreview2,
+                                         nextTetrominoType.Value, comTetroType.Value, eduTetroType.Value,
+                                         saveForUndo, Model.grid, Model.gridClr, prevPreviewColor, prevPreviewColor2, previewTetrominoColor, previewTetromino2Color,
+                                         initCubeParentTrans);
             SaveSystem.SaveGame(path.ToString(), gameData);
         }
 

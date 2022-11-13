@@ -110,12 +110,22 @@ namespace HotFix.UI {
 
 #region EducaModesPanel
         void ActiveToggle() {
-            if (thrToggle.isOn) 
+            if (thrToggle.isOn) {
                 ViewModel.gridWidth = 3;
-            else if (furToggle.isOn) 
+                GloData.Instance.gridSize = 3;
+                GloData.Instance.gridXSize = 3;
+                GloData.Instance.gridZSize = 3;
+            } else if (furToggle.isOn) { 
+                GloData.Instance.gridSize = 4;
+                GloData.Instance.gridXSize = 4;
+                GloData.Instance.gridZSize = 4;
                 ViewModel.gridWidth = 4;
-            else if (fivToggle.isOn) 
+            } else if (fivToggle.isOn) {
+                GloData.Instance.gridSize = 5;
+                GloData.Instance.gridXSize = 5;
+                GloData.Instance.gridZSize = 5;
                 ViewModel.gridWidth = 5;
+            }
         }
         void OnClickConButton() {
             Debug.Log(TAG + " OnClickConButton");

@@ -45,7 +45,12 @@ namespace HotFix.Control {
             foreach (TetrominoData parentData in parentList) {
                 Debug.Log(TAG + " LoadDataFromParentList() parentData.name: " + parentData.name);
                 Debug.Log(TAG + " parentData.children.Count: " + parentData.children.Count);
-                if (isThereAnyExistChild(parentData)) { // 存在
+
+                bool isThereAnyExistChildV = isThereAnyExistChild(parentData);
+                Debug.Log(TAG + " isThereAnyExistChildV: " + isThereAnyExistChildV);
+                if (isThereAnyExistChildV) { // 存在
+                // if (isThereAnyExistChild(parentData)) { // 存在
+
                     Debug.Log(TAG + " (!gridMatchesSavedParent(tmpParentGO, parentData.children)): " + (!gridMatchesSavedParent(tmpParentGO, parentData.children))); 
                     if (!gridMatchesSavedParent(tmpParentGO, parentData.children)) {  // 先删除多余的，再补全缺失的
 // 先 删除多余的, 这一步是必要的,因为当有消除父控件的子立方体可能往下掉变形了,需要先删除掉下去了变形了的
@@ -79,8 +84,8 @@ namespace HotFix.Control {
                                 tmpMinoGO.GetComponent<MinoType>().color = minoData.color;
                                 Model.grid[x][y][z] = tmpMinoGO.transform;
                                 Model.gridOcc[x][y][z] = 1;
+                                tmpMinoGO.transform.parent = tmpParentGO.transform; // 在上面没有立方体掉下来的时候,是没有问题的,同一个父控件
                                 // tmpMinoGO.transform.SetParent(tmpParentGO.transform, true); // 还是会有那个BUG,并没有从本质上解决这个问题 
-                                tmpMinoGO.transform.parent = tmpParentGO.transform; // 感觉这里的父子关系好像没能真正建立正确,是分成两个父控件的???
                             }
 // 这里的写法不合理(容易加多),换上面的方法写: 用补的,只补缺的,就不会多出来几粒:
                             // if (Model.grid[x][y][z] == null
@@ -99,9 +104,9 @@ namespace HotFix.Control {
                             //     }
                             // }
                         }
+                        Debug.Log(TAG + " tmpParentGO.transform.childCount (AFTER filled disappeared -- final): " + tmpParentGO.transform.childCount);
                     }
-                    Debug.Log(TAG + " tmpParentGO.transform.childCount (AFTER filled disappeared -- final): " + tmpParentGO.transform.childCount);
-                } else { // 重新生成                                           // 空 shapeX Tetromino_X : Universal
+                } else { // 重新生成: 这个重新生成,哪怕是上面有东西,仍然是可以的 // 空 shapeX Tetromino_X : Universal
                     GameObject tmpGameObject = PoolHelper.GetFromPool("TetrominoX",
                                                                       DeserializedTransform.getDeserializedTransPos(parentData.transform), 
                                                                       DeserializedTransform.getDeserializedTransRot(parentData.transform),
@@ -117,8 +122,8 @@ namespace HotFix.Control {
                                                                       DeserializedTransform.getDeserializedTransPos(minoData.transform), 
                                                                       DeserializedTransform.getDeserializedTransRot(minoData.transform),
                                                                       minoData.color);
-                        tmpMinoGO.transform.SetParent(tmpGameObject.transform, true);
-                        // tmpMinoGO.transform.parent = tmpGameObject.transform;
+                        tmpMinoGO.transform.parent = tmpGameObject.transform;
+                        // tmpMinoGO.transform.SetParent(tmpGameObject.transform, true);
                         x = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).x);
                         y = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).y);
                         z = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).z);
@@ -138,10 +143,10 @@ namespace HotFix.Control {
                     tmpGameObject.GetComponent<TetrominoType>().childCnt = childCounter;
                     tmpGameObject.name = parentData.name;
 
-                    // Debug.Log(TAG + " tmpGameObject.GetComponent<TetrominoType>().type: " + tmpGameObject.GetComponent<TetrominoType>().type); 
-                    // Debug.Log(TAG + " tmpGameObject.transform.childCount: " + tmpGameObject.transform.childCount); 
+                    Debug.Log(TAG + " tmpGameObject.GetComponent<TetrominoType>().type: " + tmpGameObject.GetComponent<TetrominoType>().type); 
+                    Debug.Log(TAG + " tmpGameObject.transform.childCount: " + tmpGameObject.transform.childCount); 
                 }
-                // Debug.Log(TAG + ": Model.gridOcc[,,] after each deleted mino re-spawn"); 
+                Debug.Log(TAG + ": Model.gridOcc[,,] after each deleted mino re-spawn"); 
                 MathUtilP.printBoard(Model.gridOcc); 
             }
         }
@@ -175,13 +180,12 @@ namespace HotFix.Control {
 
         private static void FillInMinoAtTargetPosition(int x, int y, int z, Transform minoTrans) {
             int o = Model.gridHeight - 1;
-            // Model.grid[x][o][z] = 0, otherwose gameover
             while (Model.grid[x][o-1][z] == null) o--;
             for (int i = o; i > y; i--) { // y 
                 Model.grid[x][i][z] = Model.grid[x][i-1][z];
                 Model.gridOcc[x][i][z] = Model.gridOcc[x][i-1][z];
                 if (Model.grid[x][i-1][z] != null) {
-                    Model.grid[x][i-1][z].parent = null; // 先从父控件中移除
+                    // Model.grid[x][i-1][z].parent = null; // BUG: 先从父控件中移除 <<<=== 这是自己这次不懂源码的时候加的,破坏了原当前格与其父控件的父子关系,不需要加这行
                     Model.grid[x][i-1][z] = null;
                     Model.gridOcc[x][i-1][z] = 0;
                     Model.grid[x][i][z].position += new Vector3(0, 1, 0);
@@ -189,8 +193,6 @@ namespace HotFix.Control {
             }
             Model.grid[x][y][z] = minoTrans;
             Model.gridOcc[x][y][z] = 1;
-            Debug.Log(TAG + " FillInMinoAtTargetPosition() gridOcc");
-            MathUtilP.printBoard(Model.gridOcc);
         }
 
         private static bool isColumnFromHereEmpty(int x, int y, int z) {

@@ -236,13 +236,11 @@ namespace HotFix.Control {
                     // if (gameMode > 0 || (GloData.Instance.gameMode == 0 && GloData.Instance.isChallengeMode)) { // 这个条件这里不要了 ?
                     // if (Model.gridOcc[x][y][z] == 1 && Model.grid[x][y][z] != null) {
                     if (Model.grid[x][y][z] != null
-                        && (gameMode > 0 && Model.gridOcc[x][y][z] == 1 || gameMode == 0 && Model.gridOcc[x][y][z] == 2)) {
-                        // MathUtilP.print(x, y, z);
+                        && (gameMode > 0 && Model.gridOcc[x][y][z] == 1 || gameMode == 0 && Model.gridOcc[x][y][z] == 2)) { // 这些不能消除 Model.grid[x][y][z] = 8
+// TODO: BUG: 很奇怪,当删除C 8个中的4个,怎么会
                         if (Model.grid[x][y][z].gameObject != null && Model.grid[x][y][z].parent != null && Model.grid[x][y][z].parent.gameObject != null
-                            && !Model.grid[x][y][z].parent.gameObject.CompareTag("InitCubes") // 这些不能消除
                             && Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().childCnt == Model.grid[x][y][z].parent.childCount // 父控件是完整的
                             && isAllMinoInLayerY(Model.grid[x][y][z].parent, y)) { // 这个小方格的 父控件 的所有子立方体全部都在这一y层,就是,可以直接回收到资源池
-                            // MathUtilP.print(x, y, z);
                             Transform tmpParentTransform = Model.grid[x][y][z].parent;
                             foreach (Transform mino in Model.grid[x][y][z].parent) {
                                 int i = (int)Mathf.Round(mino.position.x);
@@ -255,9 +253,10 @@ namespace HotFix.Control {
                                 }
                             }
                             PoolHelper.ReturnToPool(tmpParentTransform.gameObject, tmpParentTransform.gameObject.GetComponent<TetrominoType>().type);
-                        } else if (!Model.grid[x][y][z].parent.gameObject.CompareTag("InitCubes")) { // 当前立方体的 父控件 的某个或某些子立方体不在当前层,仅只回收当前小立方体到资源池
-                            // MathUtilP.print(x, y, z);
+// 当前立方体的 父控件 的某个或某些子立方体不在当前层,仅只回收当前小立方体到资源池
+                        } else { 
 // 在做预设的时候,有时候我的那些预设里的小立方体并没有标注清楚是什么类型,
+                            // MathUtilP.print("DeleteMinoAt()", x, y, z);
                             Model.grid[x][y][z].parent = null; // 需要先解除这个父子控件关系,否则父控件永远以为这个子立方体存在存活
                             PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
                             Model.grid[x][y][z] = null;

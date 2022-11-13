@@ -156,15 +156,14 @@ namespace HotFix.Control {
             xm = GloData.Instance.gridXSize;
             zm = GloData.Instance.gridZSize;
             bool empty = true, isChallengeMode = GloData.Instance.isChallengeMode;
-            // int z = 0;
             StringBuilder s = new StringBuilder("");
             for (int y = 0; y < n; y++) {
                 if (isBoardLayerEmpty(gridOcc, y)) return;
-                // Debug.Log(TAG + " y: " + y); 
                 for (int x = 0; x < (isChallengeMode ? xm : m); x++) {
                         s.Append("X" + x + ":    ");
                     for (int z = 0; z < (isChallengeMode ? zm : m); z++) 
-                        if (gridOcc[x][y][z] == 9) s.Append("x  ");
+                        if (gridOcc[x][y][z] == 9 || Model.gridOcc[x][y][z] == 9) s.Append("x  "); // girdClr [x][y][z] == 0 && gridOcc[x][y][z] == 9
+                        else if (gridOcc[x][y][z] == -1) s.Append("_  "); // girdClr [x][y][z] == -1
                         else s.Append(gridOcc[x][y][z] + "  ");
                     Debug.Log(s.ToString());
                     s.Length = 0;
