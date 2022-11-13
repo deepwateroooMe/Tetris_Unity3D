@@ -306,8 +306,8 @@ namespace HotFix.Control {
                     }
                 }
             } else { // GloData.Instance.gameMode == 0: 启蒙模式，挑战模式，或是带有undo功能的模式下
-// TODO BUG:　LOGIC MODULE:                
-// 当当前立方体仅且只剩自已(BUG TODO: 只要有消除就需要检查是否可以继续下落,哪怕只消除了一个立方体,还剩 七 个小立方体,先前想到的逻辑不完整),检查是否可以下落
+// LOGIC MODULE INSERT              
+// 当当前立方体仅且只剩自已(BUG: 只要有消除就需要检查是否可以继续下落,哪怕只消除了一个立方体,还剩 七 个小立方体,先前想到的逻辑不完整),检查是否可以下落
 // 是否,在前面有过消除的前提下,前再检查一遍,还是说之后消除呢?
                 for (int x = 0; x < Model.gridXWidth; x++) {
                     for (int z = 0; z < Model.gridZWidth; z++) {
@@ -319,18 +319,24 @@ namespace HotFix.Control {
                         }
                         else if (Model.gridOcc[x][y-1][z] == 0 && Model.gridOcc[x][y][z] == 1 // 下一格为 空,上层当前格为 非空,检查是否可以掉落
                                  && Model.grid[x][y][z] != null && canFallDeeper(Model.grid[x][y][z].parent)) {
-                            if (Model.grid[x][y][z].parent == null) // 独个立方体,只将当前格下移
+                            Debug.Log(TAG + " (Model.grid[x][y][z].parent == null): " + (Model.grid[x][y][z].parent == null));
+                            if (Model.grid[x][y][z].parent == null) { // 独个立方体,只将当前格下移
+                                MathUtilP.print("(Model.grid[x][y][z].parent == null)", x, y, z);
                                 moveMinoDownOneGridHelper(x,  y, z);
-                            else { // 当将格的父控件可以继续下降一格: 这里应该可以换个方法(以父控件整体来)写,但是暂时如此吧
+                            } else if (Model.grid[x][y][z].parent != null) { // 当将格的父控件可以继续下降一格:
+// TODO: BUG: 这里出过报空的BUG                                
+                                // 这里应该可以换个方法(以父控件整体来)写,但是暂时如此吧, 感觉下面这个:把父控件里的每个立方体住下移动一格,既低效又bug百出
                                 foreach (Transform mino in Model.grid[x][y][z].parent) {
                                     if (mino.CompareTag("mino")) {
                                         Vector3 pos = MathUtilP.Round(mino.position);
                                         int i = (int)Math.Round(mino.position.x);
                                         int j = (int)Math.Round(mino.position.y);
                                         int k = (int)Math.Round(mino.position.z);
-                                        moveMinoDownOneGridHelper(x,  y, z);
+                                        moveMinoDownOneGridHelper(i, j, k);
                                     }
                                 }
+                                // Model.grid[x][y][z].parent.position += new Vector3(0, -1, 0);
+                                // Model.UpdateGrid(Model.grid[x][y][z].parent.gameObject);
                             }
                         }
                     }   

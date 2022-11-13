@@ -184,9 +184,9 @@ namespace HotFix.UI {
             Debug.Log(TAG + " (initCubes != null): " + (initCubes != null));
             if (initCubes != null) {
                 Debug.Log(TAG + " loadInitCubesforChallengeMode() initCubes.transform.childCount: " + initCubes.transform.childCount);
-                Model.UpdateInitCubes(initCubes); // parent GameObject
+                Model.UpdateGrid(initCubes); // parent GameObject
 
-                Debug.Log(TAG + ": gridOcc()"); 
+                Debug.Log(TAG + ": gridOcc()"); // 这里不知道是怎么回事,想要它打印三维数据的时候,它还没有处理完,总是打不出来
                 MathUtilP.printBoard(Model.gridOcc);
                 Debug.Log(TAG + ": gridClr()");
                 MathUtilP.printBoard(Model.gridClr);
@@ -202,58 +202,6 @@ namespace HotFix.UI {
             if (ViewModel.isChallengeMode)
                 loadInitCubesforChallengeMode();
             else initCubes = new GameObject();
-// 让视图模型来负责这些数据相关的操作: 视图模型的一些操作可以比这里更早,可以方便更早地完成相关数据的内存分配等,比放这里好            
-//             if (GloData.Instance.isChallengeMode) {
-//                 ViewModel.isChallengeMode = true;
-//                 Model.gridWidth = GloData.Instance.gridSize;
-//                 Model.gridXWidth = GloData.Instance.gridXSize;
-//                 Model.gridZWidth = GloData.Instance.gridZSize;
-
-//                 Debug.Log(TAG + " Model.gridXWidth: " + Model.gridXWidth);
-//                 Debug.Log(TAG + " Model.gridZWidth: " + Model.gridZWidth);
-// // 相对于重新起始,可能有可以重置的方法
-//                 Model.baseCubes = new int[Model.gridXWidth * Model.gridZWidth];
-//                 Model.prevSkin = new int[4];
-//                 Model.prevIdx = new int[4];
-//                 Model.grid = new Transform[Model.gridXWidth][][];
-//                 Model.gridOcc = new int[Model.gridXWidth][][];
-//                 Model.gridClr = new int[Model.gridXWidth][][];
-//                 for (int i = 0; i < Model.gridXWidth; i++) {
-//                     Model.grid[i] = new Transform[Model.gridHeight][];
-//                     Model.gridOcc[i] = new int [Model.gridHeight][];
-//                     Model.gridClr[i] = new int [Model.gridHeight][];
-//                     for (int j = 0; j < Model.gridHeight; j++) {
-//                         Model.grid[i][j] = new Transform[Model.gridZWidth];
-//                         Model.gridOcc[i][j] = new int [Model.gridZWidth];
-//                         Model.gridClr[i][j] = new int [Model.gridZWidth];
-//                     }
-//                 }
-//                 Debug.Log(TAG + ": gridOcc()"); 
-//                 MathUtilP.printBoard(Model.gridOcc);
-//                 Debug.Log(TAG + ": gridClr()");
-//                 MathUtilP.printBoard(Model.gridClr);
-//                 // MathUtilP.resetColorBoard();
-//                 ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel)).initateBaseCubesColors();
-//                 loadInitCubesforChallengeMode(); // 某些挑战层级,是有些相对固定的立方体方块砖存在的,对他们进行加载和数据管理
-//             } else {
-//                 Model.gridWidth = GloData.Instance.gridSize;
-//                 Model.gridXWidth = GloData.Instance.gridSize;
-//                 Model.gridZWidth = GloData.Instance.gridSize;
-//                 Model.grid = new Transform [5][][]; 
-//                 Model.gridOcc = new int [5][][]; 
-//                 Model.gridClr = new int [5][][]; // 这些都是狗屁不通的占位符,要不然呆会儿GameViewModel.onGameSave()一大堆报错
-//                 for (int i = 0; i < 5; i++) {
-//                     Model.grid[i] = new Transform[Model.gridHeight][];
-//                     Model.gridOcc[i] = new int [Model.gridHeight][];
-//                     Model.gridClr[i] = new int [Model.gridHeight][];
-//                     for (int j = 0; j < Model.gridHeight; j++) {
-//                         Model.grid[i][j] = new Transform[5];
-//                         Model.gridOcc[i][j] = new int [5];
-//                         Model.gridClr[i][j] = new int [5];
-//                     }
-//                 }
-//                 // MathUtilP.resetColorBoard();  // cmt for tmp
-//             } 
             
             // if (gameMode == 0 && !isChallengeMode) { 
             //     // guiManager.setAllBaseBoardInactive();
@@ -344,10 +292,10 @@ namespace HotFix.UI {
         }
 
         void LoadGame(string path) {  // when load Scene load game: according to gameMode
-            Debug.Log(TAG + ": LoadGame()");
+            // Debug.Log(TAG + ": LoadGame()");
             GameData gameData = deepwaterooo.tetris3d.SaveSystem.LoadGame(path);
             StringBuilder type = new StringBuilder("");
-            Debug.Log(TAG + " (gameData.nextTetrominoData != null): " + (gameData.nextTetrominoData != null)); 
+            // Debug.Log(TAG + " (gameData.nextTetrominoData != null): " + (gameData.nextTetrominoData != null)); 
             if (gameData.nextTetrominoData != null) {
                 ViewManager.nextTetromino = PoolHelper.GetFromPool(
                     type.Append(gameData.nextTetrominoData.type).ToString(),
@@ -402,15 +350,6 @@ namespace HotFix.UI {
             // Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), bef onGameSave()"); 
             // MathUtilP.printBoard(gridClr);  // Model.
 
-            
-// nextTetromino 的相关处理: 
-// ViewManager.nextTetromino: 在接下来消除的过程中，它的部分或是全部立方体可能会被消除，所以要早点儿处理
-            ViewManager.nextTetromino.tag = "Untagged";
-            Tetromino tetromino = ComponentHelper.GetTetroComponent(ViewManager.nextTetromino);
-            ViewModel.currentScore.Value += ViewManager.scoreDic[ViewManager.nextTetromino.name];
-            // ViewModel.currentScore.Value += tetromino.GetComponent<TetrominoType>().score;
-            tetromino.enabled = false;
-
 
             if (GloData.Instance.isChallengeMode) {
                 if (ChallengeRules.isValidLandingPosition()) {
@@ -457,6 +396,14 @@ namespace HotFix.UI {
             }
             
 // TODO那么,这下面的逻辑是放在哪里处理的呢?            
+            
+// nextTetromino 的相关处理: 
+// ViewManager.nextTetromino: 在接下来消除的过程中，它的部分或是全部立方体可能会被消除，所以要早点儿处理
+            ViewManager.nextTetromino.tag = "Untagged";
+            Tetromino tetromino = ComponentHelper.GetTetroComponent(ViewManager.nextTetromino);
+            ViewModel.currentScore.Value += ViewManager.scoreDic[ViewManager.nextTetromino.name];
+            // ViewModel.currentScore.Value += tetromino.GetComponent<TetrominoType>().score;
+            tetromino.enabled = false;
 
             PoolHelper.recycleGhostTetromino();
 
@@ -505,7 +452,7 @@ namespace HotFix.UI {
             isDuringUndo = true;
 
             Debug.Log(TAG + ": gridOcc[][][] BEFORE ViewModel.onUndoGame(gameData)"); 
-            MathUtilP.printBoard(Model.gridOcc);  // Model.
+            MathUtilP.printBoard(Model.gridOcc);  
             
             StringBuilder path = new StringBuilder("");
 // TODO: 关于保存路径的BUG
@@ -677,7 +624,7 @@ namespace HotFix.UI {
             Time.timeScale = 1.0f;
             if (ViewModel.gameMode.Value == 1)
                 gameStarted = false;
-            // still have to check this due to auto Save
+// TODO: BUG: still have to check this due to auto Save
             string path = new StringBuilder(Application.persistentDataPath).Append("/").Append(((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName).Append("/game.save").ToString();
             if (File.Exists(path)) {
                 try {
@@ -686,6 +633,8 @@ namespace HotFix.UI {
                     Debug.LogException(ex);
                 }
             }
+            ViewManager.MenuView.Reveal();
+            Hide();
         }
         void OnClickCancButton() { 
             saveGameOrNotPanel.SetActive(false);

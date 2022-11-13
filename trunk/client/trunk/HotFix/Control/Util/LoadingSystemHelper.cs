@@ -39,123 +39,19 @@ namespace HotFix.Control {
             }
             return false;
         }
-        public static void LoadDataFromParentList(List<TetrominoData> parentList) {
-            int [] pos = new int[3];
-            int x = 0, y = 0, z = 0, childCounter = 0;
-            foreach (TetrominoData parentData in parentList) {
-                Debug.Log(TAG + " LoadDataFromParentList() parentData.name: " + parentData.name);
-                Debug.Log(TAG + " parentData.children.Count: " + parentData.children.Count);
-
-                bool isThereAnyExistChildV = isThereAnyExistChild(parentData);
-                Debug.Log(TAG + " isThereAnyExistChildV: " + isThereAnyExistChildV);
-                if (isThereAnyExistChildV) { // 存在
-                // if (isThereAnyExistChild(parentData)) { // 存在
-
-                    Debug.Log(TAG + " (!gridMatchesSavedParent(tmpParentGO, parentData.children)): " + (!gridMatchesSavedParent(tmpParentGO, parentData.children))); 
-                    if (!gridMatchesSavedParent(tmpParentGO, parentData.children)) {  // 先删除多余的，再补全缺失的
-// 先 删除多余的, 这一步是必要的,因为当有消除父控件的子立方体可能往下掉变形了,需要先删除掉下去了变形了的
-// 应该说更好的办法是直接改变这些掉下去了而导致位置变化的小立方体回归原位,但是暂时先这么写吧                        
-                        foreach (Transform trans in tmpParentGO.transform) { 
-                           if (!myContains(trans, parentData.children)) {
-                               x = (int)Mathf.Round(trans.position.x);
-                               y = (int)Mathf.Round(trans.position.y);
-                               z = (int)Mathf.Round(trans.position.z);
-                               Model.grid[x][y][z].parent = null;
-                               PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
-                               Model.gridOcc[x][y][z] = 0;
-                               Model.grid[x][y][z] = null;
-                           }
-                        }
-                        Debug.Log(TAG + " tmpParentGO.transform.childCount (AFTER deleted unwanted): " + tmpParentGO.transform.childCount);
-                        foreach (MinoData minoData in parentData.children) {
-                            Vector3 posA = MathUtilP.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform)); 
-                            x = (int)Mathf.Round(posA.x);
-                            y = (int)Mathf.Round(posA.y);
-                            z = (int)Mathf.Round(posA.z);
-                            MathUtilP.print(x, y, z);
-// 这里的写法不合理(容易加多),换一种方法写: 用补的,只补缺的,就不会多出来几粒
-                            if (!containsMino(tmpParentGO, x, y, z)) {
-                                GameObject tmpMinoGO = PoolHelper.GetFromPool(minoData.type,
-                                                                              DeserializedTransform.getDeserializedTransPos(minoData.transform), 
-                                                                              DeserializedTransform.getDeserializedTransRot(minoData.transform),
-                                                                              minoData.color);
-                                tmpMinoGO.tag = "mino";
-                                tmpMinoGO.GetComponent<MinoType>().type = minoData.type;
-                                tmpMinoGO.GetComponent<MinoType>().color = minoData.color;
-                                Model.grid[x][y][z] = tmpMinoGO.transform;
-                                Model.gridOcc[x][y][z] = 1;
-                                tmpMinoGO.transform.parent = tmpParentGO.transform; // 在上面没有立方体掉下来的时候,是没有问题的,同一个父控件
-                                // tmpMinoGO.transform.SetParent(tmpParentGO.transform, true); // 还是会有那个BUG,并没有从本质上解决这个问题 
-                            }
-// 这里的写法不合理(容易加多),换上面的方法写: 用补的,只补缺的,就不会多出来几粒:
-                            // if (Model.grid[x][y][z] == null
-                            //     ||  Model.grid[x][y][z].parent != null && Model.grid[x][y][z].parent.gameObject != tmpParentGO) { // 当前为空,或是从上面落下来的其它的
-                            //     GameObject tmpMinoGO = PoolHelper.GetFromPool(minoData.type,
-                            //                                                   DeserializedTransform.getDeserializedTransPos(minoData.transform), 
-                            //                                                   DeserializedTransform.getDeserializedTransRot(minoData.transform),
-                            //                                                   minoData.color);
-                            //     tmpMinoGO.tag = "mino";
-                            //     tmpMinoGO.transform.parent = tmpParentGO.transform;
-                            //     if (Model.grid[x][y][z] == null) {
-                            //         Model.grid[x][y][z] = tmpMinoGO.transform; // 当原有，如何升高 add in the position, and move previously one upper
-                            //         Model.gridOcc[x][y][z] = 1;
-                            //     } else {
-                            //         FillInMinoAtTargetPosition(x, y, z, tmpMinoGO.transform);
-                            //     }
-                            // }
-                        }
-                        Debug.Log(TAG + " tmpParentGO.transform.childCount (AFTER filled disappeared -- final): " + tmpParentGO.transform.childCount);
-                    }
-                } else { // 重新生成: 这个重新生成,哪怕是上面有东西,仍然是可以的 // 空 shapeX Tetromino_X : Universal
-                    GameObject tmpGameObject = PoolHelper.GetFromPool("TetrominoX",
-                                                                      DeserializedTransform.getDeserializedTransPos(parentData.transform), 
-                                                                      DeserializedTransform.getDeserializedTransRot(parentData.transform),
-                                                                      Vector3.one);
-                    tmpGameObject.GetComponent<TetrominoType>().type = parentData.type;
-                    tmpGameObject.GetComponent<TetrominoType>().color = parentData.color;
-                    tmpGameObject.name = parentData.name;
-                    childCounter = 0;
-                    foreach (MinoData minoData in parentData.children) {
-                        if (minoData.color == -1)
-                            Debug.Log(TAG + " (minoData.color == -1) parentData.name: " + parentData.name);
-                        GameObject tmpMinoGO = PoolHelper.GetFromPool(minoData.type,
-                                                                      DeserializedTransform.getDeserializedTransPos(minoData.transform), 
-                                                                      DeserializedTransform.getDeserializedTransRot(minoData.transform),
-                                                                      minoData.color);
-                        tmpMinoGO.transform.parent = tmpGameObject.transform;
-                        // tmpMinoGO.transform.SetParent(tmpGameObject.transform, true);
-                        x = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).x);
-                        y = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).y);
-                        z = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).z);
-                        tmpMinoGO.tag = "mino";
-                        tmpMinoGO.GetComponent<MinoType>().type = minoData.type;
-                        tmpMinoGO.GetComponent<MinoType>().color = minoData.color;
-                        if (isColumnFromHereEmpty(x, y, z)) {
-                            Model.grid[x][y][z] = tmpMinoGO.transform;
-                            Model.gridOcc[x][y][z] = 1;
-                        } else {
-                            FillInMinoAtTargetPosition(x, y, z, tmpMinoGO.transform); // update grid accordingly
-                        }
-                        ++childCounter;
-                    }
-                    tmpGameObject.GetComponent<TetrominoType>().type = parentData.type;
-                    tmpGameObject.GetComponent<TetrominoType>().color = parentData.color;
-                    tmpGameObject.GetComponent<TetrominoType>().childCnt = childCounter;
-                    tmpGameObject.name = parentData.name;
-
-                    Debug.Log(TAG + " tmpGameObject.GetComponent<TetrominoType>().type: " + tmpGameObject.GetComponent<TetrominoType>().type); 
-                    Debug.Log(TAG + " tmpGameObject.transform.childCount: " + tmpGameObject.transform.childCount); 
-                }
-                Debug.Log(TAG + ": Model.gridOcc[,,] after each deleted mino re-spawn"); 
-                MathUtilP.printBoard(Model.gridOcc); 
-            }
-        }
-
+        
         private static bool gridMatchesSavedParent(GameObject tmpGO, MinoDataCollection<TetrominoData, MinoData> data) {
             // Debug.Log(TAG + ": gridMatchesSavedParent()"); 
             Debug.Log(TAG + " (tmpGO.transform.childCount != data.Count): " + (tmpGO.transform.childCount != data.Count));
-            if (tmpGO.GetComponent<TetrominoType>().childCnt == data.Count && tmpGO.transform.childCount == data.Count)
+
+// BUG: 这里出BUG说,当一个方块砖因为下层陷落而破使其某个方格下坠(但父子关系不变,子立方体个数不变的情况下),这里是TRUE,但仍要帮其重新校正子立方体的位置,所以应该返回FALSE            
+            if (tmpGO.GetComponent<TetrominoType>().childCnt == data.Count && tmpGO.transform.childCount == data.Count) {
+                foreach (Transform mino in tmpGO.transform) {
+                    if (!myContains(mino, data)) return false;
+                }
                 return true; // 完整的
+            }
+
             if (tmpGO.transform.childCount != data.Count) 
                 return false;
 // tmpGO.transform.childCount == data.children.Count, potential mismatch ???
@@ -230,5 +126,168 @@ namespace HotFix.Control {
             }
             return false;
         }
-    }
+
+// 像根据保存的文件来加载新游戏一样,从头加载每个方块砖和立方体
+// TODO:没有考虑挑战模式下的着色        
+        public static void LoadDataFromParentList(List<TetrominoData> parentList) {
+            int [] pos = new int[3];
+            int x = 0, y = 0, z = 0, childCounter = 0; // 要填充后面的数据
+
+            foreach (TetrominoData parentData in parentList) {
+// 先生成父控件: <TetrominoType> + <Tetromino>                
+                GameObject tmpGameObject = PoolHelper.GetFromPool("TetrominoX",
+                                                                  DeserializedTransform.getDeserializedTransPos(parentData.transform), 
+                                                                  DeserializedTransform.getDeserializedTransRot(parentData.transform),
+                                                                  Vector3.one);
+                tmpGameObject.GetComponent<TetrominoType>().type = parentData.type;
+                tmpGameObject.GetComponent<TetrominoType>().color = parentData.color;
+                tmpGameObject.name = parentData.name;
+
+// 再生成子控件的各个立方体 
+                childCounter = 0;
+                foreach (MinoData minoData in parentData.children) {
+                    if (minoData.color == -1)
+                        Debug.Log(TAG + " (minoData.color == -1) parentData.name: " + parentData.name);
+                    GameObject tmpMinoGO = PoolHelper.GetFromPool(minoData.type,
+                                                                  DeserializedTransform.getDeserializedTransPos(minoData.transform), 
+                                                                  DeserializedTransform.getDeserializedTransRot(minoData.transform),
+                                                                  minoData.color);
+                    tmpMinoGO.transform.parent = tmpGameObject.transform;
+                    x = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).x);
+                    y = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).y);
+                    z = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).z);
+                    tmpMinoGO.tag = "mino";
+                    tmpMinoGO.GetComponent<MinoType>().type = minoData.type;
+                    tmpMinoGO.GetComponent<MinoType>().color = minoData.color;
+                    Model.grid[x][y][z] = tmpMinoGO.transform;
+                    Model.gridOcc[x][y][z] = 1;
+                    ++childCounter;
+                }
+                tmpGameObject.GetComponent<TetrominoType>().type = parentData.type;
+                tmpGameObject.GetComponent<TetrominoType>().color = parentData.color;
+                tmpGameObject.GetComponent<TetrominoType>().childCnt = childCounter;
+                tmpGameObject.name = parentData.name;
+
+                Debug.Log(TAG + " tmpGameObject.GetComponent<TetrominoType>().type: " + tmpGameObject.GetComponent<TetrominoType>().type); 
+                Debug.Log(TAG + " tmpGameObject.transform.childCount: " + tmpGameObject.transform.childCount); 
+            }
+            Debug.Log(TAG + ": Model.gridOcc[,,] after each deleted mino re-spawn"); 
+            MathUtilP.printBoard(Model.gridOcc); 
+        }
+//         // 加载系统: 这个系统是说,现有过消除的游戏大立方体不变,只查露捡缺地多则删除,少则补足(这里面会有很多问题是说,有些保存的数据,可能找不到原件; 有些大立方体游戏中的无件,可能不曾清除,造成很多列余问题
+// // 所以相对干净简洁的做法,实际上,仍回归到从数据加载游戏本身,既首先清空游戏面板,再由保存过的数据来从头一一加载每个方块砖或是立方体,则不会再有上面的那些问题        
+//         public static void LoadDataFromParentList(List<TetrominoData> parentList) {
+//             int [] pos = new int[3];
+//             int x = 0, y = 0, z = 0, childCounter = 0;
+//             foreach (TetrominoData parentData in parentList) {
+//                 Debug.Log(TAG + " LoadDataFromParentList() parentData.name: " + parentData.name);
+//                 Debug.Log(TAG + " parentData.children.Count: " + parentData.children.Count);
+
+//                 bool isThereAnyExistChildV = isThereAnyExistChild(parentData);
+//                 Debug.Log(TAG + " isThereAnyExistChildV: " + isThereAnyExistChildV);
+//                 if (isThereAnyExistChildV) { // 存在
+//                     // if (isThereAnyExistChild(parentData)) { // 存在
+
+//                     Debug.Log(TAG + " (!gridMatchesSavedParent(tmpParentGO, parentData.children)): " + (!gridMatchesSavedParent(tmpParentGO, parentData.children))); 
+//                     if (!gridMatchesSavedParent(tmpParentGO, parentData.children)) {  // 先删除多余的，再补全缺失的
+// // 先 删除多余的, 这一步是必要的,因为当有消除父控件的子立方体可能往下掉变形了,需要先删除掉下去了变形了的
+// // 应该说更好的办法是直接改变这些掉下去了而导致位置变化的小立方体回归原位,但是暂时先这么写吧                        
+//                         foreach (Transform trans in tmpParentGO.transform) { 
+//                             if (!myContains(trans, parentData.children)) {
+//                                 x = (int)Mathf.Round(trans.position.x);
+//                                 y = (int)Mathf.Round(trans.position.y);
+//                                 z = (int)Mathf.Round(trans.position.z);
+//                                 if (Model.grid[x][y][z] != null) {
+//                                     Model.grid[x][y][z].parent = null;
+//                                     PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
+//                                     Model.gridOcc[x][y][z] = 0;
+//                                     Model.grid[x][y][z] = null;
+//                                 }
+//                             }
+//                         }
+//                         Debug.Log(TAG + " tmpParentGO.transform.childCount (AFTER deleted unwanted): " + tmpParentGO.transform.childCount);
+//                         foreach (MinoData minoData in parentData.children) {
+//                             Vector3 posA = MathUtilP.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform)); 
+//                             x = (int)Mathf.Round(posA.x);
+//                             y = (int)Mathf.Round(posA.y);
+//                             z = (int)Mathf.Round(posA.z);
+//                             MathUtilP.print(x, y, z);
+// // 这里的写法不合理(容易加多),换一种方法写: 用补的,只补缺的,就不会多出来几粒
+//                             if (!containsMino(tmpParentGO, x, y, z)) {
+//                                 GameObject tmpMinoGO = PoolHelper.GetFromPool(minoData.type,
+//                                                                               DeserializedTransform.getDeserializedTransPos(minoData.transform), 
+//                                                                               DeserializedTransform.getDeserializedTransRot(minoData.transform),
+//                                                                               minoData.color);
+//                                 tmpMinoGO.tag = "mino";
+//                                 tmpMinoGO.GetComponent<MinoType>().type = minoData.type;
+//                                 tmpMinoGO.GetComponent<MinoType>().color = minoData.color;
+//                                 Model.grid[x][y][z] = tmpMinoGO.transform;
+//                                 Model.gridOcc[x][y][z] = 1;
+//                                 tmpMinoGO.transform.parent = tmpParentGO.transform; // 在上面没有立方体掉下来的时候,是没有问题的,同一个父控件
+//                                 // tmpMinoGO.transform.SetParent(tmpParentGO.transform, true); // 还是会有那个BUG,并没有从本质上解决这个问题 
+//                             }
+// // 这里的写法不合理(容易加多),换上面的方法写: 用补的,只补缺的,就不会多出来几粒:
+//                             // if (Model.grid[x][y][z] == null
+//                             //     ||  Model.grid[x][y][z].parent != null && Model.grid[x][y][z].parent.gameObject != tmpParentGO) { // 当前为空,或是从上面落下来的其它的
+//                             //     GameObject tmpMinoGO = PoolHelper.GetFromPool(minoData.type,
+//                             //                                                   DeserializedTransform.getDeserializedTransPos(minoData.transform), 
+//                             //                                                   DeserializedTransform.getDeserializedTransRot(minoData.transform),
+//                             //                                                   minoData.color);
+//                             //     tmpMinoGO.tag = "mino";
+//                             //     tmpMinoGO.transform.parent = tmpParentGO.transform;
+//                             //     if (Model.grid[x][y][z] == null) {
+//                             //         Model.grid[x][y][z] = tmpMinoGO.transform; // 当原有，如何升高 add in the position, and move previously one upper
+//                             //         Model.gridOcc[x][y][z] = 1;
+//                             //     } else {
+//                             //         FillInMinoAtTargetPosition(x, y, z, tmpMinoGO.transform);
+//                             //     }
+//                             // } 
+//                         }
+//                         Debug.Log(TAG + " tmpParentGO.transform.childCount (AFTER filled disappeared -- final): " + tmpParentGO.transform.childCount);
+//                     }
+//                 } else { // 重新生成: 这个重新生成,哪怕是上面有东西,仍然是可以的 // 空 shapeX Tetromino_X : Universal
+//                     GameObject tmpGameObject = PoolHelper.GetFromPool("TetrominoX",
+//                                                                       DeserializedTransform.getDeserializedTransPos(parentData.transform), 
+//                                                                       DeserializedTransform.getDeserializedTransRot(parentData.transform),
+//                                                                       Vector3.one);
+//                     tmpGameObject.GetComponent<TetrominoType>().type = parentData.type;
+//                     tmpGameObject.GetComponent<TetrominoType>().color = parentData.color;
+//                     tmpGameObject.name = parentData.name;
+//                     childCounter = 0;
+//                     foreach (MinoData minoData in parentData.children) {
+//                         if (minoData.color == -1)
+//                             Debug.Log(TAG + " (minoData.color == -1) parentData.name: " + parentData.name);
+//                         GameObject tmpMinoGO = PoolHelper.GetFromPool(minoData.type,
+//                                                                       DeserializedTransform.getDeserializedTransPos(minoData.transform), 
+//                                                                       DeserializedTransform.getDeserializedTransRot(minoData.transform),
+//                                                                       minoData.color);
+//                         tmpMinoGO.transform.parent = tmpGameObject.transform;
+//                         // tmpMinoGO.transform.SetParent(tmpGameObject.transform, true);
+//                         x = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).x);
+//                         y = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).y);
+//                         z = (int)Mathf.Round(DeserializedTransform.getDeserializedTransPos(minoData.transform).z);
+//                         tmpMinoGO.tag = "mino";
+//                         tmpMinoGO.GetComponent<MinoType>().type = minoData.type;
+//                         tmpMinoGO.GetComponent<MinoType>().color = minoData.color;
+//                         if (isColumnFromHereEmpty(x, y, z)) {
+//                             Model.grid[x][y][z] = tmpMinoGO.transform;
+//                             Model.gridOcc[x][y][z] = 1;
+//                         } else {
+//                             FillInMinoAtTargetPosition(x, y, z, tmpMinoGO.transform); // update grid accordingly
+//                         }
+//                         ++childCounter;
+//                     }
+//                     tmpGameObject.GetComponent<TetrominoType>().type = parentData.type;
+//                     tmpGameObject.GetComponent<TetrominoType>().color = parentData.color;
+//                     tmpGameObject.GetComponent<TetrominoType>().childCnt = childCounter;
+//                     tmpGameObject.name = parentData.name;
+
+//                     Debug.Log(TAG + " tmpGameObject.GetComponent<TetrominoType>().type: " + tmpGameObject.GetComponent<TetrominoType>().type); 
+//                     Debug.Log(TAG + " tmpGameObject.transform.childCount: " + tmpGameObject.transform.childCount); 
+//                 }
+//                 Debug.Log(TAG + ": Model.gridOcc[,,] after each deleted mino re-spawn"); 
+//                 MathUtilP.printBoard(Model.gridOcc); 
+//             }
+        // }
+   }
 }
