@@ -49,7 +49,7 @@ namespace HotFix.Control {
             // EventManager.Instance.RegisterListener<TetrominoSpawnedEventInfo>(onActiveTetrominoSpawn); // 接收不到
             EventManager.Instance.RegisterListener<TetrominoValidMMInfo>(onActiveTetrominoMoveRotate);
             EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
-// TODO: onUndoGame: SetActive(false);
+            EventManager.Instance.RegisterListener<GameStopEventInfo>(onGameLeave);
         }
 
 // [阴影会自动跟随;] 游戏视图模型会需要更新表格; 方块砖需要移动; 音频管理器需要操作背景音乐
@@ -69,14 +69,14 @@ namespace HotFix.Control {
             delta = new Vector3(0, 0, -1);
             EventManager.Instance.FireEvent("move", delta);
         }
-        
-// 经典模式下,或是启蒙模式游戏已经开始,激活按钮布
-        void onActiveTetrominoSpawn(TetrominoSpawnedEventInfo info) {
-            // Debug.Log(TAG + " onActiveTetrominoSpawn");
-            if (ViewManager.MenuView.ViewModel.gameMode > 0 || ViewManager.MenuView.ViewModel.gameMode == 0) 
-// TODO: FOR GAMEMODE = 0, GameView里清除掉帮助启动的逻辑
-                ViewManager.moveCanvas.SetActive(true); 
-        }
+
+// // 经典模式下,或是启蒙模式游戏已经开始,激活按钮布
+//         void onActiveTetrominoSpawn(TetrominoSpawnedEventInfo info) {
+//             // Debug.Log(TAG + " onActiveTetrominoSpawn");
+//             if (ViewManager.MenuView.ViewModel.gameMode > 0 || ViewManager.MenuView.ViewModel.gameMode == 0) 
+// // TODO: FOR GAMEMODE = 0, GameView里清除掉帮助启动的逻辑
+//                 ViewManager.moveCanvas.SetActive(true); 
+//         }
         
         void onActiveTetrominoMoveRotate(TetrominoValidMMInfo info) { // 这个信息没有带变量,不知道移动位置
             // Debug.Log(TAG + " onActiveTetrominoMove");
@@ -94,6 +94,13 @@ namespace HotFix.Control {
                 ViewManager.moveCanvas.SetActive(false); // 这里没有失活, 还是说它需要那么久的影应时间呢?
         }
 
+        void onGameLeave(GameStopEventInfo info) {
+            ViewManager.moveCanvas.transform.position = new Vector3(2.0f, 11.0f, 2f);
+            ViewManager.rotateCanvas.transform.position = new Vector3(2.0f, 11.0f, 2f);
+            ViewManager.moveCanvas.SetActive(false);
+            ViewManager.rotateCanvas.SetActive(false);
+        }
+        
         void onCanvasToggled(CanvasToggledEventInfo info) {
             Debug.Log(TAG + " CanvasToggledEventInfo");
 // 切换失活与激活的先后顺序有一定的关系,会产生交叉会死锁
@@ -102,15 +109,15 @@ namespace HotFix.Control {
             ViewManager.rotateCanvas.SetActive(true);
             //ViewManager.GameView.btnState[togBtn] = true;
         }
-
         public void OnDisable() {
             // Debug.Log(TAG + " OnDisable");
 // Canvas: Toggled
             EventManager.Instance.UnregisterListener<CanvasToggledEventInfo>(onCanvasToggled); 
 // Tetrominon: Spawned, Move, Rotate, Land,
-            EventManager.Instance.UnregisterListener<TetrominoSpawnedEventInfo>(onActiveTetrominoSpawn); 
+            // EventManager.Instance.UnregisterListener<TetrominoSpawnedEventInfo>(onActiveTetrominoSpawn); 
             EventManager.Instance.UnregisterListener<TetrominoValidMMInfo>(onActiveTetrominoMoveRotate);
             EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 
-        }
+            EventManager.Instance.UnregisterListener<GameStopEventInfo>(onGameLeave);
+       }
     }
 }

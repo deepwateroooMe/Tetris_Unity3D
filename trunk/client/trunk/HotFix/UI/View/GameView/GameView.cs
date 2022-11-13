@@ -24,10 +24,9 @@ namespace HotFix.UI {
         public override bool IsRoot { get { return true; } }
         
 // 基础游戏大方格
-        // GameObject baseBoard3; // 这些控件还没有做,哪天头脑昏昏的时候才再去做
-        // GameObject baseBoard4;
+        GameObject baseBoard3; // 这些控件还没有做,哪天头脑昏昏的时候才再去做
+        GameObject baseBoard4;
         GameObject baseBoard5;
-// DesView 里的个文本框基本不变，不用管它们        
 // ScoreDataView 
         Text scoText; // Score Text
         Text lvlText; // Level Text
@@ -276,8 +275,8 @@ namespace HotFix.UI {
         }
         
         void setAllBaseBoardInactive() {
-            // baseBoard3.SetActive(false);
-            // baseBoard4.SetActive(false);
+            baseBoard3.SetActive(false);
+            baseBoard4.SetActive(false);
             baseBoard5.SetActive(false);
         }
 
@@ -446,8 +445,6 @@ namespace HotFix.UI {
 // TODO: 对行列场景的处理
             if (gameOverPanel.activeSelf)
                 gameOverPanel.SetActive(false);
-            Debug.Log(TAG + " (ViewModel.buttonInteractableList[2] == 0): " + (ViewModel.buttonInteractableList[2] == 0));
-            Debug.Log(TAG + " (ViewModel.buttonInteractableList[2] == 0 || GloData.Instance.isChallengeMode && ViewModel.undoCnter.Value == 0): " + (ViewModel.buttonInteractableList[2] == 0 || GloData.Instance.isChallengeMode && ViewModel.undoCnter.Value == 0));
             if (ViewModel.buttonInteractableList[2] == 0 || GloData.Instance.isChallengeMode && ViewModel.undoCnter.Value == 0) return;
             isDuringUndo = true;
 
@@ -465,13 +462,12 @@ namespace HotFix.UI {
             GameData gameData = SaveSystem.LoadGame(path.ToString());
             ViewModel.onUndoGame(gameData);
 
-            Debug.Log(TAG + " (gameData.prevPreview != null): " + (gameData.prevPreview != null));
             if (gameData.prevPreview != null) { // 生成早了,会被视图模型又回收走了?
                 type.Length = 0;
                 string type2 = gameData.prevPreview2;
-                if (gameData.isChallengeMode) {
+                if (gameData.isChallengeMode) 
                     SpawnPreviewTetromino(type.Append(gameData.prevPreview).ToString(), type2, gameData.prevPreviewColor, gameData.prevPreviewColor2);
-                } else 
+                else 
                     SpawnPreviewTetromino(type.Append(gameData.prevPreview).ToString(), type2);
             }
             isDuringUndo = false;
@@ -614,7 +610,10 @@ namespace HotFix.UI {
             ViewModel.hasSavedGameAlready = false;
             saveGameOrNotPanel.SetActive(false);
             pausePanel.SetActive(false);
-
+            EventManager.Instance.FireEvent("stopgame");
+            // ViewManager.moveCanvas.SetActive(false);
+            // ViewManager.rotateCanvas.SetActive(false);
+            
             PoolHelper.ReturnToPool(previewTetromino, previewTetromino.GetComponent<TetrominoType>().type);
             if (ViewModel.gameMode.Value == 0) 
                 PoolHelper.ReturnToPool(previewTetromino2, previewTetromino2.GetComponent<TetrominoType>().type);
@@ -787,18 +786,23 @@ namespace HotFix.UI {
             ViewModel.tetroCnter.OnValueChanged += onTetroCnterChanged;
             ViewModel.swapCnter.OnValueChanged += onSwapCnterChanged;
             ViewModel.undoCnter.OnValueChanged += onUndoCnterChanged;
+            
+// 不想要游戏视图来观察,要对象池来观察[对象池的帮助方法都只能静态调用,可以观察吗?]暂先放这里
+            //ViewModel.comTetroType.OnValueChanged += onComTetroTypeChanged;
+            //ViewModel.eduTetroType.OnValueChanged += onEduTetroTypeChanged;
+
+// TODO: 这个模块需要补充起来,需要先搭个PROTOTYPE测试的架; 相机的位置变化:主要用于启蒙模式,用户㧤撤销某块方块砖的时候 ?
+            ViewModel.cameraPos.OnValueChanged += onCameraPosChanged;
+            ViewModel.cameraRot.OnValueChanged += onCameraRotChanged;
+
 // TODO: 为了触发第一次的回调,稍微绕了一下,需要更为优雅的设置方法
             ViewManager.MenuView.ViewModel.mgameMode.OnValueChanged += onGameModeChanged; 
             if (ViewModel.gameMode.Value != ViewManager.MenuView.ViewModel.mgameMode.Value)
                 ViewManager.MenuView.ViewModel.mgameMode.Value = ViewModel.gameMode.Value;
-// 不想要游戏视图来观察,要对象池来观察[对象池的帮助方法都只能静态调用,可以观察吗?]暂先放这里
-            //ViewModel.comTetroType.OnValueChanged += onComTetroTypeChanged;
-            //ViewModel.eduTetroType.OnValueChanged += onEduTetroTypeChanged;
-// 相机的位置变化:主要用于启蒙模式,用户㧤撤销某块方块砖的时候 ?
-            ViewModel.cameraPos.OnValueChanged += onCameraPosChanged;
-            ViewModel.cameraRot.OnValueChanged += onCameraRotChanged;
-
-            Start(); // 开始游戏
+// // TODO: 为了触发第一次的回调,稍微绕了一下,需要更为优雅的设置方法
+//             GloData.Instance.gameStarted.OnValueChanged += onGameStarted;
+            
+            Start(); // 开始游戏 
             revealed = true;
         }
         void onTetroCnterChanged(int pre, int cur) {
@@ -847,19 +851,15 @@ namespace HotFix.UI {
             base.OnInitialize();
             RegisterListeners();
 
+            baseBoard3 = GameObject.FindChildByName("BaseBoard3");
+            baseBoard4 = GameObject.FindChildByName("BaseBoard4");
             baseBoard5 = GameObject.FindChildByName("BaseBoard5");
             setAllBaseBoardInactive();
 // 当视图想要通过视图模型来获取父视图模型的数据时,实际上当前视图模型还没能启动好,还没有设置好其父视图模型,所以会得到空,要换种写法
             switch (ViewManager.MenuView.ViewModel.gridWidth) { // 大方格的类型
-            case 3:
-                //     baseBoard3.SetActive(true);
-                //     break;
-            case 4:
-                //     baseBoard4.SetActive(true);
-                //     break;
-            case 5:
-                baseBoard5.SetActive(true);
-                break;
+                case 3: baseBoard3.SetActive(true);break;
+                case 4: baseBoard4.SetActive(true); break;
+                case 5: baseBoard5.SetActive(true); break;
             }  
 // 游戏得分文本框
             linTextDes = GameObject.FindChildByName("linTxtDes");

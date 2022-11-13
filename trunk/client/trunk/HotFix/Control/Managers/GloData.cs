@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Framework.MVVM;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,29 +12,32 @@ namespace HotFix.Control {
         private const string TAG = "GloData";
         
         private bool _loadSavedGame = false;
+        
         private bool _isChallengeMode = false;
         private int _gameMode = 0;
         private string _saveGamePathFolderName;
+// 想写成 BindableProperty的形式,晚些时候再改
         private int _gridSize = 5;
         private int _gridXSize = 9;
         private int _gridZSize = 9;
+
         private int _tetroCnter = 0;
         private int _challengeLevel = 0;
         private int _gameLevel = -1;
-        
-        public int layerScore = 8000;
-        public int challengeLayerScore = 16000;
-        
-        void OnEnable() { // <<<<<<<<<<<<<<<<<<<< 怎么会有这个方法呢,没有必要的呀
-            Debug.Log(TAG + ": OnEnable()");
 
-            _gameMode = 0;
-            _loadSavedGame = false;
-            _isChallengeMode = false;
-            _saveGamePathFolderName = "";
-            _gridSize = 5; //-1
-            _tetroCnter = 0;
-        }
+        public BindableProperty<bool> gameStarted = new BindableProperty<bool>();
+        public int layerScore = 9170;
+        public int challengeLayerScore = 16700;
+        
+        // void OnEnable() { // <<<<<<<<<<<<<<<<<<<< 怎么会有这个方法呢,没有必要的呀
+        //     Debug.Log(TAG + ": OnEnable()");
+        //     _gameMode = 0;
+        //     _loadSavedGame = false;
+        //     _isChallengeMode = false;
+        //     _saveGamePathFolderName = "";
+        //     _gridSize = 5; //-1
+        //     _tetroCnter = 0;
+        // }
 
         public bool loadSavedGame {
             get {

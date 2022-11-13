@@ -32,49 +32,60 @@ namespace HotFix.Control {
         private static int randomTetromino;
 
         public static void cleanUpGameBroad() { // 基本能够把面板清理干净
+            // dealing with currentActiveTetromino & ghostTetromino firrst
+            if (ViewManager.nextTetromino != null && ViewManager.nextTetromino.CompareTag("currentActiveTetromino")) { // hang in the air
+                Debug.Log(TAG + " (ViewManager.ghostTetromino != null): " + (ViewManager.ghostTetromino != null));  // always true
+                if (ViewManager.ghostTetromino != null) 
+                    PoolHelper.recycleGhostTetromino();
+                PoolHelper.recycleNextTetromino();
+            }
             for (int x = 0; x < gridXWidth; x++) 
                 for (int y = 0; y < gridHeight; y++) 
                     for (int z = 0; z < gridZWidth; z++) {
                         if (grid[x][y][z] != null) {
 // 关卡中的InitCubes是不能消除的                            
                             if (GloData.Instance.isChallengeMode
-                                && Model.grid[x][y][z].parent != null && Model.grid[x][y][z].parent.gameObject != null
-                                && Model.grid[x][y][z].parent.gameObject.CompareTag("InitCubes"))
+                                && grid[x][y][z].parent != null && grid[x][y][z].parent.gameObject != null
+                                && grid[x][y][z].parent.gameObject.CompareTag("InitCubes"))
                                 continue;
 // 以 方块砖 为单位回收到资源池里去                            
                             Transform tmpRefParent = null;
-                            if (Model.grid[x][y][z].parent != null && Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().childCnt == Model.grid[x][y][z].parent.childCount) {
-                                tmpRefParent = Model.grid[x][y][z].parent;
-                                foreach (Transform mino in Model.grid[x][y][z].parent) {
+                            if (grid[x][y][z].parent != null && grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().childCnt == grid[x][y][z].parent.childCount) {
+                                tmpRefParent = grid[x][y][z].parent;
+                                foreach (Transform mino in grid[x][y][z].parent) {
                                     int i = (int)Mathf.Round(mino.position.x);
                                     int j = (int)Mathf.Round(mino.position.y);
                                     int k = (int)Mathf.Round(mino.position.z);
-                                    if (j >= 0 && j < gridHeight && i >= 0 && i < gridXWidth && k >= 0 && k < gridZWidth) {
-                                        grid[i][j][k] = null;
-                                        gridOcc[i][j][k] = 0;
-                                        if (GloData.Instance.isChallengeMode) gridClr[i][j][k] = -1;
-                                    }
+                                    if (j >= 0 && j < gridHeight && i >= 0 && i < gridXWidth && k >= 0 && k < gridZWidth) 
+                                        if (grid[i][j][k] != null) {
+                                            grid[i][j][k] = null;
+                                            gridOcc[i][j][k] = 0;
+                                            if (GloData.Instance.isChallengeMode) gridClr[i][j][k] = -1;
+                                        }
                                 }
                                 PoolHelper.ReturnToPool(tmpRefParent.gameObject, tmpRefParent.gameObject.GetComponent<TetrominoType>().type);
-                            } else if (Model.grid[x][y][z].parent == null) { // 单独一个立方体的回收
-                                PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
-                                if (y >= 0 && y < gridHeight && x >= 0 && x < gridXWidth && z >= 0 && z < gridZWidth) {
-                                    grid[x][y][z] = null;
-                                    gridOcc[x][y][z] = 0;
-                                    if (GloData.Instance.isChallengeMode) gridClr[x][y][z] = -1;
-                                }
+                            } else if (grid[x][y][z].parent == null) { // 单独一个立方体的回收
+                                if (grid[x][y][z].parent.gameObject != null)
+                                    PoolHelper.ReturnToPool(grid[x][y][z].gameObject, grid[x][y][z].gameObject.GetComponent<MinoType>().type);
+                                grid[x][y][z] = null;
+                                gridOcc[x][y][z] = 0;
+                                if (GloData.Instance.isChallengeMode) gridClr[x][y][z] = -1;
                             } else {
-                                tmpRefParent = Model.grid[x][y][z].parent;
-                                foreach (Transform mino in Model.grid[x][y][z].parent) {
+                                tmpRefParent = grid[x][y][z].parent;
+                                foreach (Transform mino in grid[x][y][z].parent) {
                                     int i = (int)Mathf.Round(mino.position.x);
                                     int j = (int)Mathf.Round(mino.position.y);
                                     int k = (int)Mathf.Round(mino.position.z);
-                                    PoolHelper.ReturnToPool(Model.grid[x][y][z].gameObject, Model.grid[x][y][z].gameObject.GetComponent<MinoType>().type);
-                                    if (j >= 0 && j < gridHeight && i >= 0 && i < gridXWidth && k >= 0 && k < gridZWidth) {
-                                        grid[i][j][k] = null;
-                                        gridOcc[i][j][k] = 0;
-                                        if (GloData.Instance.isChallengeMode) gridClr[i][j][k] = -1;
-                                    }
+                                    if (j >= 0 && j < gridHeight && i >= 0 && i < gridXWidth && k >= 0 && k < gridZWidth) 
+                                        if (grid[i][j][k] != null) {
+                                            if (grid[i][j][k].gameObject != null)
+                                                PoolHelper.ReturnToPool(grid[x][y][z].gameObject, grid[x][y][z].gameObject.GetComponent<MinoType>().type);
+                                            if (j >= 0 && j < gridHeight && i >= 0 && i < gridXWidth && k >= 0 && k < gridZWidth) {
+                                                grid[i][j][k] = null;
+                                                gridOcc[i][j][k] = 0;
+                                                if (GloData.Instance.isChallengeMode) gridClr[i][j][k] = -1;
+                                            }
+                                        }
                                 }
                             }
                             tmpRefParent = null;

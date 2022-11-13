@@ -19,7 +19,8 @@ namespace HotFix.UI {
         public bool isPaused { set; get; }
         public bool saveForUndo { set; get; }
         public bool hasSavedGameAlready { set; get; }
-        public bool gameStarted { set; get; }
+        public bool gameStarted; // { set; get; }
+
         public float fallSpeed { set; get; }
 
         public int gridHeight = 12; 
@@ -117,9 +118,9 @@ namespace HotFix.UI {
 
             Debug.Log(TAG + " ModelMono.hasDeletedMinos: " + ModelMono.hasDeletedMinos);
             if (ModelMono.hasDeletedMinos) {
-                Debug.Log(TAG + ": onUndoGame() current board BEFORE respawn"); 
-                MathUtilP.printBoard(Model.gridOcc); 
-
+                // Debug.Log(TAG + ": onUndoGame() current board BEFORE respawn"); 
+                // MathUtilP.printBoard(Model.gridOcc); 
+                Model.cleanUpGameBroad();
 // 这部分的逻辑独立到一个文件中去了,免得当前文件过大不好管理                 
                 Debug.Log(TAG + " gameData.parentList.Count: " + gameData.parentList.Count);
                 LoadingSystemHelper.LoadDataFromParentList(gameData.parentList);

@@ -51,6 +51,7 @@ namespace HotFix.Control {
             // EventManager.Instance.RegisterListener<TetrominoSpawnedEventInfo>(onActiveTetrominoSpawn); 
             EventManager.Instance.RegisterListener<TetrominoValidMMInfo>(onActiveTetrominoMoveRotate);
             EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 
+            EventManager.Instance.RegisterListener<GameStopEventInfo>(onGameLeave);
         }
 
         void OnClickXPosButton() {
@@ -95,6 +96,13 @@ namespace HotFix.Control {
                 ViewManager.moveCanvas.SetActive(true); 
         }
 
+        void onGameLeave(GameStopEventInfo info) {
+            ViewManager.moveCanvas.transform.position = new Vector3(2.0f, 11.0f, 2f);
+            ViewManager.rotateCanvas.transform.position = new Vector3(2.0f, 11.0f, 2f);
+            ViewManager.moveCanvas.SetActive(false);
+            ViewManager.rotateCanvas.SetActive(false);
+        }
+        
 // BUG TODO: 最开始几次好像切换得没问题; 再多切换几次就忙不过来了?!!!没响应
 // 总是停要平移画布上切不过去了,并且只能切换两次,需要DEBUG一下        
 // 因为它这个缓慢的调用响应速度,必须得把方块砖下降的速度调得很慢,并需要在响应回来之前把按钮失活? 几个细节需要实现        
@@ -115,6 +123,7 @@ namespace HotFix.Control {
             // EventManager.Instance.UnregisterListener<TetrominoSpawnedEventInfo>(onActiveTetrominoSpawn); 
             EventManager.Instance.UnregisterListener<TetrominoValidMMInfo>(onActiveTetrominoMoveRotate);
             EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 
+            EventManager.Instance.UnregisterListener<GameStopEventInfo>(onGameLeave);
         }
 	}
 }

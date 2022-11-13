@@ -36,6 +36,8 @@ namespace HotFix.Control {
         private GameEnterEventInfo enterInfo;
         private GamePauseEventInfo pauseInfo;
         private GameResumeEventInfo resumeInfo;
+        private GameStopEventInfo stopInfo;
+
         private CanvasToggledEventInfo canvasInfo;
         private CubesMaterialEventInfo cubeMatInfo;
         
@@ -56,6 +58,8 @@ namespace HotFix.Control {
             enterInfo = new GameEnterEventInfo();
             pauseInfo = new GamePauseEventInfo();
             resumeInfo = new GameResumeEventInfo();
+            stopInfo = new GameStopEventInfo();
+
             cubeMatInfo = new CubesMaterialEventInfo();
             
             validInfo = new TetrominoValidMMInfo();
@@ -114,6 +118,9 @@ namespace HotFix.Control {
                 return;
             case "resumegame":
                 FireEvent(resumeInfo);
+                return;
+            case "stopgame":
+                FireEvent(stopInfo);
                 return;
             case "undo":
                 FireEvent(undoInfo);

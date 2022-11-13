@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace HotFix.Control {
 
-// Consider it: WELL DONE, 删除源码中所有其它部分的调用    
     public class AudioManager : SingletonMono<AudioManager> { 
        public const string TAG = "AudioManager";
 
@@ -18,7 +17,6 @@ namespace HotFix.Control {
         private AudioClip exploseSound; // TODO
 
         public void Awake() {
-            // Debug.Log(TAG + " Awake()");
             gameObject.AddComponent<AudioSource>();
             audioSource = gameObject.GetComponent<AudioSource>();
             gameLoop = ResourceHelper.LoadAudioClip("ui/view/gameview", "gameloop", EAssetBundleUnloadLevel.Never);
@@ -31,7 +29,6 @@ namespace HotFix.Control {
         }
 
         public void Start () {
-            Debug.Log(TAG + ": Start()"); 
             EventManager.Instance.RegisterListener<GameEnterEventInfo>(onEnterGame); 
             EventManager.Instance.RegisterListener<GamePauseEventInfo>(onPauseGame);
             EventManager.Instance.RegisterListener<GameResumeEventInfo>(onResumeGame);
@@ -40,6 +37,11 @@ namespace HotFix.Control {
             // EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onTetrominoRotate);
             EventManager.Instance.RegisterListener<TetrominoValidMMInfo>(onTetrominoMoveRotate);
             EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onTetrominoLand);
+            EventManager.Instance.RegisterListener<GameStopEventInfo>(onGameLeave);
+        }
+
+        void onGameLeave(GameStopEventInfo info) {
+            audioSource.Pause();
         }
 
         void onEnterGame(GameEnterEventInfo info) {
@@ -85,13 +87,12 @@ namespace HotFix.Control {
             audioSource.PlayOneShot(gameLoop);
         }
 
-// 它是不是容易失忆呢?        
         public void Play() {
             Debug.Log(TAG + " Play");
             //audioSource.PlayOneShot(currentClip); // 这就是从来开始播放,而不是继续播放
             // audioSource.UnPause();
         }
-        
+
         public void Pause() { 
             audioSource.Pause();
         }
@@ -129,54 +130,8 @@ namespace HotFix.Control {
             // EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onTetrominoRotate);
             EventManager.Instance.UnregisterListener<TetrominoValidMMInfo>(onTetrominoMoveRotate);
             EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onTetrominoLand);
+            EventManager.Instance.UnregisterListener<GameStopEventInfo>(onGameLeave);
             // }
         }        
-
-// // 好像这两个方法不是很有用
-//         public void setCurrentClip(string name) {
-//             switch (name) {
-//             case "move":
-//                 currentClip = moveSound;
-//                 break;
-//             case "rotate":
-//                 currentClip = rotateSound;
-//                 break;
-//             case "land":
-//                 currentClip = landSound;
-//                 break;
-//             case "explose":
-//                 currentClip = exploseSound;
-//                 break;
-//             case "clearline":
-//                 currentClip = clearLineSound;
-//                 break;
-//             default:
-//                 currentClip = gameLoop;
-//                 break;
-//             }
-//         }
-//         public void PlayAudio(string name) {
-//             switch (name) {
-//             case "move":
-//                 currentClip = moveSound;
-//                 break;
-//             case "rotate":
-//                 currentClip = rotateSound;
-//                 break;
-//             case "land":
-//                 currentClip = landSound;
-//                 break;
-//             case "explose":
-//                 currentClip = exploseSound;
-//                 break;
-//             case "clearline":
-//                 currentClip = clearLineSound;
-//                 break;
-//             default:
-//                 currentClip = gameLoop;
-//                 break;
-//             }
-//             audioSource.PlayOneShot(currentClip);
-//         }
     }
 }

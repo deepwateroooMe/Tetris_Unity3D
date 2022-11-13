@@ -48,10 +48,10 @@ namespace HotFix.Control {
 
                     if (GloData.Instance.isChallengeMode) {
                         DeleteMinoAt(y);
-                        ScoreManager.currentScore += GloData.Instance.challengeLayerScore; // 分数再优化一下
+                        ViewManager.GameView.ViewModel.currentScore.Value += GloData.Instance.challengeLayerScore; // 分数再优化一下
                         yield return null;
                     } else {
-                        ScoreManager.currentScore += GloData.Instance.layerScore; // 分数再优化一下
+                        ViewManager.GameView.ViewModel.currentScore.Value += GloData.Instance.layerScore; // 分数再优化一下
                         if (!isDeleteMNinoAtCoroutineRunning) 
                             deleteMinoAtCoroutine = CoroutineHelperP.StartCoroutine(DeleteMinoAtCoroutine(y)); // commented for tmp
                         yield return deleteMinoAtCoroutine;                        
