@@ -179,7 +179,16 @@ namespace HotFix.Control {
                 }
             return true;
         }
-
+        public static void printBoard(int [][] f) {
+            StringBuilder s = new StringBuilder("");
+            for (int i = 0; i < Model.gridXWidth; i++) {
+                s.Length = 0;
+                s.Append("X" + i + ":    ");
+                for (int j = 0; j < Model.gridZWidth; j++) 
+                    s.Append(f[i][j] + "  ");
+                Debug.Log(TAG + " s.ToString(): " + s.ToString());
+            }
+        }
         public static void printBoard(int[] color) {
             int n = color.Length;
             Debug.Log(TAG + " n: " + n);

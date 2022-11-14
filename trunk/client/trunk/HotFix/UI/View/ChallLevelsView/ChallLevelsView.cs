@@ -42,7 +42,7 @@ namespace HotFix.UI {
 
         protected override void OnInitialize() {
             base.OnInitialize();
-            GloData.Instance.boardSize.OnValueChanged += ViewManager.GameView.onBoardSizeChanged;
+            // GloData.Instance.boardSize.OnValueChanged += ViewManager.GameView.onBoardSizeChanged;
                 
             basicPanel = GameObject.FindChildByName("basicPanel");
             rightBtn = GameObject.FindChildByName("right").GetComponent<Button>();

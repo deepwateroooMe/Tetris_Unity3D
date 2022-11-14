@@ -431,7 +431,9 @@ namespace HotFix.UI {
             GameData gameData = SaveSystem.LoadGame(GloData.Instance.getFilePath());
             ViewModel.onUndoGame(gameData);
 
-            if (gameData.prevPreview != null) { // 生成早了,会被视图模型又回收走了?
+            if (gameData.prevPreview != null) { // 因为重做一次,仍需要重置现两种类型
+                ViewModel.comTetroType.Value = gameData.prevPreview;
+                ViewModel.eduTetroType.Value = gameData.prevPreview2;
                 type.Length = 0;
                 string type2 = gameData.prevPreview2;
                 if (gameData.isChallengeMode) 
@@ -776,6 +778,8 @@ namespace HotFix.UI {
 //             GloData.Instance.gameStarted.OnValueChanged += onGameStarted;
 
             GloData.Instance.boardSize.OnValueChanged += onBoardSizeChanged;
+            GloData.Instance.boardSize.Value = new Vector3(Model.gridXWidth, Model.gridWidth, Model.gridZWidth); // 为了触发第一次的回调而写的
+            // GloData.Instance.boardSize.OnValueChanged += ViewManager.GameView.onBoardSizeChanged;
             
             Start(); // 开始游戏 
             revealed = true;

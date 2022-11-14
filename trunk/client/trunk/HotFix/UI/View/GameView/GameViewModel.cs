@@ -44,7 +44,7 @@ namespace HotFix.UI {
         public BindableProperty<string> nextTetrominoType = new BindableProperty<string>(); // 这个好像是用来给别人观察的,保存系统 ?
 // GameView: nextTetromino position, rotation, localScale
         public BindableProperty<Transform> nextTetroTrans = new BindableProperty<Transform>();
-        public BindableProperty<Vector3> nextTetroPos = new BindableProperty<Vector3>();
+        public BindableProperty<Vector3> nextTetroPos = new BindableProperty<Vector3>(); 
         public BindableProperty<Quaternion> nextTetroRot = new BindableProperty<Quaternion>();
         public BindableProperty<Vector3> nextTetroSca = new BindableProperty<Vector3>();
 // 相机的旋转(因为目前是放在主工程下的,所以其实根本没有必要?)
@@ -164,17 +164,21 @@ namespace HotFix.UI {
         // onActiveTetrominoLand: slam down, move down, except undoButton
         // disableAllButtons();
         // enable: undoButton
+
         void onGameLevelChanged(int pre, int cur) {
             Debug.Log(TAG + " onGameLevelChanged");
             GloData.Instance.gameLevel = cur;
         }        
         void Initialization() {
+            Debug.Log(TAG + " Initialization()");
             this.ParentViewModel = (MenuViewModel)ViewManager.MenuView.BindingContext; // 父视图模型: 菜单视图模型
             gridSize = GloData.Instance.gridSize;
             gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
+            
             currentLevel.OnValueChanged += onGameLevelChanged;
             // currentLevel.Value = 1; // 这样会覆盖掉先前视图里所设置的关卡层级(这里不能覆盖,爱表哥,爱生活!!!)
-                
+            currentLevel.Value = GloData.Instance.gameLevel;
+            
             fallSpeed = 3.0f;
             // saveForUndo = true;
             gameStarted = false;
@@ -209,6 +213,7 @@ namespace HotFix.UI {
         }
 
         public void modelArraysReset() {
+            Debug.Log(TAG + " modelArraysReset");
             // 其实说到底,这些东西原本还是应该放在ViewModel里的,只是独立出去能够这现在这个文件弄小一点儿方便操作查找            
             if (GloData.Instance.isChallengeMode) {
                 Model.gridWidth = GloData.Instance.gridSize;
@@ -224,10 +229,13 @@ namespace HotFix.UI {
                 Model.grid = new Transform[Model.gridXWidth][][];
                 Model.gridOcc = new int[Model.gridXWidth][][];
                 Model.gridClr = new int[Model.gridXWidth][][];
+                Model.vis = new int[Model.gridXWidth][];
+
                 for (int i = 0; i < Model.gridXWidth; i++) {
                     Model.grid[i] = new Transform[Model.gridHeight][];
                     Model.gridOcc[i] = new int [Model.gridHeight][];
                     Model.gridClr[i] = new int [Model.gridHeight][];
+                    Model.vis[i] = new int[Model.gridZWidth];
                     for (int j = 0; j < Model.gridHeight; j++) {
                         Model.grid[i][j] = new Transform[Model.gridZWidth];
                         Model.gridOcc[i][j] = new int [Model.gridZWidth];
@@ -239,6 +247,8 @@ namespace HotFix.UI {
                 MathUtilP.printBoard(Model.gridOcc);
                 Debug.Log(TAG + ": gridClr()");
                 MathUtilP.printBoard(Model.gridClr);
+                Debug.Log(TAG + ": vis()");
+                MathUtilP.printBoard(Model.vis);
 
                 // MathUtilP.resetColorBoard();
                 

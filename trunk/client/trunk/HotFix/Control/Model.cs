@@ -20,6 +20,7 @@ namespace HotFix.Control {
         public static Transform [][][] grid; 
         public static int [][][] gridOcc;
         public static int [][][] gridClr; // color grid
+        public static int [][] vis;
         
         public static int [] baseCubes;
         public static int [] prevSkin;
@@ -121,7 +122,7 @@ namespace HotFix.Control {
                 for (int z = 0; z < gridZWidth; z++) 
                     for (int x = 0; x < gridXWidth; x++)
                         if (grid[x][y][z] != null && grid[x][y][z].parent == go.transform) {
-                            MathUtilP.print(x, y, z);
+                            //MathUtilP.print(x, y, z);
                             grid[x][y][z] = null; 
                             gridOcc[x][y][z]= 0;
                             if (GloData.Instance.isChallengeMode)

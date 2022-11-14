@@ -62,6 +62,7 @@ namespace HotFix.Control {
                     }
                 }
                 if (visDeleteJ != -1) { // 如果这次遍历里最低是在visDeleteJ 层有消除,那么从这层再开始下移和遍历
+// TODO:　这里的逻辑不合情理: 启蒙模式下,即便规则 许可 同行 同列 同对角线 如果满了,可是消除它们.但是消除后,对于他们上面的3 4 5 个小立方体,并不是每个都可以下落,仍受小立方体父控件的规则约束,未必一定下落                    
                     MoveAllRowsDown(visDeleteJ + 1);
                     y = visDeleteJ - 1;
                 } else break; // 可以直接这里退出吗,还有残余的 2吗?
@@ -110,7 +111,9 @@ namespace HotFix.Control {
                     }
                 }
                 if (visDeleteJ != -1) { // 如果这次遍历里最低是在visDeleteJ 层有消除,那么从这层再开始下移和遍历
-                    MoveAllRowsDown(visDeleteJ + 1);
+// 根据现在的游戏逻辑定义,当一个方块砖遭受过外力摧毁时,容易变形,变得子立方体可受重力下落,那么不能跳过 当前层, 以及                    
+                    // MoveAllRowsDown(visDeleteJ + 1);
+                    MoveAllRowsDown(visDeleteJ == 0 ? visDeleteJ+1 : Math.Max(visDeleteJ-2, 1));
                     y = visDeleteJ - 1;
                 } else break; // 可以直接这里退出吗,还有残余的 2吗?
             }
@@ -283,6 +286,7 @@ namespace HotFix.Control {
         
 // 这里修个BUg: 说当一个方块砖因为内部其它立方体的原因被悬空挂在什么地方;当当前立方体被悬空的其它立方体消除后,当前立方体需要能够自由落体下降; 这块逻辑需要补上
         public static void MoveRowDown(int y) {
+            Debug.Log(TAG + " MoveRowDown() y: " + y);
             // Debug.Log(TAG + ": MoveRowDown()");
             int cnt = 0;
 // CLASSIC MODE 和挑战模式下整片消除的            
@@ -302,41 +306,59 @@ namespace HotFix.Control {
                     }
                 }
             } else { // GloData.Instance.gameMode == 0: 启蒙模式，挑战模式，或是带有undo功能的模式下
-// LOGIC MODULE INSERT              
-// 当当前立方体仅且只剩自已(BUG: 只要有消除就需要检查是否可以继续下落,哪怕只消除了一个立方体,还剩 七 个小立方体,先前想到的逻辑不完整),检查是否可以下落
+// LOGIC MODULE INSERT:
+                // 每个 方块砖 有个固定的形状,现逻辑定义为 当且仅当方块砖遭受外外力摧毁,至少消除过一个子立方体之后,其内部结构有可能变形,某个子立方体下落一格;
+                // 昨天晚上开始意识到这个问题.目前的定义为符合三维游戏的定义,只是感觉对于小盆友来说,难度太大了点儿,考虑是否回退原实现?暂时保留如些
+// 当当前立方体仅且只剩自已(BUG: 只要有消除[或是不曾消除,但是下面一格有消除]就需要检查是否可以继续下落,哪怕只消除了一个立方体,还剩 七 个小立方体),检查是否可以下落
 // 是否,在前面有过消除的前提下,前再检查一遍,还是说之后消除呢?
+                // resetVis();
                 for (int x = 0; x < Model.gridXWidth; x++) {
                     for (int z = 0; z < Model.gridZWidth; z++) {
-                        if (Model.gridOcc[x][y-1][z] == 2) { // 如果下面一层是需要消除或是曾经消除过的空格,将当前非空立方体下移
+                        // if (Model.gridOcc[x][y-1][z] == 2) { // 如果下面一层是需要消除或是曾经消除过的空格,[并非一定能够]将当前非空立方体下移,当前立方体下降与否受其父控件约束
+                        if (Model.gridOcc[x][y-1][z] == 2 && Model.gridOcc[x][y][z] == 0) { // 如果下面一层是需要消除或是曾经消除过的空格,[并非一定能够]将当前非空立方体下移,当前立方体下降与否受其父控件约束
                             Model.gridOcc[x][y-1][z] = Model.gridOcc[x][y][z];
-                            if (Model.grid[x][y][z] != null) 
-                                moveMinoDownOneGridHelper(x,  y, z);
-                            Model.gridOcc[x][y][z] = y == Model.gridHeight - 1 ? 0 : 2;
-                        }
-                        else if (Model.gridOcc[x][y-1][z] == 0 && Model.gridOcc[x][y][z] == 1 // 下一格为 空,上层当前格为 非空,检查是否可以掉落
-                                 && Model.grid[x][y][z] != null && canFallDeeper(Model.grid[x][y][z].parent)) {
+                            // if (Model.grid[x][y][z] != null) 
+                            //     moveMinoDownOneGridHelper(x,  y, z);
+                            // Model.gridOcc[x][y][z] = y == Model.gridHeight - 1 ? 0 : 2;
+                            Model.gridOcc[x][y][z] = 0;
+                            // Model.vis[x][z] = 1;
+                        } else
+                            // if (Model.gridOcc[x][y-1][z] == 0 && Model.gridOcc[x][y][z] == 1 // 下一格为 空,上层当前格为 非空,检查是否可以掉落
+// 如果以这种逻辑,那么每移动过的/ 下除过的当前格,都仍需要标记以示消除或是移动过,给上层立方体看的                        
+                        if ((Model.gridOcc[x][y-1][z] == 0 || Model.gridOcc[x][y-1][z] == 2) // 下面一格为空或是消除过
+                            && Model.gridOcc[x][y][z] == 1 && Model.grid[x][y][z] != null    // 下一格为 空,上层当前格为 非空,检查是否可以掉落 Model.gridOcc[x][y-1][z] == 8 ?
+                            // && canFallDeeper(Model.grid[x][y][z].parent)) { // 不能以整个父控件为单位,要以各个子立方体为单位.因为父控件不能下移时,其内小立方体仍是可以下移的
+                            ) {
+                            MathUtilP.print(x, y, z);
+                            if (canFallDeeper(Model.grid[x][y][z], x, y, z)) {
 
-                            Debug.Log(TAG + " Model.grid[x][y][z].parent.gameObject.name: " + Model.grid[x][y][z].parent.gameObject.name);
-                            Debug.Log(TAG + " (Model.grid[x][y][z].parent == null): " + (Model.grid[x][y][z].parent == null));
+                                Debug.Log(TAG + " Model.grid[x][y][z].parent.gameObject.name: " + Model.grid[x][y][z].parent.gameObject.name);
+                                Debug.Log(TAG + " (Model.grid[x][y][z].parent == null): " + (Model.grid[x][y][z].parent == null));
 
-                            if (Model.grid[x][y][z].parent == null) { // 独个立方体,只将当前格下移
-                                MathUtilP.print("(Model.grid[x][y][z].parent == null)", x, y, z);
-                                moveMinoDownOneGridHelper(x,  y, z);
-                            } else if (Model.grid[x][y][z].parent != null) { // 当将格的父控件可以继续下降一格:
-// TODO: BUG: 这里出过报空的BUG                                
-                                // 这里应该可以换个方法(以父控件整体来)写,但是暂时如此吧, 感觉下面这个:把父控件里的每个立方体住下移动一格,既低效又bug百出
-                                foreach (Transform mino in Model.grid[x][y][z].parent) {
-                                    if (mino.CompareTag("mino")) {
-                                        Vector3 pos = MathUtilP.Round(mino.position);
-                                        int i = (int)Math.Round(mino.position.x);
-                                        int j = (int)Math.Round(mino.position.y);
-                                        int k = (int)Math.Round(mino.position.z);
-                                        MathUtilP.print("(Model.grid[x][y][z].parent != null)", i, j, k);
-                                        moveMinoDownOneGridHelper(i, j, k);
-                                    }
+                                // if (Model.grid[x][y][z].parent == null) { // 独个立方体,只将当前格下移
+                                // 如果父方块砖遭受过外力摧毁,可以无形滩软降落,否则受父方块砖约束,要检查(逻辑这么设定,可以好玩吗?)
+                                if (Model.grid[x][y][z].parent == null || Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().childCnt != Model.grid[x][y][z].parent.childCount) { // 独个立方体,只将当前格下移
+                                    // MathUtilP.print("(Model.grid[x][y][z].parent == null)", x, y, z);
+                                    moveMinoDownOneGridHelper(x,  y, z);
+                                    // Model.vis[x][z] = 1;
+                                } else if (Model.grid[x][y][z].parent != null) { // 当将格的父控件可以继续下降一格:
+// 这里应该可以换个方法(以父控件整体来)写,但是暂时如此吧, 感觉下面这个:把父控件里的每个立方体住下移动一格,既低效又bug百出
+                                    // foreach (Transform mino in Model.grid[x][y][z].parent) {
+                                    //     if (mino.CompareTag("mino")) {
+                                    //         int i = (int)Math.Round(mino.position.x);
+                                    //         int j = (int)Math.Round(mino.position.y);
+                                    //         int k = (int)Math.Round(mino.position.z);
+                                    //         // if (j >= y && j < Model.gridHeight && i >= 0 && i < Model.gridXWidth && k >= 0 && k < Model.gridZWidth && Model.vis[i][k] == 0) { // 这里还要检查 I J K 越界吗?
+                                    //             if (j >= y && j < Model.gridHeight && i >= 0 && i < Model.gridXWidth && k >= 0 && k < Model.gridZWidth) { // 这里还要检查 I J K 越界吗?
+                                    //             moveMinoDownOneGridHelper(i, j, k);
+                                    //             // Model.vis[i][k] = 1;
+                                    //         }
+                                    //     }
+                                    // }
+// 这里应该可以换个方法(以父控件整体来)写,但是暂时如此吧, 感觉下面这个:把父控件里的每个立方体住下移动一格,既低效又bug百出
+                                    Model.grid[x][y][z].parent.position += new Vector3(0, -1, 0);
+                                    Model.UpdateGrid(Model.grid[x][y][z].parent.gameObject);
                                 }
-                                // Model.grid[x][y][z].parent.position += new Vector3(0, -1, 0);
-                                // Model.UpdateGrid(Model.grid[x][y][z].parent.gameObject);
                             }
                         }
                     }   
@@ -345,7 +367,7 @@ namespace HotFix.Control {
             if (y == 1 && BaseBoardSkin.isSkinChanged)  // debug
                 EventManager.Instance.FireEvent("cubesMat");
         }
-        
+// 标记下降过的当前格为 2        
         private static void moveMinoDownOneGridHelper(int x, int y, int z) {
             Model.grid[x][y-1][z] = Model.grid[x][y][z];
             Model.grid[x][y][z] = null;
@@ -358,33 +380,72 @@ namespace HotFix.Control {
                 }
             }
             Model.grid[x][y][z] = null;
+            Model.gridOcc[x][y][z] = 0;
+            // Model.gridOcc[x][y][z] = (y == Model.gridHeight-1 ? 0 : 2); // 不能标记为2:,会无限循环
         }
 
         // 补充逻辑: 添加检查有过消除后的方块砖是否可以继续下降一格? 仿Tetromino MoveDown()的方法来写        
-        private static bool canFallDeeper(Transform p) { // can current parent Transform fall down 1 more layer ?
-            if (p == null) return true;
-            foreach (Transform mino in p) {
-                if (mino.CompareTag("mino")) {
-                    Vector3 pos = MathUtilP.Round(mino.position);
-                    pos += new Vector3(0, -1, 0);
-                    if (!Model.CheckIsInsideGrid(pos)) return false;  // 落到格外不行
-                    if (Model.GetTransformAtGridPosition(pos) != null // 0 || 2 当前格是可以降落的
-                        && Model.GetTransformAtGridPosition(pos).parent != p) {
-                        return false;
+        private static bool canFallDeeper(Transform p, int i, int j, int k) { // can current parent Transform fall down 1 more layer ?
+            if (p.parent == null) return true; // 如果它是独子,下一格为空,就降一格
+            Vector3 pos = new Vector3(i, j-1, k);
+            if (!Model.CheckIsInsideGrid(pos)) return false;  // 落到格外不行
+            if (Model.GetTransformAtGridPosition(pos) != null // 0 || 2 当前格是可以降落的
+                && Model.GetTransformAtGridPosition(pos).parent != p.parent) {
+                return false;
+            }
+            // 如果父方块砖遭受过外力摧毁,可以无形滩软降落,否则受父方块砖约束,要检查
+            if (p.parent.gameObject != null && p.parent.gameObject.GetComponent<TetrominoType>().childCnt == p.parent.childCount) {
+                foreach (Transform mino in p.parent) {
+                    if (mino.CompareTag("mino")) {
+                        Vector3 pp = MathUtilP.Round(mino.position) + new Vector3(0, -1, 0);
+                        if (!Model.CheckIsInsideGrid(pp)) return false;  // 落到格外不行
+                        if (Model.GetTransformAtGridPosition(pp) != null // 0 || 2 当前格是可以降落的
+                            && Model.GetTransformAtGridPosition(pp).parent != p) {
+                            return false;
+                        }
                     }
                 }
             }
-            Debug.Log(TAG + " canFallDeeper() : TRUE");
             return true;
         }
-        
+        // // 补充逻辑: 添加检查有过消除后的方块砖是否可以继续下降一格? 仿Tetromino MoveDown()的方法来写        
+        // private static bool canFallDeeper(Transform p) { // can current parent Transform fall down 1 more layer ?
+        //     if (p == null) return true;
+        //     foreach (Transform mino in p) {
+        //         if (mino.CompareTag("mino")) {
+        //             Vector3 pos = MathUtilP.Round(mino.position);
+        //             pos += new Vector3(0, -1, 0);
+        //             if (!Model.CheckIsInsideGrid(pos)) return false;  // 落到格外不行
+        //             if (Model.GetTransformAtGridPosition(pos) != null // 0 || 2 当前格是可以降落的
+        //                 && Model.GetTransformAtGridPosition(pos).parent != p) {
+        //                 return false;
+        //             }
+        //         }
+        //     }
+        //     Debug.Log(TAG + " canFallDeeper() : TRUE");
+        //     return true;
+        // }
+        // static void resetVis() {
+        //     Debug.Log(TAG + " (Model.vis == null): " + (Model.vis == null));
+        //     for (int i = 0; i < Model.gridXWidth; i++) {
+        //         Debug.Log(TAG + " Model.vis[i] == null: " + Model.vis[i] == null);
+        //         Array.Clear(Model.vis[i], 0, Model.gridZWidth);
+        //         // for (int j = 0; j < Model.gridZWidth; j++) 
+        //         //     vis[i][j] = false;
+        //     }
+        // }
         public void OnEnable() {
             // Debug.Log(TAG + ": OnEnable()"); 
             // Debug.Log(TAG + " gameObject.name: " + gameObject.name);
             Start();
         }
         public void Start() {
-            // Debug.Log(TAG + " Start()");
+            Debug.Log(TAG + " Start()");
+// // 初始化遍历标记数组: 不需要,
+//             vis = new bool[Model.gridXWidth][];
+//             for (int i = 0; i < Model.gridXWidth; i++) 
+//                 vis[i] = new bool[Model.gridZWidth];
+                
             // EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
             // EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
             // EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 

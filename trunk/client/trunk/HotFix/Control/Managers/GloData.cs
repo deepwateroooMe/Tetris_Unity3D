@@ -83,7 +83,7 @@ namespace HotFix.Control {
             }
             set {
                 _gridSize = value;
-				onSizeChanged(-1, _gridSize, -1);
+				// onSizeChanged(-1, _gridSize, -1);
             }
         }
         public int gridXSize {
@@ -92,7 +92,7 @@ namespace HotFix.Control {
             }
             set {
                 _gridXSize = value;
-				onSizeChanged(_gridXSize, -1, -1);
+				// onSizeChanged(_gridXSize, -1, -1);
             }
         }
         public int gridZSize {
@@ -101,7 +101,7 @@ namespace HotFix.Control {
             }
             set {
                 _gridZSize = value;
-				onSizeChanged(-1, -1, _gridZSize);
+				// onSizeChanged(-1, -1, _gridZSize);
             }
         }
         private void onSizeChanged(int x, int y, int z) {
@@ -110,7 +110,7 @@ namespace HotFix.Control {
 // 它的初始值要如何设置呢?            什么时候设置比较好?
             Vector3 cur = boardSize.Value;
             Vector3 delta = new Vector3((x == -1 ? cur.x : x), (y == -1 ? cur.y : y), (z == -1 ? cur.z : z));
-            MathUtilP.print("onSizeChanged()", delta);
+            // MathUtilP.print("onSizeChanged()", delta);
             boardSize.Value = delta;
         }
         public int challengeLevel {
