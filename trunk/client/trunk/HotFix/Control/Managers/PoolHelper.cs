@@ -140,11 +140,14 @@ namespace HotFix.Control {
             GameObject objInstance = null;
             if (st.Count > 0) {
                 objInstance = st.Pop();
-                while (objInstance == null && st.Count > 0) {
+                while (objInstance == null && st.Count > 0) 
                     objInstance = st.Pop();
-                }
             }
-            objInstance.SetActive(true);
+            if (objInstance == null) {
+                objInstance = GameObject.Instantiate(minosDic[type]);
+                InstantiateNewTetrominoPrepare(objInstance);
+            } else 
+                objInstance.SetActive(true);
             if (objInstance == null) {                
                 objInstance = GameObject.Instantiate(minosDic[type]);
                 InstantiateNewTetrominoPrepare(objInstance);

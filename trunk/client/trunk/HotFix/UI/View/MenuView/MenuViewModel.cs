@@ -31,6 +31,7 @@ namespace HotFix.UI {
             }
             set {
                 _isChallengeMode = value;
+                GloData.Instance.isChallengeMode = true;
             }
         }
         public int gameMode {

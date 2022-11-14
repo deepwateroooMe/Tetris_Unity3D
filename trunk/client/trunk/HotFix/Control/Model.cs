@@ -52,7 +52,7 @@ namespace HotFix.Control {
                             Transform tmpRefParent = null;
 
                             if (grid[x][y][z].parent != null && (grid[x][y][z].parent.gameObject == null || Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>() == null))
-                                MathUtilP.print("(grid[x][y][z].parent != null && ( null || null)", x, y, z);
+                                MathUtilP.print("(grid[x][y][z].parent != null && ( null || null)", x, y, z); 
 
                             // Debug.Log(TAG + " (grid[x][y][z].parent != null && grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().childCnt == grid[x][y][z].parent.childCount): " + (grid[x][y][z].parent != null && grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().childCnt == grid[x][y][z].parent.childCount));
                             Debug.Log(TAG + " (grid[x][y][z].parent == null): " + (grid[x][y][z].parent == null));
@@ -77,7 +77,6 @@ namespace HotFix.Control {
                                 if (grid[x][y][z].gameObject != null) {
                                     MathUtilP.print(x, y, z);
                                     PoolHelper.ReturnToPool(grid[x][y][z].gameObject, grid[x][y][z].gameObject.GetComponent<MinoType>().type);
-                                    //grid[x][y][z].gameObject = null;
                                 }
                                 grid[x][y][z] = null;
                                 gridOcc[x][y][z] = 0;
@@ -90,19 +89,27 @@ namespace HotFix.Control {
                                     int k = (int)Mathf.Round(mino.position.z);
                                     if (j >= 0 && j < gridHeight && i >= 0 && i < gridXWidth && k >= 0 && k < gridZWidth) 
                                         if (grid[i][j][k] != null) {
-                                            MathUtilP.print(x, y, z);
-                                            if (grid[i][j][k].gameObject != null) {
-                                                PoolHelper.ReturnToPool(grid[x][y][z].gameObject, grid[x][y][z].gameObject.GetComponent<MinoType>().type);
-                                                //grid[i][j][k].gameObject = null;
-                                            }
+                                            MathUtilP.print(i, j, k);
+                                            Model.grid[i][j][k].parent = null;
+                                            if (grid[i][j][k].gameObject != null) 
+                                                PoolHelper.ReturnToPool(grid[i][j][k].gameObject, grid[i][j][k].gameObject.GetComponent<MinoType>().type);
                                             grid[i][j][k] = null;
                                             gridOcc[i][j][k] = 0;
                                             if (GloData.Instance.isChallengeMode) gridClr[i][j][k] = -1;
                                         }
                                 }
                             }
-                            GameObject.Destroy(tmpRefParent.gameObject);
-                            tmpRefParent = null; // 这么并没有消除无子立方体的空父件
+                            if (tmpRefParent != null) { // 加这个送判断是因为上面有一种情况不不会重置,仍为空,所以需要作非空检测
+                                GameObject.Destroy(tmpRefParent.gameObject);
+                                tmpRefParent = null; // 这么并没有消除无子立方体的空父件
+                            }
+// // 这里因为运行时不确定因素的微小转动,可能会漏掉某个或是某几个没清干净,所以再确定一下:
+//                             if (Model.grid[x][y][z] != null && (Model.grid[x][y][z].parent == null || !Model.grid[x][y][z].parent.gameObject.CompareTag("InitCubes"))) {
+//                                 MathUtilP.print("(Model.grid[x][y][z] != null)", x, y, z);
+//                                 if (Model.grid[x][y][z].gameObject != null)
+//                                     GameObject.Destroy(Model.grid[x][y][z].gameObject);
+//                                 Model.grid[x][y][z] = null;
+//                             }
                         }
                     }
             Debug.Log(TAG + " AFTER cleanUpGameBroad() Model.gridOcc[x][y][z]");

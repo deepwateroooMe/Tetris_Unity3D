@@ -215,8 +215,9 @@ namespace HotFix.Control {
 
         static void markLayerIn(int y) {
             for (int i = 0; i < Model.gridXWidth; i++) 
-                for (int j = 0; j < Model.gridZWidth; j++) 
-                    Model.gridOcc[i][y][j] = 2;
+                for (int j = 0; j < Model.gridZWidth; j++)
+                    if (Model.gridOcc[i][y][j] == 1) // Model.grid[i][y][j] = 8 InitCubes 保留不变
+						Model.gridOcc[i][y][j] = 2;
         }
 
 // gameMode == 1 经典模式:
@@ -314,7 +315,10 @@ namespace HotFix.Control {
                         }
                         else if (Model.gridOcc[x][y-1][z] == 0 && Model.gridOcc[x][y][z] == 1 // 下一格为 空,上层当前格为 非空,检查是否可以掉落
                                  && Model.grid[x][y][z] != null && canFallDeeper(Model.grid[x][y][z].parent)) {
+
+                            Debug.Log(TAG + " Model.grid[x][y][z].parent.gameObject.name: " + Model.grid[x][y][z].parent.gameObject.name);
                             Debug.Log(TAG + " (Model.grid[x][y][z].parent == null): " + (Model.grid[x][y][z].parent == null));
+
                             if (Model.grid[x][y][z].parent == null) { // 独个立方体,只将当前格下移
                                 MathUtilP.print("(Model.grid[x][y][z].parent == null)", x, y, z);
                                 moveMinoDownOneGridHelper(x,  y, z);
@@ -327,6 +331,7 @@ namespace HotFix.Control {
                                         int i = (int)Math.Round(mino.position.x);
                                         int j = (int)Math.Round(mino.position.y);
                                         int k = (int)Math.Round(mino.position.z);
+                                        MathUtilP.print("(Model.grid[x][y][z].parent != null)", i, j, k);
                                         moveMinoDownOneGridHelper(i, j, k);
                                     }
                                 }
@@ -354,17 +359,14 @@ namespace HotFix.Control {
             }
             Model.grid[x][y][z] = null;
         }
-        
-// 补充逻辑: 添加检查有过消除后的方块砖是否可以继续下降一格? 仿Tetromino MoveDown()的方法来写        
+
+        // 补充逻辑: 添加检查有过消除后的方块砖是否可以继续下降一格? 仿Tetromino MoveDown()的方法来写        
         private static bool canFallDeeper(Transform p) { // can current parent Transform fall down 1 more layer ?
             if (p == null) return true;
-            p.position += new Vector3 (0, -1, 0);
             foreach (Transform mino in p) {
                 if (mino.CompareTag("mino")) {
                     Vector3 pos = MathUtilP.Round(mino.position);
-                    int x = (int)Math.Round(mino.position.x);
-                    int y = (int)Math.Round(mino.position.y);
-                    int z = (int)Math.Round(mino.position.z);
+                    pos += new Vector3(0, -1, 0);
                     if (!Model.CheckIsInsideGrid(pos)) return false;  // 落到格外不行
                     if (Model.GetTransformAtGridPosition(pos) != null // 0 || 2 当前格是可以降落的
                         && Model.GetTransformAtGridPosition(pos).parent != p) {
@@ -372,7 +374,7 @@ namespace HotFix.Control {
                     }
                 }
             }
-            p.position -= new Vector3 (0, -1, 0);
+            Debug.Log(TAG + " canFallDeeper() : TRUE");
             return true;
         }
         

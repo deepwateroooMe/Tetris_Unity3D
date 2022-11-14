@@ -173,7 +173,7 @@ namespace HotFix.UI {
             gridSize = GloData.Instance.gridSize;
             gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
             currentLevel.OnValueChanged += onGameLevelChanged;
-            currentLevel.Value = 1;
+            // currentLevel.Value = 1; // 这样会覆盖掉先前视图里所设置的关卡层级(这里不能覆盖,爱表哥,爱生活!!!)
                 
             fallSpeed = 3.0f;
             // saveForUndo = true;
@@ -199,7 +199,17 @@ namespace HotFix.UI {
             isChallengeMode = GloData.Instance.isChallengeMode;
             // Debug.Log(TAG + " isChallengeMode: " + isChallengeMode);
 
-// 其实说到底,这些东西原本还是应该放在ViewModel里的,只是独立出去能够这现在这个文件弄小一点儿方便操作查找            
+            modelArraysReset();
+            if (isChallengeMode)
+                ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel)).initateBaseCubesColors();
+            
+            buttonInteractableList = new int [7];
+            for (int i = 0; i < 7; i++)
+                buttonInteractableList[i] = 1;
+        }
+
+        public void modelArraysReset() {
+            // 其实说到底,这些东西原本还是应该放在ViewModel里的,只是独立出去能够这现在这个文件弄小一点儿方便操作查找            
             if (GloData.Instance.isChallengeMode) {
                 Model.gridWidth = GloData.Instance.gridSize;
                 Model.gridXWidth = GloData.Instance.gridXSize;
@@ -231,8 +241,10 @@ namespace HotFix.UI {
                 MathUtilP.printBoard(Model.gridClr);
 
                 // MathUtilP.resetColorBoard();
-                ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel)).initateBaseCubesColors();
-                //loadInitCubesforChallengeMode(); // 某些挑战层级,是有些相对固定的立方体方块砖存在的,对他们进行加载和数据管理
+                
+                BaseBoardSkin baseSkin = ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel));
+                if (baseSkin != null)
+                    baseSkin.initateBaseCubesColors();
             } else {
                 Model.gridWidth = GloData.Instance.gridSize;
                 Model.gridXWidth = GloData.Instance.gridSize;
@@ -253,12 +265,8 @@ namespace HotFix.UI {
                 }
                 // MathUtilP.resetColorBoard();  // cmt for tmp
             } 
-            
-            buttonInteractableList = new int [7];
-            for (int i = 0; i < 7; i++)
-                buttonInteractableList[i] = 1;
         }
-
+        
         public void Start() {
             Debug.Log(TAG + " Start()");
             // if (!string.IsNullOrEmpty(((MenuViewModel)ParentViewModel).saveGamePathFolderName)) {

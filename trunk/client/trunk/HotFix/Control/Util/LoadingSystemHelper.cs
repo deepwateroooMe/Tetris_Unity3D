@@ -127,8 +127,7 @@ namespace HotFix.Control {
             return false;
         }
 
-// 像根据保存的文件来加载新游戏一样,从头加载每个方块砖和立方体
-// TODO:没有考虑挑战模式下的着色        
+// 像根据保存的文件来加载新游戏一样,从头加载每个方块砖和立方体. 因为涉及以文件的读写,可能相对比较慢,但功能设计和实现都是相对比较完整和满意的
         public static void LoadDataFromParentList(List<TetrominoData> parentList) {
             int [] pos = new int[3];
             int x = 0, y = 0, z = 0, childCounter = 0; // 要填充后面的数据
@@ -174,6 +173,7 @@ namespace HotFix.Control {
             Debug.Log(TAG + ": Model.gridOcc[,,] after each deleted mino re-spawn"); 
             MathUtilP.printBoard(Model.gridOcc); 
         }
+        
 //         // 加载系统: 这个系统是说,现有过消除的游戏大立方体不变,只查露捡缺地多则删除,少则补足(这里面会有很多问题是说,有些保存的数据,可能找不到原件; 有些大立方体游戏中的无件,可能不曾清除,造成很多列余问题
 // // 所以相对干净简洁的做法,实际上,仍回归到从数据加载游戏本身,既首先清空游戏面板,再由保存过的数据来从头一一加载每个方块砖或是立方体,则不会再有上面的那些问题        
 //         public static void LoadDataFromParentList(List<TetrominoData> parentList) {

@@ -46,7 +46,7 @@ namespace HotFix.UI {
                         viewRect.anchorMin = Vector2.zero;
                         viewRect.anchorMax = Vector2.one; 
                         viewRect.pivot = new Vector2(0.5f, 0.5f);
-
+                        
                         ShowStartPanel(); 
                     }, EAssetBundleUnloadLevel.Never);
             ResourceHelper
@@ -120,7 +120,7 @@ namespace HotFix.UI {
                             }
                         }
                         parent.SetActive(false);
-// // 手动创建和添加一个TetrominoX: 再换到需要用的方法里去写
+// // 手动创建和添加一个TetrominoX: 再换到需要用的方法里去写: 
 //                         GameObject tetrox = new GameObject();
 //                         tetrox.AddComponent<TetrominoType>();
 //                         tetrox.GetComponent<TetrominoType>().type = "TetrominoX";

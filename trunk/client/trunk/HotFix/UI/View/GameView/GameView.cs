@@ -558,8 +558,9 @@ namespace HotFix.UI {
                 ViewModel.isPaused = false;
                 Time.timeScale = 1.0f;
                 ViewManager.MenuView.Reveal(); // 现在的简单逻辑
-                // Hide(); // TOGO, BUG: 这里还没能真正切换到主游戏菜单去
-                ViewManager.GameView.Hide();
+                if (GloData.Instance.isChallengeMode)
+                    ViewManager.basePlane.SetActive(false);
+                Hide(); // TOGO, BUG: 这里还没能真正切换到主游戏菜单去(这里先前没能切掉过去一定是其它的原因所造成的)
             }
         }
         public void onYesToSaveGame() {
@@ -571,7 +572,8 @@ namespace HotFix.UI {
             Model.cleanUpGameBroad();
             ViewModel.isPaused = false;
             Time.timeScale = 1.0f;
-// TODO: 检查一下这里还需要做哪些清理工作?
+            if (GloData.Instance.isChallengeMode)
+                ViewManager.basePlane.SetActive(false);
             ViewManager.MenuView.Reveal();
             Hide();
         }
@@ -601,6 +603,8 @@ namespace HotFix.UI {
                     Debug.LogException(ex);
                 }
             }
+            if (GloData.Instance.isChallengeMode)
+                ViewManager.basePlane.SetActive(false);
             ViewManager.MenuView.Reveal();
             Hide();
         }
@@ -770,9 +774,17 @@ namespace HotFix.UI {
                 ViewManager.MenuView.ViewModel.mgameMode.Value = ViewModel.gameMode.Value;
 // // TODO: 为了触发第一次的回调,稍微绕了一下,需要更为优雅的设置方法
 //             GloData.Instance.gameStarted.OnValueChanged += onGameStarted;
+
+            GloData.Instance.boardSize.OnValueChanged += onBoardSizeChanged;
             
             Start(); // 开始游戏 
             revealed = true;
+        }
+// 这里暂时就只当是搭了个桥,帮助调用一下,暂时不改里面的逻辑        
+        public void onBoardSizeChanged(Vector3 pre, Vector3 cur) {
+            Debug.Log(TAG + " onBoardSizeChanged()");
+            MathUtilP.print(cur);
+            ViewModel.modelArraysReset();
         }
         void onTetroCnterChanged(int pre, int cur) {
             tetroCnter.text = cur.ToString();

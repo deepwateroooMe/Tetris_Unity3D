@@ -22,10 +22,15 @@ namespace HotFix.Control {
         private int _gridZSize = 9;
 
         private int _tetroCnter = 0;
-        private int _challengeLevel = 0;
         private int _gameLevel = -1;
 
+        private int _challengeLevel = 0;
+
+// 暂时还没有想好上面的怎么调控
         public BindableProperty<bool> gameStarted = new BindableProperty<bool>();
+
+        public BindableProperty<Vector3> boardSize = new BindableProperty<Vector3>();
+        
         public int layerScore = 9170;
         public int challengeLayerScore = 16700;
 
@@ -43,6 +48,7 @@ namespace HotFix.Control {
             }
             set {
                 _isChallengeMode = value;
+                onChallengeMode();
             }
         }
         public int gameMode {
@@ -70,12 +76,14 @@ namespace HotFix.Control {
                 _saveGamePathFolderName = value;
             }
         }
+// 因为想要兼容绝大部分的源程序,这些暂时还都不改        
         public int gridSize {
             get {
                 return _gridSize;
             }
             set {
                 _gridSize = value;
+				onSizeChanged(-1, _gridSize, -1);
             }
         }
         public int gridXSize {
@@ -84,6 +92,7 @@ namespace HotFix.Control {
             }
             set {
                 _gridXSize = value;
+				onSizeChanged(_gridXSize, -1, -1);
             }
         }
         public int gridZSize {
@@ -92,15 +101,17 @@ namespace HotFix.Control {
             }
             set {
                 _gridZSize = value;
+				onSizeChanged(-1, -1, _gridZSize);
             }
         }
-        public int tetroCnter {
-            get {
-                return _tetroCnter;
-            }
-            set {
-                _tetroCnter = value;
-            }
+        private void onSizeChanged(int x, int y, int z) {
+            if (boardSize.Value == null)
+                boardSize.Value = Vector3.zero;
+// 它的初始值要如何设置呢?            什么时候设置比较好?
+            Vector3 cur = boardSize.Value;
+            Vector3 delta = new Vector3((x == -1 ? cur.x : x), (y == -1 ? cur.y : y), (z == -1 ? cur.z : z));
+            MathUtilP.print("onSizeChanged()", delta);
+            boardSize.Value = delta;
         }
         public int challengeLevel {
             get {
@@ -110,19 +121,31 @@ namespace HotFix.Control {
                 _challengeLevel = value;
             }
         }
-        
+
+        public int tetroCnter {
+            get {
+                return _tetroCnter;
+            }
+            set {
+                _tetroCnter = value;
+            }
+        }
+
+        private void onChallengeMode() {
+            _saveGamePathFolderName = "challenge/level";
+        }
+
         private void onGameModeSelected(int gameMode) {
             _gameMode = gameMode;
             switch (gameMode) {
             case 0:
-                _saveGamePathFolderName = "educational/grid";
+                if (isChallengeMode)
+                    _saveGamePathFolderName = "challenge/level";
+                else                    
+                    _saveGamePathFolderName = "educational/grid";
                 break;
             case 1: // 因为经典模式下也是有层级的
                 _saveGamePathFolderName = "classic/level";
-                break;
-            case 2:
-                isChallengeMode = true;
-                _saveGamePathFolderName = "challenge/level";
                 break;
             }
         }

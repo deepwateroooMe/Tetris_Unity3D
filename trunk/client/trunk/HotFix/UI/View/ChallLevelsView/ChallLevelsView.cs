@@ -26,7 +26,6 @@ namespace HotFix.UI {
         Button eitBtn;
         Button ninBtn;
         Button tenBtn;
-
         GameObject advancedPanel;
         Button leftBtn;
         Button eleBtn;
@@ -39,12 +38,12 @@ namespace HotFix.UI {
         Button attBtn;
         Button nitBtn;
         Button twtBtn;
-
         GameObject [] levels;
 
         protected override void OnInitialize() {
             base.OnInitialize();
-
+            GloData.Instance.boardSize.OnValueChanged += ViewManager.GameView.onBoardSizeChanged;
+                
             basicPanel = GameObject.FindChildByName("basicPanel");
             rightBtn = GameObject.FindChildByName("right").GetComponent<Button>();
 			rightBtn.onClick.AddListener(OnClickRightButton);
@@ -236,6 +235,8 @@ namespace HotFix.UI {
             }
             levels[level].SetActive(true);
             hideAllOtherLevelPanel(level);
+            if (!ViewManager.basePlane.activeSelf)
+                ViewManager.basePlane.SetActive(true);
             ViewManager.GameView.Reveal();
 
             Hide(); // 没有隐藏起来是因为材质没有准备好,其它地为的空异常

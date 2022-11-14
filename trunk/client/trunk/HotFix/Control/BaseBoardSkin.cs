@@ -17,22 +17,24 @@ namespace HotFix.Control {
         public GameObject [] cubes;
         public static bool isSkinChanged = false;
         public static int [] color;
-        
+
         private int idx = 0;
- 
+        private bool baseCubesInitialized = false;
+        
         public void onCubesMaterialsChanged(CubesMaterialEventInfo info) {
-            Debug.Log(TAG + ": updateSkin()");
             int n = Model.gridXWidth * Model.gridZWidth;
             for (int i = 0; i < n; i++) {
+                if (Model.baseCubes[i] < 0 || Model.baseCubes[i] > 11)
+                    Debug.Log(TAG + " Model.baseCubes[i]: " + Model.baseCubes[i]);
                 if (cubes[i].activeSelf) {
                     if (cubes[i].GetComponent<MinoType>().color != Model.baseCubes[i]) {
                         cubes[i].GetComponent<MinoType>().color = Model.baseCubes[i];
-                        cubes[i].gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[Model.baseCubes[i]];
+                        cubes[i].gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.colors[Model.baseCubes[i]];
                     }
                 }
             }
-            // Debug.Log(TAG + ": baseCubes colors after updateSkin"); 
-            // MathUtilP.printBoard(Model.baseCubes);
+            Debug.Log(TAG + " onCubesMaterialsChanged(): baseCubes colors AFTER updateSkin"); 
+            MathUtilP.printBoard(Model.baseCubes);
         }
 
         void onActiveTetrominoLand(TetrominoChallLandInfo info) { 
@@ -45,7 +47,8 @@ namespace HotFix.Control {
                     Vector3 pos = MathUtilP.Round(mino.position);
                     if (pos.y == 0) {
                         idx = getMinoPosCubeArrIndex(pos.x, pos.z);
-                        
+                        Debug.Log(TAG + " onActiveTetrominoLand() idx: " + idx);
+
                         Model.prevIdx[i] = idx;
                         Model.prevSkin[i] = getChallengedMaterialIdx(cubes[idx].gameObject.GetComponent<Renderer>().sharedMaterial);
 // 将地板板砖的材质更换为当前所接触立方体的材质 
@@ -99,6 +102,8 @@ namespace HotFix.Control {
         }
 
         public void initateBaseCubesColors() {
+            if (baseCubesInitialized) return ;
+            
             // 当添加这个脚本的时候,还无法知道游戏关卡层级,所以必须换个地方起始初始化
             int n = Model.gridXWidth * Model.gridZWidth, idx = 0;
             Debug.Log(TAG + " initateBaseCubesColors() n: " + n);
@@ -107,9 +112,11 @@ namespace HotFix.Control {
             for (int z = 0; z < Model.gridZWidth; z++) 
                 for (int x = 0; x < Model.gridXWidth; x++) {
                     name.Length = 0;
+                    Debug.Log(TAG + " GloData.Instance.gameLevel: " + GloData.Instance.gameLevel);
                     if (GloData.Instance.gameLevel < 3 || GloData.Instance.gameLevel == 11) // so far 1, 2, 11 three levels named this way
                         name.Append("Cube" + x + z);
                     else name.Append("Cube" + x + "0 (" + z + ")");
+                    Debug.Log(TAG + " name.ToString(): " + name.ToString());
                     idx = z * Model.gridXWidth + x;
                     cubes[idx] = gameObject.FindChildByName(name.ToString());
                     cubes[idx].gameObject.transform.rotation = Quaternion.identity;
@@ -127,6 +134,7 @@ namespace HotFix.Control {
                     }
                 }
             }
+            baseCubesInitialized = true;
             Debug.Log(TAG + " initateBaseCubesColors() Model.baseCubes colors");
             MathUtilP.print(Model.baseCubes);
             
@@ -147,6 +155,7 @@ namespace HotFix.Control {
             EventManager.Instance.RegisterListener<UndoGameEventInfo>(onUndoGame); 
             EventManager.Instance.RegisterListener<TetrominoChallLandInfo>(onActiveTetrominoLand);
             EventManager.Instance.RegisterListener<CubesMaterialEventInfo>(onCubesMaterialsChanged);
+            baseCubesInitialized = false;
         }
         public void OnDisable() {
             // Debug.Log(TAG + " gameObject.name: " + gameObject.name);
