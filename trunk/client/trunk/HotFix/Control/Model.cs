@@ -32,7 +32,7 @@ namespace HotFix.Control {
         private static int randomTetromino;
 
         public static void cleanUpGameBroad() { // 基本能够把面板清理干净
-            // dealing with currentActiveTetromino & ghostTetromino firrst
+// dealing with currentActiveTetromino & ghostTetromino firrst
             if (ViewManager.nextTetromino != null && ViewManager.nextTetromino.CompareTag("currentActiveTetromino")) { // hang in the air
                 Debug.Log(TAG + " (ViewManager.ghostTetromino != null): " + (ViewManager.ghostTetromino != null));  // always true
                 if (ViewManager.ghostTetromino != null) 
@@ -50,11 +50,6 @@ namespace HotFix.Control {
                                 continue;
 // 以 方块砖 为单位回收到资源池里去                            
                             Transform tmpRefParent = null;
-// // 这里写的是什么意思呢? 非空检测?
-//                             if (grid[x][y][z].parent != null && (grid[x][y][z].parent.gameObject == null || Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>() == null))
-//                                 MathUtilP.print("(grid[x][y][z].parent != null && ( null || null)", x, y, z); 
-                            Debug.Log(TAG + " (grid[x][y][z].parent == null): " + (grid[x][y][z].parent == null));
-
                             if (grid[x][y][z].parent != null && grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().childCnt == grid[x][y][z].parent.childCount) {
                                 tmpRefParent = grid[x][y][z].parent;
                                 foreach (Transform mino in grid[x][y][z].parent) {
@@ -71,14 +66,6 @@ namespace HotFix.Control {
                                     }
                                 }
                                 PoolHelper.ReturnToPool(tmpRefParent.gameObject, tmpRefParent.gameObject.GetComponent<TetrominoType>().type);
-                            // } else if (grid[x][y][z].parent == null) { // 单独一个立方体的回收: 这个分支可能走不进来: 所有立方体都有父控件
-                            //     if (grid[x][y][z].gameObject != null) {
-                            //         // MathUtilP.print(x, y, z);
-                            //         PoolHelper.ReturnToPool(grid[x][y][z].gameObject, grid[x][y][z].gameObject.GetComponent<MinoType>().type);
-                            //     }
-                            //     grid[x][y][z] = null;
-                            //     gridOcc[x][y][z] = 0;
-                            //     if (GloData.Instance.isChallengeMode) gridClr[x][y][z] = -1;
                             } else { // 方块砖的 子立方体 不全,有过消除
                                 tmpRefParent = grid[x][y][z].parent; 
                                 foreach (Transform mino in grid[x][y][z].parent) {
@@ -101,6 +88,7 @@ namespace HotFix.Control {
                                 GameObject.Destroy(tmpRefParent.gameObject);
                                 tmpRefParent = null; // 这么并没有消除无子立方体的空父件
                             }
+// 问题是:为什么我在这里遍历不到,而在再下面的再一次遍历中,可以把它们校正过来?                            
                         } else if (grid[x][y][z] == null && gridOcc[x][y][z] == 1) {
                             Debug.Log(TAG + " ERROR: (Model.grid[x][y][z] == null && Model.gridOcc[x][y][z] == 1) Please check backwards");
                             MathUtilP.print(x, y, z);
@@ -109,6 +97,7 @@ namespace HotFix.Control {
                     }
             Debug.Log(TAG + " AFTER cleanUpGameBroad() Model.gridOcc[x][y][z]");
             MathUtilP.printBoard(gridOcc);
+// 问题是:为什么我在这里遍历不到,而在再下面的再一次遍历中,可以把它们校正过来?                            
             for (int i = 0; i < Model.gridXWidth; i++)
                 for (int j = 0; j < Model.gridHeight; j++) 
                     for (int k = 0; k < Model.gridZWidth; k++) 
@@ -174,6 +163,7 @@ namespace HotFix.Control {
         public static bool IsFullFiveInLayerAt(int y) { 
             int tmpSum = 0;
             bool isFullFiveInLayer = false;
+            numberOfRowsThisTurn = 0;
             for (int x = 0; x < gridXWidth; x++) {
                 tmpSum = 0;
                 for (int z = 0; z < gridZWidth; z++) {

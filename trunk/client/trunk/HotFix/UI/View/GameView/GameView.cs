@@ -114,6 +114,9 @@ namespace HotFix.UI {
                 linText.gameObject.SetActive(false);
                 linTextDes.SetActive(false); // LINE 
                 initializeChallengingMode();
+            } else {
+                lvlText.text = GloData.Instance.gameLevel.ToString();
+                linText.text = ViewModel.numLinesCleared.Value.ToString();
             }
         }
 
@@ -193,54 +196,23 @@ namespace HotFix.UI {
         }
         public GameObject [] cubes; // baseCubesGO;
 
-        public void Start() { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
+        public void Start(GameEnterEventInfo info) { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
             Debug.Log(TAG + ": Start()");
 
             if (ViewModel.isChallengeMode) {
                 CoroutineHelperP.StartCoroutine(displayChallengeGoal());
                 loadInitCubesforChallengeMode();
             } else initCubes = new GameObject();
-// // checking
-//             if (!string.IsNullOrEmpty(GloData.Instance.saveGamePathFolderName)) {
 
-//                 // if (!GloData.Instance.isChallengeMode)
-//                 gameMode = GloData.Instance.gameMode;
-//                 // else
-//                 //     gameMode = 1;
-//                 loadSavedGame = GloData.Instance.loadSavedGame;
-//                 type.Length = 0;
-
-//                 if (GloData.Instance.loadSavedGame) {
-//                     // LoadGame(type.ToString());
-//                 } else {
-//                     LoadNewGame();
-//                 }
-//             } else {
+            if (GloData.Instance.loadSavedGame) { // loadSavedGame
+                LoadGame(GloData.Instance.getFilePath());
+            } else {
                 LoadNewGame();
-            // }
-            
-// TODO: 这里有个加载原保存过的游戏的过程            
-            // if (!string.IsNullOrEmpty(((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName)) {
-            //     gameMode = ((MenuViewModel)ViewModel.ParentViewModel).gameMode;
-            //     loadSavedGame = ((MenuViewModel)ViewModel.ParentViewModel).loadSavedGame;
-            //     StringBuilder path = new StringBuilder("");
-            //     if (gameMode > 0)
-            //         path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName + "/game.save");
-            //     else 
-            //         path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ViewModel.ParentViewModel).saveGamePathFolderName + "/grid" + gridWidth + "/game.save");
-            //     if (loadSavedGame) {
-            //         LoadGame(path.ToString());
-            //     } else {
-// // cmt for tmp
-//             LoadNewGame(); // <<<<<<<<<<<<<<<<<<<< 
-            //     }
-            // } else {
-            //     LoadNewGame();
-            // }
-            // currentLevel = startingLevel;
-            // startingHighScore = PlayerPrefs.GetInt("highscore");
+            }
+            // startingHighScore = PlayerPrefs.GetInt("highscore"); // 这几个我都彻底忘记它们是什么了.....
             // startingHighScore2 = PlayerPrefs.GetInt("highscore2");
             // startingHighScore3 = PlayerPrefs.GetInt("highscore3");
+            gameStarted = true;
         }
 // PauseGame, ResumeGame        
         void OnClickResButton() { // RESUME GAME: 隐藏当前游戏过程中的视图,就可以了 // public void OnClickResButton();
@@ -547,7 +519,8 @@ namespace HotFix.UI {
         // }
         void OnClickManButton() { // back to MAIN menu
 // TODO: reminder FOR USER if game is NOT saved            
-            pausePanel.SetActive(false); 
+            pausePanel.SetActive(false);
+            EventManager.Instance.FireEvent("stopgame"); // move rotateCanvas disable
             if (!ViewModel.hasSavedGameAlready && gameStarted) { // gameStarted
                 saveGameOrNotPanel.SetActive(true);
             } else {
@@ -561,20 +534,27 @@ namespace HotFix.UI {
             }
         }
         public void onYesToSaveGame() {
+            Debug.Log(TAG + " onYesToSaveGame()");
             ViewModel.saveForUndo = false; // ? 这里是什么意思呢
             ViewModel.onGameSave(initCubes.transform);
             ViewModel.hasSavedGameAlready = true;
             saveGameOrNotPanel.SetActive(false);
             pausePanel.SetActive(false);
+
             Model.cleanUpGameBroad();
+            ViewModel.gameDataResetToDefault();
+            
             ViewModel.isPaused = false;
             Time.timeScale = 1.0f;
             if (GloData.Instance.isChallengeMode)
                 ViewManager.basePlane.SetActive(false);
+
+            ViewModel.hasSavedGameAlready = true;
             ViewManager.MenuView.Reveal();
             Hide();
         }
         public void onNoToNotSaveGame() { // 因为每块方块砖落地时的自动保存,这里用户不需要保存时,要清除保存过的文件
+            Debug.Log(TAG + " onNoToNotSaveGame()");
             ViewModel.hasSavedGameAlready = false;
             saveGameOrNotPanel.SetActive(false);
             pausePanel.SetActive(false);
@@ -586,6 +566,7 @@ namespace HotFix.UI {
             if (ViewModel.gameMode.Value == 0) 
                 PoolHelper.ReturnToPool(previewTetromino2, previewTetromino2.GetComponent<TetrominoType>().type);
             Model.cleanUpGameBroad();
+            ViewModel.gameDataResetToDefault();
             
             ViewModel.isPaused = false;
             Time.timeScale = 1.0f;
@@ -673,6 +654,8 @@ namespace HotFix.UI {
             gameOverPanel.SetActive(true);
         }
         void Update() {
+            Debug.Log(TAG + " Update");
+
             ViewModel.UpdateScore();
             UpdateUI(); // TODO COMMENT掉
             ViewModel.UpdateLevel();
@@ -686,6 +669,12 @@ namespace HotFix.UI {
             swapCnter.text = ViewModel.swapCnter.Value.ToString();
         }
 
+// 爱表哥,爱生活!!!
+// 游戏过程中,用户因为转动相机南而看见原本不该看见的放大数倍的预览方块砖,这些画面还是要清理一下,影响用户体验        
+// TODO:  在热更新源码中动态实现对预览第一个方块砖的层次设定:　Layer = preview以避免主相机在旋转的过程中会扫到第一个方块砖
+// 不影响性能的做法是:像摆放第二个方块砖一样,把它摆放到一个相机永远无法照到的地方(这个办法最简单).这里可以尝试一下上面的做法
+// 哭死: unity主工程里面,上面想要的实现完全没有问题;可是热更新里面,它又需要适配(感觉好大的难度)!!!
+// 这里是不是就是前面模块的,要我把unity主工程所使用的相机搬进热更新程序域里去呢? 
         private void SpawnPreviewTetromino() {
             Debug.Log(TAG + ": SpawnPreviewTetromino()");
 // 这里仍旧是写成观察者模式,视图观察视图模型的数据变化
@@ -695,6 +684,7 @@ namespace HotFix.UI {
                 ViewModel.comTetroType.Value, previewTetrominoPosition,
                 Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
             previewTetromino.transform.SetParent(ViewManager.tetroParent.transform, false);
+            previewTetrominoPrepareLayers(previewTetromino);
             
             if (ViewModel.gameMode.Value == 0) { // previewTetromino2
                 // excepts: undoBtn toggleButton fallButton
@@ -709,7 +699,6 @@ namespace HotFix.UI {
                 previewTetromino2.transform.SetParent(ViewManager.tetroParent.transform, false);
             }
         }
-
         private void SpawnPreviewTetromino(string type1, string type2) {
             Debug.Log(TAG + " SpawnPreviewTetromino() type1 type2");
             Debug.Log(TAG + " type1: " + type1);
@@ -717,7 +706,7 @@ namespace HotFix.UI {
 
             previewTetromino = PoolHelper.GetFromPool(type1, previewTetrominoPosition, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
             previewTetromino.transform.SetParent(ViewManager.tetroParent.transform, false);
-            // ViewModel.comTetroType.Value = previewTetromino.GetComponent<TetrominoType>().type;
+            previewTetrominoPrepareLayers(previewTetromino);
             ViewModel.comTetroType.Value = type1;
             ViewModel.previewTetrominoColor = previewTetromino.GetComponent<TetrominoType>().color;
             if (ViewModel.gameMode.Value == 0) { // previewTetromino2
@@ -728,10 +717,10 @@ namespace HotFix.UI {
             }
             ViewModel.buttonInteractableList[3] = 1; // undoBtn
         }
-
         private void SpawnPreviewTetromino(string type1, string type2, int color1, int color2) {
             previewTetromino = PoolHelper.GetFromPool(type1, previewTetrominoPosition, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one, color1);
             previewTetromino.transform.SetParent(ViewManager.tetroParent.transform, false);
+            previewTetrominoPrepareLayers(previewTetromino);
             ViewModel.comTetroType.Value = previewTetromino.GetComponent<TetrominoType>().type;
             ViewModel.previewTetrominoColor = previewTetromino.GetComponent<TetrominoType>().color;
 
@@ -742,16 +731,26 @@ namespace HotFix.UI {
                 ViewModel.previewTetromino2Color = previewTetromino2.GetComponent<TetrominoType>().color;
             }
         }
+        void previewTetrominoPrepareLayers(GameObject p) { // set for comTetroType previewTetromino only 那么playFirstTetromino会受影响
+            p.layer = LayerMask.NameToLayer("preview");
+        }
 
+        public void Reveal(Action Start) {
+            base.Reveal(true, Start);
+        }
 // TODO: 可能更好的办法是去主工程基类中去全局控制,现先这样        
         private bool revealed = false;
 #region BindableProperties
         public void OnRevealed() { // 写在这里是因为热更新程序域里回调慢,写早了有时候拿不到返回空
             base.OnRevealed();
+            Debug.Log(TAG + " OnRevealed()");
             if (revealed) return ;
+
             ViewModel.currentScore.OnValueChanged += onCurrentScoreChanged;
             ViewModel.currentLevel.OnValueChanged += onCurrentLevelChanged;
+            ViewModel.currentLevel.Value = GameViewModel.startingLevel;
             ViewModel.numLinesCleared.OnValueChanged += onNumLinesCleared;
+            ViewModel.numLinesCleared.Value = 0;
 // CHALLENGE MODE: COUNTERS
             ViewModel.tetroCnter.OnValueChanged += onTetroCnterChanged;
             ViewModel.swapCnter.OnValueChanged += onSwapCnterChanged;
@@ -766,17 +765,17 @@ namespace HotFix.UI {
             ViewModel.cameraRot.OnValueChanged += onCameraRotChanged;
 
 // TODO: 为了触发第一次的回调,稍微绕了一下,需要更为优雅的设置方法
-            ViewManager.MenuView.ViewModel.mgameMode.OnValueChanged += onGameModeChanged; 
-            if (ViewModel.gameMode.Value != ViewManager.MenuView.ViewModel.mgameMode.Value)
-                ViewManager.MenuView.ViewModel.mgameMode.Value = ViewModel.gameMode.Value;
-// // TODO: 为了触发第一次的回调,稍微绕了一下,需要更为优雅的设置方法
-//             GloData.Instance.gameStarted.OnValueChanged += onGameStarted;
+            // ViewManager.MenuView.ViewModel.mgameMode.OnValueChanged += onGameModeChanged; 
+            // if (ViewModel.gameMode.Value != ViewManager.MenuView.ViewModel.mgameMode.Value)
+            // ViewManager.MenuView.ViewModel.mgameMode.Value = ViewModel.gameMode.Value;
+            ViewModel.gameMode.OnValueChanged += onGameModeChanged;
+            if (ViewModel.gameMode.Value != GloData.Instance.gameMode)
+                ViewModel.gameMode.Value = GloData.Instance.gameMode;
 
             GloData.Instance.boardSize.OnValueChanged += onBoardSizeChanged;
             GloData.Instance.boardSize.Value = new Vector3(Model.gridXWidth, Model.gridWidth, Model.gridZWidth); // 为了触发第一次的回调而写的
-            // GloData.Instance.boardSize.OnValueChanged += ViewManager.GameView.onBoardSizeChanged;
             
-            Start(); // 开始游戏 
+            Start(new GameEnterEventInfo()); // 开始游戏 
             revealed = true;
         }
 // 这里暂时就只当是搭了个桥,帮助调用一下,暂时不改里面的逻辑        
@@ -820,8 +819,7 @@ namespace HotFix.UI {
             lvlText.text = cur.ToString();
         }
         void onNumLinesCleared(int pre, int cur) {
-            Debug.Log(TAG + " onNumLinesCleared");
-            Debug.Log(TAG + " cur: " + cur);
+            Debug.Log(TAG + " onNumLinesCleared()" + " cur: " + cur);
             linText.text = cur.ToString();
         }
 #endregion
@@ -829,6 +827,8 @@ namespace HotFix.UI {
 #region Initialize
         protected override void OnInitialize() {
             base.OnInitialize();
+            Debug.Log(TAG + " OnInitialize()");
+
             RegisterListeners();
 
             baseBoard3 = GameObject.FindChildByName("BaseBoard3");
@@ -913,32 +913,25 @@ namespace HotFix.UI {
         }
         void RegisterListeners() {
             Debug.Log(TAG + " RegisterListeners");
-            // if (ViewModel.gameMode.Value == 0) { // 启蒙模式下特有的几个物件
-            //     EventManager.Instance.RegisterListener<UndoGameEventInfo>(onUndoGame); 
-            //     EventManager.UndoButtonClicked += onUndoGame;
-            //     EventManager.SwapButtonClicked += onSwapPreviewTetrominos;
-            // }
             EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
             EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
             EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
             EventManager.Instance.RegisterListener<UndoLastTetrominoInfo>(onUndoGame); 
-            EventManager.Instance.RegisterListener<SaveGameEventInfo>(SaveGame); 
+            EventManager.Instance.RegisterListener<SaveGameEventInfo>(SaveGame);
+            
+            EventManager.Instance.RegisterListener<GameEnterEventInfo>(Start);
         }
         public void OnDisable() {
             Debug.Log(TAG + ": OnDisable()");
-            // if (ViewModel.gameMode.Value == 0) {
-            //     EventManager.Instance.UnregisterListener<UndoGameEventInfo>(onUndoGame); 
-            //     EventManager.UndoButtonClicked -= onUndoGame;
-            //     EventManager.SwapButtonClicked -= onSwapPreviewTetrominos;
-            // }                
             EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove);
             EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
             EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
             EventManager.Instance.UnregisterListener<SaveGameEventInfo>(SaveGame); 
             EventManager.Instance.UnregisterListener<UndoLastTetrominoInfo>(onUndoGame); 
+
+            EventManager.Instance.UnregisterListener<GameEnterEventInfo>(Start);
         }
 #endregion
-
 #region otherHelpers        
         // void printViewModel.buttonInteractableList() {
         //     for (int i = 0; i < 6; i++) 
@@ -947,4 +940,3 @@ namespace HotFix.UI {
 #endregion
     }
 }
-

@@ -46,7 +46,8 @@ namespace HotFix.UI {
                         viewRect.anchorMin = Vector2.zero;
                         viewRect.anchorMax = Vector2.one; 
                         viewRect.pivot = new Vector2(0.5f, 0.5f);
-                        
+
+                        // GameView.ViewModel.gameMode.Value = -1; // 想要先初始化GameView,提早注册各种监听 ?
                         ShowStartPanel(); 
                     }, EAssetBundleUnloadLevel.Never);
             ResourceHelper

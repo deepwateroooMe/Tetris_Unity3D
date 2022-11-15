@@ -53,11 +53,11 @@ namespace HotFix.UI {
         Button newButton; // New game
         Button conButton; // Load saved game 
         Button canButton; // Cancel
-
         
         protected override void OnInitialize() {
             base.OnInitialize();
-
+            GloData.Instance.loadSavedGame = false;
+            
             menuViewPanel = GameObject.FindChildByName("MenuViewPanel");
             eduButton = GameObject.FindChildByName("eduBtn").GetComponent<Button>();
             eduButton.onClick.AddListener(OnClickEduButton);
@@ -84,28 +84,52 @@ namespace HotFix.UI {
 
 #region EDUCATIONAL CLASSIC CHALLENGE MODES
         void OnClickEduButton() { // EDUCATIONAL
-// TODO BUG: 这个还残存了些BUG没有改完            
-            ViewModel.gameMode = 0; 
-
+// TODO BUG: 这个还残存了些BUG没有改完
+            ViewModel.gameMode = 0; // 试一下延迟设置这个值
             menuViewPanel.SetActive(false);
             educaModesViewPanel.SetActive(true);
         }
         void OnClickClaButton() { // CLASSIC MODE
-            ViewModel.gameMode = 1;
             ViewModel.gridWidth = 5;
-
-            prepareEnteringNewGame();
+            ViewModel.gameMode = 1;
+            offerGameLoadChoice();
         }
         void OnClickChaButton() { // CHALLENGE MODE
-            ViewModel.gameMode = 0; // to match above previously
             ViewModel.isChallengeMode = true;
-            
+            ViewModel.gameMode = 0; // to match above previously
             ViewManager.ChallLevelsView.Reveal();
             Hide();
         }
 #endregion
 
 #region EducaModesPanel
+        void OnClickConButton() {
+            Debug.Log(TAG + " OnClickConButton()");
+            // 检查是否存有先前游戏进度数据,有则弹窗;无直接进游戏界面,这一小步暂时跳过
+            ActiveToggle();
+            offerGameLoadChoice();
+            educaModesViewPanel.SetActive(false);
+        }
+        void prepareEnteringNewGame() {
+            ViewModel.gameMode = 0;
+            EventManager.Instance.FireEvent("entergame"); // Audio
+            menuViewPanel.SetActive(true); // 需要激活,方便从其它视图回退到主菜单视图
+            newContinuePanel.SetActive(false);
+            ViewManager.GameView.Reveal(); // 放在前面是因为调用需要一点儿时间
+            Hide(); 
+        }
+        void offerGameLoadChoice() {
+            Debug.Log(TAG + " offerGameLoadChoice()");
+            if (File.Exists(GloData.Instance.getFilePath())) {
+                Debug.Log(TAG + " OnClickConButton() THERE IS a SAVED GAME");
+// TODO: BUG 这里被 因为 gameMode而引起的改变已经掩盖掉了 ?                
+                newContinuePanel.SetActive(true); 
+                Debug.Log(TAG + " newContinuePanel.activeSelf: " + newContinuePanel.activeSelf);
+            } else {
+                Debug.Log(TAG + " OnClickConButton() ELSE");
+                prepareEnteringNewGame();
+            }
+        }
         void ActiveToggle() {
             if (thrToggle.isOn) {
                 ViewModel.gridWidth = 3;
@@ -115,39 +139,19 @@ namespace HotFix.UI {
                 ViewModel.gridWidth = 5;
             }
         }
-        void OnClickConButton() {
-            // 检查是否存有先前游戏进度数据,有则弹窗;无直接进游戏界面,这一小步暂时跳过
-            ActiveToggle();
-
-            educaModesViewPanel.SetActive(false);
-            if (File.Exists(GloData.Instance.getFilePath())) {
-                Debug.Log(TAG + " OnClickConButton() THERE IS a SAVED GAME");
-// TODO: BUG 这里被 因为 gameMode而引起的改变已经掩盖掉了 ?                
-                newContinuePanel.SetActive(true); 
-            } else {
-                prepareEnteringNewGame();
-            }
-        }
-        void prepareEnteringNewGame() {
-            EventManager.Instance.FireEvent("entergame"); // Audio
-            ViewManager.GameView.Reveal(); // 放在前面是因为调用需要一点儿时间
-            menuViewPanel.SetActive(true); // 需要激活,方便从其它视图回退到主菜单视图
-            newContinuePanel.SetActive(false);
-            Hide(); 
-        }
 #endregion        
 
 #region New game or continue saved game panel
         void OnClickNewGameButton() { // Start New game
+            GloData.Instance.loadSavedGame = false;
             prepareEnteringNewGame();
         }
         void OnClickContinueButton() { // Load Saved Game
             // 设置标记
             ViewModel.loadGame.Value = true;
-
-            ViewManager.GameView.Reveal();
             newContinuePanel.SetActive(false);
             menuViewPanel.SetActive(true); // 需要激活,方便从其它视图回退到主菜单视图
+            ViewManager.GameView.Reveal();
             Hide();
         }
         void OnClickCancelButton() { // back to main menu

@@ -7,7 +7,7 @@ using UnityEngine;
 namespace HotFix.Control {
 
     public class ScoreManager : SingletonMono<ScoreManager> { // listener for value changes
-        private const string TAG = "MainScene_ScoreManager";
+        private const string TAG = "ScoreManager";
 
         private int scoreOneLine = 800;   
         private int scoreTwoLine = 2000;  
@@ -16,7 +16,6 @@ namespace HotFix.Control {
 
         public static int currentLevel;
         public static int numLinesCleared;
-        // public static float fallSpeed;
 
         bool isNumberOfRowsThisTurnUpdated = false;
 

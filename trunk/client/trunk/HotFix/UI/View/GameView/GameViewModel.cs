@@ -18,7 +18,7 @@ namespace HotFix.UI {
 
         public bool isPaused { set; get; }
         public bool saveForUndo { set; get; }
-        public bool hasSavedGameAlready { set; get; }
+        public bool hasSavedGameAlready;
         public bool gameStarted; // { set; get; }
 
         public float fallSpeed { set; get; }
@@ -99,6 +99,19 @@ namespace HotFix.UI {
         //     Debug.Log(TAG + " onSwapPreviewTetromino");
         //     --swapCnter.Value;
         // }
+        public void gameDataResetToDefault() {
+            Debug.Log(TAG + " gameDataResetToDefault()");
+            currentScore.Value = 0;
+            numLinesCleared.Value = 0;
+            gameMode.Value = -1;
+            startingLevel = 1;
+            currentLevel.Value = 1;
+            
+            tetroCnter.Value = -1;
+            undoCnter.Value = 5;
+            swapCnter.Value = 5;
+            GloData.Instance.loadSavedGame = false; // 缺省开始新游戏
+        }
         public void onUndoGame(GameData gameData) { 
             Debug.Log(TAG + ": onUndoGame()");
             isDuringUndo = true;
@@ -166,24 +179,30 @@ namespace HotFix.UI {
         // enable: undoButton
 
         void onGameLevelChanged(int pre, int cur) {
-            Debug.Log(TAG + " onGameLevelChanged");
-            GloData.Instance.gameLevel = cur;
+            Debug.Log(TAG + " onGameLevelChanged() cur: " + cur);
+            if (!isChallengeMode)
+                GloData.Instance.gameLevel = cur;
         }        
         void Initialization() {
             Debug.Log(TAG + " Initialization()");
             this.ParentViewModel = (MenuViewModel)ViewManager.MenuView.BindingContext; // 父视图模型: 菜单视图模型
+            hasSavedGameAlready = false;
+            isChallengeMode = GloData.Instance.isChallengeMode;
+
             gridSize = GloData.Instance.gridSize;
-            gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
-            
+            // gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
+            gameMode.Value = -1;
+
+            if (isChallengeMode)
+                startingLevel = GloData.Instance.challengeLevel;
             currentLevel.OnValueChanged += onGameLevelChanged;
-            // currentLevel.Value = 1; // 这样会覆盖掉先前视图里所设置的关卡层级(这里不能覆盖,爱表哥,爱生活!!!)
-            currentLevel.Value = GloData.Instance.gameLevel;
+            currentLevel.Value = startingLevel;
             
             fallSpeed = 3.0f;
             // saveForUndo = true;
             gameStarted = false;
 
-            // numLinesCleared.Value = 0;
+            numLinesCleared.Value = -1;
             prevPreview = "";
             prevPreview2 = "";
             prevPreviewColor = -1;
@@ -399,6 +418,7 @@ namespace HotFix.UI {
             PoolHelper.recyclePreviewTetrominos(previewTetromino2);
 // 配置当前方块砖的相关信息
             previewTetromino.transform.localScale -= previewTetrominoScale;
+            previewTetromino.layer = LayerMask.NameToLayer("Default"); // 需要由预览层转到游戏层
             ViewManager.nextTetromino = previewTetromino;
             ViewManager.nextTetromino.gameObject.transform.position = new Vector3(2.0f, 11.0f, 2.0f);
             ViewManager.nextTetromino.gameObject.transform.rotation = Quaternion.Euler(0, 0, 0);
@@ -426,6 +446,7 @@ namespace HotFix.UI {
             PoolHelper.recyclePreviewTetrominos(previewTetromino);
 // 配置当前方块砖的相关信息
             previewTetromino2.transform.localScale -= previewTetrominoScale;
+            previewTetromino2.layer = LayerMask.NameToLayer("Default"); // 需要由预览层转到游戏层, (假如它是回收来的第一个方块砖的 PREVIEW layer)
             Debug.Log(TAG + " (nextTetroRot.Value == null): " + (nextTetroRot.Value == null));
             ViewManager.nextTetromino = previewTetromino2;
             ViewManager.nextTetromino.gameObject.transform.position = new Vector3(2.0f, 11.0f, 2.0f);

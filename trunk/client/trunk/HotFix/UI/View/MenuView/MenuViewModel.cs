@@ -23,6 +23,7 @@ namespace HotFix.UI {
             }
             set {
                 _loadSavedGame = value;
+                GloData.Instance.loadSavedGame = true;
             }
         }
         public bool isChallengeMode {
@@ -82,40 +83,27 @@ namespace HotFix.UI {
         }
         
         void Initialization() {
-            _gameMode = 0;
+            _gameMode = -1;
             _loadSavedGame = false;
             _gridSize = -1;
             mgameMode.Value = -1;
         }
         void DelegateSubscribe() {
         }
-
         // public void onLogin() {
         //     LoadScene("Signin");
         // }
-
         public void onLogout() {
-            
         }
-
         public void getCredit() {
-            
         }
-        
         public void rateTheGame() {
-            
         }
-        
         public void toggleSounds() {
-            
         }
-        
         public void getAdsFree() {
-            
         }
-
         public void toggleSettings() {
-            
         }
     }
 }

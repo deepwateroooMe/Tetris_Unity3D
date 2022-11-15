@@ -22,7 +22,7 @@ namespace HotFix.Control {
         private int _gridZSize = 9;
 
         private int _tetroCnter = 0;
-        private int _gameLevel = -1;
+        private int _gameLevel = 1;
 
         private int _challengeLevel = 0;
 

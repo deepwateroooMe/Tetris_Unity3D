@@ -14,7 +14,7 @@ namespace HotFix.Control {
 
         public delegate void UpdateScoreDelegate();
         public static event UpdateScoreDelegate updateScoreEvent;
-
+        
         public static bool hasDeletedMinos = false; 
         public static bool isDeleteRowCoroutineRunning = false;
         public static bool isDeleteMNinoAtCoroutineRunning = false;
@@ -53,9 +53,9 @@ namespace HotFix.Control {
 
                         DeleteMinoAt(j);
                         if (GloData.Instance.gameMode > 0 || (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel < 3))
-                            ScoreManager.currentScore += GloData.Instance.layerScore;
+                            ViewManager.GameView.ViewModel.currentScore.Value += GloData.Instance.layerScore;
                         else
-                            ScoreManager.currentScore += GloData.Instance.challengeLayerScore;
+                            ViewManager.GameView.ViewModel.currentScore.Value += GloData.Instance.challengeLayerScore;
                         
                         hasDeletedMinos = true;
                         // Debug.Log(TAG + " hasDeletedMinos: " + hasDeletedMinos);
@@ -75,13 +75,13 @@ namespace HotFix.Control {
         }
         
         public System.Collections.IEnumerator DeleteRowCoroutine() {
-            Debug.Log(TAG + ": DeleteRowCoroutine()");
+            // Debug.Log(TAG + ": DeleteRowCoroutine()");
             isDeleteRowCoroutineRunning = true;
             int visDeleteJ = -1, j = 0;
 
             for (int y = 0; y < Model.gridHeight; y++) { // 仍然是从 最底层 往上层 process, 但是每层的时候都同时处理多个层,而不是永远只先处理最底层,这不合理
-                Debug.Log(TAG + " DeleteRowCoroutine() y: " + y);
-                visDeleteJ = -1;
+                // Debug.Log(TAG + " DeleteRowCoroutine() y: " + y);
+                visDeleteJ = -1;                         
                 for (j = y; j < Model.gridHeight; j++) { // 中间同时处理多层 12 层
                     if ( (!GloData.Instance.isChallengeMode && GloData.Instance.gameMode == 0 && Model.IsFullFiveInLayerAt(j))
                          || ((GloData.Instance.isChallengeMode || GloData.Instance.gameMode == 1) && Model.isFullInLayerAt(j)) ) { 
@@ -98,6 +98,7 @@ namespace HotFix.Control {
                             ViewManager.GameView.ViewModel.currentScore.Value += GloData.Instance.challengeLayerScore; // 分数再优化一下
                             yield return null;
                         } else {
+                            ViewManager.GameView.ViewModel.numLinesCleared.Value += Model.numberOfRowsThisTurn;
                             ViewManager.GameView.ViewModel.currentScore.Value += GloData.Instance.layerScore; // 分数再优化一下
                             if (!isDeleteMNinoAtCoroutineRunning) 
                                 deleteMinoAtCoroutine = CoroutineHelperP.StartCoroutine(DeleteMinoAtCoroutine(j)); // commented for tmp
@@ -135,7 +136,6 @@ namespace HotFix.Control {
             MathUtilP.printBoard(Model.gridOcc);
 
             isDeleteRowCoroutineRunning = false;
-            // yield return null;
         }
 
 // 这里是要求要被消除的小立方体被标记为 2        
@@ -245,7 +245,6 @@ namespace HotFix.Control {
                                 int k = (int)Mathf.Round(mino.position.z);
                                 Model.grid[i][j][k] = null;
                                 if (GloData.Instance.isChallengeMode) {
-                                    // Model.gridOcc[i][j][k] = (y == Model.gridHeight-1 ? 0 : 2); // 0 ==> 2
                                     Model.gridOcc[i][j][k] = 0; 
                                     Model.gridClr[i][j][k] = -1;
                                 }
@@ -316,7 +315,6 @@ namespace HotFix.Control {
                             //     moveMinoDownOneGridHelper(x,  y, z);
                             // Model.gridOcc[x][y][z] = y == Model.gridHeight - 1 ? 0 : 2;
                             Model.gridOcc[x][y][z] = 0;
-                            // Model.vis[x][z] = 1;
                         } else
                             // if (Model.gridOcc[x][y-1][z] == 0 && Model.gridOcc[x][y][z] == 1 // 下一格为 空,上层当前格为 非空,检查是否可以掉落
 // 如果以这种逻辑,那么每移动过的/ 下除过的当前格,都仍需要标记以示消除或是移动过,给上层立方体看的                        
@@ -363,6 +361,7 @@ namespace HotFix.Control {
 //                                         }
 //                                     }
 // TODO :　这个早定义好的方法,只是省几行代码,其执行效率更低,还不如上面的呢(知道上面写法的问题,现在再把上面的改正一下,以保证相对比较高的运行效率) 上面的两种写法都有问题,感觉某个小细节还是没能想透
+// 这个方法执行效率不高,今天下午真正意识到的那个Model里的微小转动因素,这个低效的方法,至少,可以保证正确性                                    
                                     Model.grid[x][y][z].parent.position += new Vector3(0, -1, 0);
                                     Model.UpdateGrid(Model.grid[x][y][z].parent.gameObject);
                                 }
@@ -390,7 +389,6 @@ namespace HotFix.Control {
                     BaseBoardSkin.isSkinChanged = true;
                 }
             }
-            // Model.grid[x][y][z] = null;
             Model.gridOcc[x][y][z] = 0;
         }
 
@@ -410,7 +408,7 @@ namespace HotFix.Control {
                         Vector3 pp = MathUtilP.Round(mino.position) + new Vector3(0, -1, 0);
                         if (!Model.CheckIsInsideGrid(pp)) return false;  // 落到格外不行
                         if (Model.GetTransformAtGridPosition(pp) != null // 0 || 2 当前格是可以降落的
-                            && Model.GetTransformAtGridPosition(pp).parent != p.parent) { // <<<<<<<<<<<<<<<<<<<< 
+                            && Model.GetTransformAtGridPosition(pp).parent != p.parent) {
                             return false;
                         }
                     }
@@ -419,67 +417,16 @@ namespace HotFix.Control {
             Debug.Log(TAG + " canFallDeeper(): TRUE ");
             return true;
         }
-        // // 补充逻辑: 添加检查有过消除后的方块砖是否可以继续下降一格? 仿Tetromino MoveDown()的方法来写        
-        // private static bool canFallDeeper(Transform p) { // can current parent Transform fall down 1 more layer ?
-        //     if (p == null) return true;
-        //     foreach (Transform mino in p) {
-        //         if (mino.CompareTag("mino")) {
-        //             Vector3 pos = MathUtilP.Round(mino.position);
-        //             pos += new Vector3(0, -1, 0);
-        //             if (!Model.CheckIsInsideGrid(pos)) return false;  // 落到格外不行
-        //             if (Model.GetTransformAtGridPosition(pos) != null // 0 || 2 当前格是可以降落的
-        //                 && Model.GetTransformAtGridPosition(pos).parent != p) {
-        //                 return false;
-        //             }
-        //         }
-        //     }
-        //     Debug.Log(TAG + " canFallDeeper() : TRUE");
-        //     return true;
-        // }
         public void OnEnable() {
             // Debug.Log(TAG + ": OnEnable()"); 
-            // Debug.Log(TAG + " gameObject.name: " + gameObject.name);
             Start();
         }
         public void Start() {
-            Debug.Log(TAG + " Start()");
-            // EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
-            // EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
-            // EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand); 
+            // Debug.Log(TAG + " Start()");
         }
         void OnDisable() {
             // Debug.Log(TAG + ": OnDisable()");
-            // Debug.Log(TAG + " gameObject.name: " + gameObject.name);
-            // if (EventManager.Instance != null) {
-            //     EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
-            // EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
-            // }
         }
-        // public void onActiveTetrominoLand(TetrominoLandEventInfo info) {
-        //     Debug.Log(TAG + " onActiveTetrominoLand");
-        //     lastTetroIndiScore = ComponentHelper.GetTetroComponent(info.unitGO).score;
-        // }
-        // public void onActiveTetrominoMove(TetrominoMoveEventInfo info) { 4
-        //     Debug.Log(TAG + ": onActiveTetrominoMove()");
-        //     ViewManager.nextTetromino.transform.position += info.delta; // -11 0 -11, 0 -11 0
-        //     if (Model.CheckIsValidPosition()) {
-        //         if (canvasMovedInfo == null) {
-        //             canvasMovedInfo = new CanvasMovedEventInfo();
-        //         }
-        //         canvasMovedInfo.delta = info.delta;
-        //         EventManager.Instance.FireEvent(canvasMovedInfo);
-        //         Model.UpdateGrid(ViewManager.nextTetromino);
-        //     } else {
-        //         ViewManager.nextTetromino.transform.position -= info.delta;
-        //     }
-        // }
-        // public void onActiveTetrominoRotate(TetrominoRotateEventInfo info) {
-        //     Debug.Log(TAG + ": onActiveTetrominoRotate()");
-        //     ViewManager.nextTetromino.transform.Rotate(info.delta);
-        //     if (Model.CheckIsValidPosition()) {
-        //         Model.UpdateGrid(ViewManager.nextTetromino); 
-        //     } else
-        //         ViewManager.nextTetromino.transform.Rotate(Vector3.zero - info.delta); 
-        // }
     }
 }
+

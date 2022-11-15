@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace HotFix.UI {
 
-// 这里已经写了就不想再改写了;代码最后优化的时候可以再试着改写按钮的监听与回调事件
+// 这里已经写了就不想再改写了;代码最后优化的时候可以再试着改写按钮的监听与回调事件3
     public class ChallLevelsView : UnityGuiView {
         private const string TAG = "ChallLevelsView"; 
         public override string BundleName { get { return "ui/view/challlevelsview"; } }
@@ -117,21 +117,21 @@ namespace HotFix.UI {
                 GloData.Instance.gridSize = 5;
                 GloData.Instance.gridXSize = 5;
                 GloData.Instance.gridZSize = 5;
-                GloData.Instance.tetroCnter = 22;
+                GloData.Instance.tetroCnter = 37;
                 break;
             case 2:
                 GloData.Instance.challengeLevel = 2;
                 GloData.Instance.gridSize = 7;
                 GloData.Instance.gridXSize = 7;
                 GloData.Instance.gridZSize = 7;
-                GloData.Instance.tetroCnter = 22;
+                GloData.Instance.tetroCnter = 37;
                 GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
                 break;
             case 3:
                 GloData.Instance.challengeLevel = 3;
                 GloData.Instance.gridXSize = 9;
                 GloData.Instance.gridZSize = 7;
-                GloData.Instance.tetroCnter = 22;
+                GloData.Instance.tetroCnter = 37;
                 GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
                 break;
             case 4:
@@ -139,14 +139,14 @@ namespace HotFix.UI {
                 GloData.Instance.gridSize = 8;
                 GloData.Instance.gridXSize = 8;
                 GloData.Instance.gridZSize = 8;
-                GloData.Instance.tetroCnter = 22;
+                GloData.Instance.tetroCnter = 37;
                 GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
                 break;
             case 5:
                 GloData.Instance.challengeLevel = 5;
                 GloData.Instance.gridXSize = 8;
                 GloData.Instance.gridZSize = 9;
-                GloData.Instance.tetroCnter = 22;
+                GloData.Instance.tetroCnter = 37;
                 GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
                 break;
             case 6:
@@ -192,21 +192,21 @@ namespace HotFix.UI {
                 GloData.Instance.gridSize = 5;
                 GloData.Instance.gridXSize = 5;
                 GloData.Instance.gridZSize = 5;
-                GloData.Instance.tetroCnter = 22;
+                GloData.Instance.tetroCnter = 37;
                 break;
             case 12:
                 GloData.Instance.challengeLevel = 12;
                 GloData.Instance.gridSize = 7;
                 GloData.Instance.gridXSize = 7;
                 GloData.Instance.gridZSize = 7;
-                GloData.Instance.tetroCnter = 22;
+                GloData.Instance.tetroCnter = 37;
                 GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
                 break;
             case 13:
                 GloData.Instance.challengeLevel = 13;
                 GloData.Instance.gridXSize = 9;
                 GloData.Instance.gridZSize = 7;
-                GloData.Instance.tetroCnter = 22;
+                GloData.Instance.tetroCnter = 37;
                 GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
                 break;
             case 14:
@@ -214,14 +214,14 @@ namespace HotFix.UI {
                 GloData.Instance.gridSize = 8;
                 GloData.Instance.gridXSize = 8;
                 GloData.Instance.gridZSize = 8;
-                GloData.Instance.tetroCnter = 22;
+                GloData.Instance.tetroCnter = 37;
                 GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
                 break;
             case 15:
                 GloData.Instance.challengeLevel = 15;
                 GloData.Instance.gridXSize = 8;
                 GloData.Instance.gridZSize = 9;
-                GloData.Instance.tetroCnter = 22;
+                GloData.Instance.tetroCnter = 37;
                 GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
                 break;
             }
@@ -233,10 +233,12 @@ namespace HotFix.UI {
                 Debug.Log(TAG + " (ComponentHelper.GetBBSkinComponent(go) == null): " + (ComponentHelper.GetBBSkinComponent(go) == null));
                 ComponentHelper.AddBBSkinComponent(go);
             }
+
             levels[level].SetActive(true);
             hideAllOtherLevelPanel(level);
             if (!ViewManager.basePlane.activeSelf)
                 ViewManager.basePlane.SetActive(true);
+            EventManager.Instance.FireEvent("entergame");
             ViewManager.GameView.Reveal();
 
             Hide(); // 没有隐藏起来是因为材质没有准备好,其它地为的空异常
