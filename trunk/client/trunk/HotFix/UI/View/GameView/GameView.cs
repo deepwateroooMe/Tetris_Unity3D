@@ -78,8 +78,13 @@ namespace HotFix.UI {
         private bool gameStarted = false;
 
         public static Vector3 nextTetrominoSpawnPos = new Vector3(2.0f, Model.gridHeight - 1, 2.0f);
-        private Vector3 previewTetrominoPosition = new Vector3(-17f, -5f, -9.81f);
-        private Vector3 previewTetromino2Position = new Vector3(-68.3f, 19.6f, 32.4f); 
+        // private Vector3 previewTetrominoPosition = new Vector3(-17f, -5f, -9.81f);
+        // private Vector3 previewTetrominoPosition = new Vector3(-17f, 34.98f, -22.99f);
+        private Vector3 previewTetrominoPosition = new Vector3(-21.91f, 31.7f, -28.17f); // love my dear cousin
+
+        // private Vector3 previewTetromino2Position = new Vector3(-68.3f, 19.6f, 32.4f); 
+        private Vector3 previewTetromino2Position = new Vector3(-66.9f, 21.3f, 32.4f);
+        
         public int numLinesCleared = 0;
         public GameObject emptyGO;
         public GameObject previewTetromino;
@@ -106,7 +111,7 @@ namespace HotFix.UI {
         // 游戏主场景: 得分等游戏进展框,自动观察视图模型的数据自动,刷新
         void onGameModeChanged(int pre, int cur) {
             Debug.Log(TAG + " onGameModeChanged(): " + " cur: " + cur);
-            if (cur > 0) {
+            if (cur > 0) { // CLASSIC
                 eduTetroView.SetActive(false); 
                 swaBtn.SetActive(false);
                 undoBtn.SetActive(false); // 不可撤销(挑战模式是仍可以再考虑)
@@ -114,7 +119,7 @@ namespace HotFix.UI {
                 linText.gameObject.SetActive(false);
                 linTextDes.SetActive(false); // LINE 
                 initializeChallengingMode();
-            } else {
+            } else { // EDUCATIONAL
                 lvlText.text = GloData.Instance.gameLevel.ToString();
                 linText.text = ViewModel.numLinesCleared.Value.ToString();
             }
@@ -197,8 +202,6 @@ namespace HotFix.UI {
         public GameObject [] cubes; // baseCubesGO;
 
         public void Start(GameEnterEventInfo info) { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
-            Debug.Log(TAG + ": Start()");
-
             if (ViewModel.isChallengeMode) {
                 CoroutineHelperP.StartCoroutine(displayChallengeGoal());
                 loadInitCubesforChallengeMode();
@@ -260,7 +263,13 @@ namespace HotFix.UI {
             // previewTetromino previewTetromino2
             type.Length = 0;
 			string type2 = ViewModel.eduTetroType.Value;
-            SpawnPreviewTetromino(type.Append(ViewModel.comTetroType.Value).ToString(), type2);
+// TODO: 正常情况下是不需要这步检测的,但有时候游戏出错又自动保存,加载时会继续出错,先绕一下
+            // Debug.Log(TAG + " (ViewModel.comTetroType == null): " + (ViewModel.comTetroType == null));
+            // Debug.Log(TAG + " (ViewModel.comTetroType.Value == null): " + (ViewModel.comTetroType.Value == null));
+            if (ViewModel.comTetroType != null && ViewModel.comTetroType.Value != null && !ViewModel.comTetroType.Value.Equals("") 
+                && type2 != null && !type2.ToString().Equals(""))
+                SpawnPreviewTetromino(type.Append(ViewModel.comTetroType.Value).ToString(), type2);
+            else SpawnPreviewTetromino();
             if (ViewModel.prevPreview != null) {
                 ViewModel.prevPreview = ViewModel.prevPreview;
                 ViewModel.prevPreview2 = ViewModel.prevPreview2;
@@ -467,9 +476,8 @@ namespace HotFix.UI {
 			btnState[togBtn] = false;
             EventManager.Instance.FireEvent("canvas");
         }
+
         public void playFirstTetromino() { // pvBtnOne: comTetroView Button
-            Debug.Log(TAG + " playFirstTetromino");
-            // Debug.Log(TAG + " ViewModel.buttonInteractableList[0]: " + ViewModel.buttonInteractableList[0]); 
             if (ViewModel.buttonInteractableList[0] == 0) return;
             if (GloData.Instance.isChallengeMode) {
                 ViewModel.prevPreviewColor = previewTetromino.GetComponent<TetrominoType>().color;
@@ -672,8 +680,9 @@ namespace HotFix.UI {
 // 爱表哥,爱生活!!!
 // 游戏过程中,用户因为转动相机南而看见原本不该看见的放大数倍的预览方块砖,这些画面还是要清理一下,影响用户体验        
 // TODO:  在热更新源码中动态实现对预览第一个方块砖的层次设定:　Layer = preview以避免主相机在旋转的过程中会扫到第一个方块砖
-// 不影响性能的做法是:像摆放第二个方块砖一样,把它摆放到一个相机永远无法照到的地方(这个办法最简单).这里可以尝试一下上面的做法
-// 哭死: unity主工程里面,上面想要的实现完全没有问题;可是热更新里面,它又需要适配(感觉好大的难度)!!!
+// SOLVED: 不影响性能的做法是:像摆放第二个方块砖一样,把它摆放到一个相机永远无法照到的地方(这个办法最简单)这里暂时先按照这个方法实现了.
+// TODO: 晚点儿会尝试在热更新调用和调试主工程中的相机的位置与角度,以适配挑战模式下相机的设置需求        
+// 哭死: unity主工程里面,上面想要的实现完全没有问题;可是热更新里面,它又需要适配(当相机我放在主工程,而层次设置放在热更新中,不起作用,感觉好大的难度)!!!
 // 这里是不是就是前面模块的,要我把unity主工程所使用的相机搬进热更新程序域里去呢? 
         private void SpawnPreviewTetromino() {
             Debug.Log(TAG + ": SpawnPreviewTetromino()");
@@ -684,7 +693,7 @@ namespace HotFix.UI {
                 ViewModel.comTetroType.Value, previewTetrominoPosition,
                 Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
             previewTetromino.transform.SetParent(ViewManager.tetroParent.transform, false);
-            previewTetrominoPrepareLayers(previewTetromino);
+            // previewTetrominoPrepareLayers(previewTetromino);
             
             if (ViewModel.gameMode.Value == 0) { // previewTetromino2
                 // excepts: undoBtn toggleButton fallButton
@@ -706,7 +715,7 @@ namespace HotFix.UI {
 
             previewTetromino = PoolHelper.GetFromPool(type1, previewTetrominoPosition, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
             previewTetromino.transform.SetParent(ViewManager.tetroParent.transform, false);
-            previewTetrominoPrepareLayers(previewTetromino);
+            // previewTetrominoPrepareLayers(previewTetromino);
             ViewModel.comTetroType.Value = type1;
             ViewModel.previewTetrominoColor = previewTetromino.GetComponent<TetrominoType>().color;
             if (ViewModel.gameMode.Value == 0) { // previewTetromino2
@@ -720,7 +729,7 @@ namespace HotFix.UI {
         private void SpawnPreviewTetromino(string type1, string type2, int color1, int color2) {
             previewTetromino = PoolHelper.GetFromPool(type1, previewTetrominoPosition, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one, color1);
             previewTetromino.transform.SetParent(ViewManager.tetroParent.transform, false);
-            previewTetrominoPrepareLayers(previewTetromino);
+            // previewTetrominoPrepareLayers(previewTetromino);
             ViewModel.comTetroType.Value = previewTetromino.GetComponent<TetrominoType>().type;
             ViewModel.previewTetrominoColor = previewTetromino.GetComponent<TetrominoType>().color;
 
@@ -731,9 +740,9 @@ namespace HotFix.UI {
                 ViewModel.previewTetromino2Color = previewTetromino2.GetComponent<TetrominoType>().color;
             }
         }
-        void previewTetrominoPrepareLayers(GameObject p) { // set for comTetroType previewTetromino only 那么playFirstTetromino会受影响
-            p.layer = LayerMask.NameToLayer("preview");
-        }
+        // void previewTetrominoPrepareLayers(GameObject p) { // set for comTetroType previewTetromino only 那么playFirstTetromino会受影响
+        //     p.layer = LayerMask.NameToLayer("preview");
+        // }
 
         public void Reveal(Action Start) {
             base.Reveal(true, Start);
@@ -764,13 +773,13 @@ namespace HotFix.UI {
             ViewModel.cameraPos.OnValueChanged += onCameraPosChanged;
             ViewModel.cameraRot.OnValueChanged += onCameraRotChanged;
 
-// TODO: 为了触发第一次的回调,稍微绕了一下,需要更为优雅的设置方法
-            // ViewManager.MenuView.ViewModel.mgameMode.OnValueChanged += onGameModeChanged; 
-            // if (ViewModel.gameMode.Value != ViewManager.MenuView.ViewModel.mgameMode.Value)
-            // ViewManager.MenuView.ViewModel.mgameMode.Value = ViewModel.gameMode.Value;
-            ViewModel.gameMode.OnValueChanged += onGameModeChanged;
-            if (ViewModel.gameMode.Value != GloData.Instance.gameMode)
-                ViewModel.gameMode.Value = GloData.Instance.gameMode;
+// TODO: 为了触发第一次的回调,稍微绕了一下,只能触发第一次的回调是不可以的
+            ViewManager.MenuView.ViewModel.mgameMode.OnValueChanged += onGameModeChanged; 
+            if (ViewModel.gameMode.Value != ViewManager.MenuView.ViewModel.mgameMode.Value)
+            ViewManager.MenuView.ViewModel.mgameMode.Value = ViewModel.gameMode.Value;
+            // ViewModel.gameMode.OnValueChanged += onGameModeChanged;
+            // if (ViewModel.gameMode.Value != GloData.Instance.gameMode)
+            //     ViewModel.gameMode.Value = GloData.Instance.gameMode;
 
             GloData.Instance.boardSize.OnValueChanged += onBoardSizeChanged;
             GloData.Instance.boardSize.Value = new Vector3(Model.gridXWidth, Model.gridWidth, Model.gridZWidth); // 为了触发第一次的回调而写的

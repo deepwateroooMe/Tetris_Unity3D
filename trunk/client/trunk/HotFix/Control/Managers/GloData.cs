@@ -40,6 +40,7 @@ namespace HotFix.Control {
             }
             set {
                 _loadSavedGame = value;
+                Debug.Log(TAG + " loadSavedGame: " + loadSavedGame);
             }
         }
         public bool isChallengeMode {

@@ -196,7 +196,7 @@ namespace HotFix.UI {
             if (isChallengeMode)
                 startingLevel = GloData.Instance.challengeLevel;
             currentLevel.OnValueChanged += onGameLevelChanged;
-            currentLevel.Value = startingLevel;
+            currentLevel.Value = -1;
             
             fallSpeed = 3.0f;
             // saveForUndo = true;

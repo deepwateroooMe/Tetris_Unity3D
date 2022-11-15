@@ -107,6 +107,7 @@ namespace HotFix.UI {
             Debug.Log(TAG + " OnClickConButton()");
             // 检查是否存有先前游戏进度数据,有则弹窗;无直接进游戏界面,这一小步暂时跳过
             ActiveToggle();
+// TODO: BUG 因为射线检测还是什么原因,直接调用了加载保存过的游戏,这里需要再改一下            
             offerGameLoadChoice();
             educaModesViewPanel.SetActive(false);
         }
@@ -147,8 +148,11 @@ namespace HotFix.UI {
             prepareEnteringNewGame();
         }
         void OnClickContinueButton() { // Load Saved Game
+            Debug.Log(TAG + " OnClickContinueButton()");
             // 设置标记
-            ViewModel.loadGame.Value = true;
+            // ViewModel.loadGame.Value = true;
+            GloData.Instance.loadSavedGame = true;
+            
             newContinuePanel.SetActive(false);
             menuViewPanel.SetActive(true); // 需要激活,方便从其它视图回退到主菜单视图
             ViewManager.GameView.Reveal();
