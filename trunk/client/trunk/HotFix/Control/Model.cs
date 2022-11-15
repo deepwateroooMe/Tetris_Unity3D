@@ -20,7 +20,6 @@ namespace HotFix.Control {
         public static Transform [][][] grid; 
         public static int [][][] gridOcc;
         public static int [][][] gridClr; // color grid
-        public static int [][] vis;
         
         public static int [] baseCubes;
         public static int [] prevSkin;
@@ -51,11 +50,9 @@ namespace HotFix.Control {
                                 continue;
 // 以 方块砖 为单位回收到资源池里去                            
                             Transform tmpRefParent = null;
-
-                            if (grid[x][y][z].parent != null && (grid[x][y][z].parent.gameObject == null || Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>() == null))
-                                MathUtilP.print("(grid[x][y][z].parent != null && ( null || null)", x, y, z); 
-
-                            // Debug.Log(TAG + " (grid[x][y][z].parent != null && grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().childCnt == grid[x][y][z].parent.childCount): " + (grid[x][y][z].parent != null && grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().childCnt == grid[x][y][z].parent.childCount));
+// // 这里写的是什么意思呢? 非空检测?
+//                             if (grid[x][y][z].parent != null && (grid[x][y][z].parent.gameObject == null || Model.grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>() == null))
+//                                 MathUtilP.print("(grid[x][y][z].parent != null && ( null || null)", x, y, z); 
                             Debug.Log(TAG + " (grid[x][y][z].parent == null): " + (grid[x][y][z].parent == null));
 
                             if (grid[x][y][z].parent != null && grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().childCnt == grid[x][y][z].parent.childCount) {
@@ -74,24 +71,24 @@ namespace HotFix.Control {
                                     }
                                 }
                                 PoolHelper.ReturnToPool(tmpRefParent.gameObject, tmpRefParent.gameObject.GetComponent<TetrominoType>().type);
-                            } else if (grid[x][y][z].parent == null) { // 单独一个立方体的回收
-                                if (grid[x][y][z].gameObject != null) {
-                                    MathUtilP.print(x, y, z);
-                                    PoolHelper.ReturnToPool(grid[x][y][z].gameObject, grid[x][y][z].gameObject.GetComponent<MinoType>().type);
-                                }
-                                grid[x][y][z] = null;
-                                gridOcc[x][y][z] = 0;
-                                if (GloData.Instance.isChallengeMode) gridClr[x][y][z] = -1;
+                            // } else if (grid[x][y][z].parent == null) { // 单独一个立方体的回收: 这个分支可能走不进来: 所有立方体都有父控件
+                            //     if (grid[x][y][z].gameObject != null) {
+                            //         // MathUtilP.print(x, y, z);
+                            //         PoolHelper.ReturnToPool(grid[x][y][z].gameObject, grid[x][y][z].gameObject.GetComponent<MinoType>().type);
+                            //     }
+                            //     grid[x][y][z] = null;
+                            //     gridOcc[x][y][z] = 0;
+                            //     if (GloData.Instance.isChallengeMode) gridClr[x][y][z] = -1;
                             } else { // 方块砖的 子立方体 不全,有过消除
                                 tmpRefParent = grid[x][y][z].parent; 
                                 foreach (Transform mino in grid[x][y][z].parent) {
                                     int i = (int)Mathf.Round(mino.position.x);
                                     int j = (int)Mathf.Round(mino.position.y);
                                     int k = (int)Mathf.Round(mino.position.z);
-                                    if (j >= 0 && j < gridHeight && i >= 0 && i < gridXWidth && k >= 0 && k < gridZWidth) 
+                                    if (j >= 0 && j < gridHeight && i >= 0 && i < gridXWidth && k >= 0 && k < gridZWidth) // 还是有小立方体 计算中 转到了大立方体之外
                                         if (grid[i][j][k] != null) {
                                             MathUtilP.print(i, j, k);
-                                            Model.grid[i][j][k].parent = null;
+                                            grid[i][j][k].parent = null;
                                             if (grid[i][j][k].gameObject != null) 
                                                 PoolHelper.ReturnToPool(grid[i][j][k].gameObject, grid[i][j][k].gameObject.GetComponent<MinoType>().type);
                                             grid[i][j][k] = null;
@@ -104,16 +101,25 @@ namespace HotFix.Control {
                                 GameObject.Destroy(tmpRefParent.gameObject);
                                 tmpRefParent = null; // 这么并没有消除无子立方体的空父件
                             }
-// // 这里因为运行时不确定因素的微小转动,可能会漏掉某个或是某几个没清干净,所以再确定一下:
-//                             if (Model.grid[x][y][z] != null && (Model.grid[x][y][z].parent == null || !Model.grid[x][y][z].parent.gameObject.CompareTag("InitCubes"))) {
-//                                 MathUtilP.print("(Model.grid[x][y][z] != null)", x, y, z);
-//                                 if (Model.grid[x][y][z].gameObject != null)
-//                                     GameObject.Destroy(Model.grid[x][y][z].gameObject);
-//                                 Model.grid[x][y][z] = null;
-//                             }
+                        } else if (grid[x][y][z] == null && gridOcc[x][y][z] == 1) {
+                            Debug.Log(TAG + " ERROR: (Model.grid[x][y][z] == null && Model.gridOcc[x][y][z] == 1) Please check backwards");
+                            MathUtilP.print(x, y, z);
+                            gridOcc[x][y][z] = 0;
                         }
                     }
             Debug.Log(TAG + " AFTER cleanUpGameBroad() Model.gridOcc[x][y][z]");
+            MathUtilP.printBoard(gridOcc);
+            for (int i = 0; i < Model.gridXWidth; i++)
+                for (int j = 0; j < Model.gridHeight; j++) 
+                    for (int k = 0; k < Model.gridZWidth; k++) 
+                        if (gridOcc[i][j][k] == 1) {
+                            Debug.Log(TAG + " ERROR: (Model.grid[x][y][z] == null && Model.gridOcc[x][y][z] == 1) Please check backwards");
+                            MathUtilP.print(i, j, k);
+                            Debug.Log(TAG + " Model.grid[i][j][k].parent.gameObject.name: " + Model.grid[i][j][k].parent.gameObject.name);
+                            GameObject.Destroy(Model.grid[i][j][k].gameObject);
+                            gridOcc[i][j][k] = 0;
+                        }
+            Debug.Log(TAG + " AFTER cleanUpGameBroad() Model.gridOcc[x][y][z] AFTER CORRECTION");
             MathUtilP.printBoard(gridOcc);
         }
         
@@ -232,7 +238,7 @@ namespace HotFix.Control {
                     }
                 }
             } // 数完另一条对角线
-            Debug.Log(TAG + ": IsFullFiveInLayerAt(): " + isFullFiveInLayer);
+            // Debug.Log(TAG + ": IsFullFiveInLayerAt(): " + isFullFiveInLayer);
             return isFullFiveInLayer;
         }
 
@@ -316,17 +322,17 @@ namespace HotFix.Control {
             for (int i = 0; i < gridXWidth; i++)
                 for (int j = 0; j < gridZWidth; j++) {
                     if (gridOcc[i][y][j] != 1 && gridOcc[i][y][j] != 9) {
-                        Debug.Log(TAG + " isFullInLayerAt():  FALSE");
+                        // Debug.Log(TAG + " isFullInLayerAt():  FALSE");
                         return false;
                     }
                 }
-            Debug.Log(TAG + " isFullInLayerAt():  TRUE");
+            // Debug.Log(TAG + " isFullInLayerAt():  TRUE");
             return true;
         }
         
         public static int zoneSum = 0;
         public static bool IsFullQuadInLayerAt (int y) {
-            Debug.Log(TAG + ": IsFullQuadInLayerAt()");
+            // Debug.Log(TAG + ": IsFullQuadInLayerAt()");
             int quadSum = 0;
             bool isFullQuadInLayer = false;
 // 好像是把每层分成了四个小区,可以每小区单独先降一小区?            

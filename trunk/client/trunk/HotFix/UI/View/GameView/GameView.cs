@@ -343,11 +343,6 @@ namespace HotFix.UI {
             else if (ViewModel.gameMode.Value == 0) // 经典模式下不再保存游戏进展; 当且仅当用户要求保存游戏的时候才保存
                 ViewModel.onGameSave(null);
 
-            Debug.Log(TAG + " (ViewModel.gameMode.Value == 0 && !GloData.Instance.isChallengeMode): " + (ViewModel.gameMode.Value == 0 && !GloData.Instance.isChallengeMode));
-
-            
-            // if (ViewModel.gameMode.Value > 0 || (GloData.Instance.isChallengeMode && (GloData.Instance.challengeLevel < 3 || GloData.Instance.challengeLevel > 5))) // 1 2 6 7 8 9 10
-            // else if (((ViewModel.gameMode.Value == 0 && !GloData.Instance.isChallengeMode) || (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel > 2 && GloData.Instance.challengeLevel < 6)) // 3 4 5
             if (ViewModel.gameMode.Value > 0 || GloData.Instance.isChallengeMode) // 需要整平面消除的
                 ModelMono.DeleteRow();
             else if (ViewModel.gameMode.Value == 0 && !GloData.Instance.isChallengeMode // 启蒙模式,想要带点儿粒子特效的

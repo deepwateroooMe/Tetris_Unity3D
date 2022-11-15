@@ -229,13 +229,11 @@ namespace HotFix.UI {
                 Model.grid = new Transform[Model.gridXWidth][][];
                 Model.gridOcc = new int[Model.gridXWidth][][];
                 Model.gridClr = new int[Model.gridXWidth][][];
-                Model.vis = new int[Model.gridXWidth][];
 
                 for (int i = 0; i < Model.gridXWidth; i++) {
                     Model.grid[i] = new Transform[Model.gridHeight][];
                     Model.gridOcc[i] = new int [Model.gridHeight][];
                     Model.gridClr[i] = new int [Model.gridHeight][];
-                    Model.vis[i] = new int[Model.gridZWidth];
                     for (int j = 0; j < Model.gridHeight; j++) {
                         Model.grid[i][j] = new Transform[Model.gridZWidth];
                         Model.gridOcc[i][j] = new int [Model.gridZWidth];
@@ -247,8 +245,6 @@ namespace HotFix.UI {
                 MathUtilP.printBoard(Model.gridOcc);
                 Debug.Log(TAG + ": gridClr()");
                 MathUtilP.printBoard(Model.gridClr);
-                Debug.Log(TAG + ": vis()");
-                MathUtilP.printBoard(Model.vis);
 
                 // MathUtilP.resetColorBoard();
                 
