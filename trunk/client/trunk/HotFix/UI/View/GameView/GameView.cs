@@ -202,6 +202,10 @@ namespace HotFix.UI {
         public GameObject [] cubes; // baseCubesGO;
 
         public void Start(GameEnterEventInfo info) { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
+            Debug.Log(TAG + " Start()");
+            Camera mainCamera = Camera.main;
+            Debug.Log(TAG + " (mainCamera == null): " + (mainCamera == null));
+
             if (ViewModel.isChallengeMode) {
                 CoroutineHelperP.StartCoroutine(displayChallengeGoal());
                 loadInitCubesforChallengeMode();
@@ -476,7 +480,13 @@ namespace HotFix.UI {
 			btnState[togBtn] = false;
             EventManager.Instance.FireEvent("canvas");
         }
-
+// TODO: 对UI按钮的控制,因为很容易在程序还没有就绪的时候用户就点了打第一个或是第二个,导致空异常(尤其是在撤销一次之后重新生成与点击)
+        // GameView onCameraRotChanged
+        // PoolHelper GetFromPool(): type: TetrominoT, color: 2
+        //     PoolHelper GetFromPool(): type: TetrominoI, color: 1
+        //     NullReferenceException: A null value was found where an object instance was required.
+        //     Rethrow as ILRuntimeException: A null value was found where an object instance was required.
+        
         public void playFirstTetromino() { // pvBtnOne: comTetroView Button
             if (ViewModel.buttonInteractableList[0] == 0) return;
             if (GloData.Instance.isChallengeMode) {
@@ -549,6 +559,7 @@ namespace HotFix.UI {
             saveGameOrNotPanel.SetActive(false);
             pausePanel.SetActive(false);
 
+            cleanUpGameBroad();
             Model.cleanUpGameBroad();
             ViewModel.gameDataResetToDefault();
             
@@ -561,7 +572,11 @@ namespace HotFix.UI {
             ViewManager.MenuView.Reveal();
             Hide();
         }
-        public void onNoToNotSaveGame() { // 因为每块方块砖落地时的自动保存,这里用户不需要保存时,要清除保存过的文件
+        void cleanUpGameBroad() {
+            if (gameOverPanel.activeSelf)
+                gameOverPanel.SetActive(false);
+        }
+         public void onNoToNotSaveGame() { // 因为每块方块砖落地时的自动保存,这里用户不需要保存时,要清除保存过的文件
             Debug.Log(TAG + " onNoToNotSaveGame()");
             ViewModel.hasSavedGameAlready = false;
             saveGameOrNotPanel.SetActive(false);
@@ -573,6 +588,8 @@ namespace HotFix.UI {
             PoolHelper.ReturnToPool(previewTetromino, previewTetromino.GetComponent<TetrominoType>().type);
             if (ViewModel.gameMode.Value == 0) 
                 PoolHelper.ReturnToPool(previewTetromino2, previewTetromino2.GetComponent<TetrominoType>().type);
+
+            cleanUpGameBroad();
             Model.cleanUpGameBroad();
             ViewModel.gameDataResetToDefault();
             
@@ -774,18 +791,40 @@ namespace HotFix.UI {
             ViewModel.cameraRot.OnValueChanged += onCameraRotChanged;
 
 // TODO: 为了触发第一次的回调,稍微绕了一下,只能触发第一次的回调是不可以的
-            ViewManager.MenuView.ViewModel.mgameMode.OnValueChanged += onGameModeChanged; 
-            if (ViewModel.gameMode.Value != ViewManager.MenuView.ViewModel.mgameMode.Value)
-            ViewManager.MenuView.ViewModel.mgameMode.Value = ViewModel.gameMode.Value;
+            int tmpGameMode = GloData.Instance.gameMode.Value;
+            GloData.Instance.gameMode.Value = -1;
+            GloData.Instance.gameMode.OnValueChanged += onGameModeChanged;
+            GloData.Instance.gameMode.Value =tmpGameMode;
+            // ViewManager.MenuView.ViewModel.mgameMode.OnValueChanged += onGameModeChanged; 
+            // if (ViewModel.gameMode.Value != ViewManager.MenuView.ViewModel.mgameMode.Value)
+            // ViewManager.MenuView.ViewModel.mgameMode.Value = ViewModel.gameMode.Value;
             // ViewModel.gameMode.OnValueChanged += onGameModeChanged;
             // if (ViewModel.gameMode.Value != GloData.Instance.gameMode)
             //     ViewModel.gameMode.Value = GloData.Instance.gameMode;
 
+// MainCamera position and rotation for CHALLENGE ModelMono
+            Vector3 tmp = GloData.Instance.camPos.Value;
+            GloData.Instance.camPos.Value = Vector3.zero;
+            GloData.Instance.camPos.OnValueChanged += onCamPosChanged;
+            GloData.Instance.camPos.Value = tmp;
+            Quaternion tmq = GloData.Instance.camRot.Value;
+            GloData.Instance.camRot.Value = Quaternion.identity;
+            GloData.Instance.camRot.OnValueChanged += onCamRotChanged;
+            GloData.Instance.camRot.Value = tmq;
+            
             GloData.Instance.boardSize.OnValueChanged += onBoardSizeChanged;
             GloData.Instance.boardSize.Value = new Vector3(Model.gridXWidth, Model.gridWidth, Model.gridZWidth); // 为了触发第一次的回调而写的
             
             Start(new GameEnterEventInfo()); // 开始游戏 
             revealed = true;
+        }
+        void onCamPosChanged(Vector3 pre, Vector3 cur) {
+            Debug.Log(TAG + " onCamPosChanged" + " cur: " + cur);
+            Camera.main.transform.position = cur;
+        }
+        void onCamRotChanged(Quaternion pre, Quaternion cur) {
+            Debug.Log(TAG + " onCamRotChanged" + " cur: " + cur);
+            Camera.main.transform.rotation = cur;
         }
 // 这里暂时就只当是搭了个桥,帮助调用一下,暂时不改里面的逻辑        
         public void onBoardSizeChanged(Vector3 pre, Vector3 cur) {

@@ -85,17 +85,20 @@ namespace HotFix.UI {
 #region EDUCATIONAL CLASSIC CHALLENGE MODES
         void OnClickEduButton() { // EDUCATIONAL
 // TODO BUG: 这个还残存了些BUG没有改完
+            GloData.Instance.gameMode.Value = 0;
             ViewModel.gameMode = 0; // 试一下延迟设置这个值
             menuViewPanel.SetActive(false);
             educaModesViewPanel.SetActive(true);
         }
         void OnClickClaButton() { // CLASSIC MODE
             ViewModel.gridWidth = 5;
+            GloData.Instance.gameMode.Value = 1;
             ViewModel.gameMode = 1;
             offerGameLoadChoice();
         }
         void OnClickChaButton() { // CHALLENGE MODE
             ViewModel.isChallengeMode = true;
+            GloData.Instance.gameMode.Value = 0;
             ViewModel.gameMode = 0; // to match above previously
             ViewManager.ChallLevelsView.Reveal();
             Hide();

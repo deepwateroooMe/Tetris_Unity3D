@@ -133,6 +133,9 @@ namespace HotFix.UI {
                 GloData.Instance.gridZSize = 7;
                 GloData.Instance.tetroCnter = 37;
                 GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
+
+                GloData.Instance.camPos.Value = new Vector3(14.35f, 18.42f, -1.1f);
+                GloData.Instance.camRot.Value = Quaternion.Euler(new Vector3(493.046f, -250.002f, -535.711f));
                 break;
             case 4:
                 GloData.Instance.challengeLevel = 4;

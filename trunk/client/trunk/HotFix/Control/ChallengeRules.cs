@@ -157,7 +157,9 @@ namespace HotFix.Control {
         }
 
         public static bool isBottomLayerSkinMatches () {
-            Debug.Log(TAG + ": isBottomLayerSkinMatches()"); 
+            Debug.Log(TAG + " isBottomLayerSkinMatches() Model.baseCubes colors");
+            MathUtilP.print(Model.baseCubes);
+
             // getBottomLayerMinosIdx(); // 这都写得什么乱七八糟的
             clearBottomIdxArray();
 
@@ -167,14 +169,14 @@ namespace HotFix.Control {
             getBottomLayerMinosIdx();
             if (bottomIdx[0] == -1) return false;
             for (int i = 0; i < 4; i++) {
-                if (bottomIdx[i] == -1) continue;
-                // if (bottomIdx[i] == -1) return false; // 不能这么写,因为它可能最低层只有一个立方体,那么其它三个就是-1
+                // if (bottomIdx[i] == -1) continue; 
+                if (bottomIdx[i] == -1) return false; // 不能这么写,因为它可能最低层只有一个立方体,那么其它三个就是-1,但是有值的一定是写在前面的
                 int [] pos = MathUtilP.getIndex(bottomIdx[i]);
                 if (pos[1] == 0) {
-                    // Debug.Log(TAG + " (Model.baseCubes[getMinoPosCubeArrIndex(pos[0], pos[2])] == Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color): "
-                    //           + (Model.baseCubes[getMinoPosCubeArrIndex(pos[0], pos[2])] == Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color));
-                    // MathUtilP.print(pos);
-                    // Debug.Log(TAG + " getMinoPosCubeArrIndex(pos[0], pos[2]): " + getMinoPosCubeArrIndex(pos[0], pos[2]));
+                    Debug.Log(TAG + " (Model.baseCubes[getMinoPosCubeArrIndex(pos[0], pos[2])] == Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color): "
+                              + (Model.baseCubes[getMinoPosCubeArrIndex(pos[0], pos[2])] == Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color));
+                    MathUtilP.print(pos);
+                    Debug.Log(TAG + " getMinoPosCubeArrIndex(pos[0], pos[2]): " + getMinoPosCubeArrIndex(pos[0], pos[2]));
 
                     if (Model.baseCubes[getMinoPosCubeArrIndex(pos[0], pos[2])] == Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color) {
                         ++matchingCnter;

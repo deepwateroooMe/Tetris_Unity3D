@@ -52,7 +52,7 @@ namespace HotFix.Control {
                         MathUtilP.printBoard(Model.gridOcc); 
 
                         DeleteMinoAt(j);
-                        if (GloData.Instance.gameMode > 0 || (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel < 3))
+                        if (GloData.Instance.gameMode.Value > 0 || (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel < 3))
                             ViewManager.GameView.ViewModel.currentScore.Value += GloData.Instance.layerScore;
                         else
                             ViewManager.GameView.ViewModel.currentScore.Value += GloData.Instance.challengeLayerScore;
@@ -83,8 +83,8 @@ namespace HotFix.Control {
                 // Debug.Log(TAG + " DeleteRowCoroutine() y: " + y);
                 visDeleteJ = -1;                         
                 for (j = y; j < Model.gridHeight; j++) { // 中间同时处理多层 12 层
-                    if ( (!GloData.Instance.isChallengeMode && GloData.Instance.gameMode == 0 && Model.IsFullFiveInLayerAt(j))
-                         || ((GloData.Instance.isChallengeMode || GloData.Instance.gameMode == 1) && Model.isFullInLayerAt(j)) ) { 
+                    if ( (!GloData.Instance.isChallengeMode && GloData.Instance.gameMode.Value == 0 && Model.IsFullFiveInLayerAt(j))
+                         || ((GloData.Instance.isChallengeMode || GloData.Instance.gameMode.Value == 1) && Model.isFullInLayerAt(j)) ) { 
                         if (visDeleteJ == -1)
                             visDeleteJ = j;
 
@@ -227,7 +227,7 @@ namespace HotFix.Control {
 // gameMode == 1 经典模式:
 // gameMode == 0 && isChallengeMode : 标记2并需要能够undo        
         public static void DeleteMinoAt(int y) {
-            int gameMode = GloData.Instance.gameMode;
+            int gameMode = GloData.Instance.gameMode.Value;
             Debug.Log(TAG + ": DeleteMinoAt() start");
             for (int x = 0; x < Model.gridXWidth; x++) {
                 for (int  z = 0;  z < Model.gridZWidth;  z++) {
@@ -288,7 +288,7 @@ namespace HotFix.Control {
             // Debug.Log(TAG + " MoveRowDown() y: " + y);
             int cnt = 0;
 // CLASSIC MODE 和挑战模式下整片消除的            
-            if (GloData.Instance.gameMode > 0) { // CLASSIC 模式下 
+            if (GloData.Instance.gameMode.Value > 0) { // CLASSIC 模式下 
                 for (int j = 0; j < Model.gridZWidth; j++) {
                     for (int x = 0; x < Model.gridXWidth; x++) {
                         if (Model.grid[x][y][j] != null) {

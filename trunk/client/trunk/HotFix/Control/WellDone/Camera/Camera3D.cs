@@ -24,4 +24,3 @@ namespace HotFix.Control {
         }
     }
 }
-

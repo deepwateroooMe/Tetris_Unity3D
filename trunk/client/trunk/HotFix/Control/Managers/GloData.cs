@@ -14,7 +14,8 @@ namespace HotFix.Control {
         private bool _loadSavedGame = false;
         
         private bool _isChallengeMode = false;
-        private int _gameMode = 0;
+        public BindableProperty<int> gameMode = new BindableProperty<int>();
+        // private int _gameMode = 0;
         private string _saveGamePathFolderName;
 
         private int _gridSize = 5;
@@ -27,9 +28,11 @@ namespace HotFix.Control {
         private int _challengeLevel = 0;
 
 // 暂时还没有想好上面的怎么调控
-        public BindableProperty<bool> gameStarted = new BindableProperty<bool>();
-
+        public BindableProperty<bool> gameStarted = new BindableProperty<bool>(); // 这个还没有实现完整
         public BindableProperty<Vector3> boardSize = new BindableProperty<Vector3>();
+
+        public BindableProperty<Vector3> camPos = new BindableProperty<Vector3>();
+        public BindableProperty<Quaternion> camRot = new BindableProperty<Quaternion>();
         
         public int layerScore = 9170;
         public int challengeLayerScore = 16700;
@@ -52,15 +55,15 @@ namespace HotFix.Control {
                 onChallengeMode();
             }
         }
-        public int gameMode {
-            get {
-                return _gameMode;
-            }
-            set {
-                _gameMode = value;
-                onGameModeSelected(_gameMode);
-            }
-        }
+        // public int gameMode {
+        //     get {
+        //         return _gameMode;
+        //     }
+        //     set {
+        //         _gameMode = value;
+        //         onGameModeSelected(_gameMode);
+        //     }
+        // }
         public int gameLevel {
             get {
                 return _gameLevel;
@@ -136,8 +139,8 @@ namespace HotFix.Control {
             _saveGamePathFolderName = "challenge/level";
         }
 
-        private void onGameModeSelected(int gameMode) {
-            _gameMode = gameMode;
+        public void onGameModeSelected(int pre, int gameMode) {
+            //_gameMode = gameMode;
             switch (gameMode) {
             case 0:
                 if (isChallengeMode)
@@ -149,11 +152,12 @@ namespace HotFix.Control {
                 _saveGamePathFolderName = "classic/level";
                 break;
             }
+            Debug.Log(TAG + " getFilePath(): " + getFilePath());
         }
 
         public string getFilePath() {
             StringBuilder path = new StringBuilder();
-            if (gameMode > 0) 
+            if (gameMode.Value > 0) 
                 path.Append(Application.persistentDataPath + "/" + _saveGamePathFolderName
                             + _gameLevel + "/game.save"); 
             else 

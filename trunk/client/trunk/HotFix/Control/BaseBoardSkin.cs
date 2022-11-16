@@ -19,7 +19,7 @@ namespace HotFix.Control {
         public static int [] color;
 
         private int idx = 0;
-        private bool baseCubesInitialized = false;
+        // private bool baseCubesInitialized = false;
         
         public void onCubesMaterialsChanged(CubesMaterialEventInfo info) {
             int n = Model.gridXWidth * Model.gridZWidth;
@@ -102,7 +102,9 @@ namespace HotFix.Control {
         }
 
         public void initateBaseCubesColors() {
-            if (baseCubesInitialized) return ;
+            Debug.Log(TAG + " initateBaseCubesColors()");
+            //Debug.Log(TAG + " initateBaseCubesColors() baseCubesInitialized: " + baseCubesInitialized);
+            // if (baseCubesInitialized) return ;
             
             // 当添加这个脚本的时候,还无法知道游戏关卡层级,所以必须换个地方起始初始化
             int n = Model.gridXWidth * Model.gridZWidth, idx = 0;
@@ -112,11 +114,9 @@ namespace HotFix.Control {
             for (int z = 0; z < Model.gridZWidth; z++) 
                 for (int x = 0; x < Model.gridXWidth; x++) {
                     name.Length = 0;
-                    Debug.Log(TAG + " GloData.Instance.gameLevel: " + GloData.Instance.gameLevel);
                     if (GloData.Instance.gameLevel < 3 || GloData.Instance.gameLevel == 11) // so far 1, 2, 11 three levels named this way
                         name.Append("Cube" + x + z);
                     else name.Append("Cube" + x + "0 (" + z + ")");
-                    Debug.Log(TAG + " name.ToString(): " + name.ToString());
                     idx = z * Model.gridXWidth + x;
                     cubes[idx] = gameObject.FindChildByName(name.ToString());
                     cubes[idx].gameObject.transform.rotation = Quaternion.identity;
@@ -134,7 +134,7 @@ namespace HotFix.Control {
                     }
                 }
             }
-            baseCubesInitialized = true;
+            // baseCubesInitialized = true;
             Debug.Log(TAG + " initateBaseCubesColors() Model.baseCubes colors");
             MathUtilP.print(Model.baseCubes);
             
@@ -155,7 +155,7 @@ namespace HotFix.Control {
             EventManager.Instance.RegisterListener<UndoGameEventInfo>(onUndoGame); 
             EventManager.Instance.RegisterListener<TetrominoChallLandInfo>(onActiveTetrominoLand);
             EventManager.Instance.RegisterListener<CubesMaterialEventInfo>(onCubesMaterialsChanged);
-            baseCubesInitialized = false;
+            // baseCubesInitialized = false;
         }
         public void OnDisable() {
             // Debug.Log(TAG + " gameObject.name: " + gameObject.name);

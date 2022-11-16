@@ -92,7 +92,7 @@ namespace HotFix.Control {
             ViewManager.rotateCanvas.SetActive(false); // 这里没有失活
             ViewManager.moveCanvas.transform.position = new Vector3(2.0f, 11.0f, 2f);
             ViewManager.rotateCanvas.transform.position = new Vector3(2.0f, 11.0f, 2f);
-            if (GloData.Instance.gameMode > 0) 
+            if (GloData.Instance.gameMode.Value > 0) 
                 ViewManager.moveCanvas.SetActive(true); 
         }
 

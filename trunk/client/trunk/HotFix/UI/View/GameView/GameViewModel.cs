@@ -232,8 +232,8 @@ namespace HotFix.UI {
         }
 
         public void modelArraysReset() {
-            Debug.Log(TAG + " modelArraysReset");
             // 其实说到底,这些东西原本还是应该放在ViewModel里的,只是独立出去能够这现在这个文件弄小一点儿方便操作查找            
+            Debug.Log(TAG + " modelArraysReset() GloData.Instance.isChallengeMode: " + GloData.Instance.isChallengeMode);
             if (GloData.Instance.isChallengeMode) {
                 Model.gridWidth = GloData.Instance.gridSize;
                 Model.gridXWidth = GloData.Instance.gridXSize;
@@ -242,7 +242,7 @@ namespace HotFix.UI {
                 Debug.Log(TAG + " Model.gridXWidth: " + Model.gridXWidth);
                 Debug.Log(TAG + " Model.gridZWidth: " + Model.gridZWidth);
 // 相对于重新起始,可能有可以重置的方法
-                Model.baseCubes = new int[Model.gridXWidth * Model.gridZWidth];
+                Model.baseCubes = new int[Model.gridXWidth * Model.gridZWidth]; // 底座的着色
                 Model.prevSkin = new int[4];
                 Model.prevIdx = new int[4];
                 Model.grid = new Transform[Model.gridXWidth][][];
@@ -268,6 +268,7 @@ namespace HotFix.UI {
                 // MathUtilP.resetColorBoard();
                 
                 BaseBoardSkin baseSkin = ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel));
+                Debug.Log(TAG + " (baseSkin == null): " + (baseSkin == null));
                 if (baseSkin != null)
                     baseSkin.initateBaseCubesColors();
             } else {
