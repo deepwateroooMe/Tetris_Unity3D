@@ -137,11 +137,7 @@ namespace HotFix.UI {
 
                 Model.cleanUpGameBroad();
 // 这部分的逻辑独立到一个文件中去了,免得当前文件过大不好管理                 
-                Debug.Log(TAG + " gameData.parentList.Count: " + gameData.parentList.Count);
-                LoadingSystemHelper.LoadDataFromParentList(gameData.parentList);
-                
-                cameraPos.Value = DeserializedTransform.getDeserializedTransPos(gameData.cameraData); // MainCamera
-                cameraRot.Value = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
+                loadGameParentCubeAndCamera(gameData);
             }
             buttonInteractableList[0] = 1; 
             buttonInteractableList[1] = 1; 
@@ -149,6 +145,12 @@ namespace HotFix.UI {
             buttonInteractableList[3] = 0; // buttons are supposed to click once at a time only
 
             isDuringUndo = false;
+        }
+        public void loadGameParentCubeAndCamera(GameData gameData) {
+            Debug.Log(TAG + " LoadGameParentCubeAndCamera() gameData.parentList.Count: " + gameData.parentList.Count);
+            LoadingSystemHelper.LoadDataFromParentList(gameData.parentList);
+            cameraPos.Value = DeserializedTransform.getDeserializedTransPos(gameData.cameraData); // MainCamera
+            cameraRot.Value = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
         }
         
 // 我的那些先前的歪歪斜斜的写法
@@ -190,7 +192,6 @@ namespace HotFix.UI {
             isChallengeMode = GloData.Instance.isChallengeMode;
 
             gridSize = GloData.Instance.gridSize;
-            // gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
             gameMode.Value = -1;
 
             if (isChallengeMode)
@@ -293,34 +294,17 @@ namespace HotFix.UI {
             } 
         }
         
-        public void Start() {
-            Debug.Log(TAG + " Start()");
-            // if (!string.IsNullOrEmpty(((MenuViewModel)ParentViewModel).saveGamePathFolderName)) {
-            //     gameMode = ((MenuViewModel)ParentViewModel).gameMode;
-            //     loadSavedGame = ((MenuViewModel)ParentViewModel).loadSavedGame;
-            //     StringBuilder path = new StringBuilder("");
-            //     if (gameMode > 0)
-            //         path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName + "/game.save");
-            //     else 
-            //         path.Append(Application.persistentDataPath + "/" + ((MenuViewModel)ParentViewModel).saveGamePathFolderName + "/grid" + gridSize + "/game.save");
-            //     if (loadSavedGame) {
-            //         LoadGame(path.ToString());
-            //     } else {
-            //         LoadNewGame();
-            //     }
-            // } else {
-            LoadNewGame();
-            // }
-            currentLevel.Value = startingLevel;
-            // startingHighScore = PlayerPrefs.GetInt("highscore");
-            // startingHighScore2 = PlayerPrefs.GetInt("highscore2");
-            // startingHighScore3 = PlayerPrefs.GetInt("highscore3");
-        }
+        // public void Start() {
+        //     Debug.Log(TAG + " Start()");
+        //     LoadNewGame();
+        //     currentLevel.Value = startingLevel;
+        // }
 
         // Coroutine: 才是真正解决问题的办法,暂时如此        
         public void OnFinishReveal() {
             Debug.Log(TAG + " OnFinishReveal");
-            gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
+            // gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
+            gameMode.Value = GloData.Instance.gameMode.Value;
             Debug.Log(TAG + " gameMode.Value: " + gameMode.Value);
 
             fallSpeed = 3.0f; // should be recorded too, here
@@ -343,7 +327,9 @@ namespace HotFix.UI {
             if (gameMode.Value == 0 && Model.gridOcc != null && !isChallengeMode)
                 Model.resetGridOccBoard();
             currentScore.Value = 0;
-            currentLevel.Value = startingLevel;
+            if (isChallengeMode)
+                currentLevel.Value = GloData.Instance.challengeLevel;
+            else currentLevel.Value = startingLevel;
         }
 
         void DelegateSubscribe() { } // 这里怎么写成是观察者模式呢?

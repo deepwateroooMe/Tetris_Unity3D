@@ -78,14 +78,9 @@ namespace HotFix.UI {
         private bool gameStarted = false;
 
         public static Vector3 nextTetrominoSpawnPos = new Vector3(2.0f, Model.gridHeight - 1, 2.0f);
-        // private Vector3 previewTetrominoPosition = new Vector3(-17f, -5f, -9.81f);
-        // private Vector3 previewTetrominoPosition = new Vector3(-17f, 34.98f, -22.99f);
         private Vector3 previewTetrominoPosition = new Vector3(-21.91f, 31.7f, -28.17f); // love my dear cousin
-
-        // private Vector3 previewTetromino2Position = new Vector3(-68.3f, 19.6f, 32.4f); 
         private Vector3 previewTetromino2Position = new Vector3(-66.9f, 21.3f, 32.4f);
         
-        public int numLinesCleared = 0;
         public GameObject emptyGO;
         public GameObject previewTetromino;
         public GameObject previewTetromino2;
@@ -120,6 +115,12 @@ namespace HotFix.UI {
                 linTextDes.SetActive(false); // LINE 
                 initializeChallengingMode();
             } else { // EDUCATIONAL
+                eduTetroView.SetActive(true); 
+                swaBtn.SetActive(true);
+                undoBtn.SetActive(true); // 不可撤销(挑战模式是仍可以再考虑)
+                comLevelView.SetActive(false);
+                goalPanel.SetActive(false);
+                ViewManager.basePlane.SetActive(false);
                 lvlText.text = GloData.Instance.gameLevel.ToString();
                 linText.text = ViewModel.numLinesCleared.Value.ToString();
             }
@@ -131,7 +132,6 @@ namespace HotFix.UI {
             lvlText.text = GloData.Instance.gameLevel.ToString();
 // 每个层级的底坐: 这里可能还需要更多的控件索引,因为底座需要能够更新材质                
             ViewManager.basePlane.SetActive(true);
-            
         }
 
         public void SpawnnextTetromino() {
@@ -170,11 +170,8 @@ namespace HotFix.UI {
         private void LoadNewGame() {
             Debug.Log(TAG + ": LoadNewGame()");
             ViewModel.LoadNewGame();
-
-// 感觉这里好鬼魅呀:视图里已经进行这时在了,可是视图模型因为反射调用还没有启动完?!!!
-// 这里的问题:应该是用IEnumerator去解决,但暂时这样; 在自己不断修改整理这些重构的代码的过程中,会对这些忘记了的相对陌生的一点点儿捡回来的
-// 现在这里要做的就是:打预设的资源包(很简单),从资源包里将不是的预设读出来,存在字典里,供游戏需要的时候来用            
-            SpawnnextTetromino();   
+            if (GloData.Instance.gameMode.Value > 0)
+                SpawnnextTetromino();   
         }
 
         private static float levelGoalDisplayTime = 1.2f;
@@ -202,13 +199,9 @@ namespace HotFix.UI {
         public GameObject [] cubes; // baseCubesGO;
 
         public void Start(GameEnterEventInfo info) { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
-            Debug.Log(TAG + " Start()");
-            Camera mainCamera = Camera.main;
-            Debug.Log(TAG + " (mainCamera == null): " + (mainCamera == null));
-
             if (ViewModel.isChallengeMode) {
                 CoroutineHelperP.StartCoroutine(displayChallengeGoal());
-                loadInitCubesforChallengeMode();
+                loadInitCubesforChallengeMode(); // 挑战模式下有些方块砖,需要初始化一下
             } else initCubes = new GameObject();
 
             if (GloData.Instance.loadSavedGame) { // loadSavedGame
@@ -219,7 +212,7 @@ namespace HotFix.UI {
             // startingHighScore = PlayerPrefs.GetInt("highscore"); // 这几个我都彻底忘记它们是什么了.....
             // startingHighScore2 = PlayerPrefs.GetInt("highscore2");
             // startingHighScore3 = PlayerPrefs.GetInt("highscore3");
-            gameStarted = true;
+            // gameStarted = true; // 这还不算严格意义上的真正的开始 
         }
 // PauseGame, ResumeGame        
         void OnClickResButton() { // RESUME GAME: 隐藏当前游戏过程中的视图,就可以了 // public void OnClickResButton();
@@ -256,14 +249,20 @@ namespace HotFix.UI {
                     DeserializedTransform.getDeserializedTransPos(gameData.nextTetrominoData.transform),
                     DeserializedTransform.getDeserializedTransRot(gameData.nextTetrominoData.transform), Vector3.one);
                 ViewManager.nextTetromino.tag = "currentActiveTetromino";
-                bool isEnabled = ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).enabled;
-                ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).enabled = !isEnabled;
+                // bool isEnabled = ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).enabled;
+                // ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).enabled = !isEnabled; 
+                ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).enabled = true;
                 ViewModel.nextTetrominoType.Value = ViewManager.nextTetromino.GetComponent<TetrominoType>().type;
                 ViewManager.moveCanvas.gameObject.SetActive(true);
-                ViewManager.moveCanvas.transform.position = new Vector3(ViewManager.moveCanvas.transform.position.x, ViewManager.nextTetromino.transform.position.y, ViewManager.moveCanvas.transform.position.z);
-                // 也需要重新设置 ViewManager.rotateCanvas 的位置
+                // ViewManager.moveCanvas.transform.position = new Vector3(ViewManager.moveCanvas.transform.position.x, ViewManager.nextTetromino.transform.position.y, ViewManager.moveCanvas.transform.position.z);
+                SpawnGhostTetromino();
+// 在极少数已经落地的情况下,仍然需要生成新的当前方块砖,以及阴影方块砖            
+            } else if (gameData.gameMode == 1) {
+                SpawnnextTetromino();
                 SpawnGhostTetromino();
             }
+// 从游戏数据加载大立方体中的各个小方格,仿GameViewModel.onUndoGame(), 以及恢复曾经配制过的相机的位置以及旋转等
+            ViewModel.loadGameParentCubeAndCamera(gameData);
             // previewTetromino previewTetromino2
             type.Length = 0;
 			string type2 = ViewModel.eduTetroType.Value;
@@ -282,9 +281,8 @@ namespace HotFix.UI {
             GameObject.FindGameObjectWithTag("MainCamera").transform.position = DeserializedTransform.getDeserializedTransPos(gameData.cameraData);
             GameObject.FindGameObjectWithTag("MainCamera").transform.rotation = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
             
-            if (ViewManager.nextTetromino != null && ViewManager.nextTetromino.CompareTag("currentActiveTetromino")) // Performance Bug: CompareTag()
+            if (ViewManager.nextTetromino != null && ViewManager.nextTetromino.CompareTag("currentActiveTetromino")) 
                 gameStarted = true;
-            ViewModel.loadSavedGame = false;
             ViewModel.loadSavedGame = false;
         }    
 
@@ -575,6 +573,10 @@ namespace HotFix.UI {
         void cleanUpGameBroad() {
             if (gameOverPanel.activeSelf)
                 gameOverPanel.SetActive(false);
+            if (GloData.Instance.gameMode.Value == 0) {
+                PoolHelper.recyclePreviewTetrominos(previewTetromino);
+                PoolHelper.recyclePreviewTetrominos(previewTetromino2);
+            }
         }
          public void onNoToNotSaveGame() { // 因为每块方块砖落地时的自动保存,这里用户不需要保存时,要清除保存过的文件
             Debug.Log(TAG + " onNoToNotSaveGame()");

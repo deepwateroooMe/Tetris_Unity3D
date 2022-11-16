@@ -76,24 +76,29 @@ namespace HotFix.UI {
             newContinuePanel = GameObject.FindChildByName("BgnNewContinueView");
             newButton = GameObject.FindChildByName("newBtn").GetComponent<Button>();
             newButton.onClick.AddListener(OnClickNewGameButton);
+
             conButton = GameObject.FindChildByName("conBtn").GetComponent<Button>();
+            Debug.Log(TAG + " (conButton == null): " + (conButton == null));
             conButton.onClick.AddListener(OnClickContinueButton);
+
             canButton = GameObject.FindChildByName("cancelBtn").GetComponent<Button>();
             canButton.onClick.AddListener(OnClickCancelButton);
         }
 
 #region EDUCATIONAL CLASSIC CHALLENGE MODES
         void OnClickEduButton() { // EDUCATIONAL
-// TODO BUG: 这个还残存了些BUG没有改完
-            GloData.Instance.gameMode.Value = 0;
+            // GloData.Instance.gameMode.Value = 0;
+            GloData.Instance.camPos.Value = new Vector3(14.10899f, 23.11789f, -1.698298f);
+            GloData.Instance.camRot.Value = Quaternion.Euler(new Vector3(490.708f, -251.184f, -539.973f));
             ViewModel.gameMode = 0; // 试一下延迟设置这个值
             menuViewPanel.SetActive(false);
             educaModesViewPanel.SetActive(true);
         }
         void OnClickClaButton() { // CLASSIC MODE
             ViewModel.gridWidth = 5;
-            GloData.Instance.gameMode.Value = 1;
             ViewModel.gameMode = 1;
+            GloData.Instance.camPos.Value = new Vector3(14.10899f, 23.11789f, -1.698298f);
+            GloData.Instance.camRot.Value = Quaternion.Euler(new Vector3(490.708f, -251.184f, -539.973f));
             offerGameLoadChoice();
         }
         void OnClickChaButton() { // CHALLENGE MODE
@@ -151,15 +156,11 @@ namespace HotFix.UI {
             prepareEnteringNewGame();
         }
         void OnClickContinueButton() { // Load Saved Game
-            Debug.Log(TAG + " OnClickContinueButton()");
+            Debug.Log(TAG + " OnClickContinueButton(): for load saved game");
             // 设置标记
-            // ViewModel.loadGame.Value = true;
+            // ViewModel.loadGame.Value = true; // 太慢了
             GloData.Instance.loadSavedGame = true;
-            
-            newContinuePanel.SetActive(false);
-            menuViewPanel.SetActive(true); // 需要激活,方便从其它视图回退到主菜单视图
-            ViewManager.GameView.Reveal();
-            Hide();
+            prepareEnteringNewGame();
         }
         void OnClickCancelButton() { // back to main menu
             newContinuePanel.SetActive(false);

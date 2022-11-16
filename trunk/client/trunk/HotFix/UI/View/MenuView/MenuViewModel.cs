@@ -41,8 +41,10 @@ namespace HotFix.UI {
             }
             set {
                 _gameMode = value;
-                GloData.Instance.gameMode.Value = _gameMode;
+                GloData.Instance.gameMode.Value = -1;
                 GloData.Instance.gameMode.OnValueChanged += GloData.Instance.onGameModeSelected;
+                GloData.Instance.gameMode.Value = _gameMode;
+                Debug.Log(TAG + " GloData.Instance.gameMode.Value: " + GloData.Instance.gameMode.Value);
             }
         }
         public int gridWidth {

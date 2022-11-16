@@ -15,7 +15,6 @@ namespace HotFix.Control {
         
         private bool _isChallengeMode = false;
         public BindableProperty<int> gameMode = new BindableProperty<int>();
-        // private int _gameMode = 0;
         private string _saveGamePathFolderName;
 
         private int _gridSize = 5;
@@ -23,13 +22,14 @@ namespace HotFix.Control {
         private int _gridZSize = 9;
 
         private int _tetroCnter = 0;
-        private int _gameLevel = 1;
+        private int _gameLevel = 1; // for educational and classic only
 
-        private int _challengeLevel = 0;
-
-// 暂时还没有想好上面的怎么调控
         public BindableProperty<bool> gameStarted = new BindableProperty<bool>(); // 这个还没有实现完整
         public BindableProperty<Vector3> boardSize = new BindableProperty<Vector3>();
+
+        private int _challengeLevel = 0;
+// TODO:         
+        // public BindableProperty<int> challengeLevel = new BindableProperty<int>();
 
         public BindableProperty<Vector3> camPos = new BindableProperty<Vector3>();
         public BindableProperty<Quaternion> camRot = new BindableProperty<Quaternion>();
@@ -55,16 +55,7 @@ namespace HotFix.Control {
                 onChallengeMode();
             }
         }
-        // public int gameMode {
-        //     get {
-        //         return _gameMode;
-        //     }
-        //     set {
-        //         _gameMode = value;
-        //         onGameModeSelected(_gameMode);
-        //     }
-        // }
-        public int gameLevel {
+        public int gameLevel { // for educational and classic only
             get {
                 return _gameLevel;
             }
