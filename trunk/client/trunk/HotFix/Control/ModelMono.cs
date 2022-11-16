@@ -52,7 +52,7 @@ namespace HotFix.Control {
                         MathUtilP.printBoard(Model.gridOcc); 
 
                         DeleteMinoAt(j);
-                        if (GloData.Instance.gameMode.Value > 0 || (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel < 3))
+                        if (GloData.Instance.gameMode.Value > 0 || (GloData.Instance.isChallengeMode && GloData.Instance.challengeLevel.Value < 3))
                             ViewManager.GameView.ViewModel.currentScore.Value += GloData.Instance.layerScore;
                         else
                             ViewManager.GameView.ViewModel.currentScore.Value += GloData.Instance.challengeLayerScore;

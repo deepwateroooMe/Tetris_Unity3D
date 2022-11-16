@@ -35,14 +35,14 @@ namespace HotFix.Control {
                 matchingColorsPanel.SetActive(true);
             }
             if (info.unitGO.name == "LevelTrials1")  {
-                GloData.Instance.challengeLevel = 1;
+                GloData.Instance.challengeLevel.Value = 1;
                 GloData.Instance.gridSize = 5;
                 GloData.Instance.gridXSize = 5;
                 GloData.Instance.gridZSize = 5;
                 GloData.Instance.tetroCnter = 22;
                 // LoadScene(info.unitGO.name);
             } else if (info.unitGO.name == "LevelTrials2") {
-                GloData.Instance.challengeLevel = 2;
+                GloData.Instance.challengeLevel.Value = 2;
                 GloData.Instance.gridSize = 7;
                 GloData.Instance.gridXSize = 7;
                 GloData.Instance.gridZSize = 7;
@@ -50,14 +50,14 @@ namespace HotFix.Control {
                 GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
                 // LoadScene(info.unitGO.name);
             }  else if (info.unitGO.name == "LevelTrials3") {
-                GloData.Instance.challengeLevel = 3;
+                GloData.Instance.challengeLevel.Value = 3;
                 GloData.Instance.gridXSize = 9;
                 GloData.Instance.gridZSize = 7;
                 GloData.Instance.tetroCnter = 22;
                 GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
                 // LoadScene(info.unitGO.name);
             } else if (info.unitGO.name == "LevelTrials4") { 
-                GloData.Instance.challengeLevel = 4;
+                GloData.Instance.challengeLevel.Value = 4;
                 GloData.Instance.gridSize = 8;
                 GloData.Instance.gridXSize = 8;
                 GloData.Instance.gridZSize = 8;
@@ -65,14 +65,14 @@ namespace HotFix.Control {
                 GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
                 // LoadScene(info.unitGO.name);
             } else if (info.unitGO.name == "LevelTrials5") {
-                GloData.Instance.challengeLevel = 5;
+                GloData.Instance.challengeLevel.Value = 5;
                 GloData.Instance.gridXSize = 8;
                 GloData.Instance.gridZSize = 9;
                 GloData.Instance.tetroCnter = 22;
                 GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
                 // LoadScene(info.unitGO.name);
             } else if (info.unitGO.name == "LevelTrials6")  {
-                GloData.Instance.challengeLevel = 6;
+                GloData.Instance.challengeLevel.Value = 6;
                 GloData.Instance.gridSize = 9;
                 GloData.Instance.gridXSize = 9;
                 GloData.Instance.gridZSize = 9;
@@ -80,7 +80,7 @@ namespace HotFix.Control {
                 GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
                 // LoadScene(info.unitGO.name);
             } else if (info.unitGO.name == "LevelTrials7") {
-                GloData.Instance.challengeLevel = 7;
+                GloData.Instance.challengeLevel.Value = 7;
                 // GloData.Instance.gridSize = 7;
                 GloData.Instance.gridXSize = 10;
                 GloData.Instance.gridZSize = 9;
@@ -88,14 +88,14 @@ namespace HotFix.Control {
                 GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
                 // LoadScene(info.unitGO.name);
             }  else if (info.unitGO.name == "LevelTrials8") {
-                GloData.Instance.challengeLevel = 8;
+                GloData.Instance.challengeLevel.Value = 8;
                 GloData.Instance.gridXSize = 9;
                 GloData.Instance.gridZSize = 7;
                 GloData.Instance.tetroCnter = 42;
                 GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
                 // LoadScene(info.unitGO.name);
             } else if (info.unitGO.name == "LevelTrials9") { 
-                GloData.Instance.challengeLevel = 9;
+                GloData.Instance.challengeLevel.Value = 9;
                 GloData.Instance.gridSize = 8;
                 GloData.Instance.gridXSize = 8;
                 GloData.Instance.gridZSize = 8;
@@ -103,21 +103,21 @@ namespace HotFix.Control {
                 GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
                 // LoadScene(info.unitGO.name);
             } else if (info.unitGO.name == "LevelTrials10") {
-                GloData.Instance.challengeLevel = 10;
+                GloData.Instance.challengeLevel.Value = 10;
                 GloData.Instance.gridXSize = 8;
                 GloData.Instance.gridZSize = 9;
                 GloData.Instance.tetroCnter = 42;
                 GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
                 // LoadScene(info.unitGO.name);
             } else if (info.unitGO.name == "LevelTrials11")  {
-                GloData.Instance.challengeLevel = 11;
+                GloData.Instance.challengeLevel.Value = 11;
                 GloData.Instance.gridSize = 5;
                 GloData.Instance.gridXSize = 5;
                 GloData.Instance.gridZSize = 5;
                 GloData.Instance.tetroCnter = 22;
                 // LoadScene(info.unitGO.name);
             } else if (info.unitGO.name == "LevelTrials12") {
-                GloData.Instance.challengeLevel = 12;
+                GloData.Instance.challengeLevel.Value = 12;
                 GloData.Instance.gridSize = 7;
                 GloData.Instance.gridXSize = 7;
                 GloData.Instance.gridZSize = 7;
@@ -125,14 +125,14 @@ namespace HotFix.Control {
                 GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
                 // LoadScene(info.unitGO.name);
             }  else if (info.unitGO.name == "LevelTrials13") {
-                GloData.Instance.challengeLevel = 13;
+                GloData.Instance.challengeLevel.Value = 13;
                 GloData.Instance.gridXSize = 9;
                 GloData.Instance.gridZSize = 7;
                 GloData.Instance.tetroCnter = 22;
                 GameView.nextTetrominoSpawnPos = new Vector3(3.0f, Model.gridHeight - 1f, 3.0f);
                 // LoadScene(info.unitGO.name);
             } else if (info.unitGO.name == "LevelTrials14") { 
-                GloData.Instance.challengeLevel = 14;
+                GloData.Instance.challengeLevel.Value = 14;
                 GloData.Instance.gridSize = 8;
                 GloData.Instance.gridXSize = 8;
                 GloData.Instance.gridZSize = 8;
@@ -140,7 +140,7 @@ namespace HotFix.Control {
                 GameView.nextTetrominoSpawnPos = new Vector3(4.0f, Model.gridHeight - 1f, 4.0f);
                 // LoadScene(info.unitGO.name);
             } else if (info.unitGO.name == "LevelTrials15") {
-                GloData.Instance.challengeLevel = 15;
+                GloData.Instance.challengeLevel.Value = 15;
                 GloData.Instance.gridXSize = 8;
                 GloData.Instance.gridZSize = 9;
                 GloData.Instance.tetroCnter = 22;

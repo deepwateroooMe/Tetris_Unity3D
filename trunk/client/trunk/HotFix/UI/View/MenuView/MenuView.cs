@@ -56,7 +56,7 @@ namespace HotFix.UI {
         
         protected override void OnInitialize() {
             base.OnInitialize();
-            GloData.Instance.loadSavedGame = false;
+            GloData.Instance.loadSavedGame.Value = false;
             
             menuViewPanel = GameObject.FindChildByName("MenuViewPanel");
             eduButton = GameObject.FindChildByName("eduBtn").GetComponent<Button>();
@@ -120,22 +120,24 @@ namespace HotFix.UI {
             educaModesViewPanel.SetActive(false);
         }
         void prepareEnteringNewGame() {
-            ViewModel.gameMode = 0;
             EventManager.Instance.FireEvent("entergame"); // Audio
             menuViewPanel.SetActive(true); // 需要激活,方便从其它视图回退到主菜单视图
             newContinuePanel.SetActive(false);
             ViewManager.GameView.Reveal(); // 放在前面是因为调用需要一点儿时间
-            Hide(); 
+            Hide();
+// special help for CLASSIC MODE moveCanvas: 只在这个模式下是自动生成,并且最开始两个画布都是失活状态
+            if (ViewModel.gameMode > 0)
+                ViewManager.moveCanvas.SetActive(true);
         }
         void offerGameLoadChoice() {
             Debug.Log(TAG + " offerGameLoadChoice()");
             if (File.Exists(GloData.Instance.getFilePath())) {
-                Debug.Log(TAG + " OnClickConButton() THERE IS a SAVED GAME");
+                Debug.Log(TAG + " offerGameLoadChoice() THERE IS a SAVED GAME");
 // TODO: BUG 这里被 因为 gameMode而引起的改变已经掩盖掉了 ?                
                 newContinuePanel.SetActive(true); 
                 Debug.Log(TAG + " newContinuePanel.activeSelf: " + newContinuePanel.activeSelf);
             } else {
-                Debug.Log(TAG + " OnClickConButton() ELSE");
+                Debug.Log(TAG + " offerGameLoadChoice() load new game");
                 prepareEnteringNewGame();
             }
         }
@@ -152,19 +154,21 @@ namespace HotFix.UI {
 
 #region New game or continue saved game panel
         void OnClickNewGameButton() { // Start New game
-            GloData.Instance.loadSavedGame = false;
+            GloData.Instance.loadSavedGame.Value = false;
             prepareEnteringNewGame();
         }
         void OnClickContinueButton() { // Load Saved Game
             Debug.Log(TAG + " OnClickContinueButton(): for load saved game");
             // 设置标记
             // ViewModel.loadGame.Value = true; // 太慢了
-            GloData.Instance.loadSavedGame = true;
+            GloData.Instance.loadSavedGame.Value = true;
             prepareEnteringNewGame();
         }
         void OnClickCancelButton() { // back to main menu
             newContinuePanel.SetActive(false);
-            educaModesViewPanel.SetActive(true);
+// 只在教育模式下显示如下画板            
+            if (ViewModel.gameMode == 0 && !GloData.Instance.isChallengeMode)
+                educaModesViewPanel.SetActive(true);
         }
 #endregion        
     }

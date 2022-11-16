@@ -46,10 +46,10 @@ namespace HotFix.Control {
             bool isColorExistOnContactableBoardV = isColorExistOnContactableBoard(ViewManager.nextTetromino.GetComponent<TetrominoType>().color);
             Debug.Log(TAG + " isColorExistOnContactableBoardV: " + isColorExistOnContactableBoardV);
             // if (GloData.Instance.challengeLevel < 11 && !isColorExistOnContactableBoard(ViewManager.nextTetromino.GetComponent<TetrominoType>().color))
-            if (GloData.Instance.challengeLevel < 11 && !isColorExistOnContactableBoardV) {
+            if (GloData.Instance.challengeLevel.Value < 11 && !isColorExistOnContactableBoardV) {
                 Debug.Log(TAG + ": isValidLandingPosition() NO current color on Board");
                 return true;
-            } else if (GloData.Instance.challengeLevel > 10 && !isThereSolutionOnBoard()) // 搜索确认是否 存在合理解
+            } else if (GloData.Instance.challengeLevel.Value > 10 && !isThereSolutionOnBoard()) // 搜索确认是否 存在合理解
                 return true;
             Debug.Log(TAG + ": isValidLandingPosition(): FALSE");
             return false;
@@ -76,13 +76,13 @@ namespace HotFix.Control {
                     if (isMatching) {
                         ++matchingCnter;
                         Debug.Log(TAG + " matchingCnter: " + matchingCnter);
-                        // Debug.Log(TAG + " GloData.Instance.challengeLevel: " + GloData.Instance.challengeLevel);
+                        // Debug.Log(TAG + " GloData.Instance.challengeLevel.Value: " + GloData.Instance.challengeLevel.Value);
                         Debug.Log(TAG + " isSolo: " + isSolo);
-                        Debug.Log(TAG + " (GloData.Instance.challengeLevel > 10 && matchingCnter >= 2): "
-                                  + (GloData.Instance.challengeLevel > 10 && matchingCnter >= 2));
+                        Debug.Log(TAG + " (GloData.Instance.challengeLevel.Value > 10 && matchingCnter >= 2): "
+                                  + (GloData.Instance.challengeLevel.Value > 10 && matchingCnter >= 2));
 // [1,10]可是只                        
-                        if (GloData.Instance.challengeLevel < 11 || isSolo
-                            || (GloData.Instance.challengeLevel > 10 && matchingCnter >= 2)) 
+                        if (GloData.Instance.challengeLevel.Value < 11 || isSolo
+                            || (GloData.Instance.challengeLevel.Value > 10 && matchingCnter >= 2)) 
                             return true;
                     } 
                 }
@@ -181,7 +181,7 @@ namespace HotFix.Control {
                     if (Model.baseCubes[getMinoPosCubeArrIndex(pos[0], pos[2])] == Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color) {
                         ++matchingCnter;
                         // Debug.Log(TAG + " matchingCnter: " + matchingCnter); 
-                        if (GloData.Instance.challengeLevel < 11 || isSolo || (GloData.Instance.challengeLevel > 10 && matchingCnter >= 2)) 
+                        if (GloData.Instance.challengeLevel.Value < 11 || isSolo || (GloData.Instance.challengeLevel.Value > 10 && matchingCnter >= 2)) 
                             return true;
                     }
                 }

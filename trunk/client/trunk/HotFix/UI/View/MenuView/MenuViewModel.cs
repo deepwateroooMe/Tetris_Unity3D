@@ -23,7 +23,7 @@ namespace HotFix.UI {
             }
             set {
                 _loadSavedGame = value;
-                GloData.Instance.loadSavedGame = true;
+                GloData.Instance.loadSavedGame.Value = true;
             }
         }
         public bool isChallengeMode {
@@ -41,6 +41,7 @@ namespace HotFix.UI {
             }
             set {
                 _gameMode = value;
+                Debug.Log(TAG + " _gameMode: " + _gameMode);
                 GloData.Instance.gameMode.Value = -1;
                 GloData.Instance.gameMode.OnValueChanged += GloData.Instance.onGameModeSelected;
                 GloData.Instance.gameMode.Value = _gameMode;

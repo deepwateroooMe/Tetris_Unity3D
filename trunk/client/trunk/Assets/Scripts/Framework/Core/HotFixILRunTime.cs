@@ -63,7 +63,8 @@ namespace Framework.Core {
             appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Transform, UnityEngine.Transform>();
             appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Quaternion, UnityEngine.Quaternion>();
             appDomain.DelegateManager.RegisterMethodDelegate<ILRuntime.Runtime.Intepreter.ILTypeInstance>();
-
+            appDomain.DelegateManager.RegisterMethodDelegate<System.Boolean, System.Boolean>();
+            
             appDomain.DelegateManager.RegisterMethodDelegate<List<int>, List<int>>();
             appDomain.DelegateManager.RegisterMethodDelegate<string, string>();
             appDomain.DelegateManager.RegisterMethodDelegate<object, MessageArgs<object>>();

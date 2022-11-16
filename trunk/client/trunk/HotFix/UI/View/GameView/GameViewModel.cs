@@ -103,14 +103,14 @@ namespace HotFix.UI {
             Debug.Log(TAG + " gameDataResetToDefault()");
             currentScore.Value = 0;
             numLinesCleared.Value = 0;
-            gameMode.Value = -1;
+            // gameMode.Value = -1; // 这个不重置,因为它的变化会被反馈
             startingLevel = 1;
             currentLevel.Value = 1;
             
             tetroCnter.Value = -1;
             undoCnter.Value = 5;
             swapCnter.Value = 5;
-            GloData.Instance.loadSavedGame = false; // 缺省开始新游戏
+            GloData.Instance.loadSavedGame.Value = false; // 缺省开始新游戏
         }
         public void onUndoGame(GameData gameData) { 
             Debug.Log(TAG + ": onUndoGame()");
@@ -195,7 +195,7 @@ namespace HotFix.UI {
             gameMode.Value = -1;
 
             if (isChallengeMode)
-                startingLevel = GloData.Instance.challengeLevel;
+                startingLevel = GloData.Instance.challengeLevel.Value;
             currentLevel.OnValueChanged += onGameLevelChanged;
             currentLevel.Value = -1;
             
@@ -218,11 +218,30 @@ namespace HotFix.UI {
             tetroCnter.Value = GloData.Instance.tetroCnter;
             undoCnter.Value = 5;
             swapCnter.Value = 5;
-            challengeLevel = GloData.Instance.challengeLevel;
+            challengeLevel = GloData.Instance.challengeLevel.Value;
 
             isChallengeMode = GloData.Instance.isChallengeMode;
-            // Debug.Log(TAG + " isChallengeMode: " + isChallengeMode);
 
+// 最大各种数组的初始化
+            Debug.Log(TAG + " GloData.Instance.maxXWidth: " + GloData.Instance.maxXWidth);
+            Debug.Log(TAG + " GloData.Instance.maxZWidth: " + GloData.Instance.maxZWidth);
+            Model.baseCubes = new int[GloData.Instance.maxXWidth * GloData.Instance.maxZWidth]; // 底座的着色
+            Model.prevSkin = new int[4];
+            Model.prevIdx = new int[4];
+            Model.grid = new Transform[GloData.Instance.maxXWidth][][];
+            Model.gridOcc = new int[GloData.Instance.maxXWidth][][];
+            Model.gridClr = new int[GloData.Instance.maxXWidth][][];
+            for (int i = 0; i < GloData.Instance.maxXWidth; i++) {
+                Model.grid[i] = new Transform[Model.gridHeight][];
+                Model.gridOcc[i] = new int [Model.gridHeight][];
+                Model.gridClr[i] = new int [Model.gridHeight][];
+                for (int j = 0; j < Model.gridHeight; j++) {
+                    Model.grid[i][j] = new Transform[GloData.Instance.maxZWidth];
+                    Model.gridOcc[i][j] = new int [GloData.Instance.maxZWidth];
+                    Model.gridClr[i][j] = new int [GloData.Instance.maxZWidth];
+                }
+            }
+            
             modelArraysReset();
             if (isChallengeMode)
                 ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel)).initateBaseCubesColors();
@@ -231,7 +250,12 @@ namespace HotFix.UI {
             for (int i = 0; i < 7; i++)
                 buttonInteractableList[i] = 1;
         }
-
+        public void onChallengeLevelChanged(int pre, int cur) {
+            Debug.Log(TAG + " onChallengeLevelChanged()" + " cur: " + cur);
+            startingLevel = cur;
+            // 重置或是初始化全局数组变量: 这里不用一再地重复销毁和重新分配内存,可是先初始化一个足够大的数组,再根据需要调整该足够大数组的维度
+            modelArraysReset();
+        }
         public void modelArraysReset() {
             // 其实说到底,这些东西原本还是应该放在ViewModel里的,只是独立出去能够这现在这个文件弄小一点儿方便操作查找            
             Debug.Log(TAG + " modelArraysReset() GloData.Instance.isChallengeMode: " + GloData.Instance.isChallengeMode);
@@ -242,31 +266,27 @@ namespace HotFix.UI {
 
                 Debug.Log(TAG + " Model.gridXWidth: " + Model.gridXWidth);
                 Debug.Log(TAG + " Model.gridZWidth: " + Model.gridZWidth);
-// 相对于重新起始,可能有可以重置的方法
-                Model.baseCubes = new int[Model.gridXWidth * Model.gridZWidth]; // 底座的着色
-                Model.prevSkin = new int[4];
-                Model.prevIdx = new int[4];
-                Model.grid = new Transform[Model.gridXWidth][][];
-                Model.gridOcc = new int[Model.gridXWidth][][];
-                Model.gridClr = new int[Model.gridXWidth][][];
-
-                for (int i = 0; i < Model.gridXWidth; i++) {
-                    Model.grid[i] = new Transform[Model.gridHeight][];
-                    Model.gridOcc[i] = new int [Model.gridHeight][];
-                    Model.gridClr[i] = new int [Model.gridHeight][];
-                    for (int j = 0; j < Model.gridHeight; j++) {
-                        Model.grid[i][j] = new Transform[Model.gridZWidth];
-                        Model.gridOcc[i][j] = new int [Model.gridZWidth];
-                        Model.gridClr[i][j] = new int [Model.gridZWidth];
-                    }
-                }
-
+// // 相对于重新起始,可能有可以重置的方法
+//                 Model.baseCubes = new int[Model.gridXWidth * Model.gridZWidth]; // 底座的着色
+//                 Model.prevSkin = new int[4];
+//                 Model.prevIdx = new int[4];
+//                 Model.grid = new Transform[Model.gridXWidth][][];
+//                 Model.gridOcc = new int[Model.gridXWidth][][];
+//                 Model.gridClr = new int[Model.gridXWidth][][];
+//                 for (int i = 0; i < Model.gridXWidth; i++) {
+//                     Model.grid[i] = new Transform[Model.gridHeight][];
+//                     Model.gridOcc[i] = new int [Model.gridHeight][];
+//                     Model.gridClr[i] = new int [Model.gridHeight][];
+//                     for (int j = 0; j < Model.gridHeight; j++) {
+//                         Model.grid[i][j] = new Transform[Model.gridZWidth];
+//                         Model.gridOcc[i][j] = new int [Model.gridZWidth];
+//                         Model.gridClr[i][j] = new int [Model.gridZWidth];
+//                     }
+//                 }
                 Debug.Log(TAG + ": gridOcc()"); 
                 MathUtilP.printBoard(Model.gridOcc);
                 Debug.Log(TAG + ": gridClr()");
                 MathUtilP.printBoard(Model.gridClr);
-
-                // MathUtilP.resetColorBoard();
                 
                 BaseBoardSkin baseSkin = ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel));
                 Debug.Log(TAG + " (baseSkin == null): " + (baseSkin == null));
@@ -276,29 +296,22 @@ namespace HotFix.UI {
                 Model.gridWidth = GloData.Instance.gridSize;
                 Model.gridXWidth = GloData.Instance.gridSize;
                 Model.gridZWidth = GloData.Instance.gridSize;
-                
-                Model.grid = new Transform [5][][]; 
-                Model.gridOcc = new int [5][][]; 
-                Model.gridClr = new int [5][][]; // 这些都是狗屁不通的占位符,要不然呆会儿GameViewModel.onGameSave()一大堆报错
-                for (int i = 0; i < 5; i++) {
-                    Model.grid[i] = new Transform[Model.gridHeight][];
-                    Model.gridOcc[i] = new int [Model.gridHeight][];
-                    Model.gridClr[i] = new int [Model.gridHeight][];
-                    for (int j = 0; j < Model.gridHeight; j++) {
-                        Model.grid[i][j] = new Transform[5];
-                        Model.gridOcc[i][j] = new int [5];
-                        Model.gridClr[i][j] = new int [5];
-                    }
-                }
+                // Model.grid = new Transform [5][][]; 
+                // Model.gridOcc = new int [5][][]; 
+                // Model.gridClr = new int [5][][]; // 这些都是狗屁不通的占位符,要不然呆会儿GameViewModel.onGameSave()一大堆报错
+                // for (int i = 0; i < 5; i++) {
+                //     Model.grid[i] = new Transform[Model.gridHeight][];
+                //     Model.gridOcc[i] = new int [Model.gridHeight][];
+                //     Model.gridClr[i] = new int [Model.gridHeight][];
+                //     for (int j = 0; j < Model.gridHeight; j++) {
+                //         Model.grid[i][j] = new Transform[5];
+                //         Model.gridOcc[i][j] = new int [5];
+                //         Model.gridClr[i][j] = new int [5];
+                //     }
+                // }
                 // MathUtilP.resetColorBoard();  // cmt for tmp
             } 
         }
-        
-        // public void Start() {
-        //     Debug.Log(TAG + " Start()");
-        //     LoadNewGame();
-        //     currentLevel.Value = startingLevel;
-        // }
 
         // Coroutine: 才是真正解决问题的办法,暂时如此        
         public void OnFinishReveal() {
@@ -321,14 +334,14 @@ namespace HotFix.UI {
 
         public void LoadNewGame() {
             Debug.Log(TAG + ": LoadNewGame()");
-            gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
+            gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode; // 这里还用这些吗?
             fallSpeed = 3.0f; // should be recorded too, here
 
-            if (gameMode.Value == 0 && Model.gridOcc != null && !isChallengeMode)
-                Model.resetGridOccBoard();
+            // if (gameMode.Value == 0 && Model.gridOcc != null && !isChallengeMode)
+            Model.resetGridOccBoard();
             currentScore.Value = 0;
             if (isChallengeMode)
-                currentLevel.Value = GloData.Instance.challengeLevel;
+                currentLevel.Value = GloData.Instance.challengeLevel.Value;
             else currentLevel.Value = startingLevel;
         }
 

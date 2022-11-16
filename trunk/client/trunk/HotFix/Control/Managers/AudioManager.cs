@@ -1,4 +1,5 @@
-﻿using HotFix.UI;
+﻿using Framework.Util;
+using HotFix.UI;
 using UnityEngine;
 
 namespace HotFix.Control {
@@ -16,7 +17,14 @@ namespace HotFix.Control {
         private AudioClip clearLineSound;
         private AudioClip exploseSound; // TODO
 
+        private VolumnHelper volHelper;
+        private int currentVolumn;
+        private int maxVolumn;
+
+// 全局音量管理器,站的基点比较高,可以试着先拿一下音量的,客户端最大音量        
         public void Awake() {
+            // Debug.Log(TAG + " Awake()");
+
             gameObject.AddComponent<AudioSource>();
             audioSource = gameObject.GetComponent<AudioSource>();
             gameLoop = ResourceHelper.LoadAudioClip("ui/view/gameview", "gameloop", EAssetBundleUnloadLevel.Never);
@@ -26,6 +34,12 @@ namespace HotFix.Control {
             exploseSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "Explosion", EAssetBundleUnloadLevel.Never);
             clearLineSound = ResourceHelper.LoadAudioClip("ui/view/gameview", "linecleared", EAssetBundleUnloadLevel.Never);
             audioSource.clip = gameLoop;
+
+            // volHelper = new VolumnHelper();
+            // maxVolumn = volHelper.getMaxVolume(); // 这个函数里带点儿初始化,先调用
+            // currentVolumn = volHelper.getCurrentVolume();
+            // Debug.Log(TAG + " currentVolumn: " + currentVolumn);
+            // Debug.Log(TAG + " maxVolumn: " + maxVolumn);
         }
 
         public void Start () {

@@ -11,9 +11,18 @@ namespace HotFix.Control {
     public class GloData : Singleton<GloData> {
         private const string TAG = "GloData";
         
-        private bool _loadSavedGame = false;
+        public int layerScore = 9170;
+        public int challengeLayerScore = 16700;
+        public int maxXWidth = 10;
+        public int maxZWidth = 9;
+        public int height = 12;
         
         private bool _isChallengeMode = false;
+        // public BindableProperty<bool> isChallengeMode = new BindableProperty<bool>();
+
+        // private bool _loadSavedGame = false;
+        public BindableProperty<bool> loadSavedGame = new BindableProperty<bool>();
+
         public BindableProperty<int> gameMode = new BindableProperty<int>();
         private string _saveGamePathFolderName;
 
@@ -22,30 +31,25 @@ namespace HotFix.Control {
         private int _gridZSize = 9;
 
         private int _tetroCnter = 0;
-        private int _gameLevel = 1; // for educational and classic only
 
         public BindableProperty<bool> gameStarted = new BindableProperty<bool>(); // 这个还没有实现完整
         public BindableProperty<Vector3> boardSize = new BindableProperty<Vector3>();
 
-        private int _challengeLevel = 0;
-// TODO:         
-        // public BindableProperty<int> challengeLevel = new BindableProperty<int>();
+        private int _gameLevel = 1; // for educational and classic only
+        public BindableProperty<int> challengeLevel = new BindableProperty<int>();
 
         public BindableProperty<Vector3> camPos = new BindableProperty<Vector3>();
         public BindableProperty<Quaternion> camRot = new BindableProperty<Quaternion>();
         
-        public int layerScore = 9170;
-        public int challengeLayerScore = 16700;
-
-        public bool loadSavedGame {
-            get {
-                return _loadSavedGame;
-            }
-            set {
-                _loadSavedGame = value;
-                Debug.Log(TAG + " loadSavedGame: " + loadSavedGame);
-            }
-        }
+        // public bool loadSavedGame {
+        //     get {
+        //         return _loadSavedGame;
+        //     }
+        //     set {
+        //         _loadSavedGame = value;
+        //         Debug.Log(TAG + " loadSavedGame: " + loadSavedGame);
+        //     }
+        // }
         public bool isChallengeMode {
             get {
                 return _isChallengeMode;
@@ -99,24 +103,15 @@ namespace HotFix.Control {
 				// onSizeChanged(-1, -1, _gridZSize);
             }
         }
-        private void onSizeChanged(int x, int y, int z) {
-            if (boardSize.Value == null)
-                boardSize.Value = Vector3.zero;
-// 它的初始值要如何设置呢?            什么时候设置比较好?
-            Vector3 cur = boardSize.Value;
-            Vector3 delta = new Vector3((x == -1 ? cur.x : x), (y == -1 ? cur.y : y), (z == -1 ? cur.z : z));
-            // MathUtilP.print("onSizeChanged()", delta);
-            boardSize.Value = delta;
-        }
-        public int challengeLevel {
-            get {
-                return _challengeLevel;
-            }
-            set {
-                _challengeLevel = value;
-            }
-        }
-
+//         private void onSizeChanged(int x, int y, int z) {
+//             if (boardSize.Value == null)
+//                 boardSize.Value = Vector3.zero;
+// // 它的初始值要如何设置呢?            什么时候设置比较好?
+//             Vector3 cur = boardSize.Value;
+//             Vector3 delta = new Vector3((x == -1 ? cur.x : x), (y == -1 ? cur.y : y), (z == -1 ? cur.z : z));
+//             // MathUtilP.print("onSizeChanged()", delta);
+//             boardSize.Value = delta;
+//         }
         public int tetroCnter {
             get {
                 return _tetroCnter;

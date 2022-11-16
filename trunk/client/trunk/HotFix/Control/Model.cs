@@ -328,7 +328,7 @@ namespace HotFix.Control {
 // 好像是把每层分成了四个小区,可以每小区单独先降一小区?            
             int [] activeZone = new int[4];
             Vector3 center = Vector3.zero;
-            switch (GloData.Instance.challengeLevel) {
+            switch (GloData.Instance.challengeLevel.Value) {
             case 3:
                 center = new Vector3(3.5f, 0, 3.5f);
                 break;
@@ -344,7 +344,7 @@ namespace HotFix.Control {
             zoneSum = 0;
 
 // (GloData.Instance.challengeLevel == 3)            
-            if (GloData.Instance.challengeLevel == 3) { // 必须单独处理
+            if (GloData.Instance.challengeLevel.Value == 3) { // 必须单独处理
                 Debug.Log(TAG + " (int)center.x: " + (int)center.x); 
                 Debug.Log(TAG + " (int)center.z: " + (int)center.z); 
                 for (int i = 0; i <= (int)center.x; i++) 
@@ -453,32 +453,32 @@ namespace HotFix.Control {
                     if (gridOcc[i][y][(int)center.z] != 1) continue;
                     ++tmp;
                 }
-                if ((GloData.Instance.challengeLevel == 4 && tmp == 4) || (GloData.Instance.challengeLevel == 5 && tmp == 5)) activeZone[0] = 1; // zone 0 
+                if ((GloData.Instance.challengeLevel.Value == 4 && tmp == 4) || (GloData.Instance.challengeLevel.Value == 5 && tmp == 5)) activeZone[0] = 1; // zone 0 
                 tmp = 0;
                 for (int i = (int)center.x; i < gridXWidth; i++) {
                     if (gridOcc[i][y][(int)center.z] != 1) continue;
                     ++tmp;
                 }
-                if ((GloData.Instance.challengeLevel == 4 && tmp == 4) || (GloData.Instance.challengeLevel == 5 && tmp == 5)) activeZone[2] = 1; // zone 2
+                if ((GloData.Instance.challengeLevel.Value == 4 && tmp == 4) || (GloData.Instance.challengeLevel.Value == 5 && tmp == 5)) activeZone[2] = 1; // zone 2
             }
             tmp = 0;
             for (int j = (int)center.z; j < gridZWidth; j++) {
                 if (gridOcc[(int)center.x][y][j] != 1) continue; 
                 ++tmp;
             }
-            if ((GloData.Instance.challengeLevel == 4 && tmp == 5) || (GloData.Instance.challengeLevel == 5 && tmp == 3)) { // zone 1 3
+            if ((GloData.Instance.challengeLevel.Value == 4 && tmp == 5) || (GloData.Instance.challengeLevel.Value == 5 && tmp == 3)) { // zone 1 3
                 tmp = 0;
                 for (int i = 0; i <= (int)center.x; i++) {
                     if (gridOcc[i][y][(int)center.z] != 1) continue;
                     ++tmp;
                 }
-                if ((GloData.Instance.challengeLevel == 4 && tmp == 4) || (GloData.Instance.challengeLevel == 5 && tmp == 5)) activeZone[1] = 1; // zone 0 
+                if ((GloData.Instance.challengeLevel.Value == 4 && tmp == 4) || (GloData.Instance.challengeLevel.Value == 5 && tmp == 5)) activeZone[1] = 1; // zone 0 
                 tmp = 0;
                 for (int i = (int)center.x; i < gridXWidth; i++) {
                     if (gridOcc[i][y][(int)center.z] != 1) continue;
                     ++tmp;
                 }
-                if ((GloData.Instance.challengeLevel == 4 && tmp == 4) || (GloData.Instance.challengeLevel == 5 && tmp == 5)) activeZone[3] = 1; // zone 2
+                if ((GloData.Instance.challengeLevel.Value == 4 && tmp == 4) || (GloData.Instance.challengeLevel.Value == 5 && tmp == 5)) activeZone[3] = 1; // zone 2
             }
             zoneSum = 0;
             for (int i = 0; i < 4; i++) {
@@ -500,7 +500,7 @@ namespace HotFix.Control {
             //         activeZone[i] = 0;
             //     }
             zoneSum = 0;
-            if (GloData.Instance.challengeLevel == 4) {
+            if (GloData.Instance.challengeLevel.Value == 4) {
                 if (activeZone[0] == 1) {
                     if (sumUpLeft((int)center.x, y, (int)center.z) == 10) {
                         ++zoneSum;
@@ -532,7 +532,7 @@ namespace HotFix.Control {
                 }
                 Debug.Log(TAG + " zoneSum: " + zoneSum); 
             }
-            if (GloData.Instance.challengeLevel == 5) {
+            if (GloData.Instance.challengeLevel.Value == 5) {
                 if (activeZone[0] == 1) {
                     Debug.Log(TAG + " sumUpLeft((int)center.x, y, (int)center.z): " + sumUpLeft((int)center.x, y, (int)center.z)); 
                     if (sumUpLeft((int)center.x, y, (int)center.z) == 11) {
@@ -587,8 +587,8 @@ namespace HotFix.Control {
                         }
                     }
                     Debug.Log(TAG + " tmp: " + tmp); 
-                    if ((GloData.Instance.challengeLevel == 4 && (tmp == 31 || tmp == 31 - sumLeft((int)center.x, y, (int)center.z) || tmp == 31 - sumRight((int)center.x, y, (int)center.z))) || 
-                        (GloData.Instance.challengeLevel == 5 && (tmp == 28 || tmp == 28 - sumLeft((int)center.x, y, (int)center.z) || tmp == 28 - sumRight((int)center.x, y, (int)center.z)))) {
+                    if ((GloData.Instance.challengeLevel.Value == 4 && (tmp == 31 || tmp == 31 - sumLeft((int)center.x, y, (int)center.z) || tmp == 31 - sumRight((int)center.x, y, (int)center.z))) || 
+                        (GloData.Instance.challengeLevel.Value == 5 && (tmp == 28 || tmp == 28 - sumLeft((int)center.x, y, (int)center.z) || tmp == 28 - sumRight((int)center.x, y, (int)center.z)))) {
                         for (int i = 0; i <= (int)center.x; i++) {
                             for (int j = 0; j <= gridZWidth; j++) {
                                 if (gridOcc[i][y][j] == 0 || gridOcc[i][y][j] == 9) continue; 
@@ -605,8 +605,8 @@ namespace HotFix.Control {
                         }
                     }
                     Debug.Log(TAG + " tmp: " + tmp); 
-                    if ((GloData.Instance.challengeLevel == 4 && (tmp == 30 || tmp == 30 - sumUp((int)center.x, y, (int)center.z) || tmp == 30 - sumDown((int)center.x, y, (int)center.z))) || 
-                        (GloData.Instance.challengeLevel == 5 && (tmp == 30 || tmp == 30 - sumUp((int)center.x, y, (int)center.z) || tmp == 30 - sumDown((int)center.x, y, (int)center.z)))) {
+                    if ((GloData.Instance.challengeLevel.Value == 4 && (tmp == 30 || tmp == 30 - sumUp((int)center.x, y, (int)center.z) || tmp == 30 - sumDown((int)center.x, y, (int)center.z))) || 
+                        (GloData.Instance.challengeLevel.Value == 5 && (tmp == 30 || tmp == 30 - sumUp((int)center.x, y, (int)center.z) || tmp == 30 - sumDown((int)center.x, y, (int)center.z)))) {
                         for (int i = 0; i < gridXWidth; i++) {
                             for (int j = 0; j <= (int)center.z; j++) {
                                 if (gridOcc[i][y][j] == 0 || gridOcc[i][y][j] == 9) continue; 
@@ -623,8 +623,8 @@ namespace HotFix.Control {
                         }
                     }
                     Debug.Log(TAG + " tmp: " + tmp); 
-                    if ((GloData.Instance.challengeLevel == 4 && (tmp == 29 || tmp == 29 - sumLeft((int)center.x, y, (int)center.z) || tmp == 29 - sumRight((int)center.x, y, (int)center.z))) || 
-                        (GloData.Instance.challengeLevel == 5 && (tmp == 28 || tmp == 28 - sumLeft((int)center.x, y, (int)center.z) || tmp == 28 - sumRight((int)center.x, y, (int)center.z)))) {
+                    if ((GloData.Instance.challengeLevel.Value == 4 && (tmp == 29 || tmp == 29 - sumLeft((int)center.x, y, (int)center.z) || tmp == 29 - sumRight((int)center.x, y, (int)center.z))) || 
+                        (GloData.Instance.challengeLevel.Value == 5 && (tmp == 28 || tmp == 28 - sumLeft((int)center.x, y, (int)center.z) || tmp == 28 - sumRight((int)center.x, y, (int)center.z)))) {
                         for (int i = (int)center.x; i < gridXWidth; i++) {
                             for (int j = 0; j < gridZWidth; j++) {
                                 if (gridOcc[i][y][j] == 0 || gridOcc[i][y][j] == 9) continue; 
@@ -641,8 +641,8 @@ namespace HotFix.Control {
                         }
                     }
                     Debug.Log(TAG + " tmp: " + tmp); 
-                    if ((GloData.Instance.challengeLevel == 4 && (tmp == 30 || tmp == 30 - sumUp((int)center.x, y, (int)center.z) || tmp == 30 - sumDown((int)center.x, y, (int)center.z))) || 
-                        (GloData.Instance.challengeLevel == 5 && (tmp == 30 || tmp == 30 - sumUp((int)center.x, y, (int)center.z) || tmp == 30 - sumDown((int)center.x, y, (int)center.z)))) {
+                    if ((GloData.Instance.challengeLevel.Value == 4 && (tmp == 30 || tmp == 30 - sumUp((int)center.x, y, (int)center.z) || tmp == 30 - sumDown((int)center.x, y, (int)center.z))) || 
+                        (GloData.Instance.challengeLevel.Value == 5 && (tmp == 30 || tmp == 30 - sumUp((int)center.x, y, (int)center.z) || tmp == 30 - sumDown((int)center.x, y, (int)center.z)))) {
                         for (int i = 0; i < gridXWidth; i++) {
                             for (int j = (int)center.z; j < gridZWidth; j++) {
                                 if (gridOcc[i][y][j] == 0 || gridOcc[i][y][j] == 9) continue; 
@@ -660,8 +660,8 @@ namespace HotFix.Control {
                             if (gridOcc[i][y][j] != 1)
                                 ++tmp;
                     Debug.Log(TAG + " tmp: " + tmp); 
-                    if ((GloData.Instance.challengeLevel == 4 && (tmp == 17 && (sumUpRight((int)center.x, y, (int)center.z) == 10 || sumDownLeft((int)center.x, y, (int)center.z) == 10))) ||
-                        (GloData.Instance.challengeLevel == 5 && (tmp == 18 && (sumUpRight((int)center.x, y, (int)center.z) == 8 || sumDownLeft((int)center.x, y, (int)center.z) == 8)))) {
+                    if ((GloData.Instance.challengeLevel.Value == 4 && (tmp == 17 && (sumUpRight((int)center.x, y, (int)center.z) == 10 || sumDownLeft((int)center.x, y, (int)center.z) == 10))) ||
+                        (GloData.Instance.challengeLevel.Value == 5 && (tmp == 18 && (sumUpRight((int)center.x, y, (int)center.z) == 8 || sumDownLeft((int)center.x, y, (int)center.z) == 8)))) {
                         for (int i = 0; i <= (int)center.x; i++) 
                             for (int j = 0; j <= (int)center.z; j++) {
                                 if (gridOcc[i][y][j] == 0 || gridOcc[i][y][j] == 9) continue; 
@@ -679,8 +679,8 @@ namespace HotFix.Control {
                             if (gridOcc[i][y][j] != 1)
                                 ++tmp;
                     Debug.Log(TAG + " tmp: " + tmp); 
-                    if ((GloData.Instance.challengeLevel == 4 && (tmp == 18 && (sumUpLeft((int)center.x, y, (int)center.z) == 10 || sumDownRight((int)center.x, y, (int)center.z) == 8))) ||
-                        (GloData.Instance.challengeLevel == 5 && (tmp == 15 && (sumUpLeft((int)center.x, y, (int)center.z) == 11 || sumDownRight((int)center.x, y, (int)center.z) == 11)))) {
+                    if ((GloData.Instance.challengeLevel.Value == 4 && (tmp == 18 && (sumUpLeft((int)center.x, y, (int)center.z) == 10 || sumDownRight((int)center.x, y, (int)center.z) == 8))) ||
+                        (GloData.Instance.challengeLevel.Value == 5 && (tmp == 15 && (sumUpLeft((int)center.x, y, (int)center.z) == 11 || sumDownRight((int)center.x, y, (int)center.z) == 11)))) {
                         for (int i = 0; i <= (int)center.x; i++) 
                             for (int j = (int)center.z; j < gridZWidth; j++) {
                                 if (gridOcc[i][y][j] == 0 || gridOcc[i][y][j] == 9) continue; 
@@ -698,8 +698,8 @@ namespace HotFix.Control {
                             if (gridOcc[i][y][j] != 1)
                                 ++tmp;
                     Debug.Log(TAG + " tmp: " + tmp); 
-                    if ((GloData.Instance.challengeLevel == 4 && (tmp == 17 && (sumUpLeft((int)center.x, y, (int)center.z) == 10 || sumDownRight((int)center.x, y, (int)center.z) == 8))) ||
-                        (GloData.Instance.challengeLevel == 5 && (tmp == 15 && (sumUpLeft((int)center.x, y, (int)center.z) == 11 || sumDownRight((int)center.x, y, (int)center.z) == 11)))) {
+                    if ((GloData.Instance.challengeLevel.Value == 4 && (tmp == 17 && (sumUpLeft((int)center.x, y, (int)center.z) == 10 || sumDownRight((int)center.x, y, (int)center.z) == 8))) ||
+                        (GloData.Instance.challengeLevel.Value == 5 && (tmp == 15 && (sumUpLeft((int)center.x, y, (int)center.z) == 11 || sumDownRight((int)center.x, y, (int)center.z) == 11)))) {
                         for (int i = (int)center.x; i < gridXWidth; i++) 
                             for (int j = 0; j <= (int)center.z; j++) {
                                 if (gridOcc[i][y][j] == 0 || gridOcc[i][y][j] == 9) continue; 
@@ -717,8 +717,8 @@ namespace HotFix.Control {
                             if (gridOcc[i][y][j] != 1)
                                 ++tmp;
                     Debug.Log(TAG + " tmp: " + tmp); 
-                    if ((GloData.Instance.challengeLevel == 4 && (tmp == 16 && (sumUpRight((int)center.x, y, (int)center.z) == 10 || sumDownLeft((int)center.x, y, (int)center.z) == 10))) ||
-                        (GloData.Instance.challengeLevel == 5 && (tmp == 18 && (sumUpRight((int)center.x, y, (int)center.z) == 8 || sumDownLeft((int)center.x, y, (int)center.z) == 8)))) {
+                    if ((GloData.Instance.challengeLevel.Value == 4 && (tmp == 16 && (sumUpRight((int)center.x, y, (int)center.z) == 10 || sumDownLeft((int)center.x, y, (int)center.z) == 10))) ||
+                        (GloData.Instance.challengeLevel.Value == 5 && (tmp == 18 && (sumUpRight((int)center.x, y, (int)center.z) == 8 || sumDownLeft((int)center.x, y, (int)center.z) == 8)))) {
                         for (int i = (int)center.x; i < gridXWidth; i++) 
                             for (int j = (int)center.z; j < gridZWidth; j++) {
                                 if (gridOcc[i][y][j] == 0 || gridOcc[i][y][j] == 9) continue; 
