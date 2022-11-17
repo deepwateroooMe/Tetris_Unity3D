@@ -64,6 +64,7 @@ namespace Framework.Core {
             appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Quaternion, UnityEngine.Quaternion>();
             appDomain.DelegateManager.RegisterMethodDelegate<ILRuntime.Runtime.Intepreter.ILTypeInstance>();
             appDomain.DelegateManager.RegisterMethodDelegate<System.Boolean, System.Boolean>();
+            appDomain.DelegateManager.RegisterMethodDelegate<System.Collections.Generic.Dictionary<UnityEngine.GameObject, System.Boolean>, System.Collections.Generic.Dictionary<UnityEngine.GameObject, System.Boolean>>();
             
             appDomain.DelegateManager.RegisterMethodDelegate<List<int>, List<int>>();
             appDomain.DelegateManager.RegisterMethodDelegate<string, string>();

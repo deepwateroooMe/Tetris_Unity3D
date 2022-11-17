@@ -79,7 +79,6 @@ namespace HotFix.UI {
         public int previewTetromino2Color;
         public int challengeLevel;
         
-        // private SaveGameEventInfo saveGameInfo;
         public bool hasDeletedMinos = false;
         public bool loadSavedGame = false;
         public bool isDuringUndo = false;
@@ -125,7 +124,6 @@ namespace HotFix.UI {
 
             ++tetroCnter.Value;
             --undoCnter.Value;
-            Array.Clear(buttonInteractableList, 0, buttonInteractableList.Length);
             recycleThreeMajorTetromino(ViewManager.GameView.previewTetromino, ViewManager.GameView.previewTetromino2);
 
             StringBuilder type = new StringBuilder("");
@@ -146,11 +144,6 @@ namespace HotFix.UI {
 // 这部分的逻辑独立到一个文件中去了,免得当前文件过大不好管理                 
                 loadGameParentCubeAndCamera(gameData);
             }
-            buttonInteractableList[0] = 1; 
-            buttonInteractableList[1] = 1; 
-            buttonInteractableList[2] = 1; 
-            buttonInteractableList[3] = 0; // buttons are supposed to click once at a time only
-
             isDuringUndo = false;
         }
         public void loadGameParentCubeAndCamera(GameData gameData) {
@@ -160,33 +153,6 @@ namespace HotFix.UI {
             cameraRot.Value = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
         }
         
-// 我的那些先前的歪歪斜斜的写法
-        // enable disable these button3s work slight better than this, could modify this part later
-        public int [] buttonInteractableList = new int[7]{ 1, 1, 1, 1, 1, 1, 1};
-        // previewSelectionButton     0
-        // previewSelectionButton2    1
-        // swapPreviewTetrominoButton 2
-        // undoButton                 3
-        // toggleButton               4
-        // fallButton                 5
-        // pauseButton                6
-        public int getSlamDownIndication () {
-            return buttonInteractableList[5];
-        }
-        // buttons can be clicked once only each time: disable self whenever got clicked         
-        // states:
-        // SpawnPreviewTetromino: // undo ?
-        // disables: undoButton toggleButton fallButton
-        // playFirstTetromino:
-        // playSecondTetromino:
-        // disables: previewSelectionButton previewSelectionButton2 swapPreviewTetrominoButton
-        // enables: undoButton toggleButton fallButton
-        // onUndoGame:
-        // disableAllButtons();
-        // onActiveTetrominoLand: slam down, move down, except undoButton
-        // disableAllButtons();
-        // enable: undoButton
-
         void onGameLevelChanged(int pre, int cur) { // for educational + classic mode
             Debug.Log(TAG + " onGameLevelChanged() cur: " + cur);
             if (!isChallengeMode)
@@ -241,12 +207,12 @@ namespace HotFix.UI {
             Model.grid = new Transform[GloData.Instance.maxXWidth][][];
             Model.gridOcc = new int[GloData.Instance.maxXWidth][][];
             Model.gridClr = new int[GloData.Instance.maxXWidth][][];
-            BaseBoardSkin.cubes = new GameObject[GloData.Instance.maxXWidth][];
+            // BaseBoardSkin.cubes = new GameObject[GloData.Instance.maxXWidth][];
             for (int i = 0; i < GloData.Instance.maxXWidth; i++) {
                 Model.grid[i] = new Transform[Model.gridHeight][];
                 Model.gridOcc[i] = new int [Model.gridHeight][];
                 Model.gridClr[i] = new int [Model.gridHeight][];
-                BaseBoardSkin.cubes[i] = new GameObject[GloData.Instance.maxZWidth];
+                // BaseBoardSkin.cubes[i] = new GameObject[GloData.Instance.maxZWidth];
                 for (int j = 0; j < Model.gridHeight; j++) {
                     Model.grid[i][j] = new Transform[GloData.Instance.maxZWidth];
                     Model.gridOcc[i][j] = new int [GloData.Instance.maxZWidth];
@@ -257,13 +223,10 @@ namespace HotFix.UI {
             modelArraysReset();
             if (isChallengeMode)
                 ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel)).initateBaseCubesColors();
-            
-            buttonInteractableList = new int [7];
-            for (int i = 0; i < 7; i++)
-                buttonInteractableList[i] = 1;
         }
         public void onChallengeLevelChanged(int pre, int cur) {
             Debug.Log(TAG + " onChallengeLevelChanged()" + " cur: " + cur);
+            tetroCnter.Value = GloData.Instance.tetroCnter;
             startingLevel = cur;
             // 重置或是初始化全局数组变量: 这里不用一再地重复销毁和重新分配内存,可是先初始化一个足够大的数组,再根据需要调整该足够大数组的维度
             modelArraysReset();
@@ -417,11 +380,6 @@ namespace HotFix.UI {
             SaveSystem.SaveGame(GloData.Instance.getFilePath(), gameData);
         }
 
-        public void printbuttonInteractableList() {
-            for (int i = 0; i <= 6; i++) 
-                Debug.Log(TAG + " buttonInteractableList[i]: i : " + i + ", " + buttonInteractableList[i]); 
-        }
-
         public void playFirstTetromino(GameObject previewTetromino, GameObject previewTetromino2) {
             tetroCnter.Value--;
 // 在生成新的一两预览前将现两个预览保存起来
@@ -438,17 +396,6 @@ namespace HotFix.UI {
             ViewManager.nextTetromino.gameObject.transform.localScale = Vector3.one;
             
             gameStarted = true;
-
-            // disables: comTetroView eduTetroView swaBtn
-            // enables: undoButton toggleButton fallButton
-            if (gameMode == 0) {
-                buttonInteractableList[0] = 0;
-                buttonInteractableList[1] = 0;
-                buttonInteractableList[2] = 0;
-                buttonInteractableList[3] = 1;
-                buttonInteractableList[4] = 1;
-                buttonInteractableList[5] = 1;
-            }
         }
 
         public void playSecondTetromino(GameObject previewTetromino, GameObject previewTetromino2) {
@@ -465,21 +412,7 @@ namespace HotFix.UI {
             ViewManager.nextTetromino.gameObject.transform.position = new Vector3(2.0f, 11.0f, 2.0f);
             ViewManager.nextTetromino.gameObject.transform.rotation = Quaternion.Euler(0, 0, 0);
             ViewManager.nextTetromino.gameObject.transform.localScale = Vector3.one;
-            // previewTetromino2.layer = LayerMask.NameToLayer("Default");
-            // previewTetromino2.GetComponent<Rotate>().enabled = !previewTetromino2.GetComponent<Rotate>().enabled;
-
             gameStarted = true; 
-            
-            // disables: previewSelectionButton previewSelectionButton2 swapPreviewTetrominoButton
-            // enables: undoButton toggleButton fallButtononUn
-            if (gameMode  == 0) {
-                buttonInteractableList[0] = 0;
-                buttonInteractableList[1] = 0;
-                buttonInteractableList[2] = 0;
-                buttonInteractableList[3] = 1;
-                buttonInteractableList[4] = 1;
-                buttonInteractableList[5] = 1;
-            }
         }
 
         public void UpdateLevel() {
