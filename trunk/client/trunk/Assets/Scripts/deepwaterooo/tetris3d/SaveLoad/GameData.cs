@@ -40,7 +40,6 @@ namespace deepwaterooo.tetris3d {
         public List<MinoData> grid;             // 大方格中的所有先前数据
         public List<TetrominoData> parentList;  // 如果有方块砖链表,那么链表中的方块砖有可能是残缺的(因为游戏过程中的消除行与列等)
 
-        public bool saveForUndo; // 区分教育模式与经典模式 
         public bool isChallengeMode;
 
         private TetrominoData curParentData;
@@ -49,7 +48,7 @@ namespace deepwaterooo.tetris3d {
                         int gameMode, int currentScore, int currentLevel, int numLinesCleared, int gridXWidth, int gridZWidth,
                         string prevPreview, string prevPreview2,
                         string nextTetrominoType, string previewTetrominoType, string previewTetromino2Type,
-                        bool saveForUndo, Transform[][][] gd, int[][][] gridClr,
+                        Transform[][][] gd, int[][][] gridClr,
                         int prevPreviewColor, int prevPreviewColor2, int previewTetrominoColor, int previewTetromino2Color,
                         Transform initCubesParent
 			) {
@@ -58,8 +57,6 @@ namespace deepwaterooo.tetris3d {
 			this.score = currentScore;
 			this.level = currentLevel;
 			this.lines = numLinesCleared;
-
-			this.saveForUndo = saveForUndo;
 
 			this.nextTetrominoType = nextTetrominoType;
 			this.previewTetrominoType = previewTetrominoType;
@@ -132,10 +129,6 @@ namespace deepwaterooo.tetris3d {
                                                                   gd[x][y][z].parent.gameObject.name, color);
                             Debug.Log(TAG + " gd[x][y][z].parent.gameObject.name (in parentList): " + gd[x][y][z].parent.gameObject.name);
                             Debug.Log(TAG + " gd[x][y][z].parent.childCount: " + gd[x][y][z].parent.childCount); 
-                            // Debug.Log(TAG + " tmp.children.Count (in saved parent TetrominoData): " + tmp.children.Count); 
-                            // foreach (MinoData mino in tmp.children) {
-                            //     MathUtil.print(MathUtil.getIndex(mino.idx));
-                            // }
                             parentList.Add(tmp);
 						}
 					}

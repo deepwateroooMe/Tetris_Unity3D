@@ -39,10 +39,10 @@ namespace HotFix.UI {
         Button nitBtn;
         Button twtBtn;
         GameObject [] levels;
-
+        private GameObject currentLevel;
+        
         protected override void OnInitialize() {
             base.OnInitialize();
-            // GloData.Instance.boardSize.OnValueChanged += ViewManager.GameView.onBoardSizeChanged;
                 
             basicPanel = GameObject.FindChildByName("basicPanel");
             rightBtn = GameObject.FindChildByName("right").GetComponent<Button>();
@@ -256,6 +256,7 @@ namespace HotFix.UI {
             }
 
             levels[level].SetActive(true);
+            currentLevel = levels[level];
             hideAllOtherLevelPanel(level);
             if (!ViewManager.basePlane.activeSelf)
                 ViewManager.basePlane.SetActive(true);
@@ -311,7 +312,10 @@ namespace HotFix.UI {
         void OnClickFifButton() {
             CallBackHelper(15);
         }
-         void hideAllOtherLevelPanel(int level) {
+        public void hideAllLevelPanels() {
+            currentLevel.SetActive(false);
+        }
+        void hideAllOtherLevelPanel(int level) {
             for (int i = 1; i < 12; i++) 
                 if (i != level && levels[i].activeSelf)
                     levels[i].SetActive(false);

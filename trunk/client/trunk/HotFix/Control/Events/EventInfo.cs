@@ -50,19 +50,19 @@ namespace HotFix.Control {
     }
 
 // Game Control: Enter, Start, Pause, Resume, Stop etc
-    public class GameEnterEventInfo : EventInfo {         // Entered Game View:　就是游戏暂停后又回来
+    public class GameEnterEventInfo : EventInfo {         // Entered Game View:　就是游戏暂停后又回来 for AudioManager
         public const string TAG = "GameEnterEventInfo";
     }
-    public class GameStartEventInfo : EventInfo {         // Start Game
-        public const string TAG = "GameStartEventInfo";
-    }
+    // public class GameStartEventInfo : EventInfo {         // Start Game
+    //     public const string TAG = "GameStartEventInfo";
+    // }
     public class GamePauseEventInfo : EventInfo {         // Pause Game
         public const string TAG = "GamePauseEventInfo";
     }
     public class GameResumeEventInfo : EventInfo {         // Resume Game
         public const string TAG = "GameResumeEventInfo";
     }
-    public class GameStopEventInfo : EventInfo {           // Stop Game: 比如点击 保存游戏离开 或是 不保存游戏离开 的时候
+    public class GameStopEventInfo : EventInfo {           // Stop Game: 比如点击 保存游戏离开 或是 不保存游戏离开 的时候, 各种清理工作
         public const string TAG = "GameStopEventInfo";
     }
 // Game main menu events:     

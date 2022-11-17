@@ -56,7 +56,7 @@ namespace HotFix.UI {
         
         protected override void OnInitialize() {
             base.OnInitialize();
-            GloData.Instance.loadSavedGame.Value = false;
+            GloData.Instance.loadSavedGame = false;
             
             menuViewPanel = GameObject.FindChildByName("MenuViewPanel");
             eduButton = GameObject.FindChildByName("eduBtn").GetComponent<Button>();
@@ -154,14 +154,14 @@ namespace HotFix.UI {
 
 #region New game or continue saved game panel
         void OnClickNewGameButton() { // Start New game
-            GloData.Instance.loadSavedGame.Value = false;
+            GloData.Instance.loadSavedGame = false;
             prepareEnteringNewGame();
         }
         void OnClickContinueButton() { // Load Saved Game
             Debug.Log(TAG + " OnClickContinueButton(): for load saved game");
             // 设置标记
             // ViewModel.loadGame.Value = true; // 太慢了
-            GloData.Instance.loadSavedGame.Value = true;
+            GloData.Instance.loadSavedGame = true;
             prepareEnteringNewGame();
         }
         void OnClickCancelButton() { // back to main menu

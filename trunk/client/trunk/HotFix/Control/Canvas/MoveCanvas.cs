@@ -90,7 +90,7 @@ namespace HotFix.Control {
             // Debug.Log(TAG + " onActiveTetrominoLand");
             ViewManager.moveCanvas.transform.position = new Vector3(2.0f, 11.0f, 2f);
             ViewManager.rotateCanvas.transform.position = new Vector3(2.0f, 11.0f, 2f);
-            if (ViewManager.GameView.ViewModel.gameMode.Value == 0)            
+            if (ViewManager.GameView.ViewModel.gameMode == 0)            
                 ViewManager.moveCanvas.SetActive(false); // 这里没有失活, 还是说它需要那么久的影应时间呢?
         }
 

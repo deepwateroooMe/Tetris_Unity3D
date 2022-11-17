@@ -23,7 +23,7 @@ namespace HotFix.UI {
             }
             set {
                 _loadSavedGame = value;
-                GloData.Instance.loadSavedGame.Value = true;
+                GloData.Instance.loadSavedGame = true;
             }
         }
         public bool isChallengeMode {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using deepwaterooo.tetris3d;
 using Framework.MVVM;
@@ -16,10 +17,8 @@ namespace HotFix.UI {
     public class GameViewModel : ViewModelBase {
         private const string TAG = "GameViewModel"; 
 
-        public bool isPaused { set; get; }
-        public bool saveForUndo { set; get; }
         public bool hasSavedGameAlready;
-        public bool gameStarted; // { set; get; }
+        public bool gameStarted; 
 
         public float fallSpeed { set; get; }
 
@@ -37,7 +36,8 @@ namespace HotFix.UI {
         public BindableProperty<int> currentScore = new BindableProperty<int>();
         public BindableProperty<int> currentLevel = new BindableProperty<int>();
         public BindableProperty<int> numLinesCleared = new BindableProperty<int>();
-        public BindableProperty<int> gameMode = new BindableProperty<int>();
+        public int gameMode = -1;
+        
 // // comTetroType, eduTetroType
         public BindableProperty<string> comTetroType = new BindableProperty<string>();
         public BindableProperty<string> eduTetroType = new BindableProperty<string>();
@@ -67,7 +67,6 @@ namespace HotFix.UI {
         private int startingHighScore2;
         private int startingHighScore3;
      
-        // public bool isMovement = true;
         private int randomTetromino;
 // TODO: INTO CONST        
         public Vector3 previewTetrominoScale = new Vector3(6f, 6f, 6f); // previewTetromino Scale (7,7,7)
@@ -95,22 +94,30 @@ namespace HotFix.UI {
             DelegateSubscribe(); 
         }   
 
-        // public void onSwapPreviewTetromino() {
-        //     Debug.Log(TAG + " onSwapPreviewTetromino");
-        //     --swapCnter.Value;
-        // }
-        public void gameDataResetToDefault() {
+        public void onGameStopAndReset(GameStopEventInfo info) {
             Debug.Log(TAG + " gameDataResetToDefault()");
+            Model.cleanUpGameBroad(); // 包括了 ViewManager.nextTetromino 的特殊处理
+            
             currentScore.Value = 0;
             numLinesCleared.Value = 0;
-            // gameMode.Value = -1; // 这个不重置,因为它的变化会被反馈
             startingLevel = 1;
             currentLevel.Value = 1;
             
             tetroCnter.Value = -1;
             undoCnter.Value = 5;
             swapCnter.Value = 5;
-            GloData.Instance.loadSavedGame.Value = false; // 缺省开始新游戏
+            GloData.Instance.loadSavedGame = false; // 缺省开始新游戏
+// 如果同户不要保存游戏进度,则必要情况下需要删除保存过的游戏进度文件
+            if (!hasSavedGameAlready && gameMode == 0) { // 不保存游戏
+                string path = GloData.Instance.getFilePath();
+                if (File.Exists(path)) {
+                    try {
+                        File.Delete(path);
+                    } catch (System.Exception ex) {
+                        Debug.LogException(ex);
+                    }
+                }
+            }
         }
         public void onUndoGame(GameData gameData) { 
             Debug.Log(TAG + ": onUndoGame()");
@@ -180,27 +187,30 @@ namespace HotFix.UI {
         // disableAllButtons();
         // enable: undoButton
 
-        void onGameLevelChanged(int pre, int cur) {
+        void onGameLevelChanged(int pre, int cur) { // for educational + classic mode
             Debug.Log(TAG + " onGameLevelChanged() cur: " + cur);
             if (!isChallengeMode)
                 GloData.Instance.gameLevel = cur;
-        }        
+        }
+        void onGameModeChanged(int pre, int cur) {
+            gameMode = cur;
+        }
         void Initialization() {
             Debug.Log(TAG + " Initialization()");
             this.ParentViewModel = (MenuViewModel)ViewManager.MenuView.BindingContext; // 父视图模型: 菜单视图模型
+            gameMode = GloData.Instance.gameMode.Value; // 可能会miss掉最初的值
+            GloData.Instance.gameMode.OnValueChanged += onGameModeChanged;
             hasSavedGameAlready = false;
             isChallengeMode = GloData.Instance.isChallengeMode;
-
-            gridSize = GloData.Instance.gridSize;
-            gameMode.Value = -1;
-
+// Register Listeners ?
+            EventManager.Instance.RegisterListener<GameStopEventInfo>(onGameStopAndReset);
+            
             if (isChallengeMode)
                 startingLevel = GloData.Instance.challengeLevel.Value;
             currentLevel.OnValueChanged += onGameLevelChanged;
             currentLevel.Value = -1;
             
             fallSpeed = 3.0f;
-            // saveForUndo = true;
             gameStarted = false;
 
             numLinesCleared.Value = -1;
@@ -231,10 +241,12 @@ namespace HotFix.UI {
             Model.grid = new Transform[GloData.Instance.maxXWidth][][];
             Model.gridOcc = new int[GloData.Instance.maxXWidth][][];
             Model.gridClr = new int[GloData.Instance.maxXWidth][][];
+            BaseBoardSkin.cubes = new GameObject[GloData.Instance.maxXWidth][];
             for (int i = 0; i < GloData.Instance.maxXWidth; i++) {
                 Model.grid[i] = new Transform[Model.gridHeight][];
                 Model.gridOcc[i] = new int [Model.gridHeight][];
                 Model.gridClr[i] = new int [Model.gridHeight][];
+                BaseBoardSkin.cubes[i] = new GameObject[GloData.Instance.maxZWidth];
                 for (int j = 0; j < Model.gridHeight; j++) {
                     Model.grid[i][j] = new Transform[GloData.Instance.maxZWidth];
                     Model.gridOcc[i][j] = new int [GloData.Instance.maxZWidth];
@@ -263,7 +275,7 @@ namespace HotFix.UI {
                 Model.gridWidth = GloData.Instance.gridSize;
                 Model.gridXWidth = GloData.Instance.gridXSize;
                 Model.gridZWidth = GloData.Instance.gridZSize;
-
+// 这里不光是维度,还需要清理数据
                 Debug.Log(TAG + " Model.gridXWidth: " + Model.gridXWidth);
                 Debug.Log(TAG + " Model.gridZWidth: " + Model.gridZWidth);
 // // 相对于重新起始,可能有可以重置的方法
@@ -317,24 +329,23 @@ namespace HotFix.UI {
         public void OnFinishReveal() {
             Debug.Log(TAG + " OnFinishReveal");
             // gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
-            gameMode.Value = GloData.Instance.gameMode.Value;
-            Debug.Log(TAG + " gameMode.Value: " + gameMode.Value);
+            gameMode = GloData.Instance.gameMode.Value;
+            Debug.Log(TAG + " gameMode.Value: " + gameMode);
 
             fallSpeed = 3.0f; // should be recorded too, here
 // 这个函数执行得比较晚,把我先前初始化好的矩阵数据给冲掉了?
 // TODO: BUG, 这里可能还会涉及到更多的BUG            
-            if (gameMode.Value == 0) {
+            if (gameMode == 0) {
                 if (!isChallengeMode)
                     Model.resetGridOccBoard();
-                saveForUndo = true;
-            } else saveForUndo = false;
+            }
             currentScore.Value = 0;
             currentLevel.Value = startingLevel;
         }
 
         public void LoadNewGame() {
             Debug.Log(TAG + ": LoadNewGame()");
-            gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode; // 这里还用这些吗?
+            gameMode = ((MenuViewModel)ParentViewModel).gameMode; // 这里还用这些吗?
             fallSpeed = 3.0f; // should be recorded too, here
 
             // if (gameMode.Value == 0 && Model.gridOcc != null && !isChallengeMode)
@@ -369,7 +380,9 @@ namespace HotFix.UI {
             return false;
         }
 
+// todo: to be removed
         void Update() {
+            Debug.Log(TAG + " Update");
             UpdateScore();
             UpdateLevel();
             UpdateSpeed();
@@ -388,18 +401,18 @@ namespace HotFix.UI {
             Debug.Log(TAG + " comTetroType.Value: " + comTetroType.Value);
             GameData gameData = null;
             if (isChallengeMode) gameData = new GameData(GloData.Instance.isChallengeMode, ViewManager.nextTetromino, ViewManager.ghostTetromino, tmpTransform,
-                                                         gameMode.Value, currentScore.Value, currentLevel.Value, numLinesCleared.Value,
+                                                         gameMode, currentScore.Value, currentLevel.Value, numLinesCleared.Value,
                                                          Model.gridXWidth, Model.gridZWidth,
                                                          prevPreview, prevPreview2,
                                                          nextTetrominoType.Value, comTetroType.Value, eduTetroType.Value,
-                                                         saveForUndo, Model.grid, Model.gridClr, prevPreviewColor, prevPreviewColor2, previewTetrominoColor, previewTetromino2Color,
+                                                         Model.grid, Model.gridClr, prevPreviewColor, prevPreviewColor2, previewTetrominoColor, previewTetromino2Color,
                                                          initCubeParentTrans);
             else gameData = new GameData(GloData.Instance.isChallengeMode, ViewManager.nextTetromino, ViewManager.ghostTetromino, tmpTransform,
-                                         gameMode.Value, currentScore.Value, currentLevel.Value, numLinesCleared.Value,
+                                         gameMode, currentScore.Value, currentLevel.Value, numLinesCleared.Value,
                                          Model.gridWidth, -1,
                                          prevPreview, prevPreview2,
                                          nextTetrominoType.Value, comTetroType.Value, eduTetroType.Value,
-                                         saveForUndo, Model.grid, Model.gridClr, prevPreviewColor, prevPreviewColor2, previewTetrominoColor, previewTetromino2Color,
+                                         Model.grid, Model.gridClr, prevPreviewColor, prevPreviewColor2, previewTetrominoColor, previewTetromino2Color,
                                          initCubeParentTrans);
             SaveSystem.SaveGame(GloData.Instance.getFilePath(), gameData);
         }
@@ -428,7 +441,7 @@ namespace HotFix.UI {
 
             // disables: comTetroView eduTetroView swaBtn
             // enables: undoButton toggleButton fallButton
-            if (gameMode.Value == 0) {
+            if (gameMode == 0) {
                 buttonInteractableList[0] = 0;
                 buttonInteractableList[1] = 0;
                 buttonInteractableList[2] = 0;
@@ -459,7 +472,7 @@ namespace HotFix.UI {
             
             // disables: previewSelectionButton previewSelectionButton2 swapPreviewTetrominoButton
             // enables: undoButton toggleButton fallButtononUn
-            if (gameMode.Value  == 0) {
+            if (gameMode  == 0) {
                 buttonInteractableList[0] = 0;
                 buttonInteractableList[1] = 0;
                 buttonInteractableList[2] = 0;
@@ -499,7 +512,7 @@ namespace HotFix.UI {
         public string GetRandomTetromino() { // active Tetromino 
             Debug.Log(TAG + ": GetRandomTetromino()"); 
 
-            if (gameMode.Value == 0 && gridSize == 3)
+            if (gameMode == 0 && gridSize == 3)
                 randomTetromino = UnityEngine.Random.Range(0, 11);
             else 
                 randomTetromino = UnityEngine.Random.Range(0, 12);

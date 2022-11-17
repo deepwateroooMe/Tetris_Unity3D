@@ -19,7 +19,6 @@ namespace HotFix.Control {
         public static int [] color;
 
         private int idx = 0;
-        // private bool baseCubesInitialized = false;
         
         public void onCubesMaterialsChanged(CubesMaterialEventInfo info) {
             int n = Model.gridXWidth * Model.gridZWidth;

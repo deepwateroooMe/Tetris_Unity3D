@@ -18,22 +18,11 @@ namespace HotFix.Control {
         public int height = 12;
         
         private bool _isChallengeMode = false;
-        // public BindableProperty<bool> isChallengeMode = new BindableProperty<bool>();
-
-        // private bool _loadSavedGame = false;
-        public BindableProperty<bool> loadSavedGame = new BindableProperty<bool>();
-
-        public BindableProperty<int> gameMode = new BindableProperty<int>();
         private string _saveGamePathFolderName;
-
         private int _gridSize = 5;
         private int _gridXSize = 9;
         private int _gridZSize = 9;
-
         private int _tetroCnter = 0;
-
-        public BindableProperty<bool> gameStarted = new BindableProperty<bool>(); // 这个还没有实现完整
-        public BindableProperty<Vector3> boardSize = new BindableProperty<Vector3>();
 
         private int _gameLevel = 1; // for educational and classic only
         public BindableProperty<int> challengeLevel = new BindableProperty<int>();
@@ -41,15 +30,17 @@ namespace HotFix.Control {
         public BindableProperty<Vector3> camPos = new BindableProperty<Vector3>();
         public BindableProperty<Quaternion> camRot = new BindableProperty<Quaternion>();
         
-        // public bool loadSavedGame {
-        //     get {
-        //         return _loadSavedGame;
-        //     }
-        //     set {
-        //         _loadSavedGame = value;
-        //         Debug.Log(TAG + " loadSavedGame: " + loadSavedGame);
-        //     }
-        // }
+        private bool _loadSavedGame = false;
+        public BindableProperty<int> gameMode = new BindableProperty<int>();
+
+        public bool loadSavedGame {
+            get {
+                return _loadSavedGame;
+            }
+            set {
+                _loadSavedGame = value;
+            }
+        }
         public bool isChallengeMode {
             get {
                 return _isChallengeMode;
@@ -75,14 +66,12 @@ namespace HotFix.Control {
                 _saveGamePathFolderName = value;
             }
         }
-// 因为想要兼容绝大部分的源程序,这些暂时还都不改        
         public int gridSize {
             get {
                 return _gridSize;
             }
             set {
                 _gridSize = value;
-				// onSizeChanged(-1, _gridSize, -1);
             }
         }
         public int gridXSize {
@@ -91,7 +80,6 @@ namespace HotFix.Control {
             }
             set {
                 _gridXSize = value;
-				// onSizeChanged(_gridXSize, -1, -1);
             }
         }
         public int gridZSize {
@@ -100,18 +88,8 @@ namespace HotFix.Control {
             }
             set {
                 _gridZSize = value;
-				// onSizeChanged(-1, -1, _gridZSize);
             }
         }
-//         private void onSizeChanged(int x, int y, int z) {
-//             if (boardSize.Value == null)
-//                 boardSize.Value = Vector3.zero;
-// // 它的初始值要如何设置呢?            什么时候设置比较好?
-//             Vector3 cur = boardSize.Value;
-//             Vector3 delta = new Vector3((x == -1 ? cur.x : x), (y == -1 ? cur.y : y), (z == -1 ? cur.z : z));
-//             // MathUtilP.print("onSizeChanged()", delta);
-//             boardSize.Value = delta;
-//         }
         public int tetroCnter {
             get {
                 return _tetroCnter;
@@ -126,7 +104,6 @@ namespace HotFix.Control {
         }
 
         public void onGameModeSelected(int pre, int gameMode) {
-            //_gameMode = gameMode;
             switch (gameMode) {
             case 0:
                 if (isChallengeMode)
@@ -134,11 +111,10 @@ namespace HotFix.Control {
                 else                    
                     _saveGamePathFolderName = "educational/grid";
                 break;
-            case 1: // 因为经典模式下也是有层级的
+            case 1: 
                 _saveGamePathFolderName = "classic/level";
                 break;
             }
-            Debug.Log(TAG + " getFilePath(): " + getFilePath());
         }
 
         public string getFilePath() {

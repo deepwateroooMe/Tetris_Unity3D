@@ -49,7 +49,7 @@ namespace HotFix.Control {
         }        
 
         public void Update () {
-            if (!ViewManager.GameView.ViewModel.isPaused) {
+            if (!ViewManager.GameView.isPaused) {
                CheckUserInput(); // MoveDown(): 触发事件前检查了事件的有效性
                UpdateIndividualScore();
                // UpdateFallSpeed();       // static 0.5f

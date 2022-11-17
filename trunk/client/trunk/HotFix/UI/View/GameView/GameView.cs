@@ -91,7 +91,6 @@ namespace HotFix.UI {
         public GameObject initCubes;
         
         private bool isDuringUndo = false;
-        public bool saveForUndo = true;
      
         private static GameObject tmpTetro; // TODO: why static ?
 
@@ -101,7 +100,8 @@ namespace HotFix.UI {
         private StringBuilder type = new StringBuilder("");
 
         public ModelMono modelMono;
-
+        public bool isPaused = false;
+        
 // TODO:对按钮,更该用状态来管理,而不是彻底看不见,应该设置为可见不可点击回调        
         public Dictionary<GameObject, bool> btnState;
 
@@ -130,21 +130,20 @@ namespace HotFix.UI {
                 linText.text = ViewModel.numLinesCleared.Value.ToString();
             }
         }
-        void onLoadSavedGame(bool pre, bool cur) {
-            Debug.Log(TAG + " onLoadSavedGame() cur: " + cur);
-            if (cur) {
-                LoadGame(GloData.Instance.getFilePath());
-            } else {
-                // SpawnPreviewTetromino(); // 生成预览方块砖
-                LoadNewGame();
-                // if (GloData.Instance.gameMode.Value > 0) { // CLASSIC: 生成当前方块砖
-                //     gameStarted = true;
-                //     SpawnnextTetromino();
-                // }
-            }
-        }
-        // void onChallengeMode() {
-        //     Debug.Log(TAG + " onChallengeMode");
+        // void onLoadSavedGame(bool pre, bool cur) {
+        //     Debug.Log(TAG + " onLoadSavedGame() cur: " + cur);
+        //     if (cur) {
+        //         LoadGame(GloData.Instance.getFilePath());
+        //     } else {
+        //         // SpawnPreviewTetromino(); // 生成预览方块砖
+        //         LoadNewGame();
+        //         // if (GloData.Instance.gameMode.Value > 0) { // CLASSIC: 生成当前方块砖
+        //         //     gameStarted = true;
+        //         //     SpawnnextTetromino();
+        //         // }
+        //     }
+        //     Time.timeScale = 1.0f;
+        //     isPaused = false;
         // }
         void initializeChallengingMode() {
             comLevelView.SetActive(true);
@@ -158,7 +157,7 @@ namespace HotFix.UI {
             Debug.Log(TAG + ": SpawnnextTetromino()");
             Debug.Log(TAG + " gameStarted: " + gameStarted);
             if (!gameStarted) {
-                if (ViewModel.gameMode.Value == 0) {
+                if (ViewModel.gameMode == 0) {
                     SpawnPreviewTetromino();
                 } else {
                    gameStarted = true;
@@ -168,7 +167,7 @@ namespace HotFix.UI {
                        nextTetrominoSpawnPos,
                        Quaternion.identity, Vector3.one);
                    currentActiveTetrominoPrepare();
-                   // if (ViewModel.gameMode.Value == 0) {
+                   // if (ViewModel.gameMode == 0) {
                    ViewManager.moveCanvas.transform.rotation = Quaternion.Euler(0, 0, 0);
                    ViewManager.moveCanvas.gameObject.SetActive(true);  
                    // }                   
@@ -181,7 +180,7 @@ namespace HotFix.UI {
                currentActiveTetrominoPrepare();
                 
                SpawnGhostTetromino();
-               if (ViewModel.gameMode.Value == 0)
+               if (ViewModel.gameMode == 0)
                    moveRotatecanvasPrepare();
                SpawnPreviewTetromino();
             }
@@ -218,27 +217,11 @@ namespace HotFix.UI {
         }
         public GameObject [] cubes; // baseCubesGO;
 
-        // public void Start(GameEnterEventInfo info) { // 感觉这些逻辑放在视图里出很牵强,哪些是可以放在模型里的呢?
-        //     Debug.Log(TAG + " Start()");
-        //     // if (ViewModel.isChallengeMode) {
-        //     //     CoroutineHelperP.StartCoroutine(displayChallengeGoal());
-        //     //     loadInitCubesforChallengeMode(); // 挑战模式下有些方块砖,需要初始化一下
-        //     // } else initCubes = new GameObject();
-        //     if (GloData.Instance.loadSavedGame.Value) { // loadSavedGame
-        //         LoadGame(GloData.Instance.getFilePath());
-        //     } else {
-        //         LoadNewGame();
-        //     }
-        //     // startingHighScore = PlayerPrefs.GetInt("highscore"); // 这几个我都彻底忘记它们是什么了.....
-        //     // startingHighScore2 = PlayerPrefs.GetInt("highscore2");
-        //     // startingHighScore3 = PlayerPrefs.GetInt("highscore3");
-        //     // gameStarted = true; // 这还不算严格意义上的真正的开始 
-        // }
 // PauseGame, ResumeGame        
         void OnClickResButton() { // RESUME GAME: 隐藏当前游戏过程中的视图,就可以了 // public void OnClickResButton();
             Debug.Log(TAG + " OnClickResButton");
             Time.timeScale = 1.0f;
-            ViewModel.isPaused = false;
+            isPaused = false;
             pausePanel.SetActive(false);
             EventManager.Instance.FireEvent("resumegame"); // for Audio
         }
@@ -269,42 +252,56 @@ namespace HotFix.UI {
                     DeserializedTransform.getDeserializedTransPos(gameData.nextTetrominoData.transform),
                     DeserializedTransform.getDeserializedTransRot(gameData.nextTetrominoData.transform), Vector3.one);
                 ViewManager.nextTetromino.tag = "currentActiveTetromino";
-                // bool isEnabled = ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).enabled;
-                // ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).enabled = !isEnabled; 
                 ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).enabled = true;
                 ViewModel.nextTetrominoType.Value = ViewManager.nextTetromino.GetComponent<TetrominoType>().type;
                 ViewManager.moveCanvas.gameObject.SetActive(true);
-                // ViewManager.moveCanvas.transform.position = new Vector3(ViewManager.moveCanvas.transform.position.x, ViewManager.nextTetromino.transform.position.y, ViewManager.moveCanvas.transform.position.z);
-                SpawnGhostTetromino();
-// 在极少数已经落地的情况下,仍然需要生成新的当前方块砖,以及阴影方块砖            
-            } else if (gameData.gameMode == 1) {
-                SpawnnextTetromino();
                 SpawnGhostTetromino();
             }
+// // 在极少数已经落地的情况下,仍然需要生成新的当前方块砖,以及阴影方块砖            
+//             else if (gameData.gameMode == 1) {
+//                 SpawnnextTetromino();
+//                 SpawnGhostTetromino();
+//             }
 // 从游戏数据加载大立方体中的各个小方格,仿GameViewModel.onUndoGame(), 以及恢复曾经配制过的相机的位置以及旋转等
             ViewModel.loadGameParentCubeAndCamera(gameData);
             // previewTetromino previewTetromino2
             type.Length = 0;
-			string type2 = ViewModel.eduTetroType.Value;
-// TODO: 正常情况下是不需要这步检测的,但有时候游戏出错又自动保存,加载时会继续出错,先绕一下
-            // Debug.Log(TAG + " (ViewModel.comTetroType == null): " + (ViewModel.comTetroType == null));
-            // Debug.Log(TAG + " (ViewModel.comTetroType.Value == null): " + (ViewModel.comTetroType.Value == null));
-            if (ViewModel.comTetroType != null && ViewModel.comTetroType.Value != null && !ViewModel.comTetroType.Value.Equals("") 
-                && type2 != null && !type2.ToString().Equals(""))
-                SpawnPreviewTetromino(type.Append(ViewModel.comTetroType.Value).ToString(), type2);
-            else SpawnPreviewTetromino();
-            if (ViewModel.prevPreview != null) {
-                ViewModel.prevPreview = ViewModel.prevPreview;
-                ViewModel.prevPreview2 = ViewModel.prevPreview2;
-            } 
-            // MainCamera rotation
-            GameObject.FindGameObjectWithTag("MainCamera").transform.position = DeserializedTransform.getDeserializedTransPos(gameData.cameraData);
-            GameObject.FindGameObjectWithTag("MainCamera").transform.rotation = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
+            ViewModel.comTetroType.Value = gameData.previewTetrominoType;
+            ViewModel.eduTetroType.Value = gameData.previewTetromino2Type;
+            if (gameData.isChallengeMode)
+                SpawnPreviewTetromino(type.Append(gameData.previewTetrominoType).ToString(), ViewModel.eduTetroType.Value, gameData.previewTetrominoColor, gameData.previewTetromino2Color);
+			else
+				SpawnPreviewTetromino(type.Append(gameData.previewTetrominoType).ToString(), ViewModel.eduTetroType.Value);
+// 下面这部分应该是不需要了,因为刚加载游戏,不会允许撤销 ?         
+        // if (gameData.prevPreview != null) {
+        //     prevPreview = gameData.prevPreview;
+        //     prevPreview2 = gameData.prevPreview2;
+        //     if (gameData.isChallengeMode) {
+        //         prevPreviewColor = gameData.prevPreviewColor;
+        //         prevPreviewColor2 = gameData.prevPreviewColor2;
+        //     }
+        // } 
+
+        if (ViewModel.gameMode == 1 && (ViewManager.nextTetromino == null || !ViewManager.nextTetromino.CompareTag("currentActiveTetromino"))) {
+            // spawn currentActiveTetromino && ghostTetromino only, not previewTetromino
+            ViewManager.nextTetromino = PoolHelper.GetFromPool(Model.GetRandomTetromino(), new Vector3(2.0f, Model.gridHeight - 1f, 2.0f), Quaternion.identity, Vector3.one);
+            currentActiveTetrominoPrepare();
+            SpawnGhostTetromino();
+            // FireSpawnedTetrominoEvent(nextTetrominoSpawnPos); // 晚点儿可以用,在挑战模式下,两块画布的位置,可能需要再调整一下          
+        }
+        GloData.Instance.loadSavedGame = false;
             
-            if (ViewManager.nextTetromino != null && ViewManager.nextTetromino.CompareTag("currentActiveTetromino")) 
-                gameStarted = true;
-            ViewModel.loadSavedGame = false;
-        }    
+        // delete loaded saved game file
+        try {
+            File.Delete(path);
+        } catch (System.Exception ex) {
+            Debug.LogException(ex);
+        }            
+
+        // gameStarted = true;
+        if (ViewManager.nextTetromino != null && ViewManager.nextTetromino.CompareTag("currentActiveTetromino")) 
+            gameStarted = true;
+    }    
 
         // TODO: 这个系统是,4+6个按钮触发事件(会有假阳性,会误播背景音乐),先发送所有事件,再接收后才判断是否合理,只有背景音乐受影响
 #region eventsCallbacks
@@ -328,7 +325,6 @@ namespace HotFix.UI {
             // Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), bef onGameSave()"); 
             // MathUtilP.printBoard(gridClr);  // Model.
 
-
             if (GloData.Instance.isChallengeMode) {
                 if (ChallengeRules.isValidLandingPosition()) {
                     EventManager.Instance.FireEvent("challLand");
@@ -343,12 +339,12 @@ namespace HotFix.UI {
 
             if (ViewModel.isChallengeMode)
                 ViewModel.onGameSave(initCubes.transform);
-            else if (ViewModel.gameMode.Value == 0) // 经典模式下不再保存游戏进展; 当且仅当用户要求保存游戏的时候才保存
+            else if (ViewModel.gameMode == 0) // 经典模式下不再保存游戏进展; 当且仅当用户要求保存游戏的时候才保存
                 ViewModel.onGameSave(null);
 
-            if (ViewModel.gameMode.Value > 0 || GloData.Instance.isChallengeMode) // 需要整平面消除的
+            if (ViewModel.gameMode > 0 || GloData.Instance.isChallengeMode) // 需要整平面消除的
                 ModelMono.DeleteRow();
-            else if (ViewModel.gameMode.Value == 0 && !GloData.Instance.isChallengeMode // 启蒙模式,想要带点儿粒子特效的
+            else if (ViewModel.gameMode == 0 && !GloData.Instance.isChallengeMode // 启蒙模式,想要带点儿粒子特效的
                      && !ModelMono.isDeleteRowCoroutineRunning)
                 CoroutineHelperP.StartCoroutine(ModelMono.Instance.DeleteRowCoroutine()); // the case
             
@@ -362,7 +358,7 @@ namespace HotFix.UI {
 
 // 这是被自己控制过的逻辑,要补完整            
             Array.Clear(ViewModel.buttonInteractableList, 0, ViewModel.buttonInteractableList.Length);
-            if (ViewModel.gameMode.Value  == 0) {
+            if (ViewModel.gameMode  == 0) {
                 ViewModel.buttonInteractableList[0] = 1;
                 ViewModel.buttonInteractableList[1] = 1;
                 ViewModel.buttonInteractableList[2] = 1;
@@ -444,9 +440,9 @@ namespace HotFix.UI {
 
         void OnClickPauButton() { 
             Debug.Log(TAG + " OnClickPauButton");
+            isPaused = true;
             Time.timeScale = 0f;
             EventManager.Instance.FireEvent("pausegame");
-            // ViewModel.PauseGame(); // 游戏暂停Reg
             pausePanel.SetActive(true);
 // TODO : Bug: disable all Hud canvas buttons: swap etc
         }
@@ -454,7 +450,7 @@ namespace HotFix.UI {
             Debug.Log(TAG + " OnClickFallFastButton");
 // // TODO: 这个数组没有管理好,为的是一个防止用户防连击的效果(自动过滤掉处理回调过程中的后续连续点击)            
 //             ViewModel.printbuttonInteractableList();
-//             if (ViewModel.gameMode.Value == 0 && ViewModel.getSlamDownIndication() == 0) return; // 防用户连击
+//             if (ViewModel.gameMode == 0 && ViewModel.getSlamDownIndication() == 0) return; // 防用户连击
 //             ViewModel.buttonInteractableList[5] = 0;
             delta = new Vector3(0, -1, 0);
             ViewManager.nextTetromino.transform.position += delta;
@@ -547,7 +543,6 @@ namespace HotFix.UI {
         }
         void SaveGame(SaveGameEventInfo info) {
             Debug.Log(TAG + ": SaveGame()");
-            ViewModel.saveForUndo = false;
             ViewModel.onGameSave(initCubes.transform);
             ViewModel.hasSavedGameAlready = true;
         }
@@ -556,80 +551,47 @@ namespace HotFix.UI {
         void OnClickManButton() { // back to MAIN menu
 // TODO: reminder FOR USER if game is NOT saved            
             pausePanel.SetActive(false);
-            EventManager.Instance.FireEvent("stopgame"); // move rotateCanvas disable
             if (!ViewModel.hasSavedGameAlready && gameStarted) { // gameStarted
                 saveGameOrNotPanel.SetActive(true);
             } else {
-                Model.cleanUpGameBroad();
-                ViewModel.isPaused = false;
-                Time.timeScale = 1.0f;
-                ViewManager.MenuView.Reveal(); // 现在的简单逻辑
-                if (GloData.Instance.isChallengeMode)
-                    ViewManager.basePlane.SetActive(false);
-                Hide(); // TOGO, BUG: 这里还没能真正切换到主游戏菜单去(这里先前没能切掉过去一定是其它的原因所造成的)
+                EventManager.Instance.FireEvent("stopgame"); // move rotateCanvas disable
+                cleanUpGameBroad();
             }
         }
         public void onYesToSaveGame() {
             Debug.Log(TAG + " onYesToSaveGame()");
-            ViewModel.saveForUndo = false; // ? 这里是什么意思呢
-            ViewModel.onGameSave(initCubes.transform);
+            ViewModel.onGameSave(initCubes.transform); // 这里有个等待,待视图模型把数据保存完整
             ViewModel.hasSavedGameAlready = true;
-            saveGameOrNotPanel.SetActive(false);
-            pausePanel.SetActive(false);
-
+            EventManager.Instance.FireEvent("stopgame"); // <<<<<<<<<<<<<<<<<<<< 
             cleanUpGameBroad();
-            Model.cleanUpGameBroad();
-            ViewModel.gameDataResetToDefault();
-            
-            ViewModel.isPaused = false;
-            Time.timeScale = 1.0f;
-            if (GloData.Instance.isChallengeMode)
-                ViewManager.basePlane.SetActive(false);
-
-            ViewModel.hasSavedGameAlready = true;
-            ViewManager.MenuView.Reveal();
-            Hide();
         }
-        
         void cleanUpGameBroad() {
+            saveGameOrNotPanel.SetActive(false); // 保存游戏 与否,提示面板
+            pausePanel.SetActive(false);         // 游戏中 视图 面板
             if (gameOverPanel.activeSelf)
                 gameOverPanel.SetActive(false);
+            if (GloData.Instance.isChallengeMode) {
+                ViewManager.ChallLevelsView.hideAllLevelPanels(); // 需要隐藏当前关卡的底座
+                ViewManager.basePlane.SetActive(false);
+            }
+            if (ViewManager.ghostTetromino != null) // ViewManager.ghostTetromino
+                PoolHelper.recycleGhostTetromino();
             PoolHelper.recyclePreviewTetrominos(previewTetromino);      // 预览方块砖
             if (GloData.Instance.gameMode.Value == 0) 
                 PoolHelper.recyclePreviewTetrominos(previewTetromino2); // 预览方块砖 2
+            gameStarted = false;
+            ViewManager.MenuView.Reveal();
+            Hide();
         }
          public void onNoToNotSaveGame() { // 因为每块方块砖落地时的自动保存,这里用户不需要保存时,要清除保存过的文件
             Debug.Log(TAG + " onNoToNotSaveGame()");
             ViewModel.hasSavedGameAlready = false;
-            saveGameOrNotPanel.SetActive(false);
-            pausePanel.SetActive(false);
-            EventManager.Instance.FireEvent("stopgame");
-            
-            PoolHelper.ReturnToPool(previewTetromino, previewTetromino.GetComponent<TetrominoType>().type);
-            if (ViewModel.gameMode.Value == 0) 
-                PoolHelper.ReturnToPool(previewTetromino2, previewTetromino2.GetComponent<TetrominoType>().type);
-
+            EventManager.Instance.FireEvent("stopgame"); // <<<<<<<<<<<<<<<<<<<< 
             cleanUpGameBroad();
-            Model.cleanUpGameBroad();
-            ViewModel.gameDataResetToDefault();
-            
-            ViewModel.isPaused = false;
-            Time.timeScale = 1.0f;
-            if (ViewModel.gameMode.Value == 1)
-                gameStarted = false;
-            
-            string path = GloData.Instance.getFilePath();
-            if (File.Exists(path)) {
-                try {
-                    File.Delete(path);
-                } catch (System.Exception ex) {
-                    Debug.LogException(ex);
-                }
-            }
-            if (GloData.Instance.isChallengeMode)
-                ViewManager.basePlane.SetActive(false);
-            ViewManager.MenuView.Reveal();
-            Hide();
+            // isPaused = false;
+            // Time.timeScale = 1.0f;
+            // if (ViewModel.gameMode == 1)
+            //     gameStarted = false;
         }
         void OnClickCancButton() { 
             saveGameOrNotPanel.SetActive(false);
@@ -646,7 +608,7 @@ namespace HotFix.UI {
             ViewManager.nextTetromino.tag = "currentActiveTetromino";
             ViewManager.nextTetromino.transform.rotation = Quaternion.identity;
             ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).enabled = true;
-            if (ViewModel.gameMode.Value == 0 && (ViewModel.gridSize == 3 || ViewModel.gridSize == 4)) {
+            if (ViewModel.gameMode == 0 && (ViewModel.gridSize == 3 || ViewModel.gridSize == 4)) {
                 ViewManager.nextTetromino.transform.localPosition = new Vector3(1.0f, ViewModel.gridHeight - 1f, 1.0f);
             } else 
                 ViewManager.nextTetromino.transform.localPosition = nextTetrominoSpawnPos;
@@ -698,9 +660,10 @@ namespace HotFix.UI {
 // TODO: 这里需要一个方便自己先看的临时有物面板
             gameOverPanel.SetActive(true);
         }
+
+// TODO:　我怀疑下面两个方法从来不曾被调用,可以清除掉        
         void Update() {
             Debug.Log(TAG + " Update");
-
             ViewModel.UpdateScore();
             UpdateUI(); // TODO COMMENT掉
             ViewModel.UpdateLevel();
@@ -708,31 +671,23 @@ namespace HotFix.UI {
             // CheckUserInput();  // this is a bug need to be fixed, the screen is flashing
         }
         void UpdateUI() {
+            Debug.Log(TAG + " UpdateUI()");
             scoText.text = ViewModel.currentScore.ToString();
             lvlText.text = ViewModel.currentLevel.ToString();
             linText.text = ViewModel.numLinesCleared.ToString();
             swapCnter.text = ViewModel.swapCnter.Value.ToString();
         }
 
-// 爱表哥,爱生活!!!
-// 游戏过程中,用户因为转动相机南而看见原本不该看见的放大数倍的预览方块砖,这些画面还是要清理一下,影响用户体验        
-// TODO:  在热更新源码中动态实现对预览第一个方块砖的层次设定:　Layer = preview以避免主相机在旋转的过程中会扫到第一个方块砖
-// SOLVED: 不影响性能的做法是:像摆放第二个方块砖一样,把它摆放到一个相机永远无法照到的地方(这个办法最简单)这里暂时先按照这个方法实现了.
-// TODO: 晚点儿会尝试在热更新调用和调试主工程中的相机的位置与角度,以适配挑战模式下相机的设置需求        
-// 哭死: unity主工程里面,上面想要的实现完全没有问题;可是热更新里面,它又需要适配(当相机我放在主工程,而层次设置放在热更新中,不起作用,感觉好大的难度)!!!
-// 这里是不是就是前面模块的,要我把unity主工程所使用的相机搬进热更新程序域里去呢? 
         private void SpawnPreviewTetromino() {
             Debug.Log(TAG + ": SpawnPreviewTetromino()");
-// 这里仍旧是写成观察者模式,视图观察视图模型的数据变化
             ViewModel.comTetroType.Value = ViewModel.GetRandomTetromino();
             Debug.Log(TAG + " ViewModel.comTetroType.Value: " + ViewModel.comTetroType.Value);
             previewTetromino = PoolHelper.GetFromPool(
                 ViewModel.comTetroType.Value, previewTetrominoPosition,
                 Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
             previewTetromino.transform.SetParent(ViewManager.tetroParent.transform, false);
-            // previewTetrominoPrepareLayers(previewTetromino);
             
-            if (ViewModel.gameMode.Value == 0) { // previewTetromino2
+            if (ViewModel.gameMode == 0) { // previewTetromino2
                 // excepts: undoBtn toggleButton fallButton
                 ViewModel.buttonInteractableList[3] = 0;
                 ViewModel.buttonInteractableList[4] = 0;
@@ -752,10 +707,9 @@ namespace HotFix.UI {
 
             previewTetromino = PoolHelper.GetFromPool(type1, previewTetrominoPosition, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
             previewTetromino.transform.SetParent(ViewManager.tetroParent.transform, false);
-            // previewTetrominoPrepareLayers(previewTetromino);
             ViewModel.comTetroType.Value = type1;
             ViewModel.previewTetrominoColor = previewTetromino.GetComponent<TetrominoType>().color;
-            if (ViewModel.gameMode.Value == 0) { // previewTetromino2
+            if (ViewModel.gameMode == 0) { // previewTetromino2
                 previewTetromino2 = PoolHelper.GetFromPool(type2, previewTetromino2Position, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one);
                 previewTetromino2.transform.SetParent(ViewManager.tetroParent.transform, false);
                 ViewModel.eduTetroType.Value = type2;
@@ -766,20 +720,16 @@ namespace HotFix.UI {
         private void SpawnPreviewTetromino(string type1, string type2, int color1, int color2) {
             previewTetromino = PoolHelper.GetFromPool(type1, previewTetrominoPosition, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one, color1);
             previewTetromino.transform.SetParent(ViewManager.tetroParent.transform, false);
-            // previewTetrominoPrepareLayers(previewTetromino);
             ViewModel.comTetroType.Value = previewTetromino.GetComponent<TetrominoType>().type;
             ViewModel.previewTetrominoColor = previewTetromino.GetComponent<TetrominoType>().color;
 
-            if (ViewModel.gameMode.Value == 0) { // previewTetromino2
+            if (ViewModel.gameMode == 0) { // previewTetromino2
                 previewTetromino2 = PoolHelper.GetFromPool(type2, previewTetromino2Position, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one, color2);
                 previewTetromino.transform.SetParent(ViewManager.tetroParent.transform, false);
                 ViewModel.eduTetroType.Value = previewTetromino2.GetComponent<TetrominoType>().type;
                 ViewModel.previewTetromino2Color = previewTetromino2.GetComponent<TetrominoType>().color;
             }
         }
-        // void previewTetrominoPrepareLayers(GameObject p) { // set for comTetroType previewTetromino only 那么playFirstTetromino会受影响
-        //     p.layer = LayerMask.NameToLayer("preview");
-        // } 
 
         public void Reveal(Action Start) {
             base.Reveal(true, Start);
@@ -806,29 +756,18 @@ namespace HotFix.UI {
             //ViewModel.comTetroType.OnValueChanged += onComTetroTypeChanged;
             //ViewModel.eduTetroType.OnValueChanged += onEduTetroTypeChanged;
 
-// TODO: 这个模块需要补充起来,需要先搭个PROTOTYPE测试的架; 相机的位置变化:主要用于启蒙模式,用户㧤撤销某块方块砖的时候 ?
-            ViewModel.cameraPos.OnValueChanged += onCameraPosChanged;
-            ViewModel.cameraRot.OnValueChanged += onCameraRotChanged;
 
 // TODO: 为了触发第一次的回调,稍微绕了一下,只能触发第一次的回调是不可以的
             int tmpGameMode = GloData.Instance.gameMode.Value;
             GloData.Instance.gameMode.Value = -1;
             GloData.Instance.gameMode.OnValueChanged += onGameModeChanged;
             GloData.Instance.gameMode.Value = tmpGameMode;
-// // TODO: 为了触发第一次的回调,稍微绕了一下,只能触发第一次的回调是不可以的
-//             bool tmp = GloData.Instance.isChallengeMode.Value;
-//             GloData.Instance.isChallengeMode.Value = !tmp;
-//             GloData.Instance.isChallengeMode.OnValueChanged += onChallengeMode;
-//             GloData.Instance.isChallengeMode.Value = tmp;
 // TODO: 为了触发第一次的回调,稍微绕了一下,只能触发第一次的回调是不可以的
             GloData.Instance.challengeLevel.OnValueChanged += onChallengeLevelChanged;
 
-// TODO: 为了触发第一次的回调,稍微绕了一下,只能触发第一次的回调是不可以的
-            bool tmpLoadGame = GloData.Instance.loadSavedGame.Value;
-            GloData.Instance.loadSavedGame.Value = !tmpLoadGame;
-            GloData.Instance.loadSavedGame.OnValueChanged += onLoadSavedGame;
-            GloData.Instance.loadSavedGame.Value = tmpLoadGame;
-
+// 主要是方便从数据加载游戏进度的时候
+            ViewModel.cameraPos.OnValueChanged += onCameraPosChanged;
+            ViewModel.cameraRot.OnValueChanged += onCameraRotChanged;
 // MainCamera position and rotation for CHALLENGE ModelMono
             Vector3 tmp = GloData.Instance.camPos.Value;
             GloData.Instance.camPos.Value = Vector3.zero;
@@ -838,11 +777,21 @@ namespace HotFix.UI {
             GloData.Instance.camRot.Value = Quaternion.identity;
             GloData.Instance.camRot.OnValueChanged += onCamRotChanged;
             GloData.Instance.camRot.Value = tmq;
-            
-            GloData.Instance.boardSize.OnValueChanged += onBoardSizeChanged;
-            GloData.Instance.boardSize.Value = new Vector3(Model.gridXWidth, Model.gridWidth, Model.gridZWidth); // 为了触发第一次的回调而写的
-            
+
+            Start(new GameEnterEventInfo()); // 第一次触发启动 ?
             revealed = true;
+        }
+        public void Start(GameEnterEventInfo info) { // 刚才以loadSavedGame为驱动的模式有问题,因为它的值总是会被重置,被重置的时候并不希望再次触发回调,所以需要使用游戏状态事件
+            Debug.Log(TAG + " Start()");
+            if (GloData.Instance.loadSavedGame) { // loadSavedGame
+                LoadGame(GloData.Instance.getFilePath());
+            } else {
+                LoadNewGame();
+            }
+            // startingHighScore = PlayerPrefs.GetInt("highscore"); // 这几个我都彻底忘记它们是什么了.....
+            // startingHighScore2 = PlayerPrefs.GetInt("highscore2");
+            // startingHighScore3 = PlayerPrefs.GetInt("highscore3");
+            // gameStarted = true; // 这还不算严格意义上的真正的开始 
         }
         void onChallengeLevelChanged(int pre, int cur) {
             Debug.Log(TAG + " onChallengeLevelChanged()" + " cur: " + cur);
@@ -860,12 +809,6 @@ namespace HotFix.UI {
         void onCamRotChanged(Quaternion pre, Quaternion cur) {
             Debug.Log(TAG + " onCamRotChanged" + " cur: " + cur);
             Camera.main.transform.rotation = cur;
-        }
-// 这里暂时就只当是搭了个桥,帮助调用一下,暂时不改里面的逻辑        
-        public void onBoardSizeChanged(Vector3 pre, Vector3 cur) {
-            Debug.Log(TAG + " onBoardSizeChanged()");
-            MathUtilP.print(cur);
-            ViewModel.modelArraysReset();
         }
         void onTetroCnterChanged(int pre, int cur) {
             tetroCnter.text = cur.ToString();
@@ -1013,8 +956,7 @@ namespace HotFix.UI {
             EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
             EventManager.Instance.RegisterListener<UndoLastTetrominoInfo>(onUndoGame); 
             EventManager.Instance.RegisterListener<SaveGameEventInfo>(SaveGame);
-            
-            // EventManager.Instance.RegisterListener<GameEnterEventInfo>(Start);
+            EventManager.Instance.RegisterListener<GameEnterEventInfo>(Start);
         }
         public void OnDisable() {
             Debug.Log(TAG + ": OnDisable()");
@@ -1023,15 +965,8 @@ namespace HotFix.UI {
             EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
             EventManager.Instance.UnregisterListener<SaveGameEventInfo>(SaveGame); 
             EventManager.Instance.UnregisterListener<UndoLastTetrominoInfo>(onUndoGame); 
-
-            // EventManager.Instance.UnregisterListener<GameEnterEventInfo>(Start);
+            EventManager.Instance.UnregisterListener<GameEnterEventInfo>(Start);
         }
-#endregion
-#region otherHelpers        
-        // void printViewModel.buttonInteractableList() {
-        //     for (int i = 0; i < 6; i++) 
-        //         Debug.Log(TAG + " ViewModel.buttonInteractableList[i]: i : " + i + ", " + ViewModel.buttonInteractableList[i]); 
-        // }
 #endregion
     }
 }
