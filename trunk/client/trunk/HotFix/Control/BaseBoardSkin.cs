@@ -94,9 +94,8 @@ namespace HotFix.Control {
             return (int)(Mathf.Round(x) + GloData.Instance.gridXSize * Mathf.Round(z)); // y = 0
         }
 
-        public void initateBaseCubesColors() {
+        public void initateBaseCubesColors() { // 这里初始化得狠早,可能早于Model初始化其相关数组,所以这里用到的要自己初始化一下
             Debug.Log(TAG + " initateBaseCubesColors()");
-            
             // int n = Model.gridXWidth * Model.gridZWidth, idx = 0; // 这里想要初始化的时候,Model里的数据可能也还没有初始化
             int n = GloData.Instance.gridXSize * GloData.Instance.gridZSize, idx = 0;
             Debug.Log(TAG + " initateBaseCubesColors() n: " + n);
@@ -113,8 +112,25 @@ namespace HotFix.Control {
                     cubes[idx].gameObject.transform.rotation = Quaternion.identity;
                 }
             int xx = 0, zz = 0;
+            if (!Model.mcubesInitiated) {
+                Model.baseCubes = new int[GloData.Instance.maxXWidth * GloData.Instance.maxZWidth]; // 底座的着色
+                Model.grid = new Transform[GloData.Instance.maxXWidth][][];
+                Model.gridOcc = new int[GloData.Instance.maxXWidth][][];
+                Model.gridClr = new int[GloData.Instance.maxXWidth][][];
+                for (int i = 0; i < GloData.Instance.maxXWidth; i++) {
+                    Model.grid[i] = new Transform[Model.gridHeight][];
+                    Model.gridOcc[i] = new int [Model.gridHeight][];
+                    Model.gridClr[i] = new int [Model.gridHeight][];
+                    for (int j = 0; j < Model.gridHeight; j++) {
+                        Model.grid[i][j] = new Transform[GloData.Instance.maxZWidth];
+                        Model.gridOcc[i][j] = new int [GloData.Instance.maxZWidth];
+                        Model.gridClr[i][j] = new int [GloData.Instance.maxZWidth];
+                    }
+                }
+                Model.mcubesInitiated = true;
+            }
             for (int i = 0; i < n; i++) {
-                Model.baseCubes[i] = cubes[i].GetComponent<MinoType>().color;
+                Model.baseCubes[i] = cubes[i].GetComponent<MinoType>().color; // 
                 xx = i % GloData.Instance.gridXSize;
                 zz = i / GloData.Instance.gridXSize;
                 if (!cubes[i].activeSelf) { // 如果某一个方格失活,那么整个竖列都是不能穿过的

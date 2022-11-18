@@ -95,6 +95,7 @@ namespace HotFix.UI {
 
         public void onGameStopAndReset(GameStopEventInfo info) {
             Debug.Log(TAG + " gameDataResetToDefault()");
+// TODO: 感觉这里有时候面板还没有清理干净             
             Model.cleanUpGameBroad(); // 包括了 ViewManager.nextTetromino 的特殊处理
             
             currentScore.Value = 0;
@@ -146,11 +147,14 @@ namespace HotFix.UI {
             }
             isDuringUndo = false;
         }
-        public void loadGameParentCubeAndCamera(GameData gameData) {
+        public void loadGameParentCubeAndCamera(GameData gameData) { // 还需要包括分值系统
             Debug.Log(TAG + " LoadGameParentCubeAndCamera() gameData.parentList.Count: " + gameData.parentList.Count);
             LoadingSystemHelper.LoadDataFromParentList(gameData.parentList);
             cameraPos.Value = DeserializedTransform.getDeserializedTransPos(gameData.cameraData); // MainCamera
             cameraRot.Value = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
+            tetroCnter.Value = gameData.tetroCnter;
+            swapCnter.Value = gameData.swapCnter;
+            undoCnter.Value = gameData.undoCnter;
         }
         
         void onGameLevelChanged(int pre, int cur) { // for educational + classic mode
@@ -202,22 +206,25 @@ namespace HotFix.UI {
 // 最大各种数组的初始化
             Debug.Log(TAG + " GloData.Instance.maxXWidth: " + GloData.Instance.maxXWidth);
             Debug.Log(TAG + " GloData.Instance.maxZWidth: " + GloData.Instance.maxZWidth);
-            Model.baseCubes = new int[GloData.Instance.maxXWidth * GloData.Instance.maxZWidth]; // 底座的着色
+            if (!Model.mcubesInitiated) {
+                Model.baseCubes = new int[GloData.Instance.maxXWidth * GloData.Instance.maxZWidth]; // 底座的着色
+                Model.grid = new Transform[GloData.Instance.maxXWidth][][];
+                Model.gridOcc = new int[GloData.Instance.maxXWidth][][];
+                Model.gridClr = new int[GloData.Instance.maxXWidth][][];
+                for (int i = 0; i < GloData.Instance.maxXWidth; i++) {
+                    Model.grid[i] = new Transform[Model.gridHeight][];
+                    Model.gridOcc[i] = new int [Model.gridHeight][];
+                    Model.gridClr[i] = new int [Model.gridHeight][];
+                    for (int j = 0; j < Model.gridHeight; j++) {
+                        Model.grid[i][j] = new Transform[GloData.Instance.maxZWidth];
+                        Model.gridOcc[i][j] = new int [GloData.Instance.maxZWidth];
+                        Model.gridClr[i][j] = new int [GloData.Instance.maxZWidth];
+                    }
+                }
+                Model.mcubesInitiated = true;
+            }
             Model.prevSkin = new int[4];
             Model.prevIdx = new int[4];
-            Model.grid = new Transform[GloData.Instance.maxXWidth][][];
-            Model.gridOcc = new int[GloData.Instance.maxXWidth][][];
-            Model.gridClr = new int[GloData.Instance.maxXWidth][][];
-            for (int i = 0; i < GloData.Instance.maxXWidth; i++) {
-                Model.grid[i] = new Transform[Model.gridHeight][];
-                Model.gridOcc[i] = new int [Model.gridHeight][];
-                Model.gridClr[i] = new int [Model.gridHeight][];
-                for (int j = 0; j < Model.gridHeight; j++) {
-                    Model.grid[i][j] = new Transform[GloData.Instance.maxZWidth];
-                    Model.gridOcc[i][j] = new int [GloData.Instance.maxZWidth];
-                    Model.gridClr[i][j] = new int [GloData.Instance.maxZWidth];
-                }
-            }
             modelArraysReset();
             Debug.Log(TAG + " isChallengeMode: " + isChallengeMode);
             if (isChallengeMode)
@@ -326,21 +333,21 @@ namespace HotFix.UI {
             Debug.Log(TAG + " prevPreviewColor: " + prevPreviewColor);
             Debug.Log(TAG + " prevPreviewColor2: " + prevPreviewColor2);
             Debug.Log(TAG + " comTetroType.Value: " + comTetroType.Value);
-            GameData gameData = null;
-            if (isChallengeMode) gameData = new GameData(GloData.Instance.isChallengeMode, ViewManager.nextTetromino, ViewManager.ghostTetromino, tmpTransform,
-                                                         gameMode, currentScore.Value, currentLevel.Value, numLinesCleared.Value,
-                                                         Model.gridXWidth, Model.gridZWidth,
-                                                         prevPreview, prevPreview2,
-                                                         nextTetrominoType.Value, comTetroType.Value, eduTetroType.Value,
-                                                         Model.grid, Model.gridClr, prevPreviewColor, prevPreviewColor2, previewTetrominoColor, previewTetromino2Color,
-                                                         initCubeParentTrans);
-            else gameData = new GameData(GloData.Instance.isChallengeMode, ViewManager.nextTetromino, ViewManager.ghostTetromino, tmpTransform,
-                                         gameMode, currentScore.Value, currentLevel.Value, numLinesCleared.Value,
-                                         Model.gridWidth, Model.gridWidth,
-                                         prevPreview, prevPreview2,
-                                         nextTetrominoType.Value, comTetroType.Value, eduTetroType.Value,
-                                         Model.grid, Model.gridClr, prevPreviewColor, prevPreviewColor2, previewTetrominoColor, previewTetromino2Color,
-                                         initCubeParentTrans);
+            GameData gameData = new GameData(GloData.Instance.isChallengeMode, ViewManager.nextTetromino, ViewManager.ghostTetromino, tmpTransform,
+                                             gameMode, currentScore.Value, currentLevel.Value, numLinesCleared.Value,
+                                             tetroCnter.Value, swapCnter.Value, undoCnter.Value,
+                                             Model.gridXWidth, Model.gridZWidth,
+                                             prevPreview, prevPreview2,
+                                             nextTetrominoType.Value, comTetroType.Value, eduTetroType.Value,
+                                             Model.grid, Model.gridClr, prevPreviewColor, prevPreviewColor2, previewTetrominoColor, previewTetromino2Color,
+                                             initCubeParentTrans);
+                            // else gameData = new GameData(GloData.Instance.isChallengeMode, ViewManager.nextTetromino, ViewManager.ghostTetromino, tmpTransform,
+                            //                              gameMode, currentScore.Value, currentLevel.Value, numLinesCleared.Value,
+                            //                              Model.gridWidth, Model.gridWidth,
+                            //                              prevPreview, prevPreview2,
+                            //                              nextTetrominoType.Value, comTetroType.Value, eduTetroType.Value,
+                            //                              Model.grid, Model.gridClr, prevPreviewColor, prevPreviewColor2, previewTetrominoColor, previewTetromino2Color,
+                            //                              initCubeParentTrans);
             SaveSystem.SaveGame(GloData.Instance.getFilePath(), gameData);
         }
 

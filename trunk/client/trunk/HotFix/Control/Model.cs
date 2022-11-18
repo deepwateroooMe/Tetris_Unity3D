@@ -27,7 +27,8 @@ namespace HotFix.Control {
         
         public static int numberOfRowsThisTurn = 0; 
         public static bool isNumberOfRowsThisTurnUpdated = false;
-
+        public static bool mcubesInitiated = false;
+        
         private static StringBuilder type = new StringBuilder("");
         private static int randomTetromino;
 

@@ -34,6 +34,10 @@ namespace deepwaterooo.tetris3d {
         public int previewTetrominoColor; 
         public int previewTetromino2Color;
 
+        public int tetroCnter;
+        public int swapCnter;
+        public int undoCnter;
+        
 // 游戏进度数据需要保存的其它条款    
         public SerializedTransform cameraData;  // 相机数据
         public TetrominoData nextTetrominoData; // 大方格中的当前方块砖
@@ -45,7 +49,9 @@ namespace deepwaterooo.tetris3d {
         private TetrominoData curParentData;
 
 		public GameData(bool isChallengeMode, GameObject go, GameObject ghostTetromino, Transform tmpTransform,
-                        int gameMode, int currentScore, int currentLevel, int numLinesCleared, int gridXWidth, int gridZWidth,
+                        int gameMode, int currentScore, int currentLevel, int numLinesCleared,
+                        int tetroCnter, int swapCnter, int undoCnter,
+                        int gridXWidth, int gridZWidth,
                         string prevPreview, string prevPreview2,
                         string nextTetrominoType, string previewTetrominoType, string previewTetromino2Type,
                         Transform[][][] gd, int[][][] gridClr,
@@ -61,9 +67,11 @@ namespace deepwaterooo.tetris3d {
 			this.nextTetrominoType = nextTetrominoType;
 			this.previewTetrominoType = previewTetrominoType;
 			this.previewTetromino2Type = previewTetromino2Type;
-
+            this.tetroCnter = tetroCnter;
+            this.swapCnter = swapCnter;
+            this.undoCnter = undoCnter;
             int listSize;
-            
+
 			if (isChallengeMode) {
 				this.previewTetrominoColor = previewTetrominoColor;
 				this.previewTetromino2Color = previewTetromino2Color;
@@ -97,7 +105,7 @@ namespace deepwaterooo.tetris3d {
 			if (go != null) { // go: ViewManager.nextTetromino
 				isCurrentlyActiveTetromino = go.CompareTag("currentActiveTetromino");
                 Debug.Log(TAG + " isCurrentlyActiveTetromino: " + isCurrentlyActiveTetromino);
-				if (go != null && isCurrentlyActiveTetromino) { // 没着陆
+				if (go != null && isCurrentlyActiveTetromino) { // 没着陆: 保存的先后顺序设定的逻辑是在这里保存
 					foreach (Transform mino in go.transform) {
 						if (mino.CompareTag("mino")) {
 							x = (int)Mathf.Round(mino.position.x);
@@ -120,7 +128,7 @@ namespace deepwaterooo.tetris3d {
 				z = pos[2];
 				if (gd[x][y][z] != null && gd[x][y][z].parent != null) {
 					if ((ghostTetromino == null || (gd[x][y][z].parent != ghostTetromino.transform))                 // 只要不是阴影 和
-						// && (go == null || gd[x][y][z].parent != go.transform) // 这里仍然是需要保存了(上下 两个地方也只会有一个地方保存)
+						&& (go == null || gd[x][y][z].parent != go.transform) // 不排除会造成这里 当前方块砖 会被保存和接下来的加载,保存2遍加载2遍
                         && (!isChallengeMode || initCubesParent == null || gd[x][y][z].parent != initCubesParent)) { // 只要不是挑战模式下的 预设方块砖
 						if (!myContains(gd[x][y][z].parent)) {
 // todo: level 11 需要根据每个立方体来保存每个立方体的材质

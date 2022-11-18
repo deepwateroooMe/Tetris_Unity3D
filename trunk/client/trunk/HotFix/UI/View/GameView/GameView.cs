@@ -325,6 +325,14 @@ namespace HotFix.UI {
             Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), AFTER onGameSave()"); 
             MathUtilP.printBoard(Model.gridClr);  // Model.
             
+// nextTetromino 的相关处理: 这里再提前一点儿处理,是因为热更新里调用的延迟,造成游戏中总出奇怪的BUG
+// ViewManager.nextTetromino: 在接下来消除的过程中，它的部分或是全部立方体可能会被消除，所以要早点儿处理
+            ViewManager.nextTetromino.tag = "Untagged";
+            Tetromino tetromino = ComponentHelper.GetTetroComponent(ViewManager.nextTetromino);
+            ViewModel.currentScore.Value += ViewManager.scoreDic[ViewManager.nextTetromino.name];
+            tetromino.enabled = false;
+            PoolHelper.recycleGhostTetromino(); 
+
             if (ViewModel.gameMode > 0 || GloData.Instance.isChallengeMode) // 需要整平面消除的
                 ModelMono.DeleteRow();
             else if (ViewModel.gameMode == 0 && !GloData.Instance.isChallengeMode // 启蒙模式,想要带点儿粒子特效的
@@ -346,15 +354,6 @@ namespace HotFix.UI {
                 btnState.Value[togBtn] = true; // TODO: 这个好像有点儿什么问题
                 btnState.Value[falBtn] = true; // 点击的时候就失活了;但是如果没有点击呢?
             }
-            
-// nextTetromino 的相关处理: 
-// ViewManager.nextTetromino: 在接下来消除的过程中，它的部分或是全部立方体可能会被消除，所以要早点儿处理
-            ViewManager.nextTetromino.tag = "Untagged";
-            Tetromino tetromino = ComponentHelper.GetTetroComponent(ViewManager.nextTetromino);
-            ViewModel.currentScore.Value += ViewManager.scoreDic[ViewManager.nextTetromino.name];
-            tetromino.enabled = false;
-
-            PoolHelper.recycleGhostTetromino();
 
             if (GloData.Instance.gameMode.Value != 0) 
                 SpawnnextTetromino();

@@ -148,8 +148,9 @@ namespace HotFix.Control {
             if (objInstance == null) {
                 objInstance = GameObject.Instantiate(minosDic[type]);
                 InstantiateNewTetrominoPrepare(objInstance);
-            } else 
-                objInstance.SetActive(true);
+            }
+            // else 
+            //     objInstance.SetActive(true);
             if (objInstance == null) {                
                 objInstance = GameObject.Instantiate(minosDic[type]);
                 InstantiateNewTetrominoPrepare(objInstance);
@@ -204,10 +205,8 @@ namespace HotFix.Control {
                     objInstance.GetComponent<TetrominoType>().color = randomColor;
                     Debug.Log(TAG + " randomColor: " + randomColor); 
                     foreach (Transform child in objInstance.transform) {
-                        // if (child.gameObject.GetComponent<MinoType>() == null) // 这些不再需要了
-                        //     child.gameObject.AddComponent<MinoType>();
                         child.gameObject.GetComponent<MinoType>().color = randomColor;
-                        child.gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.colors[randomColor];
+                        child.gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.colors[randomColor]; // 这里不知道为什么材质没有设置对?
                     }
                 }
             }
@@ -222,6 +221,7 @@ namespace HotFix.Control {
             else
                 objInstance.transform.localScale = (Vector3)localScale;
             objInstance.transform.SetParent(ViewManager.tetroParent.transform, false); // default set here 吧
+            objInstance.SetActive(true); 
             return objInstance;
         }
 
