@@ -465,16 +465,6 @@ namespace HotFix.UI {
             SpawnPreviewTetromino();
             btnState.Value[swaBtn] = true;
         }
-// TODO: 当且仅当要为换方块砖配置音效的时候,才使用这个方法swap preview tetrominos, for Educational mode only
-        // public void onSwapPreviewTetrominos(SwapPreviewsEventInfo swapInfo) { 
-        //     Debug.Log(TAG + ": swapPreviewTetrominos()");
-        //     if (ViewModel.buttonInteractableList[2] == 0) return;
-        //     PoolHelper.preparePreviewTetrominoRecycle(previewTetromino); // recycle 1st tetromino first
-        //     PoolHelper.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
-        //     PoolHelper.preparePreviewTetrominoRecycle(previewTetromino2); // recycle 2st tetromino then
-        //     PoolHelper.ReturnToPool(cycledPreviewTetromino, cycledPreviewTetromino.GetComponent<TetrominoType>().type);
-        //     SpawnPreviewTetromino();
-        // }
         void OnClickTogButton() { // toggle moveCanvas rotateCanvas
 			// btnState.Value[togBtn] = false;
             EventManager.Instance.FireEvent("canvas");

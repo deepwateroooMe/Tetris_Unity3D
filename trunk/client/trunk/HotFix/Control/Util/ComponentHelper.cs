@@ -5,15 +5,15 @@ namespace HotFix.Control {
 	public class ComponentHelper : MonoBehaviour {
 
 // basePlane: BaseBoardSkin.cs
-		public static void AddBBSkinComponent(GameObject go) {
-			go.AddComponent<BaseBoardSkin>();
+		public static BaseBoardSkin AddBBSkinComponent(GameObject go) {
+			return go.AddComponent<BaseBoardSkin>();
 		}
 // Tetromino GhostTetromino        
-		public static void AddTetroComponent(GameObject go) {
-			go.AddComponent<Tetromino>();
+		public static Tetromino AddTetroComponent(GameObject go) {
+			return go.AddComponent<Tetromino>();
 		}
-		public static void AddGhostComponent(GameObject go) {
-			go.AddComponent<GhostTetromino>();
+		public static GhostTetromino AddGhostComponent(GameObject go) {
+			return go.AddComponent<GhostTetromino>();
 		}
 // MoveCanvas RotateCanvas        
 		public static void AddMoveCanvasComponent(GameObject go) {

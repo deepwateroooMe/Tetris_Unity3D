@@ -111,6 +111,13 @@ namespace HotFix.UI {
         }        
 
         void CallBackHelper(int level) {
+// BaseBoardSkin.cs MonoBehaviour: 需要它尽可能早地执行
+            GameObject go = ViewManager.basePlane.gameObject.FindChildByName("level" + level);
+            if (ComponentHelper.GetBBSkinComponent(go) == null) {
+                // Debug.Log(TAG + " (ComponentHelper.GetBBSkinComponent(go) == null): " + (ComponentHelper.GetBBSkinComponent(go) == null));
+                BaseBoardSkin baseBoardSkin = ComponentHelper.AddBBSkinComponent(go);
+                // baseBoardSkin.initateBaseCubesColors(); // could be tried here too.
+            }
             switch (level) {
             case 1:
                 GloData.Instance.camPos.Value = new Vector3(18.57f, 18.67f, -2.27f);
@@ -248,12 +255,6 @@ namespace HotFix.UI {
             }
             GloData.Instance.gameLevel = level;
 
-// BaseBoardSkin.cs MonoBehaviour
-            GameObject go = ViewManager.basePlane.gameObject.FindChildByName("level" + level);
-            if (ComponentHelper.GetBBSkinComponent(go) == null) {
-                Debug.Log(TAG + " (ComponentHelper.GetBBSkinComponent(go) == null): " + (ComponentHelper.GetBBSkinComponent(go) == null));
-                ComponentHelper.AddBBSkinComponent(go);
-            }
 
             levels[level].SetActive(true);
             currentLevel = levels[level];

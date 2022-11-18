@@ -219,6 +219,7 @@ namespace HotFix.UI {
             }
             
             modelArraysReset();
+            Debug.Log(TAG + " isChallengeMode: " + isChallengeMode);
             if (isChallengeMode)
                 ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel)).initateBaseCubesColors();
         }
@@ -260,9 +261,9 @@ namespace HotFix.UI {
                 MathUtilP.printBoard(Model.gridOcc);
                 Debug.Log(TAG + ": gridClr()");
                 MathUtilP.printBoard(Model.gridClr);
-                
+// 上一个视图里的工作还没有完成,这里执行的时候总是空,不能正常如期初始化,可以换个地方去初始化                
                 BaseBoardSkin baseSkin = ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel));
-                Debug.Log(TAG + " (baseSkin == null): " + (baseSkin == null));
+                // Debug.Log(TAG + " (baseSkin == null): " + (baseSkin == null));
                 if (baseSkin != null)
                     baseSkin.initateBaseCubesColors();
             } else {

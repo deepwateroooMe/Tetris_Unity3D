@@ -102,8 +102,6 @@ namespace HotFix.Control {
 
         public void initateBaseCubesColors() {
             Debug.Log(TAG + " initateBaseCubesColors()");
-            //Debug.Log(TAG + " initateBaseCubesColors() baseCubesInitialized: " + baseCubesInitialized);
-            // if (baseCubesInitialized) return ;
             
             // 当添加这个脚本的时候,还无法知道游戏关卡层级,所以必须换个地方起始初始化
             int n = Model.gridXWidth * Model.gridZWidth, idx = 0;
