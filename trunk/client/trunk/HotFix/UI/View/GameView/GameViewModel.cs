@@ -207,12 +207,10 @@ namespace HotFix.UI {
             Model.grid = new Transform[GloData.Instance.maxXWidth][][];
             Model.gridOcc = new int[GloData.Instance.maxXWidth][][];
             Model.gridClr = new int[GloData.Instance.maxXWidth][][];
-            // BaseBoardSkin.cubes = new GameObject[GloData.Instance.maxXWidth][];
             for (int i = 0; i < GloData.Instance.maxXWidth; i++) {
                 Model.grid[i] = new Transform[Model.gridHeight][];
                 Model.gridOcc[i] = new int [Model.gridHeight][];
                 Model.gridClr[i] = new int [Model.gridHeight][];
-                // BaseBoardSkin.cubes[i] = new GameObject[GloData.Instance.maxZWidth];
                 for (int j = 0; j < Model.gridHeight; j++) {
                     Model.grid[i][j] = new Transform[GloData.Instance.maxZWidth];
                     Model.gridOcc[i][j] = new int [GloData.Instance.maxZWidth];
