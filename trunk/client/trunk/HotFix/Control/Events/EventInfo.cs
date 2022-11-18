@@ -34,9 +34,9 @@ namespace HotFix.Control {
         public const string TAG = "TetrominoRotateEventInfo"; 
         public Vector3 delta;
     }
-    public class UndoLastTetrominoInfo : EventInfo {
-        private const string TAG = "UndoLastTetrominoInfo"; 
-    }
+    // public class UndoLastTetrominoInfo : EventInfo { // 下面已经有个定义了
+    //     private const string TAG = "UndoLastTetrominoInfo"; 
+    // }
     public class TetrominoValidMMInfo : EventInfo { // valid Move Rotate
         private const string TAG = "TetrominoValidMMInfo";
         public string type;

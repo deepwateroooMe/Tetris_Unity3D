@@ -47,18 +47,13 @@ namespace HotFix.Control {
                     if (pos.y == 0) {
                         idx = getMinoPosCubeArrIndex(pos.x, pos.z);
                         Debug.Log(TAG + " onActiveTetrominoLand() idx: " + idx);
-
+// 将当前方块砖落地前的相应位置的 坐标 和 着色 存起来,备用
                         Model.prevIdx[i] = idx;
                         Model.prevSkin[i] = getChallengedMaterialIdx(cubes[idx].gameObject.GetComponent<Renderer>().sharedMaterial);
 // 将地板板砖的材质更换为当前所接触立方体的材质 
                         cubes[idx].gameObject.GetComponent<Renderer>().sharedMaterial = mino.gameObject.GetComponent<Renderer>().sharedMaterial;
                         Model.baseCubes[idx] = mino.gameObject.GetComponent<MinoType>().color;
-                        // Debug.Log(TAG + " idx: " + idx);
-                        // Debug.Log(TAG + " Model.prevIdx[i]: " + Model.prevIdx[i]);
-                        // Debug.Log(TAG + " Model.prevSkin[i]: " + Model.prevSkin[i]);
-                        // Debug.Log(TAG + " ViewManager.materials[Model.prevSkin[i]].ToString(): " + ViewManager.materials[Model.prevSkin[i]].ToString());
                         i++;
-                        // Debug.Log(TAG + " cubes[idx].gameObject.GetComponent<Renderer>().sharedMaterial.ToString(): " + cubes[idx].gameObject.GetComponent<Renderer>().sharedMaterial.ToString()); 
                     }
                 }
             }
@@ -80,12 +75,11 @@ namespace HotFix.Control {
             Debug.Log(TAG + ": onUndoGame()"); 
             for (int i = 0; i < 4; i++) {
                 if (Model.prevIdx[i] == -1) return;
-                Debug.Log(TAG + " Model.prevIdx[i]: " + Model.prevIdx[i]);
+                // Debug.Log(TAG + " Model.prevIdx[i]: " + Model.prevIdx[i]);
                 cubes[Model.prevIdx[i]].gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[Model.prevSkin[i]];
-
-                Debug.Log(TAG + " Model.prevIdx[i]: " + Model.prevIdx[i]);
-                Debug.Log(TAG + " Model.prevSkin[i]: " + Model.prevSkin[i]); 
-                Debug.Log(TAG + " cubes[Model.prevIdx[i]].gameObject.GetComponent<Renderer>().sharedMaterial.ToString(): " + cubes[Model.prevIdx[i]].gameObject.GetComponent<Renderer>().sharedMaterial.ToString()); 
+                // Debug.Log(TAG + " Model.prevIdx[i]: " + Model.prevIdx[i]);
+                // Debug.Log(TAG + " Model.prevSkin[i]: " + Model.prevSkin[i]); 
+                // Debug.Log(TAG + " cubes[Model.prevIdx[i]].gameObject.GetComponent<Renderer>().sharedMaterial.ToString(): " + cubes[Model.prevIdx[i]].gameObject.GetComponent<Renderer>().sharedMaterial.ToString()); 
             }
         }
         

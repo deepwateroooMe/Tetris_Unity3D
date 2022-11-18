@@ -397,7 +397,8 @@ namespace HotFix.UI {
             btnState.Value[pvBtnTwo] = false;
             btnState.Value[swaBtn] = false;
         }
-        public void onUndoGame(UndoLastTetrominoInfo info) { // 新系统,需要适配这套系统
+        // public void onUndoGame(UndoLastTetrominoInfo info) { // 新系统,需要适配这套系统
+        public void onUndoGame(UndoGameEventInfo info) { // 新系统,需要适配这套系统
             Debug.Log(TAG + " onUndoGame() isDuringUndo: " + isDuringUndo);
 
             if (gameOverPanel.activeSelf)
@@ -944,8 +945,9 @@ namespace HotFix.UI {
             EventManager.Instance.RegisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove); 
             EventManager.Instance.RegisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
             EventManager.Instance.RegisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
-            EventManager.Instance.RegisterListener<UndoLastTetrominoInfo>(onUndoGame); 
+
             EventManager.Instance.RegisterListener<SaveGameEventInfo>(SaveGame);
+            EventManager.Instance.RegisterListener<UndoGameEventInfo>(onUndoGame); 
             EventManager.Instance.RegisterListener<GameEnterEventInfo>(Start);
         }
         public void OnDisable() {
@@ -953,8 +955,9 @@ namespace HotFix.UI {
             EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove);
             EventManager.Instance.UnregisterListener<TetrominoRotateEventInfo>(onActiveTetrominoRotate);
             EventManager.Instance.UnregisterListener<TetrominoLandEventInfo>(onActiveTetrominoLand);
+
             EventManager.Instance.UnregisterListener<SaveGameEventInfo>(SaveGame); 
-            EventManager.Instance.UnregisterListener<UndoLastTetrominoInfo>(onUndoGame); 
+            EventManager.Instance.UnregisterListener<UndoGameEventInfo>(onUndoGame); 
             EventManager.Instance.UnregisterListener<GameEnterEventInfo>(Start);
         }
 #endregion

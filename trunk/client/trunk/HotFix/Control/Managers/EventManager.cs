@@ -31,7 +31,7 @@ namespace HotFix.Control {
         private TetrominoValidMMInfo validInfo; // valid Move Rotate
         private TetrominoLandEventInfo landInfo;
         private TetrominoChallLandInfo challLandInfo;
-        private UndoLastTetrominoInfo undoInfo;
+        private UndoGameEventInfo undoInfo;
         
         private GameEnterEventInfo enterInfo;
         private GamePauseEventInfo pauseInfo;
@@ -47,7 +47,7 @@ namespace HotFix.Control {
             delegateLookupMap = new Dictionary<System.Delegate, EventListener>();
             delta = Vector3.zero;
 
-            undoInfo = new UndoLastTetrominoInfo();
+            undoInfo = new UndoGameEventInfo();
             spawnedInfo = new TetrominoSpawnedEventInfo();
             moveInfo = new TetrominoMoveEventInfo();
             rotateInfo = new TetrominoRotateEventInfo();
