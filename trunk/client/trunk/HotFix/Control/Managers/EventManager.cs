@@ -75,7 +75,7 @@ namespace HotFix.Control {
             // 代理类型(EventListener<T>)已经存在，且值(所有注册过的回调方法,唯一一个)相等，那就不需要再做什么,直接返回
 // TODO:我认为我写得很有条理很干净的游戏逻辑可以跳过这一步,可以晚点儿再测一下            
             if (delegateLookupMap.ContainsKey(listener) && delegateLookupMap[listener] == internalDelegate) {
-                Debug.Log(TAG + " RegisterListener<T> CONTAINED & RETURNS T.TAG: " + typeof(T)); // 可是为什么我这个消息没有打印出来呢?
+                // Debug.Log(TAG + " RegisterListener<T> CONTAINED & RETURNS T.TAG: " + typeof(T)); // 可是为什么我这个消息没有打印出来呢?
                 return;
             }
             delegateLookupMap[listener] = internalDelegate; 
@@ -85,8 +85,8 @@ namespace HotFix.Control {
                 delegatesMap[typeof(T)] = tmpDelegate += internalDelegate; // 那么对于当前键，其值的内容再添加一个新的代理监听监听回调(注册回调方法的时候也是这么写的)
             } else
                 delegatesMap[typeof(T)] = internalDelegate;
-            Debug.Log(TAG + " RegisterListener() delegatesMap.Count after: " + delegatesMap.Count
-                      + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
+            // Debug.Log(TAG + " RegisterListener() delegatesMap.Count after: " + delegatesMap.Count
+            //           + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
         }
         
         public void UnregisterListener<T>(EventListener<T> listener) where T : EventInfo { // System.Action 这里并没有能真正移除掉监听，需要再理解、更改
@@ -103,8 +103,8 @@ namespace HotFix.Control {
                 }
                 delegateLookupMap.Remove(listener);
             }
-            Debug.Log(TAG + " UnregisterListener() delegatesMap.Count after: " + delegatesMap.Count
-                      + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
+            // Debug.Log(TAG + " UnregisterListener() delegatesMap.Count after: " + delegatesMap.Count
+            //           + "; delegateLookupMap.Count after: " + delegateLookupMap.Count); 
         }
         
         public void FireEvent(string type) { // 事件:不带任何增量信息的

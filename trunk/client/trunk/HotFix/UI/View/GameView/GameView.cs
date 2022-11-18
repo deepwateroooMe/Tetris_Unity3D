@@ -211,11 +211,7 @@ namespace HotFix.UI {
             isPaused = false;
             pausePanel.SetActive(false);
             EventManager.Instance.FireEvent("resumegame"); // for Audio
-// 把刚才保存过的状态再回复过来
-            int idx = 0;
-            foreach (GameObject key in btnState.Value.Keys)
-                btnState.Value[key] = preBtnState[idx++];
-        }
+        } // 爱表哥,爱生活
         
         void setAllBaseBoardInactive() {
             baseBoard3.SetActive(false);
@@ -435,17 +431,6 @@ namespace HotFix.UI {
             Time.timeScale = 0f;
             EventManager.Instance.FireEvent("pausegame");
             pausePanel.SetActive(true);
-            if (preBtnState == null)
-                preBtnState = new bool [7];
-            int idx = 0;
-            foreach (GameObject key in btnState.Value.Keys)
-                preBtnState[idx++] = btnState.Value[key];
-            allBtnsDisable(); // 所以主面板七个按钮都不可再被点击
-        }
-        private bool [] preBtnState;
-        void allBtnsDisable() {
-            foreach (GameObject key in btnState.Value.Keys)
-                btnState.Value[key] = false;
         }
         void OnClickFalButton() { // SlamDown FallFast
             Debug.Log(TAG + " OnClickFallFastButton");
