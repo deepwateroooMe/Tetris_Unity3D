@@ -107,7 +107,7 @@ namespace HotFix.UI {
             swapCnter.Value = 5;
             GloData.Instance.loadSavedGame = false; // 缺省开始新游戏
 // 如果同户不要保存游戏进度,则必要情况下需要删除保存过的游戏进度文件
-            if (!hasSavedGameAlready && gameMode == 0) { // 不保存游戏
+            if (!hasSavedGameAlready) { // 不保存游戏
                 string path = GloData.Instance.getFilePath();
                 if (File.Exists(path)) {
                     try {
@@ -160,6 +160,7 @@ namespace HotFix.UI {
         }
         void onGameModeChanged(int pre, int cur) {
             gameMode = cur;
+            isChallengeMode = GloData.Instance.isChallengeMode;
         }
         void Initialization() {
             Debug.Log(TAG + " Initialization()");
@@ -217,7 +218,6 @@ namespace HotFix.UI {
                     Model.gridClr[i][j] = new int [GloData.Instance.maxZWidth];
                 }
             }
-            
             modelArraysReset();
             Debug.Log(TAG + " isChallengeMode: " + isChallengeMode);
             if (isChallengeMode)
@@ -230,67 +230,32 @@ namespace HotFix.UI {
             // 重置或是初始化全局数组变量: 这里不用一再地重复销毁和重新分配内存,可是先初始化一个足够大的数组,再根据需要调整该足够大数组的维度
             modelArraysReset();
         }
-        public void modelArraysReset() {
-            // 其实说到底,这些东西原本还是应该放在ViewModel里的,只是独立出去能够这现在这个文件弄小一点儿方便操作查找            
-            Debug.Log(TAG + " modelArraysReset() GloData.Instance.isChallengeMode: " + GloData.Instance.isChallengeMode);
+        public void modelArraysReset() { // 其实说到底,这些东西原本还是应该放在ViewModel里的,只是独立出去能够这现在这个文件弄小一点儿方便操作查找            
+            // Debug.Log(TAG + " modelArraysReset() GloData.Instance.isChallengeMode: " + GloData.Instance.isChallengeMode);
             if (GloData.Instance.isChallengeMode) {
                 Model.gridWidth = GloData.Instance.gridSize;
                 Model.gridXWidth = GloData.Instance.gridXSize;
                 Model.gridZWidth = GloData.Instance.gridZSize;
-// 这里不光是维度,还需要清理数据
                 Debug.Log(TAG + " Model.gridXWidth: " + Model.gridXWidth);
                 Debug.Log(TAG + " Model.gridZWidth: " + Model.gridZWidth);
-// // 相对于重新起始,可能有可以重置的方法
-//                 Model.baseCubes = new int[Model.gridXWidth * Model.gridZWidth]; // 底座的着色
-//                 Model.prevSkin = new int[4];
-//                 Model.prevIdx = new int[4];
-//                 Model.grid = new Transform[Model.gridXWidth][][];
-//                 Model.gridOcc = new int[Model.gridXWidth][][];
-//                 Model.gridClr = new int[Model.gridXWidth][][];
-//                 for (int i = 0; i < Model.gridXWidth; i++) {
-//                     Model.grid[i] = new Transform[Model.gridHeight][];
-//                     Model.gridOcc[i] = new int [Model.gridHeight][];
-//                     Model.gridClr[i] = new int [Model.gridHeight][];
-//                     for (int j = 0; j < Model.gridHeight; j++) {
-//                         Model.grid[i][j] = new Transform[Model.gridZWidth];
-//                         Model.gridOcc[i][j] = new int [Model.gridZWidth];
-//                         Model.gridClr[i][j] = new int [Model.gridZWidth];
-//                     }
-//                 }
                 Debug.Log(TAG + ": gridOcc()"); 
                 MathUtilP.printBoard(Model.gridOcc);
                 Debug.Log(TAG + ": gridClr()");
                 MathUtilP.printBoard(Model.gridClr);
-// 上一个视图里的工作还没有完成,这里执行的时候总是空,不能正常如期初始化,可以换个地方去初始化                
                 BaseBoardSkin baseSkin = ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel));
-                // Debug.Log(TAG + " (baseSkin == null): " + (baseSkin == null));
                 if (baseSkin != null)
                     baseSkin.initateBaseCubesColors();
             } else {
                 Model.gridWidth = GloData.Instance.gridSize;
                 Model.gridXWidth = GloData.Instance.gridSize;
                 Model.gridZWidth = GloData.Instance.gridSize;
-                // Model.grid = new Transform [5][][]; 
-                // Model.gridOcc = new int [5][][]; 
-                // Model.gridClr = new int [5][][]; // 这些都是狗屁不通的占位符,要不然呆会儿GameViewModel.onGameSave()一大堆报错
-                // for (int i = 0; i < 5; i++) {
-                //     Model.grid[i] = new Transform[Model.gridHeight][];
-                //     Model.gridOcc[i] = new int [Model.gridHeight][];
-                //     Model.gridClr[i] = new int [Model.gridHeight][];
-                //     for (int j = 0; j < Model.gridHeight; j++) {
-                //         Model.grid[i][j] = new Transform[5];
-                //         Model.gridOcc[i][j] = new int [5];
-                //         Model.gridClr[i][j] = new int [5];
-                //     }
-                // }
                 // MathUtilP.resetColorBoard();  // cmt for tmp
-            } 
+            }
         }
 
         // Coroutine: 才是真正解决问题的办法,暂时如此        
         public void OnFinishReveal() {
             Debug.Log(TAG + " OnFinishReveal");
-            // gameMode.Value = ((MenuViewModel)ParentViewModel).gameMode;
             gameMode = GloData.Instance.gameMode.Value;
             Debug.Log(TAG + " gameMode.Value: " + gameMode);
 
@@ -307,7 +272,7 @@ namespace HotFix.UI {
 
         public void LoadNewGame() {
             Debug.Log(TAG + ": LoadNewGame()");
-            gameMode = ((MenuViewModel)ParentViewModel).gameMode; // 这里还用这些吗?
+            gameMode = GloData.Instance.gameMode.Value; // 这里还用这些吗?
             fallSpeed = 3.0f; // should be recorded too, here
 
             // if (gameMode.Value == 0 && Model.gridOcc != null && !isChallengeMode)
@@ -351,7 +316,7 @@ namespace HotFix.UI {
         }
 
         public void onGameSave(Transform initCubeParentTrans) {
-            // Debug.Log(TAG + ": onGameSave()");
+            Debug.Log(TAG + ": onGameSave()");
 // TODO这也是那个时候写得逻辑不对称的乱代码,要归位到真正用它的地方,而不是摆放在这里            
             if (tmpTransform == null) // Bug: 再检查一下这个到底是怎么回事
                 tmpTransform = new GameObject().transform;
@@ -371,7 +336,7 @@ namespace HotFix.UI {
                                                          initCubeParentTrans);
             else gameData = new GameData(GloData.Instance.isChallengeMode, ViewManager.nextTetromino, ViewManager.ghostTetromino, tmpTransform,
                                          gameMode, currentScore.Value, currentLevel.Value, numLinesCleared.Value,
-                                         Model.gridWidth, -1,
+                                         Model.gridWidth, Model.gridWidth,
                                          prevPreview, prevPreview2,
                                          nextTetrominoType.Value, comTetroType.Value, eduTetroType.Value,
                                          Model.grid, Model.gridClr, prevPreviewColor, prevPreviewColor2, previewTetrominoColor, previewTetromino2Color,

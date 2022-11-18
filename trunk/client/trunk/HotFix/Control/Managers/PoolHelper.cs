@@ -23,6 +23,8 @@ namespace HotFix.Control {
         private static Vector3 defaultPos = new Vector3(-100, -100, -100); 
         private static Vector3 previewTetrominoScale = new Vector3(6f, 6f, 6f); 
 
+        private static int preColor, randomColor;
+        
         public static void Initialize() {
             minosDic = new Dictionary<string, GameObject>();
             pool = new Dictionary<string, Stack<GameObject>>();
@@ -195,7 +197,10 @@ namespace HotFix.Control {
                         }
                     }
                 } else { // 1 color per tetromino
-                    int randomColor = UnityEngine.Random.Range(0, 4);
+                    preColor = randomColor; // 两个预览方块砖的着色最好是能不一样
+                    randomColor = UnityEngine.Random.Range(0, 4);
+                    while (randomColor == preColor)
+                        randomColor = UnityEngine.Random.Range(0, 4);
                     objInstance.GetComponent<TetrominoType>().color = randomColor;
                     Debug.Log(TAG + " randomColor: " + randomColor); 
                     foreach (Transform child in objInstance.transform) {

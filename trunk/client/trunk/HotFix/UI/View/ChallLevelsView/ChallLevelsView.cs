@@ -1,5 +1,6 @@
 ﻿using Framework.MVVM;
 using HotFix.Control;
+using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -116,7 +117,7 @@ namespace HotFix.UI {
             if (ComponentHelper.GetBBSkinComponent(go) == null) {
                 // Debug.Log(TAG + " (ComponentHelper.GetBBSkinComponent(go) == null): " + (ComponentHelper.GetBBSkinComponent(go) == null));
                 BaseBoardSkin baseBoardSkin = ComponentHelper.AddBBSkinComponent(go);
-                // baseBoardSkin.initateBaseCubesColors(); // could be tried here too.
+                baseBoardSkin.initateBaseCubesColors(); // could be tried here too.
             }
             switch (level) {
             case 1:
@@ -261,9 +262,15 @@ namespace HotFix.UI {
             hideAllOtherLevelPanel(level);
             if (!ViewManager.basePlane.activeSelf)
                 ViewManager.basePlane.SetActive(true);
-            EventManager.Instance.FireEvent("entergame");
-            ViewManager.GameView.Reveal();
-
+// 开始新游戏,或是加载保存过的游戏,如果有保存过的文件存在的话
+            if (File.Exists(GloData.Instance.getFilePath())) {
+                ViewManager.MenuView.Reveal();
+                ViewManager.MenuView.menuViewPanel.SetActive(false);
+                ViewManager.MenuView.newContinuePanel.SetActive(true);
+            } else {
+                EventManager.Instance.FireEvent("entergame");
+                ViewManager.GameView.Reveal();
+            }
             Hide(); // 没有隐藏起来是因为材质没有准备好,其它地为的空异常
         }
 

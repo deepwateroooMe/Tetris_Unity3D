@@ -94,7 +94,7 @@ namespace HotFix.Control {
             get {
                 return _tetroCnter;
             }
-            set {
+            set { 
                 _tetroCnter = value;
             }
         }

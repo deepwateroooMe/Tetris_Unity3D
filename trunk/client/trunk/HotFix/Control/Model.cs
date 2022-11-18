@@ -57,7 +57,7 @@ namespace HotFix.Control {
                                     int j = (int)Mathf.Round(mino.position.y);
                                     int k = (int)Mathf.Round(mino.position.z);
                                     if (j >= 0 && j < gridHeight && i >= 0 && i < gridXWidth && k >= 0 && k < gridZWidth) {
-                                        MathUtilP.print(i, j , k);
+                                        // MathUtilP.print(i, j , k);
                                         if (grid[i][j][k] != null) {
                                             grid[i][j][k] = null;
                                             gridOcc[i][j][k] = 0;
@@ -74,7 +74,7 @@ namespace HotFix.Control {
                                     int k = (int)Mathf.Round(mino.position.z);
                                     if (j >= 0 && j < gridHeight && i >= 0 && i < gridXWidth && k >= 0 && k < gridZWidth) // 还是有小立方体 计算中 转到了大立方体之外
                                         if (grid[i][j][k] != null) {
-                                            MathUtilP.print(i, j, k);
+                                            // MathUtilP.print(i, j, k);
                                             grid[i][j][k].parent = null;
                                             if (grid[i][j][k].gameObject != null) 
                                                 PoolHelper.ReturnToPool(grid[i][j][k].gameObject, grid[i][j][k].gameObject.GetComponent<MinoType>().type);
@@ -873,7 +873,7 @@ namespace HotFix.Control {
 
         public static string GetRandomTetromino() { // active Tetromino
             // Debug.Log(TAG + ": GetRandomTetromino()"); 
-            if (ViewManager.MenuView.ViewModel.gameMode == 0 && gridWidth == 3)
+            if (GloData.Instance.gameMode.Value == 0 && gridWidth == 3)
                 randomTetromino = UnityEngine.Random.Range(0, 11);
             else 
                 randomTetromino = UnityEngine.Random.Range(0, 12);

@@ -38,18 +38,18 @@ namespace HotFix.UI {
             }
         }
 
-        GameObject menuViewPanel;
+        public GameObject menuViewPanel;
         Button eduButton; // Education
         Button claButton; // Classic
         Button chaButton; // Challenge
 
-        GameObject educaModesViewPanel;
+        public GameObject educaModesViewPanel;
         Toggle thrToggle;
         Toggle furToggle;
         Toggle fivToggle;
         Button conBtn;     // CONFIRM
 
-        GameObject newContinuePanel;
+        public GameObject newContinuePanel;
         Button newButton; // New game
         Button conButton; // Load saved game 
         Button canButton; // Cancel
@@ -77,7 +77,7 @@ namespace HotFix.UI {
             newButton = GameObject.FindChildByName("newBtn").GetComponent<Button>();
             newButton.onClick.AddListener(OnClickNewGameButton);
 
-            conButton = GameObject.FindChildByName("conBtn").GetComponent<Button>();
+            conButton = GameObject.FindChildByName("lodBtn").GetComponent<Button>();
             Debug.Log(TAG + " (conButton == null): " + (conButton == null));
             conButton.onClick.AddListener(OnClickContinueButton);
 
@@ -90,13 +90,19 @@ namespace HotFix.UI {
             // GloData.Instance.gameMode.Value = 0;
             GloData.Instance.camPos.Value = new Vector3(14.10899f, 23.11789f, -1.698298f);
             GloData.Instance.camRot.Value = Quaternion.Euler(new Vector3(490.708f, -251.184f, -539.973f));
-            ViewModel.gameMode = 0; // 试一下延迟设置这个值
             menuViewPanel.SetActive(false);
             educaModesViewPanel.SetActive(true);
+			// ViewModel.gameMode = 0; // 试一下延迟设置这个值
+			GloData.Instance.gameMode.Value = 0;
         }
         void OnClickClaButton() { // CLASSIC MODE
-            ViewModel.gridWidth = 5;
-            ViewModel.gameMode = 1;
+            // ViewModel.gameMode = 1;
+            GloData.Instance.gameMode.Value = 1;
+            // ViewModel.gridWidth = 5;
+            GloData.Instance.gridSize = 5;
+            GloData.Instance.gridXSize = 5;
+            GloData.Instance.gridZSize = 5;
+            
             GloData.Instance.camPos.Value = new Vector3(14.10899f, 23.11789f, -1.698298f);
             GloData.Instance.camRot.Value = Quaternion.Euler(new Vector3(490.708f, -251.184f, -539.973f));
             offerGameLoadChoice();
@@ -104,7 +110,7 @@ namespace HotFix.UI {
         void OnClickChaButton() { // CHALLENGE MODE
             ViewModel.isChallengeMode = true;
             GloData.Instance.gameMode.Value = 0;
-            ViewModel.gameMode = 0; // to match above previously
+            // ViewModel.gameMode = 0; // to match above previously
             ViewManager.ChallLevelsView.Reveal();
             Hide();
         }
@@ -123,15 +129,18 @@ namespace HotFix.UI {
             EventManager.Instance.FireEvent("entergame"); // Audio
             menuViewPanel.SetActive(true); // 需要激活,方便从其它视图回退到主菜单视图
             newContinuePanel.SetActive(false);
+// special help for CLASSIC MODE moveCanvas: 只在这个模式下是自动生成,并且最开始两个画布都是失活状态
+            if (GloData.Instance.gameMode.Value > 0)
+                ViewManager.moveCanvas.SetActive(true);
             ViewManager.GameView.Reveal(); // 放在前面是因为调用需要一点儿时间
             Hide();
-// special help for CLASSIC MODE moveCanvas: 只在这个模式下是自动生成,并且最开始两个画布都是失活状态
-            if (ViewModel.gameMode > 0)
-                ViewManager.moveCanvas.SetActive(true);
         }
         void offerGameLoadChoice() {
             Debug.Log(TAG + " offerGameLoadChoice()");
-            if (File.Exists(GloData.Instance.getFilePath())) {
+            bool savedGameExist = File.Exists(GloData.Instance.getFilePath());
+            Debug.Log(TAG + " savedGameExist: " + savedGameExist);
+            // if (File.Exists(GloData.Instance.getFilePath())) {
+            if (savedGameExist) {
                 Debug.Log(TAG + " offerGameLoadChoice() THERE IS a SAVED GAME");
 // TODO: BUG 这里被 因为 gameMode而引起的改变已经掩盖掉了 ?                
                 newContinuePanel.SetActive(true); 
@@ -147,7 +156,11 @@ namespace HotFix.UI {
             } else if (furToggle.isOn) { 
                 ViewModel.gridWidth = 4;
             } else if (fivToggle.isOn) {
-                ViewModel.gridWidth = 5;
+                GloData.Instance.gridSize = 5;
+                GloData.Instance.gridXSize = 5;
+                GloData.Instance.gridZSize = 5;
+                // ViewModel.gridWidth = 5; // why it could be so slow initially?
+                GloData.Instance.gridSize = 5;
             }
         }
 #endregion        
@@ -167,7 +180,7 @@ namespace HotFix.UI {
         void OnClickCancelButton() { // back to main menu
             newContinuePanel.SetActive(false);
 // 只在教育模式下显示如下画板            
-            if (ViewModel.gameMode == 0 && !GloData.Instance.isChallengeMode)
+            if (GloData.Instance.gameMode.Value == 0 && !GloData.Instance.isChallengeMode)
                 educaModesViewPanel.SetActive(true);
         }
 #endregion        

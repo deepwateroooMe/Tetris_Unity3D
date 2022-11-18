@@ -30,7 +30,7 @@ namespace HotFix.Control {
                         cubes[i].GetComponent<MinoType>().color = Model.baseCubes[i];
                         cubes[i].gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.colors[Model.baseCubes[i]];
                     }
-                }
+                } 
             }
             Debug.Log(TAG + " onCubesMaterialsChanged(): baseCubes colors AFTER updateSkin"); 
             MathUtilP.printBoard(Model.baseCubes);
@@ -97,26 +97,26 @@ namespace HotFix.Control {
         public void initateBaseCubesColors() {
             Debug.Log(TAG + " initateBaseCubesColors()");
             
-            // 当添加这个脚本的时候,还无法知道游戏关卡层级,所以必须换个地方起始初始化
-            int n = Model.gridXWidth * Model.gridZWidth, idx = 0;
+            // int n = Model.gridXWidth * Model.gridZWidth, idx = 0; // 这里想要初始化的时候,Model里的数据可能也还没有初始化
+            int n = GloData.Instance.gridXSize * GloData.Instance.gridZSize, idx = 0;
             Debug.Log(TAG + " initateBaseCubesColors() n: " + n);
             cubes = new GameObject[n]; // 地板砖的 gameObject s
             StringBuilder name = new StringBuilder("");
-            for (int z = 0; z < Model.gridZWidth; z++) 
-                for (int x = 0; x < Model.gridXWidth; x++) {
+            for (int z = 0; z < GloData.Instance.gridZSize; z++) 
+                for (int x = 0; x < GloData.Instance.gridXSize; x++) {
                     name.Length = 0;
                     if (GloData.Instance.gameLevel < 3 || GloData.Instance.gameLevel == 11) // so far 1, 2, 11 three levels named this way
                         name.Append("Cube" + x + z);
                     else name.Append("Cube" + x + "0 (" + z + ")");
-                    idx = z * Model.gridXWidth + x;
+                    idx = z * GloData.Instance.gridXSize + x;
                     cubes[idx] = gameObject.FindChildByName(name.ToString());
                     cubes[idx].gameObject.transform.rotation = Quaternion.identity;
                 }
             int xx = 0, zz = 0;
             for (int i = 0; i < n; i++) {
                 Model.baseCubes[i] = cubes[i].GetComponent<MinoType>().color;
-                xx = i % Model.gridXWidth;
-                zz = i / Model.gridXWidth;
+                xx = i % GloData.Instance.gridXSize;
+                zz = i / GloData.Instance.gridXSize;
                 if (!cubes[i].activeSelf) { // 如果某一个方格失活,那么整个竖列都是不能穿过的
                     for (int y = 0; y < Model.gridHeight; y++) {
                         Model.grid[xx][y][zz] = null;

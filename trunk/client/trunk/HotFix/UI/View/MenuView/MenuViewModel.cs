@@ -35,19 +35,18 @@ namespace HotFix.UI {
                 GloData.Instance.isChallengeMode = true;
             }
         }
-        public int gameMode {
-            get {
-                return _gameMode;
-            }
-            set {
-                _gameMode = value;
-                Debug.Log(TAG + " _gameMode: " + _gameMode);
-                GloData.Instance.gameMode.Value = -1;
-                GloData.Instance.gameMode.OnValueChanged += GloData.Instance.onGameModeSelected;
-                GloData.Instance.gameMode.Value = _gameMode;
-                Debug.Log(TAG + " GloData.Instance.gameMode.Value: " + GloData.Instance.gameMode.Value);
-            }
-        }
+        // public int gameMode {
+        //     get {
+        //         return _gameMode;
+        //     }
+        //     set {
+        //         _gameMode = value;
+        //         Debug.Log(TAG + " _gameMode: " + _gameMode);
+        //         GloData.Instance.gameMode.Value = -1;
+        //         GloData.Instance.gameMode.Value = _gameMode;
+        //         Debug.Log(TAG + " GloData.Instance.gameMode.Value: " + GloData.Instance.gameMode.Value);
+        //     }
+        // }
         public int gridWidth {
             get {
                 return _gridSize;
@@ -86,10 +85,12 @@ namespace HotFix.UI {
         }
         
         void Initialization() {
+            Debug.Log(TAG + " Initialization()");
             _gameMode = -1;
             _loadSavedGame = false;
             _gridSize = -1;
-            mgameMode.Value = -1;
+            mgameMode.Value = -1; 
+            GloData.Instance.gameMode.OnValueChanged += GloData.Instance.onGameModeSelected;
         }
         void DelegateSubscribe() {
         }

@@ -96,13 +96,14 @@ namespace deepwaterooo.tetris3d {
 			//  ViewManager.nextTetromino: May have landed already, may have been destroyed right after undo clicked
 			if (go != null) { // go: ViewManager.nextTetromino
 				isCurrentlyActiveTetromino = go.CompareTag("currentActiveTetromino");
+                Debug.Log(TAG + " isCurrentlyActiveTetromino: " + isCurrentlyActiveTetromino);
 				if (go != null && isCurrentlyActiveTetromino) { // 没着陆
 					foreach (Transform mino in go.transform) {
 						if (mino.CompareTag("mino")) {
 							x = (int)Mathf.Round(mino.position.x);
 							y = (int)Mathf.Round(mino.position.y);
 							z = (int)Mathf.Round(mino.position.z);
-							color = gridClr[x][y][z];
+							color = gridClr[x][y][z]; // 又或者是这个数组的数据没能管理好
 							break;
 						}
 					}
@@ -118,15 +119,16 @@ namespace deepwaterooo.tetris3d {
 				y = pos[1];
 				z = pos[2];
 				if (gd[x][y][z] != null && gd[x][y][z].parent != null) {
-					if ((ghostTetromino == null || (gd[x][y][z].parent != ghostTetromino.transform))
-						&& (go == null || gd[x][y][z].parent != go.transform)
-                        && (!isChallengeMode || initCubesParent == null || gd[x][y][z].parent != initCubesParent)) {
+					if ((ghostTetromino == null || (gd[x][y][z].parent != ghostTetromino.transform))                 // 只要不是阴影 和
+						// && (go == null || gd[x][y][z].parent != go.transform) // 这里仍然是需要保存了(上下 两个地方也只会有一个地方保存)
+                        && (!isChallengeMode || initCubesParent == null || gd[x][y][z].parent != initCubesParent)) { // 只要不是挑战模式下的 预设方块砖
 						if (!myContains(gd[x][y][z].parent)) {
-                            // todo: 晚点儿这里会需要更多的逻辑                    
-                            color = gridClr[x][y][z];
+// todo: level 11 需要根据每个立方体来保存每个立方体的材质
+                            // color = gridClr[x][y][z]; // 这么写不准确,晚点儿level 11每个方块砖可以有两三种不同的材质
                             TetrominoData tmp = new TetrominoData(gd[x][y][z].parent,
                                                                   gd[x][y][z].parent.gameObject.name,
-                                                                  gd[x][y][z].parent.gameObject.name, color);
+                                                                  gd[x][y][z].parent.gameObject.name,
+                                                                  gd[x][y][z].parent.gameObject.GetComponent<TetrominoType>().color); // <<<<<<<<<< 
                             Debug.Log(TAG + " gd[x][y][z].parent.gameObject.name (in parentList): " + gd[x][y][z].parent.gameObject.name);
                             Debug.Log(TAG + " gd[x][y][z].parent.childCount: " + gd[x][y][z].parent.childCount); 
                             parentList.Add(tmp);
@@ -151,3 +153,5 @@ namespace deepwaterooo.tetris3d {
         }
     }   
 }
+
+
