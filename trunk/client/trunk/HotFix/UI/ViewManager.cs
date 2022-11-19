@@ -39,7 +39,7 @@ namespace HotFix.UI {
                         EventManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
                         AudioManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
                         ModelMono.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
-                        
+
                         var viewRect = viewRoot.AddComponent<RectTransform>();
                         viewRect.SetParent(UI2DRoot.transform, false);
                         viewRect.sizeDelta = new Vector2(0, 0);
@@ -47,7 +47,7 @@ namespace HotFix.UI {
                         viewRect.anchorMax = Vector2.one; 
                         viewRect.pivot = new Vector2(0.5f, 0.5f);
 
-                        GloData.Instance.gameMode.Value = -1; 
+                        // GloData.Instance.gameMode.Value = -1; 
                         ShowStartPanel(); 
                     }, EAssetBundleUnloadLevel.Never);
             ResourceHelper

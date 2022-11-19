@@ -15,7 +15,7 @@ namespace HotFix.Control {
         public int challengeLayerScore = 16700;
         public int maxXWidth = 10;
         public int maxZWidth = 9;
-        public int height = 12;
+        public int height = 12; 
         
         private bool _isChallengeMode = false;
         private bool _hasInitCubes = false;
@@ -49,7 +49,7 @@ namespace HotFix.Control {
             }
             set {
                 _isChallengeMode = value;
-                onChallengeMode();
+                onChallengeMode(value);
             }
         }
         public bool hasInitCubes {
@@ -109,23 +109,29 @@ namespace HotFix.Control {
             }
         }
 
-        private void onChallengeMode() {
-            _saveGamePathFolderName = "challenge/level";
+        private void onChallengeMode(bool challengeMode) {
+            if (challengeMode)
+                _saveGamePathFolderName = "challenge/level";
+            else _saveGamePathFolderName = "";
         }
 
-        public void onGameModeSelected(int pre, int gameMode) {
-            switch (gameMode) {
-            case 0:
-                if (isChallengeMode)
-                    _saveGamePathFolderName = "challenge/level";
-                else                    
-                    _saveGamePathFolderName = "educational/grid";
-                break;
-            case 1: 
-                _saveGamePathFolderName = "classic/level";
-                break;
-            }
-        }
+        // public void onGameModeSelected(int pre, int gameMode) { // 这个方法不能被调用的话,就不需要
+        //     Debug.Log(TAG + " onGameModeSelected() " + " gameMode: " + gameMode);
+        //     switch (gameMode) {
+        //     case 0:
+        //         if (isChallengeMode)
+        //             _saveGamePathFolderName = "challenge/level";
+        //         else                    
+        //             _saveGamePathFolderName = "educational/grid";
+        //         break;
+        //     case 1: 
+        //         _saveGamePathFolderName = "classic/level";
+        //         break;
+        //     default: 
+        //         _saveGamePathFolderName = "ERROR -- TRANSITIONAL";
+        //         break;
+        //     }
+        // }
 
         public string getFilePath() {
             StringBuilder path = new StringBuilder();

@@ -56,8 +56,11 @@ namespace HotFix.UI {
         
         protected override void OnInitialize() {
             base.OnInitialize();
-            GloData.Instance.loadSavedGame = false;
+            Debug.Log(TAG + " OnInitialize()");
             GloData.Instance.gameMode.Value = -1; // 因为比如:从挑战模式 切换到 启蒙模式,不改值不能调用回调
+            // GloData.Instance.gameMode.OnValueChanged += GloData.Instance.onGameModeSelected; // 将其注册在这里,因为会触发相应路径的改变,但是调不出来
+            GloData.Instance.loadSavedGame = false;
+            GloData.Instance.isChallengeMode = false; 
             
             menuViewPanel = GameObject.FindChildByName("MenuViewPanel");
             eduButton = GameObject.FindChildByName("eduBtn").GetComponent<Button>();
@@ -72,7 +75,7 @@ namespace HotFix.UI {
             furToggle = GameObject.FindChildByName("Toggle4").GetComponent<Toggle>();
             fivToggle = GameObject.FindChildByName("Toggle5").GetComponent<Toggle>();
             conBtn = GameObject.FindChildByName("conBtn").GetComponent<Button>();
-            conBtn.onClick.AddListener(OnClickConButton);
+            conBtn.onClick.AddListener(OnClickConfirmButton);
 
             newContinuePanel = GameObject.FindChildByName("BgnNewContinueView");
             newButton = GameObject.FindChildByName("newBtn").GetComponent<Button>();
@@ -88,39 +91,38 @@ namespace HotFix.UI {
 
 #region EDUCATIONAL CLASSIC CHALLENGE MODES
         void OnClickEduButton() { // EDUCATIONAL
-            // GloData.Instance.gameMode.Value = 0;
-            GloData.Instance.isChallengeMode = false; // 有时候是从挑战模式切换过来的,所以仍然一定需要设置
+            Debug.Log(TAG + " OnClickEduButton()");
+            GloData.Instance.saveGamePathFolderName = "educational/grid";
             GloData.Instance.camPos.Value = new Vector3(14.10899f, 23.11789f, -1.698298f);
             GloData.Instance.camRot.Value = Quaternion.Euler(new Vector3(490.708f, -251.184f, -539.973f));
             menuViewPanel.SetActive(false);
             educaModesViewPanel.SetActive(true);
-			// ViewModel.gameMode = 0; // 试一下延迟设置这个值
-			GloData.Instance.gameMode.Value = 0;
+            GloData.Instance.gameMode.Value = 0;
         }
         void OnClickClaButton() { // CLASSIC MODE
-            // ViewModel.gameMode = 1;
-            GloData.Instance.gameMode.Value = 1;
-            // ViewModel.gridWidth = 5;
+            Debug.Log(TAG + " OnClickClassicButton()");
+            GloData.Instance.saveGamePathFolderName = "classic/level";
             GloData.Instance.gridSize = 5;
             GloData.Instance.gridXSize = 5;
             GloData.Instance.gridZSize = 5;
-            
             GloData.Instance.camPos.Value = new Vector3(14.10899f, 23.11789f, -1.698298f);
             GloData.Instance.camRot.Value = Quaternion.Euler(new Vector3(490.708f, -251.184f, -539.973f));
             offerGameLoadChoice();
+            GloData.Instance.gameMode.Value = 1;
         }
         void OnClickChaButton() { // CHALLENGE MODE
+            Debug.Log(TAG + " OnClickClallengeButton()");
+            GloData.Instance.saveGamePathFolderName = "challenge/level";
             ViewModel.isChallengeMode = true;
-            GloData.Instance.gameMode.Value = 0;
-            // ViewModel.gameMode = 0; // to match above previously
             ViewManager.ChallLevelsView.Reveal();
+            GloData.Instance.gameMode.Value = 0;
             Hide();
         }
 #endregion
 
 #region EducaModesPanel
-        void OnClickConButton() {
-            Debug.Log(TAG + " OnClickConButton()");
+        void OnClickConfirmButton() {
+            Debug.Log(TAG + " OnClickConfirmButton()");
             // 检查是否存有先前游戏进度数据,有则弹窗;无直接进游戏界面,这一小步暂时跳过
             ActiveToggle();
 // TODO: BUG 因为射线检测还是什么原因,直接调用了加载保存过的游戏,这里需要再改一下            
@@ -139,14 +141,14 @@ namespace HotFix.UI {
         }
         void offerGameLoadChoice() {
             Debug.Log(TAG + " offerGameLoadChoice()");
-            bool savedGameExist = File.Exists(GloData.Instance.getFilePath());
-            Debug.Log(TAG + " savedGameExist: " + savedGameExist);
-            // if (File.Exists(GloData.Instance.getFilePath())) {
-            if (savedGameExist) {
+            // bool savedGameExist = File.Exists(GloData.Instance.getFilePath());
+            // Debug.Log(TAG + " savedGameExist: " + savedGameExist);
+            // if (savedGameExist) {
+            if (File.Exists(GloData.Instance.getFilePath())) {
                 Debug.Log(TAG + " offerGameLoadChoice() THERE IS a SAVED GAME");
 // TODO: BUG 这里被 因为 gameMode而引起的改变已经掩盖掉了 ?                
                 newContinuePanel.SetActive(true); 
-                Debug.Log(TAG + " newContinuePanel.activeSelf: " + newContinuePanel.activeSelf);
+                // Debug.Log(TAG + " newContinuePanel.activeSelf: " + newContinuePanel.activeSelf);
             } else {
                 Debug.Log(TAG + " offerGameLoadChoice() load new game");
                 prepareEnteringNewGame();
@@ -169,17 +171,17 @@ namespace HotFix.UI {
 
 #region New game or continue saved game panel
         void OnClickNewGameButton() { // Start New game
+            Debug.Log(TAG + " OnClickNewGameButton() for NEW GAME");
             GloData.Instance.loadSavedGame = false;
             prepareEnteringNewGame();
         }
         void OnClickContinueButton() { // Load Saved Game
-            Debug.Log(TAG + " OnClickContinueButton(): for load saved game");
-            // 设置标记
-            // ViewModel.loadGame.Value = true; // 太慢了
+            Debug.Log(TAG + " OnClickLoadSavedGameButton(): for load saved game");
             GloData.Instance.loadSavedGame = true;
             prepareEnteringNewGame();
         }
         void OnClickCancelButton() { // back to main menu
+            Debug.Log(TAG + " OnClickCancelButton() back to grid choose");
             newContinuePanel.SetActive(false);
 // 只在教育模式下显示如下画板            
             if (GloData.Instance.gameMode.Value == 0 && !GloData.Instance.isChallengeMode)

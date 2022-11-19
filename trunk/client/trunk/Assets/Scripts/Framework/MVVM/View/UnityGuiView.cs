@@ -105,7 +105,7 @@ namespace Framework.MVVM {
             OnRevealed();
         }
         public void Hide(bool immediate = true, Action action = null) {
-            // Debug.Log(TAG + " Hide() for debugging a GameView bug");
+            Debug.Log(TAG + " Hide() for debugging GameView Hiding");
             if (action != null) 
                 HiddenAction += action;
             OnHide(immediate);

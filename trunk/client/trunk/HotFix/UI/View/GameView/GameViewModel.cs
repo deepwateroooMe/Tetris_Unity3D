@@ -90,20 +90,13 @@ namespace HotFix.UI {
 
         public void onGameStopAndReset(GameStopEventInfo info) {
             Debug.Log(TAG + " gameDataResetToDefault()");
-// TODO: 感觉这里有时候面板还没有清理干净             
             Model.cleanUpGameBroad(); // 包括了 ViewManager.nextTetromino 的特殊处理
-            
-            currentScore.Value = 0;
-            numLinesCleared.Value = 0;
-            startingLevel = 1;
-            currentLevel.Value = 1;
-            
-            tetroCnter.Value = -1;
-            undoCnter.Value = 5;
-            swapCnter.Value = 5; 
+// 因为下一场游戏开始的时候初始化也狠慢,可是试图这里清理,看能否帮忙
+            GloData.Instance.isChallengeMode = false;
             GloData.Instance.loadSavedGame = false; // 缺省开始新游戏
-// 如果同户不要保存游戏进度,则必要情况下需要删除保存过的游戏进度文件
-            if (!hasSavedGameAlready) { // 不保存游戏
+            GloData.Instance.gameMode.Value = -1; // 因为比如:从挑战模式 切换到 启蒙模式,不改值不能调用回调
+            GloData.Instance.gameLevel = 1;
+            if (!hasSavedGameAlready) { // 不保存游戏:// 如果同户不要保存游戏进度,则必要情况下需要删除保存过的游戏进度文件
                 string path = GloData.Instance.getFilePath();
                 if (File.Exists(path)) {
                     try {
@@ -113,16 +106,21 @@ namespace HotFix.UI {
                     }
                 }
             }
+
+            currentScore.Value = 0; // 在游戏结束的时候,这些清理都会是影响性能的因素
+            numLinesCleared.Value = 0;
+            startingLevel = 1;
+            currentLevel.Value = 1;
+            tetroCnter.Value = -1;
+            undoCnter.Value = 5;
+            swapCnter.Value = 5; 
         }
 
         public void onUndoGame(GameData gameData) { 
             Debug.Log(TAG + " onUndoGame()");
             isDuringUndo = true;
-            ++tetroCnter.Value;
-
-            Debug.Log(TAG + " onUndoGame() undoCnter.Value: " + undoCnter.Value);
+            ++tetroCnter.Value; 
             --undoCnter.Value;
-            Debug.Log(TAG + " onUndoGame() undoCnter.Value: " + undoCnter.Value); // TODO: bug to be looked into and fixed
             recycleThreeMajorTetromino(ViewManager.GameView.previewTetromino, ViewManager.GameView.previewTetromino2);
 
             StringBuilder type = new StringBuilder("");
@@ -150,10 +148,11 @@ namespace HotFix.UI {
             LoadingSystemHelper.LoadDataFromParentList(gameData.parentList);
             cameraPos.Value = DeserializedTransform.getDeserializedTransPos(gameData.cameraData); // MainCamera
             cameraRot.Value = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
-            tetroCnter.Value = gameData.tetroCnter;
             swapCnter.Value = gameData.swapCnter;
-            if (!isDuringUndo) // 在真正的undo期间,这个值不应该被重置;只在加载旧游戏的时候才设置
+            if (!isDuringUndo) {// 在真正的undo期间,这个值不应该被重置;只在加载旧游戏的时候才设置
                 undoCnter.Value = gameData.undoCnter;
+                tetroCnter.Value = gameData.tetroCnter;
+            }
         }
         
         void onGameLevelChanged(int pre, int cur) { // for educational + classic mode
@@ -186,7 +185,7 @@ namespace HotFix.UI {
             if (isChallengeMode)
                 startingLevel = GloData.Instance.challengeLevel.Value;
             currentLevel.OnValueChanged += onGameLevelChanged;
-            currentLevel.Value = -1;
+            currentLevel.Value = startingLevel;
             
             fallSpeed = 3.0f;
             gameStarted = false;

@@ -32,7 +32,7 @@ namespace HotFix.Control {
         private static StringBuilder type = new StringBuilder("");
         private static int randomTetromino;
 
-        public static void cleanUpGameBroad() { // 基本能够把面板清理干净
+        public static void cleanUpGameBroad() { // 基本能够把面板清理干净: 并没有清除关卡中原设的 障碍立方体
 // dealing with currentActiveTetromino & ghostTetromino firrst
             if (ViewManager.nextTetromino != null && ViewManager.nextTetromino.CompareTag("currentActiveTetromino")) { // hang in the air
                 Debug.Log(TAG + " (ViewManager.ghostTetromino != null): " + (ViewManager.ghostTetromino != null));  // always true
@@ -44,11 +44,25 @@ namespace HotFix.Control {
                 for (int y = 0; y < gridHeight; y++) 
                     for (int z = 0; z < gridZWidth; z++) {
                         if (grid[x][y][z] != null) {
-// 关卡中的InitCubes是不能消除的                            
-                            if (GloData.Instance.isChallengeMode
+                            if (GloData.Instance.isChallengeMode // 因为在不同的游戏模式等下切换,这里也必须得清除掉
                                 && grid[x][y][z].parent != null && grid[x][y][z].parent.gameObject != null
-                                && grid[x][y][z].parent.gameObject.CompareTag("InitCubes"))
-                                continue;
+                                && grid[x][y][z].parent.gameObject.CompareTag("InitCubes")) {
+                                foreach (Transform mino in grid[x][y][z].parent) { // 一次性将这里面所有的小立方体全部清除
+                                    int i = (int)Mathf.Round(mino.position.x);
+                                    int j = (int)Mathf.Round(mino.position.y);
+                                    int k = (int)Mathf.Round(mino.position.z);
+                                    if (j >= 0 && j < gridHeight && i >= 0 && i < gridXWidth && k >= 0 && k < gridZWidth) 
+                                        if (grid[i][j][k] != null) {
+                                            // MathUtilP.print(i, j, k);
+                                            grid[i][j][k].parent = null;
+                                            if (grid[i][j][k].gameObject != null) 
+                                                PoolHelper.ReturnToPool(grid[i][j][k].gameObject, grid[i][j][k].gameObject.GetComponent<MinoType>().type);
+                                            grid[i][j][k] = null;
+                                            gridOcc[i][j][k] = 0;
+                                            if (GloData.Instance.isChallengeMode) gridClr[i][j][k] = -1;
+                                        }
+                                }
+                            }
 // 以 方块砖 为单位回收到资源池里去                            
                             Transform tmpRefParent = null;
                             if (grid[x][y][z].parent != null && grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().childCnt == grid[x][y][z].parent.childCount) {

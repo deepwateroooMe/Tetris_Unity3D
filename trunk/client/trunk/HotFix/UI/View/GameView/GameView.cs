@@ -111,7 +111,7 @@ namespace HotFix.UI {
                 eduTetroView.SetActive(false); 
                 swaBtn.SetActive(false);
                 undoBtn.SetActive(false); // 不可撤销(挑战模式是仍可以再考虑)
-            } else { // 这个模式下的三个组件都是要的
+            } else if (cur == 0) { // 这个模式下的三个组件都是要的
                 eduTetroView.SetActive(true); 
                 swaBtn.SetActive(true);
                 undoBtn.SetActive(true); // 不可撤销(挑战模式是仍可以再考虑)
@@ -130,6 +130,12 @@ namespace HotFix.UI {
                     baseBoard5.SetActive(true); // TODO: 有其它更为的实现
                     lvlText.text = GloData.Instance.gameLevel.ToString();
                     linText.text = ViewModel.numLinesCleared.Value.ToString();
+                }
+            } else { // else cur == -1
+                if (!GloData.Instance.isChallengeMode) { // 这里只是测试用一下
+                    comLevelView.SetActive(false);
+                    goalPanel.SetActive(false);
+                    baseBoard5.SetActive(true); // TODO: 有其它更为的实现
                 }
             }
         }
@@ -547,18 +553,18 @@ namespace HotFix.UI {
             if (ViewModel.gameMode > 0 || !ViewModel.hasSavedGameAlready) { // gameStarted
                 saveGameOrNotPanel.SetActive(true);
             } else {
+                cleanUpGameBroad();
                 ViewModel.hasSavedGameAlready = false;
                 EventManager.Instance.FireEvent("stopgame"); // move rotateCanvas disable
-                cleanUpGameBroad();
             }
         }
         public void onYesToSaveGame() {
             Debug.Log(TAG + " onYesToSaveGame()");
             if (ViewModel.gameMode > 0 || ModelMono.hasDeletedMinos) // 其它情况下,游戏已经保存好,可以不用再存.另外是,有消除的情况下仍需要保存
                 ViewModel.onGameSave(initCubes.transform); // 这里有个等待,待视图模型把数据保存完整
+            cleanUpGameBroad();
             ViewModel.hasSavedGameAlready = true;
             EventManager.Instance.FireEvent("stopgame"); 
-            cleanUpGameBroad();
         }
         void cleanUpGameBroad() {
             Debug.Log(TAG + " cleanUpGameBroad()");
@@ -577,14 +583,14 @@ namespace HotFix.UI {
                 PoolHelper.recyclePreviewTetrominos(previewTetromino2); // 预览方块砖 2
             gameStarted = false;
             ViewManager.MenuView.Reveal();
-            Hide();
+            Hide(); // <<<<<<<<<<<<<<<<<<<< 
         }
 
         public void onNoToNotSaveGame() { // 因为每块方块砖落地时的自动保存,这里用户不需要保存时,要清除保存过的文件
             Debug.Log(TAG + " onNoToNotSaveGame()");
+            cleanUpGameBroad();
             ViewModel.hasSavedGameAlready = false;
             EventManager.Instance.FireEvent("stopgame"); // <<<<<<<<<<<<<<<<<<<< 
-            cleanUpGameBroad();
         }
         void OnClickCancButton() { 
             saveGameOrNotPanel.SetActive(false);

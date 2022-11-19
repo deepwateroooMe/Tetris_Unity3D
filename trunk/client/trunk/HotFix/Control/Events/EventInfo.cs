@@ -48,7 +48,6 @@ namespace HotFix.Control {
     public class TetrominoChallLandInfo : EventInfo {     // Challenging landing
         public const string TAG = "TetrominoChallLandInfo";
     }
-
 // Game Control: Enter, Start, Pause, Resume, Stop etc
     public class GameEnterEventInfo : EventInfo {         // Entered Game View:　就是游戏暂停后又回来 for AudioManager
         public const string TAG = "GameEnterEventInfo";

@@ -89,8 +89,8 @@ namespace HotFix.UI {
             _gameMode = -1;
             _loadSavedGame = false;
             _gridSize = -1;
-            mgameMode.Value = -1; 
-            GloData.Instance.gameMode.OnValueChanged += GloData.Instance.onGameModeSelected;
+            // mgameMode.Value = -1; 
+            // GloData.Instance.gameMode.OnValueChanged += GloData.Instance.onGameModeSelected;
         }
         void DelegateSubscribe() {
         }
