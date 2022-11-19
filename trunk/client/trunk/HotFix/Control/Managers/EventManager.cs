@@ -41,6 +41,7 @@ namespace HotFix.Control {
         private CanvasToggledEventInfo canvasInfo;
         private CubesMaterialEventInfo cubeMatInfo;
         private BaseCubesDataReadyInfo cubesInfo;
+        private ModelArraysInitializedInfo arrInfo;
         
         public void Awake() {
             // Debug.Log(TAG + " Awake");
@@ -61,11 +62,12 @@ namespace HotFix.Control {
             resumeInfo = new GameResumeEventInfo();
             stopInfo = new GameStopEventInfo();
 
+            arrInfo = new ModelArraysInitializedInfo();
             cubeMatInfo = new CubesMaterialEventInfo();
             cubesInfo = new BaseCubesDataReadyInfo();
              
             validInfo = new TetrominoValidMMInfo();
-        }
+        } 
 
         public void RegisterListener<T>(EventListener<T> listener) where T : EventInfo { 
             // Debug.Log(TAG + ": RegisterListener(): T: " + typeof(T)); 
@@ -132,6 +134,9 @@ namespace HotFix.Control {
                 return;
             case "challLand":
                 FireEvent(challLandInfo);
+                return;
+            case "arrReady":
+                FireEvent(arrInfo);
                 return;
             case "canvas":
                 FireEvent(canvasInfo);

@@ -79,6 +79,7 @@ namespace HotFix.Control {
             for (int i = 0; i < 4; i++) {
                 if (Model.prevIdx[i] == -1) return;
                 cubes[Model.prevIdx[i]].gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[Model.prevSkin[i]];
+                Model.baseCubes[Model.prevIdx[i]] = Model.prevSkin[i]; // 这个数据也要回复回来 ?
             }
         }
         

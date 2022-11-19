@@ -65,6 +65,13 @@ namespace HotFix.Control {
     public class GameStopEventInfo : EventInfo {           // Stop Game: 比如点击 保存游戏离开 或是 不保存游戏离开 的时候, 各种清理工作
         public const string TAG = "GameStopEventInfo";
     }
+    public class ModelArraysInitializedInfo : EventInfo { // Model arrays Initialized
+        private const string TAG = "ModelArraysInitializedInfo"; 
+    }
+    public class BaseCubesDataReadyInfo : EventInfo {
+        private const string TAG = "BaseCubesDataReadyInfo";
+        public GameObject [] cubes; // 把这个数据传给其它人用
+    }
 // Game main menu events:     
     public class SwapPreviewsEventInfo : EventInfo {      // swapPreviewTetrominoButton
         public const string TAG = "SwapPreviewsEventInfo";
@@ -74,11 +81,7 @@ namespace HotFix.Control {
     }
     public class UndoGameEventInfo : EventInfo {          // Undo Game
         public const string TAG = "UndoGameEventInfo";
-    }
-    public class BaseCubesDataReadyInfo : EventInfo {
-        private const string TAG = "BaseCubesDataReadyInfo";
-        public GameObject [] cubes; // 把这个数据传给其它人用
-    }
+    } 
 // baseCubes: cubes Materials updates
     public class CubesMaterialEventInfo : EventInfo {
         private const string TAG = "CubesMaterialEventInfo"; 

@@ -6,7 +6,7 @@ namespace Framework.MVVM {
 
 // unity程序集中的抽象基类,定义必要的逻辑(提取出子类可能都会用的方法逻辑这里处理)和需要继承者实现的各类方法
     public abstract class UnityGuiView : IView<ViewModelBase> {
-
+        private const string TAG = "UnityGuiView"; 
 // 热更新资源相关的一些getter/setters
         public virtual string BundleName {
             get {
@@ -105,6 +105,7 @@ namespace Framework.MVVM {
             OnRevealed();
         }
         public void Hide(bool immediate = true, Action action = null) {
+            // Debug.Log(TAG + " Hide() for debugging a GameView bug");
             if (action != null) 
                 HiddenAction += action;
             OnHide(immediate);

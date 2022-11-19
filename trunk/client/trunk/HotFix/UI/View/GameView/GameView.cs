@@ -121,13 +121,13 @@ namespace HotFix.UI {
                 if (cur == 0 && GloData.Instance.isChallengeMode) { // 挑战模式 下
                     linText.gameObject.SetActive(false);
                     linTextDes.SetActive(false); // LINE 
-                    initializeChallengingMode();
+                    initializeChallengingMode(); // <<<<<<<<<< 
                     CoroutineHelperP.StartCoroutine(displayChallengeGoal());
-                    loadInitCubesforChallengeMode(); // 挑战模式下有些方块砖,需要初始化一下
-                } else { // EDUCATIONAL
+                    // loadInitCubesforChallengeMode(); // 这里做得太早了,会报空异常
+                } else { // EDUCATIONAL: 需要把如果先前是 挑战模式 下的相关控件清除
                     comLevelView.SetActive(false);
                     goalPanel.SetActive(false);
-                    ViewManager.basePlane.SetActive(false);
+                    baseBoard5.SetActive(true); // TODO: 有其它更为的实现
                     lvlText.text = GloData.Instance.gameLevel.ToString();
                     linText.text = ViewModel.numLinesCleared.Value.ToString();
                 }
@@ -188,11 +188,7 @@ namespace HotFix.UI {
 			yield return _waitForSeconds;
 			goalPanel.SetActive(false);
         }
-        void loadInitCubesforChallengeMode() {
-            if (!GloData.Instance.isChallengeMode || !GloData.Instance.hasInitCubes) {
-                initCubes = new GameObject();
-                return;
-            }
+        void loadInitCubesforChallengeMode(ModelArraysInitializedInfo info) { // 当被gameMode触发而来,可能仍然没有初始化好
             initCubes = ViewManager.ChallLevelsView.levels[GloData.Instance.challengeLevel.Value].gameObject.FindChildByName("InitCubes");
             Debug.Log(TAG + " (initCubes != null): " + (initCubes != null));
             if (initCubes != null) {
@@ -204,7 +200,23 @@ namespace HotFix.UI {
                 MathUtilP.printBoard(Model.gridClr);
             } 
         }
-        public GameObject [] cubes; // baseCubesGO;
+        // void loadInitCubesforChallengeMode() { // 当被gameMode触发而来,可能仍然没有初始化好
+        //     if (!GloData.Instance.isChallengeMode || !GloData.Instance.hasInitCubes) {
+        //         initCubes = new GameObject();
+        //         return;
+        //     }
+        //     initCubes = ViewManager.ChallLevelsView.levels[GloData.Instance.challengeLevel.Value].gameObject.FindChildByName("InitCubes");
+        //     Debug.Log(TAG + " (initCubes != null): " + (initCubes != null));
+        //     if (initCubes != null) {
+        //         Debug.Log(TAG + " loadInitCubesforChallengeMode() initCubes.transform.childCount: " + initCubes.transform.childCount);
+        //         Model.UpdateGrid(initCubes); // parent GameObject
+        //         Debug.Log(TAG + ": gridOcc()"); // 这里不知道是怎么回事,想要它打印三维数据的时候,它还没有处理完,总是打不出来
+        //         MathUtilP.printBoard(Model.gridOcc);
+        //         Debug.Log(TAG + ": gridClr()");
+        //         MathUtilP.printBoard(Model.gridClr);
+        //     } 
+        // }
+        public GameObject [] cubes; // baseCubesGO; 
 
 // PauseGame, ResumeGame        
         void OnClickResButton() { // RESUME GAME: 隐藏当前游戏过程中的视图,就可以了 // public void OnClickResButton();
@@ -299,14 +311,15 @@ namespace HotFix.UI {
             MathUtilP.printBoard(Model.gridOcc);  // Model.
             // Debug.Log(TAG + ": baseCubes[][] BEFORE Land BEFORE UpdateGrid()"); 
             // MathUtilP.printBoard(Model.baseCubes);  // Model.
+            // Debug.Log(TAG + ": gridClr[,,] BEFORE Land UpdateGrid(), BEFORE onGameSave()"); 
+            // MathUtilP.printBoard(Model.gridClr);  // Model.
 
             Model.UpdateGrid(ViewManager.nextTetromino); 
 
             Debug.Log(TAG + ": gridOcc[][][] AFTER Land  Update AFTER UpdteGrid(); BEFORE onGameSave()"); 
             MathUtilP.printBoard(Model.gridOcc);  // Model.
-
-            // Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), bef onGameSave()"); 
-            // MathUtilP.printBoard(Model.gridClr);  // Model.
+            Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), bef onGameSave()"); 
+            MathUtilP.printBoard(Model.gridClr);  // Model.
             // Debug.Log(TAG + ": baseCubes[][] BEFORE Land BEFORE UpdateGrid()"); 
             // MathUtilP.printBoard(Model.baseCubes);  // Model.
 
@@ -321,7 +334,7 @@ namespace HotFix.UI {
                     GameOver(); // 为什么这里是game over ? 因为当前方块砖放错位置了,一定要适应周围小立方体的材质
                 }
             }
-
+            Debug.Log(TAG + " (initCubes == null): " + (initCubes == null));
             if (ViewModel.isChallengeMode)
                 ViewModel.onGameSave(initCubes.transform);
             else if (ViewModel.gameMode == 0) // 经典模式下不再保存游戏进展; 当且仅当用户要求保存游戏的时候才保存
@@ -548,13 +561,14 @@ namespace HotFix.UI {
             cleanUpGameBroad();
         }
         void cleanUpGameBroad() {
+            Debug.Log(TAG + " cleanUpGameBroad()");
             saveGameOrNotPanel.SetActive(false); // 保存游戏 与否,提示面板
             pausePanel.SetActive(false);         // 游戏中 视图 面板
             if (gameOverPanel.activeSelf)
                 gameOverPanel.SetActive(false);
             if (GloData.Instance.isChallengeMode) {
                 ViewManager.ChallLevelsView.hideAllLevelPanels(); // 需要隐藏当前关卡的底座
-                ViewManager.basePlane.SetActive(false);
+                // ViewManager.basePlane.SetActive(false); // 它所有的子控件都失活了,不需要再失活它
             }
             if (ViewManager.ghostTetromino != null) // ViewManager.ghostTetromino
                 PoolHelper.recycleGhostTetromino();
@@ -721,12 +735,11 @@ namespace HotFix.UI {
             base.Reveal(true, Start);
         }
 // TODO: 可能更好的办法是去主工程基类中去全局控制,现先这样        
-        private bool revealed = false;
+        private bool revealed = false; // 为什么会存在这个问题呢?
 #region BindableProperties
         public void OnRevealed() { // 写在这里是因为热更新程序域里回调慢,写早了有时候拿不到返回空
+            if (revealed) return ; // TODO: 标记UnityGuiView里的基类方法,来找一下是否有其它更好的解决方案
             base.OnRevealed();
-            Debug.Log(TAG + " OnRevealed()");
-            if (revealed) return ;
 
             ViewModel.currentScore.OnValueChanged += onCurrentScoreChanged;
             ViewModel.currentLevel.OnValueChanged += onCurrentLevelChanged;
@@ -735,6 +748,7 @@ namespace HotFix.UI {
             ViewModel.numLinesCleared.Value = 0;
 // CHALLENGE MODE: COUNTERS
             ViewModel.tetroCnter.OnValueChanged += onTetroCnterChanged;
+            ViewModel.tetroCnter.Value = GloData.Instance.tetroCnter;
             ViewModel.swapCnter.OnValueChanged += onSwapCnterChanged;
             ViewModel.undoCnter.OnValueChanged += onUndoCnterChanged;
             
@@ -751,6 +765,7 @@ namespace HotFix.UI {
                 GloData.Instance.challengeLevel.OnValueChanged += onChallengeLevelChanged;
                 GloData.Instance.challengeLevel.Value = tmpl;
             }
+
 // 主要是方便从数据加载游戏进度的时候
             ViewModel.cameraPos.OnValueChanged += onCameraPosChanged;
             ViewModel.cameraRot.OnValueChanged += onCameraRotChanged;
@@ -763,8 +778,9 @@ namespace HotFix.UI {
             GloData.Instance.camRot.Value = Quaternion.identity;
             GloData.Instance.camRot.OnValueChanged += onCamRotChanged;
             GloData.Instance.camRot.Value = tmq;
+
 // TODO: 下面这行好像是调用得多了,连续调用了两次 ?
-            Start(new GameEnterEventInfo()); // 第一次触发启动 ?
+            Start(new GameEnterEventInfo()); // 当且仅当第一次启动,miss旧游戏开始事件的时候,用于第一次触发启动(切换过程中是存在不断地激活与失活的过程的) 
              revealed = true;
         }
         public void Start(GameEnterEventInfo info) { // 刚才以loadSavedGame为驱动的模式有问题,因为它的值总是会被重置,被重置的时候并不希望再次触发回调,所以需要使用游戏状态事件
@@ -792,8 +808,9 @@ namespace HotFix.UI {
                 baseBoard5.SetActive(true);
             lvlText.text = cur.ToString();
             ViewModel.onChallengeLevelChanged(pre, cur);
-            loadInitCubesforChallengeMode(); // 不同层级的时候也需要调用
-        }
+            // if (cur > 0 && GloData.Instance.hasInitCubes) // 这里应该是准备好的状态,但是限制,就让它慢一点儿
+            //     loadInitCubesforChallengeMode(); // 不同层级的时候也需要调用
+        }   
         void onCamPosChanged(Vector3 pre, Vector3 cur) {
             Debug.Log(TAG + " onCamPosChanged" + " cur: " + cur);
             Camera.main.transform.position = cur;
@@ -847,8 +864,9 @@ namespace HotFix.UI {
         protected override void OnInitialize() {
             base.OnInitialize();
             Debug.Log(TAG + " OnInitialize()");
-
             RegisterListeners();
+            if (GloData.Instance.gameMode.Value == 0 && GloData.Instance.isChallengeMode)
+                ComponentHelper.AddBBSkinComponent(ViewManager.basePlane.FindChildByName("level" + GloData.Instance.challengeLevel).gameObject);
 
             baseBoard3 = GameObject.FindChildByName("BaseBoard3");
             baseBoard4 = GameObject.FindChildByName("BaseBoard4");
@@ -918,8 +936,10 @@ namespace HotFix.UI {
             
             cycledPreviewTetromino = new GameObject();
             delta = Vector3.zero;
-            loadInitCubesforChallengeMode();
-
+            // loadInitCubesforChallengeMode(); // 这里不能调用,太早了,会报空异常
+            if (!GloData.Instance.isChallengeMode || !GloData.Instance.hasInitCubes) 
+                initCubes = new GameObject();
+ 
 // 启动并控制游戏主场景面板上几个按钮的是否可点击状态: 有的起作用,有的不起作用.....
             btnState.Value = new Dictionary<GameObject, bool>() {
                 {pvBtnOne, false}, // comTetroView button
@@ -946,7 +966,8 @@ namespace HotFix.UI {
             EventManager.Instance.RegisterListener<SaveGameEventInfo>(SaveGame);
             EventManager.Instance.RegisterListener<UndoGameEventInfo>(onUndoGame); 
             EventManager.Instance.RegisterListener<GameEnterEventInfo>(Start);
-        }
+            EventManager.Instance.RegisterListener<ModelArraysInitializedInfo>(loadInitCubesforChallengeMode);
+}
         public void OnDisable() {
             Debug.Log(TAG + ": OnDisable()");
             EventManager.Instance.UnregisterListener<TetrominoMoveEventInfo>(onActiveTetrominoMove);
@@ -956,6 +977,7 @@ namespace HotFix.UI {
             EventManager.Instance.UnregisterListener<SaveGameEventInfo>(SaveGame); 
             EventManager.Instance.UnregisterListener<UndoGameEventInfo>(onUndoGame); 
             EventManager.Instance.UnregisterListener<GameEnterEventInfo>(Start);
+            EventManager.Instance.UnregisterListener<ModelArraysInitializedInfo>(loadInitCubesforChallengeMode);
         }
 #endregion
     }

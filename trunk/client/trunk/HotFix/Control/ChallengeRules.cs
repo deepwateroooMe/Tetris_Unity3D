@@ -172,6 +172,8 @@ namespace HotFix.Control {
                 // if (bottomIdx[i] == -1) continue; 
                 if (bottomIdx[i] == -1) return false; // 不能这么写,因为它可能最低层只有一个立方体,那么其它三个就是-1,但是有值的一定是写在前面的
                 int [] pos = MathUtilP.getIndex(bottomIdx[i]);
+                MathUtilP.print(pos);
+                Debug.Log(TAG + " (pos[1] == 0): " + (pos[1] == 0));
                 if (pos[1] == 0) {
                     Debug.Log(TAG + " (Model.baseCubes[getMinoPosCubeArrIndex(pos[0], pos[2])] == Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color): "
                               + (Model.baseCubes[getMinoPosCubeArrIndex(pos[0], pos[2])] == Model.grid[pos[0]][pos[1]][pos[2]].gameObject.GetComponent<MinoType>().color));
@@ -283,7 +285,7 @@ namespace HotFix.Control {
                     while (j > 0 && Model.grid[i][j][k] == null) j--;
                     if (j > 0 && Model.gridClr[i][j][k] == color && Model.grid[i][j][k].parent.gameObject != ViewManager.nextTetromino) {
                         Debug.Log(TAG + ": i, j, k values: "); 
-                        // MathUtilP.print(i, j, k);
+                        MathUtilP.print(i, j, k);
                         // Debug.Log(TAG + " j: " + j); 
                         return true;
                     }

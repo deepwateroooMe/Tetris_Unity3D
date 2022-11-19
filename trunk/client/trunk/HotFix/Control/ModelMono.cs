@@ -246,7 +246,8 @@ namespace HotFix.Control {
                                 Model.grid[i][j][k] = null;
                                 if (GloData.Instance.isChallengeMode) {
                                     Model.gridOcc[i][j][k] = 0; 
-                                    Model.gridClr[i][j][k] = -1;
+                                    if (y > 0)
+                                        Model.gridClr[i][j][k] = -1;
                                 }
                             }
                             PoolHelper.ReturnToPool(tmpParentTransform.gameObject, tmpParentTransform.gameObject.GetComponent<TetrominoType>().type);
@@ -259,7 +260,8 @@ namespace HotFix.Control {
                             Model.grid[x][y][z] = null;
                             if (GloData.Instance.isChallengeMode) {
                                 Model.gridOcc[x][y][z] = 0; // 0 ==> 2
-                                Model.gridClr[x][y][z] = -1;
+                                if (y > 0) // y == 0 最底层的不要变 
+                                    Model.gridClr[x][y][z] = -1;
                             }
                             if (tmpParentTransform.childCount == 0 && tmpParentTransform.gameObject != null)
                                 GameObject.Destroy(tmpParentTransform.gameObject);
@@ -300,23 +302,24 @@ namespace HotFix.Control {
                         }
                     }
                 }
-            } else { // GloData.Instance.gameMode == 0: 启蒙模式，挑战模式，或是带有undo功能的模式下
+                return ;
+            } // GloData.Instance.gameMode == 0: 启蒙模式，挑战模式，或是带有undo功能的模式下
 // LOGIC MODULE INSERT:
-                // 每个 方块砖 有个固定的形状,现逻辑定义为 当且仅当方块砖遭受外外力摧毁,至少消除过一个子立方体之后,其内部结构有可能变形,某个子立方体下落一格;
-                // 昨天晚上开始意识到这个问题.目前的定义为符合三维游戏的定义,只是感觉对于小盆友来说,难度太大了点儿,考虑是否回退原实现?暂时保留如些
+            // 每个 方块砖 有个固定的形状,现逻辑定义为 当且仅当方块砖遭受外外力摧毁,至少消除过一个子立方体之后,其内部结构有可能变形,某个子立方体下落一格;
+            // 昨天晚上开始意识到这个问题.目前的定义为符合三维游戏的定义,只是感觉对于小盆友来说,难度太大了点儿,考虑是否回退原实现?暂时保留如些
 // 当当前立方体仅且只剩自已(BUG: 只要有消除[或是不曾消除,但是下面一格有消除]就需要检查是否可以继续下落,哪怕只消除了一个立方体,还剩 七 个小立方体),检查是否可以下落
 // 是否,在前面有过消除的前提下,前再检查一遍,还是说之后消除呢?
-                for (int x = 0; x < Model.gridXWidth; x++) { 
-                    for (int z = 0; z < Model.gridZWidth; z++) {
-                        // if (Model.gridOcc[x][y-1][z] == 2) { // 如果下面一层是需要消除或是曾经消除过的空格,[并非一定能够]将当前非空立方体下移,当前立方体下降与否受其父控件约束
-                        if (Model.gridOcc[x][y-1][z] == 2 && Model.gridOcc[x][y][z] == 0) { // 如果下面一层是需要消除或是曾经消除过的空格,[并非一定能够]将当前非空立方体下移,当前立方体下降与否受其父控件约束
-                            Model.gridOcc[x][y-1][z] = Model.gridOcc[x][y][z];
-                            // if (Model.grid[x][y][z] != null) 
-                            //     moveMinoDownOneGridHelper(x,  y, z);
-                            // Model.gridOcc[x][y][z] = y == Model.gridHeight - 1 ? 0 : 2;
-                            Model.gridOcc[x][y][z] = 0;
-                        } else
-                            // if (Model.gridOcc[x][y-1][z] == 0 && Model.gridOcc[x][y][z] == 1 // 下一格为 空,上层当前格为 非空,检查是否可以掉落
+            for (int x = 0; x < Model.gridXWidth; x++) { 
+                for (int z = 0; z < Model.gridZWidth; z++) {
+                    // if (Model.gridOcc[x][y-1][z] == 2) { // 如果下面一层是需要消除或是曾经消除过的空格,[并非一定能够]将当前非空立方体下移,当前立方体下降与否受其父控件约束
+                    if (Model.gridOcc[x][y-1][z] == 2 && Model.gridOcc[x][y][z] == 0) { // 如果下面一层是需要消除或是曾经消除过的空格,[并非一定能够]将当前非空立方体下移,当前立方体下降与否受其父控件约束
+                        Model.gridOcc[x][y-1][z] = Model.gridOcc[x][y][z];
+                        // if (Model.grid[x][y][z] != null) 
+                        //     moveMinoDownOneGridHelper(x,  y, z);
+                        // Model.gridOcc[x][y][z] = y == Model.gridHeight - 1 ? 0 : 2;
+                        Model.gridOcc[x][y][z] = 0;
+                    } else
+                        // if (Model.gridOcc[x][y-1][z] == 0 && Model.gridOcc[x][y][z] == 1 // 下一格为 空,上层当前格为 非空,检查是否可以掉落
 // 如果以这种逻辑,那么每移动过的/ 下除过的当前格,都仍需要标记以示消除或是移动过,给上层立方体看的                        
                         if ((Model.gridOcc[x][y-1][z] == 0 || Model.gridOcc[x][y-1][z] == 2) // 下面一格为空或是消除过
                             && Model.gridOcc[x][y][z] == 1 && Model.grid[x][y][z] != null    // 下一格为 空,上层当前格为 非空,检查是否可以掉落 Model.gridOcc[x][y-1][z] == 8 ?
@@ -336,32 +339,6 @@ namespace HotFix.Control {
                                     // MathUtilP.print("(Model.grid[x][y][z].parent == null)", x, y, z);
                                     moveMinoDownOneGridHelper(x,  y, z);
                                 } else if (Model.grid[x][y][z].parent != null) { // 当将格的父控件可以继续下降一格:
-// // 这里应该可以换个方法(以父控件整体来)写,但是暂时如此吧, 感觉下面这个:把父控件里的每个立方体住下移动一格,既低效又bug百出: 这里好像还是写乱了,它的父控件的transform 没有下移一格
-//                                     Model.grid[x][y][z].parent.position += new Vector3(0, -1, 0); // 将整体的父控件下移一格
-//                                     foreach (Transform mino in Model.grid[x][y][z].parent) {
-//                                         if (mino.CompareTag("mino")) {
-//                                             int i = (int)Math.Round(mino.position.x);
-//                                             int j = (int)Math.Round(mino.position.y)+1; // 目的是清空上一格的
-//                                             int k = (int)Math.Round(mino.position.z);
-// 感觉这里改写后的问题是: 当父控件 方块砖 下移一格, 并不是每个子控件小立方体的Y都下降一格的?
-//                                             if (j >= 0 && j < Model.gridHeight && i >= 0 && i < Model.gridXWidth && k >= 0 && k < Model.gridZWidth) { // 先把方块砖下移一格前的数据清除
-//                                                 if (Model.grid[i][j][k] != null && Model.grid[i][j][k].parent == Model.grid[x][y][z].parent) {
-//                                                     Model.grid[i][j][k] = null;
-//                                                     Model.gridOcc[i][j][k] = 0;
-// // TODO: 这个以后再检查再补吧                                                    
-//                                                     if (GloData.Instance.isChallengeMode) Model.gridClr[i][j][k]= -1; 
-//                                                 }
-//                                             }
-//                                             if (j-1 >= 0 && j-1 < Model.gridHeight) { // 再更新方块砖下移一格之后的数据
-//                                                 Model.grid[i][j][k] = mino;
-//                                                 Model.gridOcc[i][j][k] = 1;
-//                                                 if (GloData.Instance.isChallengeMode) Model.gridClr[i][j][k] = Model.grid[i][j][k].gameObject.GetComponent<MinoType>().color;
-//                                             }
-//                                                 // moveMinoDownOneGridHelper(i, j, k); // 这个方法不适用
-//                                         }
-//                                     }
-// TODO :　这个早定义好的方法,只是省几行代码,其执行效率更低,还不如上面的呢(知道上面写法的问题,现在再把上面的改正一下,以保证相对比较高的运行效率) 上面的两种写法都有问题,感觉某个小细节还是没能想透
-// 这个方法执行效率不高,今天下午真正意识到的那个Model里的微小转动因素,这个低效的方法,至少,可以保证正确性                                    
                                     Model.grid[x][y][z].parent.position += new Vector3(0, -1, 0);
                                     Model.UpdateGrid(Model.grid[x][y][z].parent.gameObject);
                                 }
@@ -370,11 +347,13 @@ namespace HotFix.Control {
                                 // MathUtilP.printBoard(Model.gridOcc);
                             }
                         }
-                    }   
-                }
-            } // GloData.Instance.gameMode == 0
-            if (y == 1 && BaseBoardSkin.isSkinChanged)  // debug
+                }   
+            }
+            if (y == 1 && BaseBoardSkin.isSkinChanged) {
+                Debug.Log(TAG + " MoveRowDown() (y == 1 && BaseBoardSkin.isSkinChanged)");
+                MathUtilP.printBoard(Model.baseCubes);
                 EventManager.Instance.FireEvent("cubesMat");
+            } // debug
         }
 // 标记下降过的当前格为 2        
         private static void moveMinoDownOneGridHelper(int x, int y, int z) {
@@ -390,6 +369,7 @@ namespace HotFix.Control {
                 }
             }
             Model.gridOcc[x][y][z] = 0;
+            Model.gridClr[x][y][z] = -1;
         }
 
         // 补充逻辑: 添加检查有过消除后的方块砖是否可以继续下降一格? 仿Tetromino MoveDown()的方法来写        

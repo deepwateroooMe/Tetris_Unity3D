@@ -4,8 +4,10 @@
 
 * 游戏基本场景设计
   
+[[./pic/readme_20221119_113227.png]]
+- fix all idenfied bugs during modes switches and ILRuntime Hotfix callback delays.
+  
 [[./pic/readme_20221115_220027.png]]
-
 - CHALLENGING MODE: ALL kinds of bugs awaiting to be fixed. will work on them tomorrow.
 - working on identified bugs.前几天估算时间的时候没有意识到之前自己的游戏逻辑并没有写完整,还是想尽快把挑战模式下的游戏逻辑按照原计划实现出相对理想的状态,这几天会把游戏逻辑补充完整,并尽量同步修复意识到的bug
 - 今天修改了几个BUG后能够意识到现从保存文件加载游戏进度中(主要是由启蒙和挑战模式下的撤销最后一块即使已经消除了的方块砖所引起的)所存在的诸多问题,想要重新走最原始的,就是用户想要撤销最后一块方块砖的时候,如果不曾有消除,只削除最后一块方块砖就可以了,如果有,就清理面板,再由保存文件从头加载

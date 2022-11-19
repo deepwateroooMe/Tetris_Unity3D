@@ -134,15 +134,17 @@ namespace HotFix.Control {
                         gridOcc[(int)pos.x][(int)pos.y][(int)pos.z] = 8;
                     else
                         gridOcc[(int)pos.x][(int)pos.y][(int)pos.z] = 1;
-                    if (GloData.Instance.isChallengeMode) 
+                    if (GloData.Instance.isChallengeMode) {
                         gridClr[(int)pos.x][(int)pos.y][(int)pos.z] = mino.GetComponent<MinoType>().color;
+                        // if ((int)pos.y == 0) // 地板砖的着色,要这个时候更新吗
+                        //     baseCubes[(int)x + Model.gridXWidth * (int)pos.z] = gridClr[(int)pos.x][(int)pos.y][(int)pos.z];
+                    }
                 }
             }
             if (ViewManager.nextTetromino != null)
 				Debug.Log(TAG + " UpdateGrid() ViewManager.nextTetromino.name: " + ViewManager.nextTetromino.name);
-
-            Debug.Log(TAG + " AFTER UpdateGrid() Model.gridOcc[x][y][z]");
-            MathUtilP.printBoard(gridOcc);
+            // Debug.Log(TAG + " AFTER UpdateGrid() Model.gridOcc[x][y][z]");
+            // MathUtilP.printBoard(gridOcc);
         }
 
         public static bool CheckIsValidPosition() { // check if physically fits into the grid
@@ -306,7 +308,7 @@ namespace HotFix.Control {
         }
 
         public static Transform GetTransformAtGridPosition(Vector3 pos) {
-            if (pos.y > gridHeight - 1) 
+            if ((int)pos.y > gridHeight - 1 || (int)pos.y < 0 || (int)pos.x < 0 || (int)pos.x >= gridXWidth || (int)pos.z < 0 || (int)pos.z >= gridZWidth) 
                 return null;
             else
                 return grid[(int)pos.x][(int)pos.y][(int)pos.z];

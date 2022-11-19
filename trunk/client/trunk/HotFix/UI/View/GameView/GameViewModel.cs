@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using deepwaterooo.tetris3d;
 using Framework.MVVM;
-using Framework.Util;
 using HotFix.Control;
-using HotFix.Data;
-using tetris3d;
 using UnityEngine;
 
 namespace HotFix.UI {
@@ -105,7 +100,7 @@ namespace HotFix.UI {
             
             tetroCnter.Value = -1;
             undoCnter.Value = 5;
-            swapCnter.Value = 5;
+            swapCnter.Value = 5; 
             GloData.Instance.loadSavedGame = false; // 缺省开始新游戏
 // 如果同户不要保存游戏进度,则必要情况下需要删除保存过的游戏进度文件
             if (!hasSavedGameAlready) { // 不保存游戏
@@ -119,12 +114,15 @@ namespace HotFix.UI {
                 }
             }
         }
-        public void onUndoGame(GameData gameData) { 
-            Debug.Log(TAG + ": onUndoGame()");
-            isDuringUndo = true;
 
+        public void onUndoGame(GameData gameData) { 
+            Debug.Log(TAG + " onUndoGame()");
+            isDuringUndo = true;
             ++tetroCnter.Value;
+
+            Debug.Log(TAG + " onUndoGame() undoCnter.Value: " + undoCnter.Value);
             --undoCnter.Value;
+            Debug.Log(TAG + " onUndoGame() undoCnter.Value: " + undoCnter.Value); // TODO: bug to be looked into and fixed
             recycleThreeMajorTetromino(ViewManager.GameView.previewTetromino, ViewManager.GameView.previewTetromino2);
 
             StringBuilder type = new StringBuilder("");
@@ -154,7 +152,8 @@ namespace HotFix.UI {
             cameraRot.Value = DeserializedTransform.getDeserializedTransRot(gameData.cameraData);
             tetroCnter.Value = gameData.tetroCnter;
             swapCnter.Value = gameData.swapCnter;
-            undoCnter.Value = gameData.undoCnter;
+            if (!isDuringUndo) // 在真正的undo期间,这个值不应该被重置;只在加载旧游戏的时候才设置
+                undoCnter.Value = gameData.undoCnter;
         }
         
         void onGameLevelChanged(int pre, int cur) { // for educational + classic mode
@@ -163,11 +162,17 @@ namespace HotFix.UI {
                 GloData.Instance.gameLevel = cur;
         }
         void onGameModeChanged(int pre, int cur) {
+            Debug.Log(TAG + " onGameModeChanged(): cur: " + cur);
             gameMode = cur;
             isChallengeMode = GloData.Instance.isChallengeMode;
+            // if (cur == 0 && GloData.Instance.isChallengeMode) //  只在挑战模式下存在这个初始化的问题,感觉这里是会造成其它问题的重复步骤
+            //     modelArraysInitiation();
         }
         void Initialization() {
             Debug.Log(TAG + " Initialization()");
+            if (GloData.Instance.gameMode.Value == 0 && GloData.Instance.isChallengeMode) // 想把这个数据的实初始化尽可能地早做
+                modelArraysInitiation();
+
             this.ParentViewModel = (MenuViewModel)ViewManager.MenuView.BindingContext; // 父视图模型: 菜单视图模型
             gameMode = GloData.Instance.gameMode.Value; // 可能会miss掉最初的值
             GloData.Instance.gameMode.OnValueChanged += onGameModeChanged;
@@ -203,39 +208,17 @@ namespace HotFix.UI {
             undoCnter.Value = 5;
             swapCnter.Value = 5;
             challengeLevel = GloData.Instance.challengeLevel.Value;
-
             isChallengeMode = GloData.Instance.isChallengeMode;
-
 // 最大各种数组的初始化
             Debug.Log(TAG + " GloData.Instance.maxXWidth: " + GloData.Instance.maxXWidth);
             Debug.Log(TAG + " GloData.Instance.maxZWidth: " + GloData.Instance.maxZWidth);
-            if (!Model.mcubesInitiated) {
-                Model.baseCubes = new int[GloData.Instance.maxXWidth * GloData.Instance.maxZWidth]; // 底座的着色
-                Model.grid = new Transform[GloData.Instance.maxXWidth][][];
-                Model.gridOcc = new int[GloData.Instance.maxXWidth][][];
-                Model.gridClr = new int[GloData.Instance.maxXWidth][][];
-                for (int i = 0; i < GloData.Instance.maxXWidth; i++) {
-                    Model.grid[i] = new Transform[Model.gridHeight][];
-                    Model.gridOcc[i] = new int [Model.gridHeight][];
-                    Model.gridClr[i] = new int [Model.gridHeight][];
-                    for (int j = 0; j < Model.gridHeight; j++) {
-                        Model.grid[i][j] = new Transform[GloData.Instance.maxZWidth];
-                        Model.gridOcc[i][j] = new int [GloData.Instance.maxZWidth];
-                        Model.gridClr[i][j] = new int [GloData.Instance.maxZWidth];
-                    }
-                }
-                Model.mcubesInitiated = true;
-            }
             Model.prevSkin = new int[4];
             Model.prevIdx = new int[4];
             modelArraysReset();
-            Debug.Log(TAG + " isChallengeMode: " + isChallengeMode);
-            // if (isChallengeMode)
-            //     ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel)).initateBaseCubesColors();
         }
-        void onBaseCubesDataReady(BaseCubesDataReadyInfo info) {
-            Debug.Log(TAG + " onBaseCubesDataReady()" + " (!Model.mcubesInitiated): " + (!Model.mcubesInitiated));
-            if (!Model.mcubesInitiated) {
+        public void modelArraysInitiation() {
+            Debug.Log(TAG + " modelArraysInitiation() (!Model.mcubesInitiated): " + (!Model.mcubesInitiated));
+            // if (!Model.mcubesInitiated) {
                 Model.baseCubes = new int[GloData.Instance.maxXWidth * GloData.Instance.maxZWidth]; // 底座的着色
                 Model.grid = new Transform[GloData.Instance.maxXWidth][][];
                 Model.gridOcc = new int[GloData.Instance.maxXWidth][][];
@@ -250,8 +233,16 @@ namespace HotFix.UI {
                         Model.gridClr[i][j] = new int [GloData.Instance.maxZWidth];
                     }
                 }
-                Model.mcubesInitiated = true;
-            }
+                Debug.Log(TAG + ": gridClr[,,]  after modelArraysInitiation()"); 
+                MathUtilP.printBoard(Model.gridClr);  // Model.
+
+                // EventManager.Instance.FireEvent("arrReady"); // 这个事件发送得还是太早了,换个地方发
+                // Model.mcubesInitiated = true;
+            // }
+        }
+        void onBaseCubesDataReady(BaseCubesDataReadyInfo info) {
+            Debug.Log(TAG + " onBaseCubesDataReady()" + " (!Model.mcubesInitiated): " + (!Model.mcubesInitiated));
+            // modelArraysInitiation(); // 这里不能再把它们重置一遍了.......
             int xx = 0, zz = 0;
             int n = Model.gridXWidth * Model.gridZWidth;
             for (int i = 0; i < n; i++) {
@@ -304,25 +295,19 @@ namespace HotFix.UI {
 
         public void OnFinishReveal() {
             Debug.Log(TAG + " OnFinishReveal");
+            EventManager.Instance.FireEvent("arrReady"); // 这个事件发送得还是太早了,换个地方发
             gameMode = GloData.Instance.gameMode.Value;
             Debug.Log(TAG + " gameMode.Value: " + gameMode);
-
             fallSpeed = 3.0f; // should be recorded too, here
-            if (gameMode == 0) {
-                if (!isChallengeMode)
-                    Model.resetGridOccBoard();
-            }
             currentScore.Value = 0;
             currentLevel.Value = startingLevel;
         }
 
         public void LoadNewGame() {
             Debug.Log(TAG + ": LoadNewGame()");
-            gameMode = GloData.Instance.gameMode.Value; // 这里还用这些吗?
-            fallSpeed = 3.0f; // should be recorded too, here
-
+            fallSpeed = 3.0f; 
             // if (gameMode.Value == 0 && Model.gridOcc != null && !isChallengeMode)
-            // Model.resetGridOccBoard(); // 这个地方不能重置
+            // Model.resetGridOccBoard(); // 这个地方不能重置: 挑战模式下会有些障碍物什么的,是提前初始化好的,不可清除与重置
             currentScore.Value = 0;
             if (isChallengeMode)
                 currentLevel.Value = GloData.Instance.challengeLevel.Value;

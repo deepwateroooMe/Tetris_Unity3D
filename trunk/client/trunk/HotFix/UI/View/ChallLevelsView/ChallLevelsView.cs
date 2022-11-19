@@ -252,8 +252,9 @@ namespace HotFix.UI {
             }
             GloData.Instance.gameLevel = level;
             GameObject go = ViewManager.basePlane.gameObject.FindChildByName("level" + level);
-            if (ComponentHelper.GetBBSkinComponent(go) == null) // 需要判断,因为会有重入
-                ComponentHelper.AddBBSkinComponent(go);
+// 这里的问题是:它激活初始化得太早了,它完成初始化工作之后所发送的事件,不能被接收者有效注册和接收;需要延迟这个步骤
+            // if (ComponentHelper.GetBBSkinComponent(go) == null) // 需要判断,因为会有重入
+            //     ComponentHelper.AddBBSkinComponent(go);
             levels[level].SetActive(true); 
             currentLevel = levels[level];
             hideAllOtherLevelPanel(level);

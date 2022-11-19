@@ -57,6 +57,7 @@ namespace HotFix.UI {
         protected override void OnInitialize() {
             base.OnInitialize();
             GloData.Instance.loadSavedGame = false;
+            GloData.Instance.gameMode.Value = -1; // 因为比如:从挑战模式 切换到 启蒙模式,不改值不能调用回调
             
             menuViewPanel = GameObject.FindChildByName("MenuViewPanel");
             eduButton = GameObject.FindChildByName("eduBtn").GetComponent<Button>();
@@ -88,6 +89,7 @@ namespace HotFix.UI {
 #region EDUCATIONAL CLASSIC CHALLENGE MODES
         void OnClickEduButton() { // EDUCATIONAL
             // GloData.Instance.gameMode.Value = 0;
+            GloData.Instance.isChallengeMode = false; // 有时候是从挑战模式切换过来的,所以仍然一定需要设置
             GloData.Instance.camPos.Value = new Vector3(14.10899f, 23.11789f, -1.698298f);
             GloData.Instance.camRot.Value = Quaternion.Euler(new Vector3(490.708f, -251.184f, -539.973f));
             menuViewPanel.SetActive(false);
