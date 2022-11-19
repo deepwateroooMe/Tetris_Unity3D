@@ -39,7 +39,7 @@ namespace HotFix.UI {
         Button attBtn;
         Button nitBtn;
         Button twtBtn;
-        GameObject [] levels;
+        public GameObject [] levels;
         private GameObject currentLevel;
         
         protected override void OnInitialize() {
@@ -248,13 +248,10 @@ namespace HotFix.UI {
                 break;
             }
             GloData.Instance.gameLevel = level;
-// BaseBoardSkin.cs MonoBehaviour: 需要它尽可能早地执行,但也要保证有全局数据,否则报空异常
             GameObject go = ViewManager.basePlane.gameObject.FindChildByName("level" + level);
-            if (ComponentHelper.GetBBSkinComponent(go) == null) {
-                BaseBoardSkin baseBoardSkin = ComponentHelper.AddBBSkinComponent(go);
-                // baseBoardSkin.initateBaseCubesColors(); // 好像这里的任务也未必一定做得完
-            }
-            levels[level].SetActive(true);
+            if (ComponentHelper.GetBBSkinComponent(go) == null) // 需要判断,因为会有重入
+                ComponentHelper.AddBBSkinComponent(go);
+            levels[level].SetActive(true); 
             currentLevel = levels[level];
             hideAllOtherLevelPanel(level);
             if (!ViewManager.basePlane.activeSelf)
@@ -327,3 +324,4 @@ namespace HotFix.UI {
         }
     }
 }
+

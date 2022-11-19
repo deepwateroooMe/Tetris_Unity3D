@@ -140,6 +140,9 @@ namespace HotFix.Control {
             }
             if (ViewManager.nextTetromino != null)
 				Debug.Log(TAG + " UpdateGrid() ViewManager.nextTetromino.name: " + ViewManager.nextTetromino.name);
+
+            Debug.Log(TAG + " AFTER UpdateGrid() Model.gridOcc[x][y][z]");
+            MathUtilP.printBoard(gridOcc);
         }
 
         public static bool CheckIsValidPosition() { // check if physically fits into the grid

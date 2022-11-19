@@ -75,6 +75,10 @@ namespace HotFix.Control {
     public class UndoGameEventInfo : EventInfo {          // Undo Game
         public const string TAG = "UndoGameEventInfo";
     }
+    public class BaseCubesDataReadyInfo : EventInfo {
+        private const string TAG = "BaseCubesDataReadyInfo";
+        public GameObject [] cubes; // 把这个数据传给其它人用
+    }
 // baseCubes: cubes Materials updates
     public class CubesMaterialEventInfo : EventInfo {
         private const string TAG = "CubesMaterialEventInfo"; 

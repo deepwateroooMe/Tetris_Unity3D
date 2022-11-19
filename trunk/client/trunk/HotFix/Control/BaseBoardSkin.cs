@@ -10,8 +10,8 @@ using UnityEngine;
 namespace HotFix.Control {
 
     // 挑战模式: 每一关的底板的皮肤是动态更换的
-    // public class BaseBoardSkin : SingletonMono<BaseBoardSkin> {
-    public class BaseBoardSkin : MonoBehaviour {
+    public class BaseBoardSkin : SingletonMono<BaseBoardSkin> {
+    // public class BaseBoardSkin : MonoBehaviour {
         private const string TAG = "BaseBoardSkin";
 
         public GameObject [] cubes;
@@ -75,11 +75,7 @@ namespace HotFix.Control {
             Debug.Log(TAG + ": onUndoGame()"); 
             for (int i = 0; i < 4; i++) {
                 if (Model.prevIdx[i] == -1) return;
-                // Debug.Log(TAG + " Model.prevIdx[i]: " + Model.prevIdx[i]);
                 cubes[Model.prevIdx[i]].gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[Model.prevSkin[i]];
-                // Debug.Log(TAG + " Model.prevIdx[i]: " + Model.prevIdx[i]);
-                // Debug.Log(TAG + " Model.prevSkin[i]: " + Model.prevSkin[i]); 
-                // Debug.Log(TAG + " cubes[Model.prevIdx[i]].gameObject.GetComponent<Renderer>().sharedMaterial.ToString(): " + cubes[Model.prevIdx[i]].gameObject.GetComponent<Renderer>().sharedMaterial.ToString()); 
             }
         }
         
@@ -96,7 +92,6 @@ namespace HotFix.Control {
 
         public void initateBaseCubesColors() { // 这里初始化得狠早,可能早于Model初始化其相关数组,所以这里用到的要自己初始化一下
             Debug.Log(TAG + " initateBaseCubesColors()");
-            // int n = Model.gridXWidth * Model.gridZWidth, idx = 0; // 这里想要初始化的时候,Model里的数据可能也还没有初始化
             int n = GloData.Instance.gridXSize * GloData.Instance.gridZSize, idx = 0;
             Debug.Log(TAG + " initateBaseCubesColors() n: " + n);
             cubes = new GameObject[n]; // 地板砖的 gameObject s
@@ -111,58 +106,19 @@ namespace HotFix.Control {
                     cubes[idx] = gameObject.FindChildByName(name.ToString());
                     cubes[idx].gameObject.transform.rotation = Quaternion.identity;
                 }
-            Debug.Log(TAG + " (!Model.mcubesInitiated): " + (!Model.mcubesInitiated));
-            if (!Model.mcubesInitiated) {
-                Model.baseCubes = new int[GloData.Instance.maxXWidth * GloData.Instance.maxZWidth]; // 底座的着色
-                Model.grid = new Transform[GloData.Instance.maxXWidth][][];
-                Model.gridOcc = new int[GloData.Instance.maxXWidth][][];
-                Model.gridClr = new int[GloData.Instance.maxXWidth][][];
-                for (int i = 0; i < GloData.Instance.maxXWidth; i++) {
-                    Model.grid[i] = new Transform[Model.gridHeight][];
-                    Model.gridOcc[i] = new int [Model.gridHeight][];
-                    Model.gridClr[i] = new int [Model.gridHeight][];
-                    for (int j = 0; j < Model.gridHeight; j++) {
-                        Model.grid[i][j] = new Transform[GloData.Instance.maxZWidth];
-                        Model.gridOcc[i][j] = new int [GloData.Instance.maxZWidth];
-                        Model.gridClr[i][j] = new int [GloData.Instance.maxZWidth];
-                    }
-                }
-                Model.mcubesInitiated = true;
-            }
-            int xx = 0, zz = 0;
-            for (int i = 0; i < n; i++) {
-                Model.baseCubes[i] = cubes[i].GetComponent<MinoType>().color; // 
-                xx = i % GloData.Instance.gridXSize;
-                zz = i / GloData.Instance.gridXSize;
-                if (!cubes[i].activeSelf) { // 如果某一个方格失活,那么整个竖列都是不能穿过的
-                    for (int y = 0; y < Model.gridHeight; y++) {
-                        Model.grid[xx][y][zz] = null;
-                        Model.gridOcc[xx][y][zz] = 9; // magic number, 9 to substitute -1
-                        Model.baseCubes[i] = -1;
-                    }
-                }
-            }
-            // baseCubesInitialized = true;
-            Debug.Log(TAG + " initateBaseCubesColors() Model.baseCubes colors");
-            MathUtilP.print(Model.baseCubes);
-            
-            Debug.Log(TAG + " initateBaseCubesColors() Model.gridOcc: ");
-            MathUtilP.printBoard(Model.gridOcc);
+            EventManager.Instance.FireEvent(cubes);
         }
 
         public void OnEnable() {
-            Debug.Log(TAG + ": OnEnable()");
             Start();
         }
-        public void Start() {
-            Debug.Log(TAG + " Start()");
+        public void Start() { // 因为它只调用一次,所以帮它确保多调用几次
             initateBaseCubesColors();
             EventManager.Instance.RegisterListener<UndoGameEventInfo>(onUndoGame); 
             EventManager.Instance.RegisterListener<TetrominoChallLandInfo>(onActiveTetrominoLand);
             EventManager.Instance.RegisterListener<CubesMaterialEventInfo>(onCubesMaterialsChanged);
         }
         public void OnDisable() {
-            Debug.Log(TAG + " OnDisable()");
             EventManager.Instance.UnregisterListener<TetrominoChallLandInfo>(onActiveTetrominoLand); 
             EventManager.Instance.UnregisterListener<UndoGameEventInfo>(onUndoGame); 
             EventManager.Instance.UnregisterListener<CubesMaterialEventInfo>(onCubesMaterialsChanged);

@@ -40,6 +40,7 @@ namespace HotFix.Control {
 
         private CanvasToggledEventInfo canvasInfo;
         private CubesMaterialEventInfo cubeMatInfo;
+        private BaseCubesDataReadyInfo cubesInfo;
         
         public void Awake() {
             // Debug.Log(TAG + " Awake");
@@ -61,7 +62,8 @@ namespace HotFix.Control {
             stopInfo = new GameStopEventInfo();
 
             cubeMatInfo = new CubesMaterialEventInfo();
-            
+            cubesInfo = new BaseCubesDataReadyInfo();
+             
             validInfo = new TetrominoValidMMInfo();
         }
 
@@ -147,7 +149,10 @@ namespace HotFix.Control {
             validInfo.delta = delta;
             FireEvent(validInfo); // "validMR"
         }
-
+        public void FireEvent(GameObject [] cubes) {
+            cubesInfo.cubes = cubes;
+            FireEvent(cubesInfo);
+        }
         public void FireEvent(string type, Vector3 delta) {
             // Debug.Log(TAG + ": FireEvent() type + delta. type: " + type); 
             // MathUtilP.print(delta);

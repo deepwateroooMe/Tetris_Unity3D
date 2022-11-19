@@ -174,7 +174,8 @@ namespace HotFix.UI {
             hasSavedGameAlready = false;
             isChallengeMode = GloData.Instance.isChallengeMode;
 // TODO: 我把这些也写进了viewmodel里,可是这里面,我应该在什么地方取消它们才 不会 造成资源泄露呢?
-            EventManager.Instance.RegisterListener<GameEnterEventInfo>(onGameEnter); // 爱表哥,爱生活!!!
+            // EventManager.Instance.RegisterListener<GameEnterEventInfo>(onGameEnter); // 爱表哥,爱生活!!!
+            EventManager.Instance.RegisterListener<BaseCubesDataReadyInfo>(onBaseCubesDataReady); // 爱表哥,爱生活!!!
             EventManager.Instance.RegisterListener<GameStopEventInfo>(onGameStopAndReset); // 爱表哥,爱生活!!!
             
             if (isChallengeMode)
@@ -232,48 +233,45 @@ namespace HotFix.UI {
             // if (isChallengeMode)
             //     ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel)).initateBaseCubesColors();
         }
-        void onGameEnter(GameEnterEventInfo info) { // Model.gridOcc[x][y][z] 好像没有初始化到理想的结果,这里还要再作一下
-            Debug.Log(TAG + " onGameEnter"); // 就是这个地方,把前面没能做好做成功的地方又做了一遍,不知道是否还有更好的解决办法
-            // GameObject [] cubes = BaseBoardSkin.cubes;
-            // BaseBoardSkin baseBoardSkin = ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel));
-            // Debug.Log(TAG + " (!Model.mcubesInitiated): " + (!Model.mcubesInitiated));
-            // if (!Model.mcubesInitiated) {
-            //     Model.baseCubes = new int[GloData.Instance.maxXWidth * GloData.Instance.maxZWidth]; // 底座的着色
-            //     Model.grid = new Transform[GloData.Instance.maxXWidth][][];
-            //     Model.gridOcc = new int[GloData.Instance.maxXWidth][][];
-            //     Model.gridClr = new int[GloData.Instance.maxXWidth][][];
-            //     for (int i = 0; i < GloData.Instance.maxXWidth; i++) {
-            //         Model.grid[i] = new Transform[Model.gridHeight][];
-            //         Model.gridOcc[i] = new int [Model.gridHeight][];
-            //         Model.gridClr[i] = new int [Model.gridHeight][];
-            //         for (int j = 0; j < Model.gridHeight; j++) {
-            //             Model.grid[i][j] = new Transform[GloData.Instance.maxZWidth];
-            //             Model.gridOcc[i][j] = new int [GloData.Instance.maxZWidth];
-            //             Model.gridClr[i][j] = new int [GloData.Instance.maxZWidth];
-            //         }
-            //     }
-            //     Model.mcubesInitiated = true;
-            // }
-            // int xx = 0, zz = 0;
-            // int n = Model.gridXWidth * Model.gridZWidth;
-            // for (int i = 0; i < n; i++) {
-            //     Model.baseCubes[i] = baseBoardSkin.cubes[i].GetComponent<MinoType>().color; // 
-            //     xx = i % GloData.Instance.gridXSize;
-            //     zz = i / GloData.Instance.gridXSize;
-            //     if (!baseBoardSkin.cubes[i].activeSelf) { // 如果某一个方格失活,那么整个竖列都是不能穿过的
-            //         for (int y = 0; y < Model.gridHeight; y++) {
-            //             Model.grid[xx][y][zz] = null;
-            //             Model.gridOcc[xx][y][zz] = 9; // magic number, 9 to substitute -1
-            //             Model.baseCubes[i] = -1;
-            //         }
-            //     }
-            // }
-            // // baseCubesInitialized = true;
-            // Debug.Log(TAG + " initateBaseCubesColors() Model.baseCubes colors");
-            // MathUtilP.print(Model.baseCubes);
+        void onBaseCubesDataReady(BaseCubesDataReadyInfo info) {
+            Debug.Log(TAG + " onBaseCubesDataReady()" + " (!Model.mcubesInitiated): " + (!Model.mcubesInitiated));
+            if (!Model.mcubesInitiated) {
+                Model.baseCubes = new int[GloData.Instance.maxXWidth * GloData.Instance.maxZWidth]; // 底座的着色
+                Model.grid = new Transform[GloData.Instance.maxXWidth][][];
+                Model.gridOcc = new int[GloData.Instance.maxXWidth][][];
+                Model.gridClr = new int[GloData.Instance.maxXWidth][][];
+                for (int i = 0; i < GloData.Instance.maxXWidth; i++) {
+                    Model.grid[i] = new Transform[Model.gridHeight][];
+                    Model.gridOcc[i] = new int [Model.gridHeight][];
+                    Model.gridClr[i] = new int [Model.gridHeight][];
+                    for (int j = 0; j < Model.gridHeight; j++) {
+                        Model.grid[i][j] = new Transform[GloData.Instance.maxZWidth];
+                        Model.gridOcc[i][j] = new int [GloData.Instance.maxZWidth];
+                        Model.gridClr[i][j] = new int [GloData.Instance.maxZWidth];
+                    }
+                }
+                Model.mcubesInitiated = true;
+            }
+            int xx = 0, zz = 0;
+            int n = Model.gridXWidth * Model.gridZWidth;
+            for (int i = 0; i < n; i++) {
+                Model.baseCubes[i] = info.cubes[i].GetComponent<MinoType>().color; // 
+                xx = i % GloData.Instance.gridXSize;
+                zz = i / GloData.Instance.gridXSize;
+                if (!info.cubes[i].activeSelf) { // 如果某一个方格失活,那么整个竖列都是不能穿过的
+                    for (int y = 0; y < Model.gridHeight; y++) {
+                        Model.grid[xx][y][zz] = null;
+                        Model.gridOcc[xx][y][zz] = 9; // magic number, 9 to substitute -1
+                        Model.baseCubes[i] = -1;
+                    }
+                }
+            }
+            // baseCubesInitialized = true;
+            Debug.Log(TAG + " onBaseCubesDataReady() Model.baseCubes colors");
+            MathUtilP.print(Model.baseCubes);
             
-            // Debug.Log(TAG + " initateBaseCubesColors() Model.gridOcc: ");
-            // MathUtilP.printBoard(Model.gridOcc);
+            Debug.Log(TAG + " onBaseCubesDataReady() Model.gridOcc: ");
+            MathUtilP.printBoard(Model.gridOcc);
         }
         public void onChallengeLevelChanged(int pre, int cur) {
             Debug.Log(TAG + " onChallengeLevelChanged()" + " cur: " + cur);
@@ -281,11 +279,13 @@ namespace HotFix.UI {
             startingLevel = cur;
             // 重置或是初始化全局数组变量: 这里不用一再地重复销毁和重新分配内存,可是先初始化一个足够大的数组,再根据需要调整该足够大数组的维度
             modelArraysReset();
+            Model.mcubesInitiated = false;
         }
+
         public void modelArraysReset() { // 其实说到底,这些东西原本还是应该放在ViewModel里的,只是独立出去能够这现在这个文件弄小一点儿方便操作查找            
             // Debug.Log(TAG + " modelArraysReset() GloData.Instance.isChallengeMode: " + GloData.Instance.isChallengeMode);
-            // if (GloData.Instance.isChallengeMode) {
-                Model.gridWidth = GloData.Instance.gridSize;
+            if (GloData.Instance.isChallengeMode) { // 在初始化的时候这个判断是需要的
+                Model.gridWidth = GloData.Instance.gridSize; 
                 Model.gridXWidth = GloData.Instance.gridXSize;
                 Model.gridZWidth = GloData.Instance.gridZSize;
                 Debug.Log(TAG + " Model.gridXWidth: " + Model.gridXWidth);
@@ -294,26 +294,20 @@ namespace HotFix.UI {
                 MathUtilP.printBoard(Model.gridOcc);
                 Debug.Log(TAG + ": gridClr()");
                 MathUtilP.printBoard(Model.gridClr);
-                // BaseBoardSkin baseSkin = ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel));
-                // if (baseSkin != null)
-                //     baseSkin.initateBaseCubesColors();
-            // } else {
-            //     Model.gridWidth = GloData.Instance.gridSize;
-            //     Model.gridXWidth = GloData.Instance.gridSize;
-            //     Model.gridZWidth = GloData.Instance.gridSize;
-            //     // MathUtilP.resetColorBoard();  // cmt for tmp
-            // }
+            } else {
+                Model.gridWidth = GloData.Instance.gridSize;
+                Model.gridXWidth = GloData.Instance.gridSize;
+                Model.gridZWidth = GloData.Instance.gridSize;
+                // MathUtilP.resetColorBoard();  // cmt for tmp
+            }
         }
 
-        // Coroutine: 才是真正解决问题的办法,暂时如此        
         public void OnFinishReveal() {
             Debug.Log(TAG + " OnFinishReveal");
             gameMode = GloData.Instance.gameMode.Value;
             Debug.Log(TAG + " gameMode.Value: " + gameMode);
 
             fallSpeed = 3.0f; // should be recorded too, here
-// 这个函数执行得比较晚,把我先前初始化好的矩阵数据给冲掉了?
-// TODO: BUG, 这里可能还会涉及到更多的BUG            
             if (gameMode == 0) {
                 if (!isChallengeMode)
                     Model.resetGridOccBoard();
@@ -328,7 +322,7 @@ namespace HotFix.UI {
             fallSpeed = 3.0f; // should be recorded too, here
 
             // if (gameMode.Value == 0 && Model.gridOcc != null && !isChallengeMode)
-            Model.resetGridOccBoard();
+            // Model.resetGridOccBoard(); // 这个地方不能重置
             currentScore.Value = 0;
             if (isChallengeMode)
                 currentLevel.Value = GloData.Instance.challengeLevel.Value;

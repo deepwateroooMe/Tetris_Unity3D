@@ -101,7 +101,7 @@ namespace HotFix.UI {
 
         public ModelMono modelMono;
         public bool isPaused = false;
-        
+// 感觉这里的想法是狠好的,可是因为调用的延迟,反应极慢?再测试一下,不行就不用这个了        
         BindableProperty<Dictionary<GameObject, bool>> btnState = new BindableProperty<Dictionary<GameObject, bool>>();
 
         // 游戏主场景: 得分等游戏进展框,自动观察视图模型的数据自动,刷新
@@ -189,7 +189,11 @@ namespace HotFix.UI {
 			goalPanel.SetActive(false);
         }
         void loadInitCubesforChallengeMode() {
-            initCubes = GameObject.FindGameObjectWithTag("InitCubes");
+            if (!GloData.Instance.isChallengeMode) {
+                initCubes = new GameObject();
+                return;
+            }
+            initCubes = ViewManager.ChallLevelsView.levels[GloData.Instance.challengeLevel.Value].gameObject.FindChildByName("InitCubes");
             Debug.Log(TAG + " (initCubes != null): " + (initCubes != null));
             if (initCubes != null) {
                 Debug.Log(TAG + " loadInitCubesforChallengeMode() initCubes.transform.childCount: " + initCubes.transform.childCount);
@@ -198,7 +202,7 @@ namespace HotFix.UI {
                 MathUtilP.printBoard(Model.gridOcc);
                 Debug.Log(TAG + ": gridClr()");
                 MathUtilP.printBoard(Model.gridClr);
-            } else initCubes = new GameObject();
+            } 
         }
         public GameObject [] cubes; // baseCubesGO;
 
@@ -291,27 +295,20 @@ namespace HotFix.UI {
             btnState.Value[togBtn] = false;
             btnState.Value[falBtn] = false;
 
-// 最近一个月刚开始重做这个项目的时候没有拿到更原始功能更多的版本,所以最开始的缺少了很多后来挑战模块下的源码和逻辑,以及粒子系统等
-// 在适配进热更新工程后,现因要整合挑战模块,把原本也只修改了几个BUG的前版本就不要了,直接用现在抽象独立出来的Model ModelMono (原本被我全写在GameViewModel里)
-// 这只是众多重构过程中的一个小节,无关任何其它. 爱表哥,爱生活!!!            
-            // ViewModel.UpdateGrid(ViewManager.nextTetromino); 
-            
             Debug.Log(TAG + ": gridOcc[][][] BEFORE Land BEFORE UpdateGrid()"); 
             MathUtilP.printBoard(Model.gridOcc);  // Model.
-
-            Debug.Log(TAG + ": baseCubes[][] BEFORE Land BEFORE UpdateGrid()"); 
-            MathUtilP.printBoard(Model.baseCubes);  // Model.
+            // Debug.Log(TAG + ": baseCubes[][] BEFORE Land BEFORE UpdateGrid()"); 
+            // MathUtilP.printBoard(Model.baseCubes);  // Model.
 
             Model.UpdateGrid(ViewManager.nextTetromino); 
 
             Debug.Log(TAG + ": gridOcc[][][] AFTER Land  Update AFTER UpdteGrid(); BEFORE onGameSave()"); 
             MathUtilP.printBoard(Model.gridOcc);  // Model.
 
-            Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), bef onGameSave()"); 
-            MathUtilP.printBoard(Model.gridClr);  // Model.
-
-            Debug.Log(TAG + ": baseCubes[][] BEFORE Land BEFORE UpdateGrid()"); 
-            MathUtilP.printBoard(Model.baseCubes);  // Model.
+            // Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), bef onGameSave()"); 
+            // MathUtilP.printBoard(Model.gridClr);  // Model.
+            // Debug.Log(TAG + ": baseCubes[][] BEFORE Land BEFORE UpdateGrid()"); 
+            // MathUtilP.printBoard(Model.baseCubes);  // Model.
 
             if (GloData.Instance.isChallengeMode) {
                 if (ChallengeRules.isValidLandingPosition()) {
@@ -741,22 +738,19 @@ namespace HotFix.UI {
             ViewModel.swapCnter.OnValueChanged += onSwapCnterChanged;
             ViewModel.undoCnter.OnValueChanged += onUndoCnterChanged;
             
-// 不想要游戏视图来观察,要对象池来观察[对象池的帮助方法都只能静态调用,可以观察吗?]暂先放这里
-            //ViewModel.comTetroType.OnValueChanged += onComTetroTypeChanged;
-            //ViewModel.eduTetroType.OnValueChanged += onEduTetroTypeChanged;
-
 // TODO: 为了触发第一次的回调,稍微绕了一下,只能触发第一次的回调是不可以的
             int tmpGameMode = GloData.Instance.gameMode.Value;
             GloData.Instance.gameMode.Value = -1;
             GloData.Instance.gameMode.OnValueChanged += onGameModeChanged;
             GloData.Instance.gameMode.Value = tmpGameMode;
 
+            if (GloData.Instance.isChallengeMode) {
 // TODO: 为了触发第一次的回调,稍微绕了一下,只能触发第一次的回调是不可以的
-            int tmpl = GloData.Instance.challengeLevel.Value;
-            GloData.Instance.challengeLevel.Value = -1;
-            GloData.Instance.challengeLevel.OnValueChanged += onChallengeLevelChanged;
-            GloData.Instance.challengeLevel.Value = tmpl;
-            
+                int tmpl = GloData.Instance.challengeLevel.Value;
+                GloData.Instance.challengeLevel.Value = -1;
+                GloData.Instance.challengeLevel.OnValueChanged += onChallengeLevelChanged;
+                GloData.Instance.challengeLevel.Value = tmpl;
+            }
 // 主要是方便从数据加载游戏进度的时候
             ViewModel.cameraPos.OnValueChanged += onCameraPosChanged;
             ViewModel.cameraRot.OnValueChanged += onCameraRotChanged;
@@ -798,6 +792,7 @@ namespace HotFix.UI {
                 baseBoard5.SetActive(true);
             lvlText.text = cur.ToString();
             ViewModel.onChallengeLevelChanged(pre, cur);
+            loadInitCubesforChallengeMode(); // 不同层级的时候也需要调用
         }
         void onCamPosChanged(Vector3 pre, Vector3 cur) {
             Debug.Log(TAG + " onCamPosChanged" + " cur: " + cur);
