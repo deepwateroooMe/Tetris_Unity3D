@@ -251,9 +251,8 @@ namespace HotFix.UI {
 // BaseBoardSkin.cs MonoBehaviour: 需要它尽可能早地执行,但也要保证有全局数据,否则报空异常
             GameObject go = ViewManager.basePlane.gameObject.FindChildByName("level" + level);
             if (ComponentHelper.GetBBSkinComponent(go) == null) {
-                // Debug.Log(TAG + " (ComponentHelper.GetBBSkinComponent(go) == null): " + (ComponentHelper.GetBBSkinComponent(go) == null));
                 BaseBoardSkin baseBoardSkin = ComponentHelper.AddBBSkinComponent(go);
-                baseBoardSkin.initateBaseCubesColors(); // could be tried here too.
+                // baseBoardSkin.initateBaseCubesColors(); // 好像这里的任务也未必一定做得完
             }
             levels[level].SetActive(true);
             currentLevel = levels[level];

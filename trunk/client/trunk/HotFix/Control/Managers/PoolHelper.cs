@@ -14,8 +14,8 @@ namespace HotFix.Control {
         private const string TAG = "PoolHelper";
 
         public static Dictionary<string, GameObject> minosDic = null; 
-        public static Dictionary<string, Stack<GameObject>> pool = null;
-        // public static Dictionary<string, int> scoreDic = null;
+// 我以为用个栈是最简单方便的,但感觉实际运行过程中,栈顶的元素在前后脚存入与取出之间,总容易报空异常,不如改写成队列的写法,因为对于队列来说,进出是从不同的两端,所以报空异常的机率能大在减少.爱表哥,爱生活!!!
+        public static Dictionary<string, Queue<GameObject>> pool = null; 
 
         private static GameObject tetrosPool = null;
         private static GameObject tetroParent = null;
@@ -27,7 +27,7 @@ namespace HotFix.Control {
         
         public static void Initialize() {
             minosDic = new Dictionary<string, GameObject>();
-            pool = new Dictionary<string, Stack<GameObject>>();
+            pool = new Dictionary<string, Queue<GameObject>>();
             // ViewManager.scoreDic = new Dictionary<string, int>(14);
             
             // scoreDic = new Dictionary<string, int>();
@@ -60,18 +60,15 @@ namespace HotFix.Control {
             if (name.StartsWith("mino"))
                 type = prefab.GetComponent<MinoType>().type;
             else type = prefab.GetComponent<TetrominoType>().type;
-// TODO: 这里总是时不是地会报TetrominoX 预计添加失败            
-            // Debug.Log(TAG + " fillPool() name: " + name);
-            // Debug.Log(TAG + " fillPool() type: " + type);
            minosDic.Add(type, prefab.gameObject);
-            Stack<GameObject> stack = new Stack<GameObject>();
+            Queue<GameObject> stack = new Queue<GameObject>();
             for (int i = 0; i < 10; i++) {
 				GameObject oneInstance = GameObject.Instantiate(prefab.gameObject).gameObject;
                 oneInstance.name = name;
                 InstantiateNewTetrominoPrepare(oneInstance);
                 oneInstance.transform.SetParent(ViewManager.tetrosPool.transform, true); 
                 oneInstance.gameObject.SetActive(false);
-                stack.Push(oneInstance);
+                stack.Enqueue(oneInstance);
             }
             pool.Add(type, stack);
         }
@@ -108,10 +105,10 @@ namespace HotFix.Control {
         public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, int color) {
             Debug.Log(TAG + " GetFromPool() type: " + type);
             Debug.Log(TAG + " color: " + color);
-            Stack<GameObject> st = pool[type];
+           Queue<GameObject> st = pool[type];
             GameObject objInstance = null;
             if (st.Count > 0) {
-                objInstance = st.Pop();
+                objInstance = st.Dequeue();
                 objInstance.SetActive(true);
             } else {
                 objInstance = GameObject.Instantiate(minosDic[type]); 
@@ -138,12 +135,12 @@ namespace HotFix.Control {
 
         public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3 localScale) {
             Debug.Log(TAG + " GetFromPool() type: " + type);
-            Stack<GameObject> st = pool[type];
+            Queue<GameObject> st = pool[type];
             GameObject objInstance = null;
             if (st.Count > 0) {
-                objInstance = st.Pop();
+                objInstance = st.Dequeue();
                 while (objInstance == null && st.Count > 0) 
-                    objInstance = st.Pop();
+                    objInstance = st.Dequeue();
             }
             if (objInstance == null) {
                 objInstance = GameObject.Instantiate(minosDic[type]);
@@ -228,10 +225,10 @@ namespace HotFix.Control {
 // 这里是要怎么把很多种着色转换成四种着色?        
         public static GameObject GetFromPool(string type, Vector3 pos, Quaternion rotation, Vector3 localScale, int color) {
             Debug.Log(TAG + " GetFromPool(): type: " + type + ", color: " + color);
-            Stack<GameObject> st = pool[type];
+            Queue<GameObject> st = pool[type];
             GameObject objInstance = null;
             if (st.Count > 0) {
-                objInstance = st.Pop();
+                objInstance = st.Dequeue();
                 objInstance.SetActive(true);
             } else {
                 objInstance = GameObject.Instantiate(minosDic[type]); 
@@ -255,11 +252,11 @@ namespace HotFix.Control {
             if (gameObject.activeSelf) 
                 gameObject.SetActive(false);
             if (!pool.ContainsKey(type)) 
-                pool[type] = new Stack<GameObject>();
+                pool[type] = new Queue<GameObject>();
             if (pool[type].Count < 10) {
                 gameObject.transform.position = defaultPos;
                 gameObject.transform.SetParent(ViewManager.tetrosPool.transform);
-                pool[type].Push(gameObject);
+                pool[type].Enqueue(gameObject);
             } else GameObject.DestroyImmediate(gameObject);
         }
 

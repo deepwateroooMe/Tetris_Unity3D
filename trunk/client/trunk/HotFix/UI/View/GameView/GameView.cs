@@ -230,10 +230,12 @@ namespace HotFix.UI {
         void LoadGame(string path) {  // when load Scene load game: according to gameMode
             GameData gameData = SaveSystem.LoadGame(path);
             StringBuilder type = new StringBuilder("");
-            if (gameData.nextTetrominoData != null) {
-                ViewManager.nextTetromino = PoolHelper.GetFromPool(type.Append(gameData.nextTetrominoData.type).ToString(),
-                    DeserializedTransform.getDeserializedTransPos(gameData.nextTetrominoData.transform),
-                    DeserializedTransform.getDeserializedTransRot(gameData.nextTetrominoData.transform), Vector3.one);
+            if (gameData.nextTetrominoData != null) { // 这里需要生成 必要的着色
+                ViewManager.nextTetromino
+                    = PoolHelper.GetFromPool(type.Append(gameData.nextTetrominoData.type).ToString(),
+                                             DeserializedTransform.getDeserializedTransPos(gameData.nextTetrominoData.transform),
+                                             DeserializedTransform.getDeserializedTransRot(gameData.nextTetrominoData.transform),
+                                             Vector3.one, gameData.nextTetrominoData.color); 
                 ViewManager.nextTetromino.tag = "currentActiveTetromino";
                 ComponentHelper.GetTetroComponent(ViewManager.nextTetromino).enabled = true;
                 ViewModel.nextTetrominoType.Value = ViewManager.nextTetromino.GetComponent<TetrominoType>().type;
@@ -297,6 +299,9 @@ namespace HotFix.UI {
             Debug.Log(TAG + ": gridOcc[][][] BEFORE Land BEFORE UpdateGrid()"); 
             MathUtilP.printBoard(Model.gridOcc);  // Model.
 
+            Debug.Log(TAG + ": baseCubes[][] BEFORE Land BEFORE UpdateGrid()"); 
+            MathUtilP.printBoard(Model.baseCubes);  // Model.
+
             Model.UpdateGrid(ViewManager.nextTetromino); 
 
             Debug.Log(TAG + ": gridOcc[][][] AFTER Land  Update AFTER UpdteGrid(); BEFORE onGameSave()"); 
@@ -304,6 +309,9 @@ namespace HotFix.UI {
 
             Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), bef onGameSave()"); 
             MathUtilP.printBoard(Model.gridClr);  // Model.
+
+            Debug.Log(TAG + ": baseCubes[][] BEFORE Land BEFORE UpdateGrid()"); 
+            MathUtilP.printBoard(Model.baseCubes);  // Model.
 
             if (GloData.Instance.isChallengeMode) {
                 if (ChallengeRules.isValidLandingPosition()) {
@@ -737,15 +745,18 @@ namespace HotFix.UI {
             //ViewModel.comTetroType.OnValueChanged += onComTetroTypeChanged;
             //ViewModel.eduTetroType.OnValueChanged += onEduTetroTypeChanged;
 
-
 // TODO: 为了触发第一次的回调,稍微绕了一下,只能触发第一次的回调是不可以的
             int tmpGameMode = GloData.Instance.gameMode.Value;
             GloData.Instance.gameMode.Value = -1;
             GloData.Instance.gameMode.OnValueChanged += onGameModeChanged;
             GloData.Instance.gameMode.Value = tmpGameMode;
-// TODO: 为了触发第一次的回调,稍微绕了一下,只能触发第一次的回调是不可以的
-            GloData.Instance.challengeLevel.OnValueChanged += onChallengeLevelChanged;
 
+// TODO: 为了触发第一次的回调,稍微绕了一下,只能触发第一次的回调是不可以的
+            int tmpl = GloData.Instance.challengeLevel.Value;
+            GloData.Instance.challengeLevel.Value = -1;
+            GloData.Instance.challengeLevel.OnValueChanged += onChallengeLevelChanged;
+            GloData.Instance.challengeLevel.Value = tmpl;
+            
 // 主要是方便从数据加载游戏进度的时候
             ViewModel.cameraPos.OnValueChanged += onCameraPosChanged;
             ViewModel.cameraRot.OnValueChanged += onCameraRotChanged;

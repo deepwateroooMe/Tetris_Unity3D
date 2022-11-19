@@ -111,7 +111,7 @@ namespace HotFix.Control {
                     cubes[idx] = gameObject.FindChildByName(name.ToString());
                     cubes[idx].gameObject.transform.rotation = Quaternion.identity;
                 }
-            int xx = 0, zz = 0;
+            Debug.Log(TAG + " (!Model.mcubesInitiated): " + (!Model.mcubesInitiated));
             if (!Model.mcubesInitiated) {
                 Model.baseCubes = new int[GloData.Instance.maxXWidth * GloData.Instance.maxZWidth]; // 底座的着色
                 Model.grid = new Transform[GloData.Instance.maxXWidth][][];
@@ -129,6 +129,7 @@ namespace HotFix.Control {
                 }
                 Model.mcubesInitiated = true;
             }
+            int xx = 0, zz = 0;
             for (int i = 0; i < n; i++) {
                 Model.baseCubes[i] = cubes[i].GetComponent<MinoType>().color; // 
                 xx = i % GloData.Instance.gridXSize;
@@ -149,23 +150,19 @@ namespace HotFix.Control {
             MathUtilP.printBoard(Model.gridOcc);
         }
 
-         // public void Awake() {
-        //     // Debug.Log(TAG + " Awake()");
-        //     Start();
-        // }
         public void OnEnable() {
-            // Debug.Log(TAG + ": OnEnable()");
+            Debug.Log(TAG + ": OnEnable()");
             Start();
         }
         public void Start() {
-            // Debug.Log(TAG + " Start()");
+            Debug.Log(TAG + " Start()");
+            initateBaseCubesColors();
             EventManager.Instance.RegisterListener<UndoGameEventInfo>(onUndoGame); 
             EventManager.Instance.RegisterListener<TetrominoChallLandInfo>(onActiveTetrominoLand);
             EventManager.Instance.RegisterListener<CubesMaterialEventInfo>(onCubesMaterialsChanged);
-            // baseCubesInitialized = false;
         }
         public void OnDisable() {
-            // Debug.Log(TAG + " gameObject.name: " + gameObject.name);
+            Debug.Log(TAG + " OnDisable()");
             EventManager.Instance.UnregisterListener<TetrominoChallLandInfo>(onActiveTetrominoLand); 
             EventManager.Instance.UnregisterListener<UndoGameEventInfo>(onUndoGame); 
             EventManager.Instance.UnregisterListener<CubesMaterialEventInfo>(onCubesMaterialsChanged);

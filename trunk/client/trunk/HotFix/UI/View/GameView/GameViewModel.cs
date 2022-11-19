@@ -173,8 +173,9 @@ namespace HotFix.UI {
             GloData.Instance.gameMode.OnValueChanged += onGameModeChanged;
             hasSavedGameAlready = false;
             isChallengeMode = GloData.Instance.isChallengeMode;
-// Register Listeners ?
-            EventManager.Instance.RegisterListener<GameStopEventInfo>(onGameStopAndReset);
+// TODO: 我把这些也写进了viewmodel里,可是这里面,我应该在什么地方取消它们才 不会 造成资源泄露呢?
+            EventManager.Instance.RegisterListener<GameEnterEventInfo>(onGameEnter); // 爱表哥,爱生活!!!
+            EventManager.Instance.RegisterListener<GameStopEventInfo>(onGameStopAndReset); // 爱表哥,爱生活!!!
             
             if (isChallengeMode)
                 startingLevel = GloData.Instance.challengeLevel.Value;
@@ -196,7 +197,8 @@ namespace HotFix.UI {
             cameraPos.Value = new Vector3(11.01f, 21.297f, 0.88f);
             cameraRot.Value = Quaternion.Euler(new Vector3(483.091f, -263.118f, -538.141f));
 
-            tetroCnter.Value = GloData.Instance.tetroCnter;
+            // tetroCnter.Value = GloData.Instance.tetroCnter;
+            tetroCnter.Value = -1;
             undoCnter.Value = 5;
             swapCnter.Value = 5;
             challengeLevel = GloData.Instance.challengeLevel.Value;
@@ -227,8 +229,51 @@ namespace HotFix.UI {
             Model.prevIdx = new int[4];
             modelArraysReset();
             Debug.Log(TAG + " isChallengeMode: " + isChallengeMode);
-            if (isChallengeMode)
-                ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel)).initateBaseCubesColors();
+            // if (isChallengeMode)
+            //     ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel)).initateBaseCubesColors();
+        }
+        void onGameEnter(GameEnterEventInfo info) { // Model.gridOcc[x][y][z] 好像没有初始化到理想的结果,这里还要再作一下
+            Debug.Log(TAG + " onGameEnter"); // 就是这个地方,把前面没能做好做成功的地方又做了一遍,不知道是否还有更好的解决办法
+            // GameObject [] cubes = BaseBoardSkin.cubes;
+            // BaseBoardSkin baseBoardSkin = ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel));
+            // Debug.Log(TAG + " (!Model.mcubesInitiated): " + (!Model.mcubesInitiated));
+            // if (!Model.mcubesInitiated) {
+            //     Model.baseCubes = new int[GloData.Instance.maxXWidth * GloData.Instance.maxZWidth]; // 底座的着色
+            //     Model.grid = new Transform[GloData.Instance.maxXWidth][][];
+            //     Model.gridOcc = new int[GloData.Instance.maxXWidth][][];
+            //     Model.gridClr = new int[GloData.Instance.maxXWidth][][];
+            //     for (int i = 0; i < GloData.Instance.maxXWidth; i++) {
+            //         Model.grid[i] = new Transform[Model.gridHeight][];
+            //         Model.gridOcc[i] = new int [Model.gridHeight][];
+            //         Model.gridClr[i] = new int [Model.gridHeight][];
+            //         for (int j = 0; j < Model.gridHeight; j++) {
+            //             Model.grid[i][j] = new Transform[GloData.Instance.maxZWidth];
+            //             Model.gridOcc[i][j] = new int [GloData.Instance.maxZWidth];
+            //             Model.gridClr[i][j] = new int [GloData.Instance.maxZWidth];
+            //         }
+            //     }
+            //     Model.mcubesInitiated = true;
+            // }
+            // int xx = 0, zz = 0;
+            // int n = Model.gridXWidth * Model.gridZWidth;
+            // for (int i = 0; i < n; i++) {
+            //     Model.baseCubes[i] = baseBoardSkin.cubes[i].GetComponent<MinoType>().color; // 
+            //     xx = i % GloData.Instance.gridXSize;
+            //     zz = i / GloData.Instance.gridXSize;
+            //     if (!baseBoardSkin.cubes[i].activeSelf) { // 如果某一个方格失活,那么整个竖列都是不能穿过的
+            //         for (int y = 0; y < Model.gridHeight; y++) {
+            //             Model.grid[xx][y][zz] = null;
+            //             Model.gridOcc[xx][y][zz] = 9; // magic number, 9 to substitute -1
+            //             Model.baseCubes[i] = -1;
+            //         }
+            //     }
+            // }
+            // // baseCubesInitialized = true;
+            // Debug.Log(TAG + " initateBaseCubesColors() Model.baseCubes colors");
+            // MathUtilP.print(Model.baseCubes);
+            
+            // Debug.Log(TAG + " initateBaseCubesColors() Model.gridOcc: ");
+            // MathUtilP.printBoard(Model.gridOcc);
         }
         public void onChallengeLevelChanged(int pre, int cur) {
             Debug.Log(TAG + " onChallengeLevelChanged()" + " cur: " + cur);
@@ -239,7 +284,7 @@ namespace HotFix.UI {
         }
         public void modelArraysReset() { // 其实说到底,这些东西原本还是应该放在ViewModel里的,只是独立出去能够这现在这个文件弄小一点儿方便操作查找            
             // Debug.Log(TAG + " modelArraysReset() GloData.Instance.isChallengeMode: " + GloData.Instance.isChallengeMode);
-            if (GloData.Instance.isChallengeMode) {
+            // if (GloData.Instance.isChallengeMode) {
                 Model.gridWidth = GloData.Instance.gridSize;
                 Model.gridXWidth = GloData.Instance.gridXSize;
                 Model.gridZWidth = GloData.Instance.gridZSize;
@@ -249,15 +294,15 @@ namespace HotFix.UI {
                 MathUtilP.printBoard(Model.gridOcc);
                 Debug.Log(TAG + ": gridClr()");
                 MathUtilP.printBoard(Model.gridClr);
-                BaseBoardSkin baseSkin = ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel));
-                if (baseSkin != null)
-                    baseSkin.initateBaseCubesColors();
-            } else {
-                Model.gridWidth = GloData.Instance.gridSize;
-                Model.gridXWidth = GloData.Instance.gridSize;
-                Model.gridZWidth = GloData.Instance.gridSize;
-                // MathUtilP.resetColorBoard();  // cmt for tmp
-            }
+                // BaseBoardSkin baseSkin = ComponentHelper.GetBBSkinComponent(ViewManager.basePlane.gameObject.FindChildByName("level" + GloData.Instance.challengeLevel));
+                // if (baseSkin != null)
+                //     baseSkin.initateBaseCubesColors();
+            // } else {
+            //     Model.gridWidth = GloData.Instance.gridSize;
+            //     Model.gridXWidth = GloData.Instance.gridSize;
+            //     Model.gridZWidth = GloData.Instance.gridSize;
+            //     // MathUtilP.resetColorBoard();  // cmt for tmp
+            // }
         }
 
         // Coroutine: 才是真正解决问题的办法,暂时如此        
@@ -341,13 +386,6 @@ namespace HotFix.UI {
                                              nextTetrominoType.Value, comTetroType.Value, eduTetroType.Value,
                                              Model.grid, Model.gridClr, prevPreviewColor, prevPreviewColor2, previewTetrominoColor, previewTetromino2Color,
                                              initCubeParentTrans);
-                            // else gameData = new GameData(GloData.Instance.isChallengeMode, ViewManager.nextTetromino, ViewManager.ghostTetromino, tmpTransform,
-                            //                              gameMode, currentScore.Value, currentLevel.Value, numLinesCleared.Value,
-                            //                              Model.gridWidth, Model.gridWidth,
-                            //                              prevPreview, prevPreview2,
-                            //                              nextTetrominoType.Value, comTetroType.Value, eduTetroType.Value,
-                            //                              Model.grid, Model.gridClr, prevPreviewColor, prevPreviewColor2, previewTetrominoColor, previewTetromino2Color,
-                            //                              initCubeParentTrans);
             SaveSystem.SaveGame(GloData.Instance.getFilePath(), gameData);
         }
 
