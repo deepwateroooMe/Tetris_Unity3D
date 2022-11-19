@@ -121,7 +121,6 @@ namespace HotFix.Control {
             print(transform.rotation);
             print(transform.localScale);
         }
-
                 
         public static void print(float [] tmp) {
             if (tmp.Length == 3)
@@ -129,25 +128,21 @@ namespace HotFix.Control {
             else 
                 Debug.Log(TAG + " tmp[]: " + tmp[0] + ", " + tmp[1] + ", " + tmp[2] + ", " +tmp[3]);
         }
-
         public static void print(int [] tmp) {
             if (tmp.Length == 3)
                 Debug.Log(TAG + " tmp[]: " + tmp[0] + ", " + tmp[1] + ", " + tmp[2]);
             else 
                 Debug.Log(TAG + " tmp[]: " + tmp[0] + ", " + tmp[1] + ", " + tmp[2] + ", " +tmp[3]);
         }
-
         public static void printWithGridVal(int x, int y, int z) {
             Debug.Log("(x,y,z): [" + x + ", " + y + ", " + z +"]: " +Model.gridOcc[x][y][z]);
         }
         public static void printWithGridVal(int [] pos) {
             Debug.Log("(x,y,z): [" + pos[0] + ", " + pos[1] + ", " + pos[2] +"]: " + Model.gridOcc[pos[0]][pos[1]][pos[2]]);
         }
-
         public static void print(Quaternion tmp) {
             Debug.Log(TAG + " tmp(x, y, z): " + tmp.x + ", " + tmp.y + ", " + tmp.z + ", " + tmp.w); 
         }
-
         public static void print(int x, int y, int z) {
             Debug.Log("(x,y,z): [" + x + ", " + y + ", " + z +"]: ");
         }
@@ -217,7 +212,6 @@ namespace HotFix.Control {
             }
             Debug.Log(s.ToString());
         }
-
         public static void printBoard(List<int> gridOccOcc) {
             bool empty = true;
             int x = 0, y = 0, z = 0;
@@ -238,6 +232,14 @@ namespace HotFix.Control {
                         break;
                 }
             }
+        }
+        public static void printSkinArray(int [] arr) {
+            StringBuilder s = new StringBuilder("");
+            for (int i = 0; i < 4; i++) {
+                s.Append(arr[i]);
+                if (i < 3) s.Append(", ");
+            }
+            Debug.Log(TAG + " printSkinArray() s.ToString(): " + s.ToString());
         }
         public static void reset(Transform transform) { // 测试一下这个可不可 正常 工作
             transform.position.Set(-1f, -1f, -1f);

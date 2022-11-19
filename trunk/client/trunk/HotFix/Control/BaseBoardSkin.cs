@@ -57,8 +57,11 @@ namespace HotFix.Control {
                     }
                 }
             }
-            // Debug.Log(TAG + ": baseCubes colors after nextTetromino landed & UPDATED"); 
-            // MathUtilP.printBoard(Model.baseCubes);
+            MathUtilP.printSkinArray(Model.prevIdx);
+            MathUtilP.printSkinArray(Model.prevSkin);
+
+            Debug.Log(TAG + ": baseCubes colors after nextTetromino landed & UPDATED"); 
+            MathUtilP.printBoard(Model.baseCubes);
         }
         
         int getChallengedMaterialIdx(Material material) {
@@ -72,7 +75,7 @@ namespace HotFix.Control {
         }
         
         void onUndoGame(UndoGameEventInfo undoInfo) {
-            Debug.Log(TAG + ": onUndoGame()"); 
+            Debug.Log(TAG + ": onUndoGame()");
             for (int i = 0; i < 4; i++) {
                 if (Model.prevIdx[i] == -1) return;
                 cubes[Model.prevIdx[i]].gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[Model.prevSkin[i]];

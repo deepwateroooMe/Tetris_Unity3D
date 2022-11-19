@@ -18,6 +18,8 @@ namespace HotFix.Control {
         public int height = 12;
         
         private bool _isChallengeMode = false;
+        private bool _hasInitCubes = false;
+
         private string _saveGamePathFolderName;
         private int _gridSize = 5;
         private int _gridXSize = 9;
@@ -48,6 +50,14 @@ namespace HotFix.Control {
             set {
                 _isChallengeMode = value;
                 onChallengeMode();
+            }
+        }
+        public bool hasInitCubes {
+            get {
+                return _hasInitCubes;
+            }
+            set {
+                _hasInitCubes = value;
             }
         }
         public int gameLevel { // for educational and classic only

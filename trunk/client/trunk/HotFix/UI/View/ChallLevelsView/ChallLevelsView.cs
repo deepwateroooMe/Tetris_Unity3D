@@ -123,6 +123,7 @@ namespace HotFix.UI {
                 GloData.Instance.challengeLevel.Value = 1;
                 break;
             case 2:
+                GloData.Instance.hasInitCubes = true;
                 GloData.Instance.camPos.Value = new Vector3(18.57f, 18.67f, -2.27f);
                 GloData.Instance.camRot.Value = Quaternion.Euler(new Vector3(500.3f, -251.965f, -538.096f));
                 GloData.Instance.gridSize = 7;
@@ -161,6 +162,7 @@ namespace HotFix.UI {
                 GloData.Instance.challengeLevel.Value = 5;
                 break;
             case 6:
+                GloData.Instance.hasInitCubes = true;
                 GloData.Instance.gridSize = 9;
                 GloData.Instance.gridXSize = 9;
                 GloData.Instance.gridZSize = 9;
@@ -171,6 +173,7 @@ namespace HotFix.UI {
                 GloData.Instance.challengeLevel.Value = 6;
                 break;
             case 7:
+                GloData.Instance.hasInitCubes = true;
                 GloData.Instance.gridXSize = 10;
                 GloData.Instance.gridZSize = 9;
                 GloData.Instance.tetroCnter = 42;

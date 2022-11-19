@@ -189,7 +189,7 @@ namespace HotFix.UI {
 			goalPanel.SetActive(false);
         }
         void loadInitCubesforChallengeMode() {
-            if (!GloData.Instance.isChallengeMode) {
+            if (!GloData.Instance.isChallengeMode || !GloData.Instance.hasInitCubes) {
                 initCubes = new GameObject();
                 return;
             }
