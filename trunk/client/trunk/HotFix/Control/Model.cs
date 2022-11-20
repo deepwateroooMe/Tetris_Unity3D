@@ -128,6 +128,12 @@ namespace HotFix.Control {
             MathUtilP.printBoard(gridOcc);
         }
         
+        static void resetPrevSkin() {
+            for (int i = 0; i < 4; i++) {
+                Model.prevIdx[i] = -1;
+                Model.prevSkin[i] = -1;
+            }
+        }
         public static void UpdateGrid(GameObject go) { // update gridOcc, gridClr at the same time
             for (int y = 0; y < gridHeight; y++) 
                 for (int z = 0; z < gridZWidth; z++) 
@@ -139,6 +145,8 @@ namespace HotFix.Control {
                             if (GloData.Instance.isChallengeMode)
                                 gridClr[x][y][z]= -1; 
                         }
+            int i = 0;
+            resetPrevSkin();
             foreach (Transform mino in go.transform) { // 当挑战模式更新地板砖的时候,这里就是地板砖的着色
                 Vector3 pos = MathUtilP.Round(mino.position);
                 if (pos.y >= 0 && pos.y < gridHeight && pos.x >= 0 && pos.x < gridXWidth && pos.z >= 0 && pos.z < gridZWidth) { 
@@ -151,8 +159,12 @@ namespace HotFix.Control {
                         gridOcc[(int)pos.x][(int)pos.y][(int)pos.z] = 1;
                     if (GloData.Instance.isChallengeMode) {
                         gridClr[(int)pos.x][(int)pos.y][(int)pos.z] = mino.GetComponent<MinoType>().color;
-                        // if ((int)pos.y == 0) // 地板砖的着色,要这个时候更新吗
-                        //     baseCubes[(int)x + Model.gridXWidth * (int)pos.z] = gridClr[(int)pos.x][(int)pos.y][(int)pos.z];
+                        if ((int)pos.y == 0) { // 地板砖的着色,要这个时候更新吗
+                            int idx =  (int)(Mathf.Round(pos.x) + GloData.Instance.gridXSize * Mathf.Round(pos.z)); // y = 0
+                            prevIdx[i++] = idx;
+                            prevSkin[idx] = baseCubes[idx]; //getChallengedMaterialIdx(cubes[idx].gameObject.GetComponent<Renderer>().sharedMaterial);
+                            baseCubes[(int)pos.x + Model.gridXWidth * (int)pos.z] = gridClr[(int)pos.x][(int)pos.y][(int)pos.z];
+                        }
                     }
                 }
             }

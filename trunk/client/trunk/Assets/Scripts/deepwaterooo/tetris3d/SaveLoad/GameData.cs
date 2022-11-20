@@ -34,7 +34,7 @@ namespace deepwaterooo.tetris3d {
         public int previewTetrominoColor; 
         public int previewTetromino2Color;
 
-        public int tetroCnter;
+        public int tetroCnter; 
         public int swapCnter;
         public int undoCnter;
         
@@ -154,5 +154,4 @@ namespace deepwaterooo.tetris3d {
         }
     }   
 }
-
 

@@ -40,16 +40,16 @@ namespace HotFix.Control {
             // Debug.Log(TAG + " onActiveTetrominoLand() : baseCubes colors after nextTetromino landed BEF update:"); 
             // MathUtilP.printBoard(Model.baseCubes);
             int i = 0;
-            resetPrevSkin();
+            //resetPrevSkin();
             foreach (Transform mino in ViewManager.nextTetromino.transform) {
                 if (mino.CompareTag("mino")) {
                     Vector3 pos = MathUtilP.Round(mino.position);
                     if (pos.y == 0) {
                         idx = getMinoPosCubeArrIndex(pos.x, pos.z);
                         Debug.Log(TAG + " onActiveTetrominoLand() idx: " + idx);
-// 将当前方块砖落地前的相应位置的 坐标 和 着色 存起来,备用
-                        Model.prevIdx[i] = idx;
-                        Model.prevSkin[i] = getChallengedMaterialIdx(cubes[idx].gameObject.GetComponent<Renderer>().sharedMaterial);
+// // 将当前方块砖落地前的相应位置的 坐标 和 着色 存起来,备用 这是记的地方不对
+//                         Model.prevIdx[i] = idx;
+//                         Model.prevSkin[i] = getChallengedMaterialIdx(cubes[idx].gameObject.GetComponent<Renderer>().sharedMaterial);
 // 将地板板砖的材质更换为当前所接触立方体的材质 
                         cubes[idx].gameObject.GetComponent<Renderer>().sharedMaterial = mino.gameObject.GetComponent<Renderer>().sharedMaterial;
                         Model.baseCubes[idx] = mino.gameObject.GetComponent<MinoType>().color;
@@ -59,7 +59,6 @@ namespace HotFix.Control {
             }
             MathUtilP.printSkinArray(Model.prevIdx);
             MathUtilP.printSkinArray(Model.prevSkin);
-
             Debug.Log(TAG + ": baseCubes colors after nextTetromino landed & UPDATED"); 
             MathUtilP.printBoard(Model.baseCubes);
         }
@@ -76,6 +75,8 @@ namespace HotFix.Control {
         
         void onUndoGame(UndoGameEventInfo undoInfo) {
             Debug.Log(TAG + ": onUndoGame()");
+            MathUtilP.printSkinArray(Model.prevIdx);
+            MathUtilP.printSkinArray(Model.prevSkin);
             for (int i = 0; i < 4; i++) {
                 if (Model.prevIdx[i] == -1) return;
                 cubes[Model.prevIdx[i]].gameObject.GetComponent<Renderer>().sharedMaterial = ViewManager.materials[Model.prevSkin[i]];
@@ -83,17 +84,9 @@ namespace HotFix.Control {
             }
         }
         
-        void resetPrevSkin() {
-            for (int i = 0; i < 4; i++) {
-                Model.prevIdx[i] = -1;
-                Model.prevSkin[i] = -1;
-            }
-        }
-        
         int getMinoPosCubeArrIndex(float x, float z) {
             return (int)(Mathf.Round(x) + GloData.Instance.gridXSize * Mathf.Round(z)); // y = 0
         }
-
         public void initateBaseCubesColors() { // 这里初始化得狠早,可能早于Model初始化其相关数组,所以这里用到的要自己初始化一下
             Debug.Log(TAG + " initateBaseCubesColors()");
             int n = GloData.Instance.gridXSize * GloData.Instance.gridZSize, idx = 0;
@@ -112,7 +105,6 @@ namespace HotFix.Control {
                 }
             EventManager.Instance.FireEvent(cubes);
         }
-
         public void OnEnable() {
             Start();
         }
