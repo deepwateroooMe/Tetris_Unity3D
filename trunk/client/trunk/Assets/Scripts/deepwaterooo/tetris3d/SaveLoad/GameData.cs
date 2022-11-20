@@ -106,19 +106,10 @@ namespace deepwaterooo.tetris3d {
 				isCurrentlyActiveTetromino = go.CompareTag("currentActiveTetromino");
                 Debug.Log(TAG + " isCurrentlyActiveTetromino: " + isCurrentlyActiveTetromino);
 				if (go != null && isCurrentlyActiveTetromino) { // 没着陆: 保存的先后顺序设定的逻辑是在这里保存
-					// foreach (Transform mino in go.transform) {
-					// 	if (mino.CompareTag("mino")) {
-					// 		x = (int)Mathf.Round(mino.position.x);
-					// 		y = (int)Mathf.Round(mino.position.y);
-					// 		z = (int)Mathf.Round(mino.position.z);
-					// 		color = gridClr[x][y][z]; // 又或者是这个数组的数据没能管理好
-					// 		break;
-					// 	}
-					// }
-					nextTetrominoData
-                        = new TetrominoData(go.transform, go.gameObject.GetComponent<TetrominoType>().type,
-                                            go.gameObject.name, go.gameObject.GetComponent<TetrominoType>().color);
-					// nextTetrominoData = new TetrominoData(go.transform, nextTetrominoType, go.gameObject.name, color);
+					nextTetrominoData = new TetrominoData(go.transform, nextTetrominoType, go.gameObject.name, go.gameObject.GetComponent<TetrominoType>().color);
+					// nextTetrominoData
+                    //     = new TetrominoData(go.transform, go.gameObject.GetComponent<TetrominoType>().type,
+                    //                         go.gameObject.name, go.gameObject.GetComponent<TetrominoType>().color);
 				}
 			}
 			// dealing with Game Data: gird
@@ -135,10 +126,6 @@ namespace deepwaterooo.tetris3d {
                         && (!isChallengeMode || initCubesParent == null || gd[x][y][z].parent != initCubesParent)) { // 只要不是挑战模式下的 预设方块砖
 						if (!myContains(gd[x][y][z].parent) && gd[x][y][z].parent.gameObject != null) {
 // todo: level 11 需要根据每个立方体来保存每个立方体的材质
-                            // color = gridClr[x][y][z]; // 这么写不准确,晚点儿level 11每个方块砖可以有两三种不同的材质
-                            Debug.Log(TAG + " (gd[x][y][z].parent.gameObject != null): " + (gd[x][y][z].parent.gameObject != null));
-                            Debug.Log(TAG + " (gd[x][y][z].parent.gameObject.GetComponent<TetrominoType>() != null): " + (gd[x][y][z].parent.gameObject.GetComponent<TetrominoType>() != null));
-                            Debug.Log(TAG + " gd[x][y][z].parent.gameObject.GetComponent<TetrominoType>().color: " + gd[x][y][z].parent.gameObject.GetComponent<TetrominoType>().color);
                             TetrominoData tmp = new TetrominoData(gd[x][y][z].parent,
                                                                   gd[x][y][z].parent.gameObject.name,
                                                                   gd[x][y][z].parent.gameObject.name,

@@ -136,13 +136,6 @@ namespace HotFix.UI {
             } else { // else cur == -1 这种情况下,就把相机的视角等调回原位
                 GloData.Instance.camPos.Value = new Vector3(14.108f, 23.117f, -1.6983f);
                 GloData.Instance.camRot.Value = Quaternion.Euler(new Vector3(490.708f, -251.184f, -539.973f));
-                // if (!GloData.Instance.isChallengeMode) { // 这里只是测试用一下
-                //     comLevelView.SetActive(false);
-                //     goalPanel.SetActive(false);
-                //     baseBoard5.SetActive(true); // TODO: 有其它更为的实现
-                //     linTextDes.SetActive(true); // LINE 
-                //     linText.gameObject.SetActive(true);
-                // }
             }
         }
         void initializeChallengingMode() {
@@ -216,24 +209,18 @@ namespace HotFix.UI {
                 MathUtilP.printBoard(Model.gridClr);
             } 
         }
-        // void loadInitCubesforChallengeMode() { // 当被gameMode触发而来,可能仍然没有初始化好
-        //     if (!GloData.Instance.isChallengeMode || !GloData.Instance.hasInitCubes) {
-        //         initCubes = new GameObject();
-        //         return;
-        //     }
-        //     initCubes = ViewManager.ChallLevelsView.levels[GloData.Instance.challengeLevel.Value].gameObject.FindChildByName("InitCubes");
-        //     Debug.Log(TAG + " (initCubes != null): " + (initCubes != null));
-        //     if (initCubes != null) {
-        //         Debug.Log(TAG + " loadInitCubesforChallengeMode() initCubes.transform.childCount: " + initCubes.transform.childCount);
-        //         Model.UpdateGrid(initCubes); // parent GameObject
-        //         Debug.Log(TAG + ": gridOcc()"); // 这里不知道是怎么回事,想要它打印三维数据的时候,它还没有处理完,总是打不出来
-        //         MathUtilP.printBoard(Model.gridOcc);
-        //         Debug.Log(TAG + ": gridClr()");
-        //         MathUtilP.printBoard(Model.gridClr);
-        //     } 
-        // }
-        public GameObject [] cubes; // baseCubesGO; 
-
+        void loadInitCubesforChallengeMode() { // 当被gameMode触发而来,可能仍然没有初始化好
+            initCubes = ViewManager.ChallLevelsView.levels[GloData.Instance.challengeLevel.Value].gameObject.FindChildByName("InitCubes");
+            Debug.Log(TAG + " (initCubes != null): " + (initCubes != null));
+            if (initCubes != null) {
+                Debug.Log(TAG + " loadInitCubesforChallengeMode() initCubes.transform.childCount: " + initCubes.transform.childCount);
+                Model.UpdateGrid(initCubes); // parent GameObject
+                Debug.Log(TAG + ": gridOcc()"); // 这里不知道是怎么回事,想要它打印三维数据的时候,它还没有处理完,总是打不出来
+                MathUtilP.printBoard(Model.gridOcc);
+                Debug.Log(TAG + ": gridClr()");
+                MathUtilP.printBoard(Model.gridClr);
+            } 
+        }
 // PauseGame, ResumeGame        
         void OnClickResButton() { // RESUME GAME: 隐藏当前游戏过程中的视图,就可以了 // public void OnClickResButton();
             Debug.Log(TAG + " OnClickResButton");
@@ -351,10 +338,14 @@ namespace HotFix.UI {
                 }
             }
             Debug.Log(TAG + " (initCubes == null): " + (initCubes == null));
-            if (ViewModel.isChallengeMode)
-                ViewModel.onGameSave(initCubes.transform);
-            else if (ViewModel.gameMode == 0) // 经典模式下不再保存游戏进展; 当且仅当用户要求保存游戏的时候才保存
+            if (initCubes == null) // CLASSIC + PARTIAL CHALLENGE MODE
                 ViewModel.onGameSave(new GameObject().transform); // 这里不能简单地写个null
+            else if (ViewModel.isChallengeMode)
+                ViewModel.onGameSave(initCubes.transform);
+            // if (ViewModel.isChallengeMode)
+            //     ViewModel.onGameSave(initCubes.transform);
+            // else if (ViewModel.gameMode == 0) // 经典模式下不再保存游戏进展; 当且仅当用户要求保存游戏的时候才保存
+            //     ViewModel.onGameSave(new GameObject().transform); // 这里不能简单地写个null
 
             Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), AFTER onGameSave()"); 
             MathUtilP.printBoard(Model.gridClr);  // Model.
@@ -826,16 +817,19 @@ namespace HotFix.UI {
             // gameStarted = true; // 这还不算严格意义上的真正的开始 \
         }
 // 重置数组相关的维度        
-        void onChallengeLevelChanged(int pre, int cur) {
+        void onChallengeLevelChanged(int pre, int cur) { 
             Debug.Log(TAG + " onChallengeLevelChanged()" + " cur: " + cur);
+            if (GloData.Instance.gameMode.Value == 0 && GloData.Instance.isChallengeMode) // 不知道在这里添加脚本会不会太晚,好像是可以的
+                ComponentHelper.AddBBSkinComponent(ViewManager.basePlane.FindChildByName("level" + GloData.Instance.challengeLevel).gameObject);
             if (cur != 1 && cur != 11)
 				baseBoard5.SetActive(false);
             else 
                 baseBoard5.SetActive(true);
             lvlText.text = cur.ToString();
             ViewModel.onChallengeLevelChanged(pre, cur);
-            // if (cur > 0 && GloData.Instance.hasInitCubes) // 这里应该是准备好的状态,但是限制,就让它慢一点儿
-            //     loadInitCubesforChallengeMode(); // 不同层级的时候也需要调用
+// 这里在某些情况下,仍然是需要的,只是会不会存在某些情况下会被调用两遍呢?
+            if (cur > 0 && GloData.Instance.hasInitCubes) // 这里应该是准备好的状态,但是限制,就让它慢一点儿
+                loadInitCubesforChallengeMode(); // 不同层级的时候也需要调用
         }   
         void onCamPosChanged(Vector3 pre, Vector3 cur) {
             Debug.Log(TAG + " onCamPosChanged" + " cur: " + cur);
@@ -891,6 +885,7 @@ namespace HotFix.UI {
             base.OnInitialize();
             Debug.Log(TAG + " OnInitialize()");
             RegisterListeners();
+// 后来的运行看出: 这个方法只执行一遍.不能只在这一个地方添加,还需要在其它地方添加            
             if (GloData.Instance.gameMode.Value == 0 && GloData.Instance.isChallengeMode)
                 ComponentHelper.AddBBSkinComponent(ViewManager.basePlane.FindChildByName("level" + GloData.Instance.challengeLevel).gameObject);
 

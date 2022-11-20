@@ -27,7 +27,7 @@ namespace HotFix.Control {
         
         public static int numberOfRowsThisTurn = 0; 
         public static bool isNumberOfRowsThisTurnUpdated = false;
-        public static bool mcubesInitiated = false;
+        // public static bool mcubesInitiated = false;
         
         private static StringBuilder type = new StringBuilder("");
         private static int randomTetromino;
@@ -316,7 +316,7 @@ namespace HotFix.Control {
                         Vector3 pos = MathUtilP.Round(mino.position);
                         //if (mino.CompareTag("mino" && pos.y > gridHeight - 1)) 
                         //if (mino.CompareTag("mino" && pos.y >= gridHeight - 1))
-                        if (pos.y >= gridHeight - 1) // BUG: for game auto ended after first tetromino landing down
+                        if (pos.y > gridHeight - 1) // BUG: for game auto ended after first tetromino landing down
                             return true;
                     }
             return false;

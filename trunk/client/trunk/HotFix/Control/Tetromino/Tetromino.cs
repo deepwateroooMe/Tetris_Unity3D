@@ -199,8 +199,10 @@ namespace HotFix.Control {
         public bool CheckIsValidPosition() { 
             foreach (Transform mino in ViewManager.nextTetromino.transform) {
                 if (mino.CompareTag("mino")) {
+                    mino.rotation = Quaternion.identity;
                     Vector3 pos = MathUtilP.Round(mino.position);
                     if (!Model.CheckIsInsideGrid(pos)) {
+                        MathUtilP.print(pos);
                         return false;
                     }
                     if (Model.GetTransformAtGridPosition(pos) != null
@@ -213,4 +215,3 @@ namespace HotFix.Control {
         }
     }
 }
-

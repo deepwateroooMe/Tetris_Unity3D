@@ -117,7 +117,7 @@ namespace HotFix.UI {
                 GloData.Instance.camPos.Value = new Vector3(18.57f, 18.67f, -2.27f);
                 GloData.Instance.camRot.Value = Quaternion.Euler(new Vector3(504.392f, -256.317f, -536.693f));
                 GloData.Instance.gridSize.Value = 5;
-                GloData.Instance.gridXSize = 5;
+                GloData.Instance.gridXSize = 5; // 真正游戏过程中, 这个返回值的过程延迟严重,会造成很多过程bug,暂时先如此,需要改掉这些
                 GloData.Instance.gridZSize = 5;
                 GloData.Instance.tetroCnter = 37;
                 GloData.Instance.challengeLevel.Value = 1;

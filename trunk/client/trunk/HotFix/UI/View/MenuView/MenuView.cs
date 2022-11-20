@@ -98,6 +98,7 @@ namespace HotFix.UI {
             menuViewPanel.SetActive(false);
             educaModesViewPanel.SetActive(true);
             GloData.Instance.gameMode.Value = 0;
+            GameView.nextTetrominoSpawnPos = new Vector3(2.0f, Model.gridHeight - 1f, 2.0f);
         }
         void OnClickClaButton() { // CLASSIC MODE
             Debug.Log(TAG + " OnClickClassicButton()");
@@ -109,6 +110,7 @@ namespace HotFix.UI {
             GloData.Instance.camRot.Value = Quaternion.Euler(new Vector3(490.708f, -251.184f, -539.973f));
             offerGameLoadChoice();
             GloData.Instance.gameMode.Value = 1;
+            GameView.nextTetrominoSpawnPos = new Vector3(2.0f, Model.gridHeight - 1f, 2.0f);
         }
         void OnClickChaButton() { // CHALLENGE MODE
             Debug.Log(TAG + " OnClickClallengeButton()");
@@ -141,14 +143,10 @@ namespace HotFix.UI {
         }
         void offerGameLoadChoice() {
             Debug.Log(TAG + " offerGameLoadChoice()");
-            // bool savedGameExist = File.Exists(GloData.Instance.getFilePath());
-            // Debug.Log(TAG + " savedGameExist: " + savedGameExist);
-            // if (savedGameExist) {
             if (File.Exists(GloData.Instance.getFilePath())) {
                 Debug.Log(TAG + " offerGameLoadChoice() THERE IS a SAVED GAME");
 // TODO: BUG 这里被 因为 gameMode而引起的改变已经掩盖掉了 ?                
                 newContinuePanel.SetActive(true); 
-                // Debug.Log(TAG + " newContinuePanel.activeSelf: " + newContinuePanel.activeSelf);
             } else {
                 Debug.Log(TAG + " offerGameLoadChoice() load new game");
                 prepareEnteringNewGame();

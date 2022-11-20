@@ -148,17 +148,19 @@ namespace HotFix.Control {
         }
 
         public static void printBoard(int[][][] gridOcc) {
-            xm = GloData.Instance.gridXSize;
+            xm = GloData.Instance.gridXSize; // 这里读到的数据可以看见清楚的延迟
             zm = GloData.Instance.gridZSize;
-            Debug.Log(TAG + " xm: " + xm);
-            Debug.Log(TAG + " zm: " + zm);
+            // Debug.Log(TAG + " xm: " + xm);
+            // Debug.Log(TAG + " zm: " + zm);
             bool empty = true, isChallengeMode = GloData.Instance.isChallengeMode;
             StringBuilder s = new StringBuilder("");
             for (int y = 0; y < n; y++) {
                 if (isBoardLayerEmpty(gridOcc, y)) return;
-                for (int x = 0; x < (isChallengeMode ? xm : m); x++) {
+                // for (int x = 0; x < (isChallengeMode ? xm : m); x++) {
+                    for (int x = 0; x < xm; x++) {
                         s.Append("X" + x + ":    ");
-                    for (int z = 0; z < (isChallengeMode ? zm : m); z++) 
+                    // for (int z = 0; z < (isChallengeMode ? zm : m); z++) 
+                        for (int z = 0; z < zm; z++) 
                         if (gridOcc[x][y][z] == 9 || Model.gridOcc[x][y][z] == 9) s.Append("x  "); // girdClr [x][y][z] == 0 && gridOcc[x][y][z] == 9
                         else if (gridOcc[x][y][z] == -1) s.Append("_  "); // girdClr [x][y][z] == -1
                         else s.Append(gridOcc[x][y][z] + "  ");
@@ -169,8 +171,8 @@ namespace HotFix.Control {
             }
         }
         private static bool isBoardLayerEmpty(int [][][] f, int y) {
-            for (int x = 0; x < m; x++) 
-                for (int z = 0; z < m; z++) {
+            for (int x = 0; x < xm; x++) // m 
+                for (int z = 0; z < zm; z++) { // m
                     if (f[x][y][z] > 0 && f[x][y][z] != 9)
                         return false;
                 }

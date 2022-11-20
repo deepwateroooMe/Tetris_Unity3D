@@ -223,7 +223,8 @@ namespace HotFix.UI {
             // modelArraysReset();
         }
         public void modelArraysInitiation() {
-            Debug.Log(TAG + " modelArraysInitiation() (!Model.mcubesInitiated): " + (!Model.mcubesInitiated));
+            Debug.Log(TAG + " modelArraysInitiation()");
+// Debug.Log(TAG + " modelArraysInitiation() (!Model.mcubesInitiated): " + (!Model.mcubesInitiated));
             Model.baseCubes = new int[GloData.Instance.maxXWidth * GloData.Instance.maxZWidth]; // 底座的着色
             Model.grid = new Transform[GloData.Instance.maxXWidth][][];
             Model.gridOcc = new int[GloData.Instance.maxXWidth][][];
@@ -243,7 +244,7 @@ namespace HotFix.UI {
             // EventManager.Instance.FireEvent("arrReady"); // 这个事件发送得还是太早了,换个地方发
         }
         void onBaseCubesDataReady(BaseCubesDataReadyInfo info) {
-            Debug.Log(TAG + " onBaseCubesDataReady()" + " (!Model.mcubesInitiated): " + (!Model.mcubesInitiated));
+            //Debug.Log(TAG + " onBaseCubesDataReady()" + " (!Model.mcubesInitiated): " + (!Model.mcubesInitiated));
             // modelArraysInitiation(); // 这里不能再把它们重置一遍了.......
             int xx = 0, zz = 0;
             int n = Model.gridXWidth * Model.gridZWidth;
