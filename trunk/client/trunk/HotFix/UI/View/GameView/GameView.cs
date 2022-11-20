@@ -128,17 +128,21 @@ namespace HotFix.UI {
                     comLevelView.SetActive(false);
                     goalPanel.SetActive(false);
                     baseBoard5.SetActive(true); // TODO: 有其它更为的实现
+                    linTextDes.SetActive(true); // LINE 
+                    linText.gameObject.SetActive(true);
                     lvlText.text = GloData.Instance.gameLevel.ToString();
                     linText.text = ViewModel.numLinesCleared.Value.ToString();
                 }
             } else { // else cur == -1 这种情况下,就把相机的视角等调回原位
                 GloData.Instance.camPos.Value = new Vector3(14.108f, 23.117f, -1.6983f);
                 GloData.Instance.camRot.Value = Quaternion.Euler(new Vector3(490.708f, -251.184f, -539.973f));
-                if (!GloData.Instance.isChallengeMode) { // 这里只是测试用一下
-                    comLevelView.SetActive(false);
-                    goalPanel.SetActive(false);
-                    baseBoard5.SetActive(true); // TODO: 有其它更为的实现
-                }
+                // if (!GloData.Instance.isChallengeMode) { // 这里只是测试用一下
+                //     comLevelView.SetActive(false);
+                //     goalPanel.SetActive(false);
+                //     baseBoard5.SetActive(true); // TODO: 有其它更为的实现
+                //     linTextDes.SetActive(true); // LINE 
+                //     linText.gameObject.SetActive(true);
+                // }
             }
         }
         void initializeChallengingMode() {
@@ -350,7 +354,7 @@ namespace HotFix.UI {
             if (ViewModel.isChallengeMode)
                 ViewModel.onGameSave(initCubes.transform);
             else if (ViewModel.gameMode == 0) // 经典模式下不再保存游戏进展; 当且仅当用户要求保存游戏的时候才保存
-                ViewModel.onGameSave(null);
+                ViewModel.onGameSave(new GameObject().transform); // 这里不能简单地写个null
 
             Debug.Log(TAG + ": gridClr[,,] aft Land UpdateGrid(), AFTER onGameSave()"); 
             MathUtilP.printBoard(Model.gridClr);  // Model.
@@ -589,6 +593,7 @@ namespace HotFix.UI {
                 PoolHelper.recyclePreviewTetrominos(previewTetromino2); // 预览方块砖 2
             gameStarted = false;
             ViewManager.MenuView.Reveal();
+            Debug.Log(TAG + " cleanUpGameBroad() GameView Hide()");
             Hide(); // <<<<<<<<<<<<<<<<<<<< 
         }
 

@@ -150,6 +150,8 @@ namespace HotFix.Control {
         public static void printBoard(int[][][] gridOcc) {
             xm = GloData.Instance.gridXSize;
             zm = GloData.Instance.gridZSize;
+            Debug.Log(TAG + " xm: " + xm);
+            Debug.Log(TAG + " zm: " + zm);
             bool empty = true, isChallengeMode = GloData.Instance.isChallengeMode;
             StringBuilder s = new StringBuilder("");
             for (int y = 0; y < n; y++) {

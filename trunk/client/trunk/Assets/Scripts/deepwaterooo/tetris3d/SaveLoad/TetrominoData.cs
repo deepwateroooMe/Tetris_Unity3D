@@ -16,7 +16,7 @@ namespace deepwaterooo.tetris3d {
 		public MinoDataCollection<TetrominoData, MinoData> children;
 
         public TetrominoData(Transform parentTrans, string type, string name, int colortmp) {
-            Debug.Log(TAG + " TetrominoData" + " type: " + type);
+            Debug.Log(TAG + " TetrominoData()" + " type: " + type);
             this.name = name;
             this.type = type;
             this.color = colortmp;

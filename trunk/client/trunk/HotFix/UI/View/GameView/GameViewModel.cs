@@ -106,6 +106,8 @@ namespace HotFix.UI {
                     }
                 }
             }
+            Debug.Log(TAG + ": gridOcc[][][] AFTER onGameStopAndReset()"); 
+            MathUtilP.printBoard(Model.gridOcc);  // Model.
 
             currentScore.Value = 0; // 在游戏结束的时候,这些清理都会是影响性能的因素
             numLinesCleared.Value = 0;
@@ -292,7 +294,7 @@ namespace HotFix.UI {
                 Debug.Log(TAG + " Model.gridWidth: " + Model.gridWidth);
                 Debug.Log(TAG + " Model.gridXWidth: " + Model.gridXWidth);
                 Debug.Log(TAG + " Model.gridZWidth: " + Model.gridZWidth);
-                // MathUtilP.resetColorBoard();  // cmt for tmp
+                MathUtilP.resetColorBoard();  // cmt for tmp 加回来了并没有想是为什么,这里
 
                 Debug.Log(TAG + " modelArraysReset() Model.gridOcc: ");
                 MathUtilP.printBoard(Model.gridOcc);
@@ -365,7 +367,7 @@ namespace HotFix.UI {
             Debug.Log(TAG + " prevPreviewColor2: " + prevPreviewColor2);
             Debug.Log(TAG + " comTetroType.Value: " + comTetroType.Value);
             GameData gameData = new GameData(GloData.Instance.isChallengeMode, ViewManager.nextTetromino, ViewManager.ghostTetromino, tmpTransform,
-                                             gameMode, currentScore.Value, currentLevel.Value, numLinesCleared.Value,
+                                             GloData.Instance.gameMode.Value, currentScore.Value, currentLevel.Value, numLinesCleared.Value,
                                              tetroCnter.Value, swapCnter.Value, undoCnter.Value,
                                              Model.gridXWidth, Model.gridZWidth,
                                              prevPreview, prevPreview2,

@@ -123,9 +123,26 @@ namespace HotFix.Control {
             EventManager.Instance.RegisterListener<CubesMaterialEventInfo>(onCubesMaterialsChanged);
         }
         public void OnDisable() {
+            Debug.Log(TAG + " OnDisable()");
             EventManager.Instance.UnregisterListener<TetrominoChallLandInfo>(onActiveTetrominoLand); 
             EventManager.Instance.UnregisterListener<UndoGameEventInfo>(onUndoGame); 
             EventManager.Instance.UnregisterListener<CubesMaterialEventInfo>(onCubesMaterialsChanged);
+// 想在这里重置数据,不知是否来得及: 相当于是资源的释放
+            int xx = 0, zz = 0;
+            int n = Model.gridXWidth * Model.gridZWidth;
+            for (int i = 0; i < n; i++) {
+                Model.baseCubes[i] = 0; // info.cubes[i].GetComponent<MinoType>().color; // 
+                xx = i % GloData.Instance.gridXSize;
+                zz = i / GloData.Instance.gridXSize;
+                if (!cubes[i].activeSelf) { // 如果某一个方格失活,那么整个竖列都是不能穿过的
+                    for (int y = 0; y < Model.gridHeight; y++) {
+                        Model.grid[xx][y][zz] = null;
+						Model.gridOcc[xx][y][zz] = 0; // magic number, 9 to substitute -1
+                        Model.baseCubes[i] = -1;
+                    }
+                }
+                cubes[i] = null;
+            }
         }
     }
 }

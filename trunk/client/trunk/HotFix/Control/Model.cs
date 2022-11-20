@@ -33,17 +33,15 @@ namespace HotFix.Control {
         private static int randomTetromino;
 
         public static void cleanUpGameBroad() { // 基本能够把面板清理干净: 并没有清除关卡中原设的 障碍立方体
-// dealing with currentActiveTetromino & ghostTetromino firrst
             if (ViewManager.nextTetromino != null && ViewManager.nextTetromino.CompareTag("currentActiveTetromino")) { // hang in the air
-                Debug.Log(TAG + " (ViewManager.ghostTetromino != null): " + (ViewManager.ghostTetromino != null));  // always true
-                if (ViewManager.ghostTetromino != null) 
-                    PoolHelper.recycleGhostTetromino();
+                if (ViewManager.ghostTetromino != null) PoolHelper.recycleGhostTetromino();
                 PoolHelper.recycleNextTetromino();
             }
             for (int x = 0; x < gridXWidth; x++) 
                 for (int y = 0; y < gridHeight; y++) 
                     for (int z = 0; z < gridZWidth; z++) {
                         if (grid[x][y][z] != null) {
+// InitCubes: 在不同关卡之间的显示与隐藏等,不能销毁,但是模型里的数据需要清除                            
                             if (GloData.Instance.isChallengeMode // 因为在不同的游戏模式等下切换,这里也必须得清除掉
                                 && grid[x][y][z].parent != null && grid[x][y][z].parent.gameObject != null
                                 && grid[x][y][z].parent.gameObject.CompareTag("InitCubes")) {
@@ -52,11 +50,11 @@ namespace HotFix.Control {
                                     int j = (int)Mathf.Round(mino.position.y);
                                     int k = (int)Mathf.Round(mino.position.z);
                                     if (j >= 0 && j < gridHeight && i >= 0 && i < gridXWidth && k >= 0 && k < gridZWidth) 
-                                        if (grid[i][j][k] != null) {
+                                        if (grid[i][j][k] != null) { // 实体的方块砖立方体不能销毁,但是数据清除掉
                                             // MathUtilP.print(i, j, k);
-                                            grid[i][j][k].parent = null;
-                                            if (grid[i][j][k].gameObject != null) 
-                                                PoolHelper.ReturnToPool(grid[i][j][k].gameObject, grid[i][j][k].gameObject.GetComponent<MinoType>().type);
+                                            // grid[i][j][k].parent = null;
+                                            // if (grid[i][j][k].gameObject != null) 
+                                            //     PoolHelper.ReturnToPool(grid[i][j][k].gameObject, grid[i][j][k].gameObject.GetComponent<MinoType>().type);
                                             grid[i][j][k] = null;
                                             gridOcc[i][j][k] = 0;
                                             if (GloData.Instance.isChallengeMode) gridClr[i][j][k] = -1;
@@ -105,7 +103,7 @@ namespace HotFix.Control {
                                 tmpRefParent = null; // 这么并没有消除无子立方体的空父件
                             }
 // 问题是:为什么我在这里遍历不到,而在再下面的再一次遍历中,可以把它们校正过来?                            
-                        } else if (grid[x][y][z] == null && gridOcc[x][y][z] == 1) {
+                        } else if (grid[x][y][z] == null && gridOcc[x][y][z] > 0) { // == 8 InitCubes
                             Debug.Log(TAG + " ERROR: (Model.grid[x][y][z] == null && Model.gridOcc[x][y][z] == 1) Please check backwards");
                             MathUtilP.print(x, y, z);
                             gridOcc[x][y][z] = 0;
@@ -117,11 +115,13 @@ namespace HotFix.Control {
             for (int i = 0; i < Model.gridXWidth; i++)
                 for (int j = 0; j < Model.gridHeight; j++) 
                     for (int k = 0; k < Model.gridZWidth; k++) 
-                        if (gridOcc[i][j][k] == 1) {
+                        if (gridOcc[i][j][k] > 0) {
+                            // Debug.Log(TAG + " gridOcc[i][j][k]: " + gridOcc[i][j][k]);
                             Debug.Log(TAG + " ERROR: (Model.grid[x][y][z] == null && Model.gridOcc[x][y][z] == 1) Please check backwards");
                             MathUtilP.print(i, j, k);
                             Debug.Log(TAG + " Model.grid[i][j][k].parent.gameObject.name: " + Model.grid[i][j][k].parent.gameObject.name);
-                            GameObject.Destroy(Model.grid[i][j][k].gameObject);
+                            if (gridOcc[i][j][k] == 1) // == 8 时预设立方体不能销毁
+                                GameObject.Destroy(Model.grid[i][j][k].gameObject);
                             gridOcc[i][j][k] = 0;
                         }
             Debug.Log(TAG + " AFTER cleanUpGameBroad() Model.gridOcc[x][y][z] AFTER CORRECTION");
