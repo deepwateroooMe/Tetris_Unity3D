@@ -116,7 +116,7 @@ namespace HotFix.UI {
             case 1:
                 GloData.Instance.camPos.Value = new Vector3(18.57f, 18.67f, -2.27f);
                 GloData.Instance.camRot.Value = Quaternion.Euler(new Vector3(504.392f, -256.317f, -536.693f));
-                GloData.Instance.gridSize = 5;
+                GloData.Instance.gridSize.Value = 5;
                 GloData.Instance.gridXSize = 5;
                 GloData.Instance.gridZSize = 5;
                 GloData.Instance.tetroCnter = 37;
@@ -126,7 +126,7 @@ namespace HotFix.UI {
                 GloData.Instance.hasInitCubes = true;
                 GloData.Instance.camPos.Value = new Vector3(18.57f, 18.67f, -2.27f);
                 GloData.Instance.camRot.Value = Quaternion.Euler(new Vector3(500.3f, -251.965f, -538.096f));
-                GloData.Instance.gridSize = 7;
+                GloData.Instance.gridSize.Value = 7;
                 GloData.Instance.gridXSize = 7;
                 GloData.Instance.gridZSize = 7;
                 GloData.Instance.tetroCnter = 37;
@@ -143,7 +143,7 @@ namespace HotFix.UI {
                 GloData.Instance.challengeLevel.Value = 3;
                 break;
             case 4:
-                GloData.Instance.gridSize = 8;
+                GloData.Instance.gridSize.Value = 8;
                 GloData.Instance.gridXSize = 8;
                 GloData.Instance.gridZSize = 8;
                 GloData.Instance.tetroCnter = 37;
@@ -163,7 +163,7 @@ namespace HotFix.UI {
                 break;
             case 6:
                 GloData.Instance.hasInitCubes = true;
-                GloData.Instance.gridSize = 9;
+                GloData.Instance.gridSize.Value = 9;
                 GloData.Instance.gridXSize = 9;
                 GloData.Instance.gridZSize = 9;
                 GloData.Instance.tetroCnter = 42;
@@ -192,7 +192,7 @@ namespace HotFix.UI {
                 GloData.Instance.challengeLevel.Value = 8;
                 break;
             case 9:
-                GloData.Instance.gridSize = 8;
+                GloData.Instance.gridSize.Value = 8;
                 GloData.Instance.gridXSize = 8;
                 GloData.Instance.gridZSize = 8;
                 GloData.Instance.tetroCnter = 42;
@@ -211,7 +211,7 @@ namespace HotFix.UI {
                 GloData.Instance.challengeLevel.Value = 10;
                 break;
             case 11:
-                GloData.Instance.gridSize = 5;
+                GloData.Instance.gridSize.Value = 5;
                 GloData.Instance.gridXSize = 5;
                 GloData.Instance.gridZSize = 5;
                 GloData.Instance.tetroCnter = 37;
@@ -221,7 +221,7 @@ namespace HotFix.UI {
                 break;
             case 12:
                 GloData.Instance.challengeLevel.Value = 12;
-                GloData.Instance.gridSize = 7;
+                GloData.Instance.gridSize.Value = 7;
                 GloData.Instance.gridXSize = 7;
                 GloData.Instance.gridZSize = 7;
                 GloData.Instance.tetroCnter = 37;
@@ -236,7 +236,7 @@ namespace HotFix.UI {
                 break;
             case 14:
                 GloData.Instance.challengeLevel.Value = 14;
-                GloData.Instance.gridSize = 8;
+                GloData.Instance.gridSize.Value = 8;
                 GloData.Instance.gridXSize = 8;
                 GloData.Instance.gridZSize = 8;
                 GloData.Instance.tetroCnter = 37;

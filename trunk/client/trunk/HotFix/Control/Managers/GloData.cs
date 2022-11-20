@@ -21,13 +21,13 @@ namespace HotFix.Control {
         private bool _hasInitCubes = false;
 
         private string _saveGamePathFolderName;
-        private int _gridSize = 5;
         private int _gridXSize = 9;
         private int _gridZSize = 9;
         private int _tetroCnter = 0;
 
         private int _gameLevel = 1; // for educational and classic only
         public BindableProperty<int> challengeLevel = new BindableProperty<int>();
+        public BindableProperty<int> gridSize = new BindableProperty<int>(); // <<<<<<<<<<<<<<<<<<<< 
 
         public BindableProperty<Vector3> camPos = new BindableProperty<Vector3>();
         public BindableProperty<Quaternion> camRot = new BindableProperty<Quaternion>();
@@ -76,14 +76,6 @@ namespace HotFix.Control {
                 _saveGamePathFolderName = value;
             }
         }
-        public int gridSize {
-            get {
-                return _gridSize;
-            }
-            set {
-                _gridSize = value;
-            }
-        }
         public int gridXSize {
             get {
                 return _gridXSize;
@@ -114,25 +106,7 @@ namespace HotFix.Control {
                 _saveGamePathFolderName = "challenge/level";
             else _saveGamePathFolderName = "";
         }
-
-        // public void onGameModeSelected(int pre, int gameMode) { // 这个方法不能被调用的话,就不需要
-        //     Debug.Log(TAG + " onGameModeSelected() " + " gameMode: " + gameMode);
-        //     switch (gameMode) {
-        //     case 0:
-        //         if (isChallengeMode)
-        //             _saveGamePathFolderName = "challenge/level";
-        //         else                    
-        //             _saveGamePathFolderName = "educational/grid";
-        //         break;
-        //     case 1: 
-        //         _saveGamePathFolderName = "classic/level";
-        //         break;
-        //     default: 
-        //         _saveGamePathFolderName = "ERROR -- TRANSITIONAL";
-        //         break;
-        //     }
-        // }
-
+// 爱表哥,爱生活!!!
         public string getFilePath() {
             StringBuilder path = new StringBuilder();
             if (gameMode.Value > 0) 
@@ -140,7 +114,7 @@ namespace HotFix.Control {
                             + _gameLevel + "/game.save"); 
             else 
                 path.Append(Application.persistentDataPath + "/" + _saveGamePathFolderName 
-                            + (isChallengeMode ? _gameLevel.ToString() : _gridSize.ToString())
+                            + (isChallengeMode ? _gameLevel.ToString() : gridSize.Value.ToString())
                             + "/game.save");
             Debug.Log(TAG + " getFilePath() path.ToString(): " + path.ToString());
             return path.ToString();

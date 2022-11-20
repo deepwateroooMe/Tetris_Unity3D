@@ -102,7 +102,7 @@ namespace HotFix.UI {
         void OnClickClaButton() { // CLASSIC MODE
             Debug.Log(TAG + " OnClickClassicButton()");
             GloData.Instance.saveGamePathFolderName = "classic/level";
-            GloData.Instance.gridSize = 5;
+            GloData.Instance.gridSize.Value = 5;
             GloData.Instance.gridXSize = 5;
             GloData.Instance.gridZSize = 5;
             GloData.Instance.camPos.Value = new Vector3(14.10899f, 23.11789f, -1.698298f);
@@ -113,7 +113,7 @@ namespace HotFix.UI {
         void OnClickChaButton() { // CHALLENGE MODE
             Debug.Log(TAG + " OnClickClallengeButton()");
             GloData.Instance.saveGamePathFolderName = "challenge/level";
-            ViewModel.isChallengeMode = true;
+            GloData.Instance.isChallengeMode = true;
             ViewManager.ChallLevelsView.Reveal();
             GloData.Instance.gameMode.Value = 0;
             Hide();
@@ -156,15 +156,20 @@ namespace HotFix.UI {
         }
         void ActiveToggle() {
             if (thrToggle.isOn) {
-                ViewModel.gridWidth = 3;
+                ViewModel.gridSize = 3;
+                GloData.Instance.gridSize.Value = 3;
+                GloData.Instance.gridXSize = 3;
+                GloData.Instance.gridZSize = 3;
             } else if (furToggle.isOn) { 
-                ViewModel.gridWidth = 4;
+                ViewModel.gridSize = 4;
+                GloData.Instance.gridSize.Value = 4;
+                GloData.Instance.gridXSize = 4;
+                GloData.Instance.gridZSize = 4;
             } else if (fivToggle.isOn) {
-                GloData.Instance.gridSize = 5;
+                ViewModel.gridSize = 5;
+                GloData.Instance.gridSize.Value = 5;
                 GloData.Instance.gridXSize = 5;
                 GloData.Instance.gridZSize = 5;
-                // ViewModel.gridWidth = 5; // why it could be so slow initially?
-                GloData.Instance.gridSize = 5;
             }
         }
 #endregion        

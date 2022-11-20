@@ -167,14 +167,19 @@ namespace HotFix.UI {
             // if (cur == 0 && GloData.Instance.isChallengeMode) //  只在挑战模式下存在这个初始化的问题,感觉这里是会造成其它问题的重复步骤
             //     modelArraysInitiation();
         }
+        void onGridSizeChanged(int pre, int cur) {
+            Debug.Log(TAG + " onGridSizeChanged()" + " cur: " + cur);
+            modelArraysReset();
+        }
         void Initialization() {
             Debug.Log(TAG + " Initialization()");
-            if (GloData.Instance.gameMode.Value == 0 && GloData.Instance.isChallengeMode) // 想把这个数据的实初始化尽可能地早做
-                modelArraysInitiation();
+            // if (GloData.Instance.gameMode.Value == 0 && GloData.Instance.isChallengeMode) // 想把这个数据的实初始化尽可能地早做
+            modelArraysInitiation();
 
             this.ParentViewModel = (MenuViewModel)ViewManager.MenuView.BindingContext; // 父视图模型: 菜单视图模型
             gameMode = GloData.Instance.gameMode.Value; // 可能会miss掉最初的值
             GloData.Instance.gameMode.OnValueChanged += onGameModeChanged;
+            GloData.Instance.gridSize.OnValueChanged += onGridSizeChanged;
             hasSavedGameAlready = false;
             isChallengeMode = GloData.Instance.isChallengeMode;
 // TODO: 我把这些也写进了viewmodel里,可是这里面,我应该在什么地方取消它们才 不会 造成资源泄露呢?
@@ -213,31 +218,27 @@ namespace HotFix.UI {
             Debug.Log(TAG + " GloData.Instance.maxZWidth: " + GloData.Instance.maxZWidth);
             Model.prevSkin = new int[4];
             Model.prevIdx = new int[4];
-            modelArraysReset();
+            // modelArraysReset();
         }
         public void modelArraysInitiation() {
             Debug.Log(TAG + " modelArraysInitiation() (!Model.mcubesInitiated): " + (!Model.mcubesInitiated));
-            // if (!Model.mcubesInitiated) {
-                Model.baseCubes = new int[GloData.Instance.maxXWidth * GloData.Instance.maxZWidth]; // 底座的着色
-                Model.grid = new Transform[GloData.Instance.maxXWidth][][];
-                Model.gridOcc = new int[GloData.Instance.maxXWidth][][];
-                Model.gridClr = new int[GloData.Instance.maxXWidth][][];
-                for (int i = 0; i < GloData.Instance.maxXWidth; i++) {
-                    Model.grid[i] = new Transform[Model.gridHeight][];
-                    Model.gridOcc[i] = new int [Model.gridHeight][];
-                    Model.gridClr[i] = new int [Model.gridHeight][];
-                    for (int j = 0; j < Model.gridHeight; j++) {
-                        Model.grid[i][j] = new Transform[GloData.Instance.maxZWidth];
-                        Model.gridOcc[i][j] = new int [GloData.Instance.maxZWidth];
-                        Model.gridClr[i][j] = new int [GloData.Instance.maxZWidth];
-                    }
+            Model.baseCubes = new int[GloData.Instance.maxXWidth * GloData.Instance.maxZWidth]; // 底座的着色
+            Model.grid = new Transform[GloData.Instance.maxXWidth][][];
+            Model.gridOcc = new int[GloData.Instance.maxXWidth][][];
+            Model.gridClr = new int[GloData.Instance.maxXWidth][][];
+            for (int i = 0; i < GloData.Instance.maxXWidth; i++) {
+                Model.grid[i] = new Transform[Model.gridHeight][];
+                Model.gridOcc[i] = new int [Model.gridHeight][];
+                Model.gridClr[i] = new int [Model.gridHeight][];
+                for (int j = 0; j < Model.gridHeight; j++) {
+                    Model.grid[i][j] = new Transform[GloData.Instance.maxZWidth];
+                    Model.gridOcc[i][j] = new int [GloData.Instance.maxZWidth];
+                    Model.gridClr[i][j] = new int [GloData.Instance.maxZWidth];
                 }
-                Debug.Log(TAG + ": gridClr[,,]  after modelArraysInitiation()"); 
-                MathUtilP.printBoard(Model.gridClr);  // Model.
-
-                // EventManager.Instance.FireEvent("arrReady"); // 这个事件发送得还是太早了,换个地方发
-                // Model.mcubesInitiated = true;
-            // }
+            }
+            Debug.Log(TAG + ": gridClr[,,]  after modelArraysInitiation()"); 
+            MathUtilP.printBoard(Model.gridClr);  // Model.
+            // EventManager.Instance.FireEvent("arrReady"); // 这个事件发送得还是太早了,换个地方发
         }
         void onBaseCubesDataReady(BaseCubesDataReadyInfo info) {
             Debug.Log(TAG + " onBaseCubesDataReady()" + " (!Model.mcubesInitiated): " + (!Model.mcubesInitiated));
@@ -269,13 +270,13 @@ namespace HotFix.UI {
             startingLevel = cur;
             // 重置或是初始化全局数组变量: 这里不用一再地重复销毁和重新分配内存,可是先初始化一个足够大的数组,再根据需要调整该足够大数组的维度
             modelArraysReset();
-            Model.mcubesInitiated = false;
+            // Model.mcubesInitiated = false;
         }
 
         public void modelArraysReset() { // 其实说到底,这些东西原本还是应该放在ViewModel里的,只是独立出去能够这现在这个文件弄小一点儿方便操作查找            
             // Debug.Log(TAG + " modelArraysReset() GloData.Instance.isChallengeMode: " + GloData.Instance.isChallengeMode);
             if (GloData.Instance.isChallengeMode) { // 在初始化的时候这个判断是需要的
-                Model.gridWidth = GloData.Instance.gridSize; 
+                Model.gridWidth = GloData.Instance.gridSize.Value; 
                 Model.gridXWidth = GloData.Instance.gridXSize;
                 Model.gridZWidth = GloData.Instance.gridZSize;
                 Debug.Log(TAG + " Model.gridXWidth: " + Model.gridXWidth);
@@ -285,15 +286,22 @@ namespace HotFix.UI {
                 Debug.Log(TAG + ": gridClr()");
                 MathUtilP.printBoard(Model.gridClr);
             } else {
-                Model.gridWidth = GloData.Instance.gridSize;
-                Model.gridXWidth = GloData.Instance.gridSize;
-                Model.gridZWidth = GloData.Instance.gridSize;
+                Model.gridWidth = GloData.Instance.gridSize.Value;
+                Model.gridXWidth = GloData.Instance.gridSize.Value;
+                Model.gridZWidth = GloData.Instance.gridSize.Value;
+                Debug.Log(TAG + " Model.gridWidth: " + Model.gridWidth);
+                Debug.Log(TAG + " Model.gridXWidth: " + Model.gridXWidth);
+                Debug.Log(TAG + " Model.gridZWidth: " + Model.gridZWidth);
                 // MathUtilP.resetColorBoard();  // cmt for tmp
+
+                Debug.Log(TAG + " modelArraysReset() Model.gridOcc: ");
+                MathUtilP.printBoard(Model.gridOcc);
             }
         }
 
         public void OnFinishReveal() {
             Debug.Log(TAG + " OnFinishReveal");
+            modelArraysReset();
             EventManager.Instance.FireEvent("arrReady"); // 这个事件发送得还是太早了,换个地方发
             gameMode = GloData.Instance.gameMode.Value;
             Debug.Log(TAG + " gameMode.Value: " + gameMode);

@@ -10,7 +10,7 @@ namespace HotFix.Control {
     public static class MathUtilP {
         private const string TAG = "MathUtilP";
 
-        private static int m = GloData.Instance.gridSize;
+        private static int m = GloData.Instance.gridSize.Value;
         private static int xm = GloData.Instance.gridXSize;
         private static int zm = GloData.Instance.gridZSize;
         private static int n = 12;

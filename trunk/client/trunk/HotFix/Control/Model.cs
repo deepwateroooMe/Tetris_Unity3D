@@ -62,7 +62,8 @@ namespace HotFix.Control {
                                             if (GloData.Instance.isChallengeMode) gridClr[i][j][k] = -1;
                                         }
                                 }
-                            }
+                                continue;
+                            }  
 // 以 方块砖 为单位回收到资源池里去                            
                             Transform tmpRefParent = null;
                             if (grid[x][y][z].parent != null && grid[x][y][z].parent.gameObject.GetComponent<TetrominoType>().childCnt == grid[x][y][z].parent.childCount) {

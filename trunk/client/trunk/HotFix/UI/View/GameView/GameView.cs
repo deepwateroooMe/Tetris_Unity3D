@@ -131,7 +131,9 @@ namespace HotFix.UI {
                     lvlText.text = GloData.Instance.gameLevel.ToString();
                     linText.text = ViewModel.numLinesCleared.Value.ToString();
                 }
-            } else { // else cur == -1
+            } else { // else cur == -1 这种情况下,就把相机的视角等调回原位
+                GloData.Instance.camPos.Value = new Vector3(14.108f, 23.117f, -1.6983f);
+                GloData.Instance.camRot.Value = Quaternion.Euler(new Vector3(490.708f, -251.184f, -539.973f));
                 if (!GloData.Instance.isChallengeMode) { // 这里只是测试用一下
                     comLevelView.SetActive(false);
                     goalPanel.SetActive(false);
@@ -195,6 +197,10 @@ namespace HotFix.UI {
 			goalPanel.SetActive(false);
         }
         void loadInitCubesforChallengeMode(ModelArraysInitializedInfo info) { // 当被gameMode触发而来,可能仍然没有初始化好
+            if (!GloData.Instance.isChallengeMode || !GloData.Instance.hasInitCubes) { // 方法是为挑战模式写的,但仍然得适配其它模式
+                initCubes = new GameObject();
+                return;
+            }
             initCubes = ViewManager.ChallLevelsView.levels[GloData.Instance.challengeLevel.Value].gameObject.FindChildByName("InitCubes");
             Debug.Log(TAG + " (initCubes != null): " + (initCubes != null));
             if (initCubes != null) {
@@ -737,15 +743,15 @@ namespace HotFix.UI {
             onPreviewTetroSpawn();
         }
 
-        public void Reveal(Action Start) {
-            base.Reveal(true, Start);
-        }
+        // public void Reveal(Action Start) {
+        //     base.Reveal(true, Start);
+        // }
 // TODO: 可能更好的办法是去主工程基类中去全局控制,现先这样        
         private bool revealed = false; // 为什么会存在这个问题呢?
 #region BindableProperties
         public void OnRevealed() { // 写在这里是因为热更新程序域里回调慢,写早了有时候拿不到返回空
-            if (revealed) return ; // TODO: 标记UnityGuiView里的基类方法,来找一下是否有其它更好的解决方案
             base.OnRevealed();
+            if (revealed) return ; // TODO: 标记UnityGuiView里的基类方法,来找一下是否有其它更好的解决方案
 
             ViewModel.currentScore.OnValueChanged += onCurrentScoreChanged;
             ViewModel.currentLevel.OnValueChanged += onCurrentLevelChanged;
@@ -764,6 +770,12 @@ namespace HotFix.UI {
             GloData.Instance.gameMode.OnValueChanged += onGameModeChanged;
             GloData.Instance.gameMode.Value = tmpGameMode;
 
+// GloData.Instance.gridSize: 在启蒙模式下,这个也是需要触发来设置一些初始化的变量的
+            tmpGameMode = GloData.Instance.gridSize.Value;
+            GloData.Instance.gridSize.Value = 2;
+            GloData.Instance.gridSize.OnValueChanged += onGridSizeChanged; // 现在设置的是 5, 到时会有3 4 5 
+            GloData.Instance.gridSize.Value = tmpGameMode;
+            
             if (GloData.Instance.isChallengeMode) {
 // TODO: 为了触发第一次的回调,稍微绕了一下,只能触发第一次的回调是不可以的
                 int tmpl = GloData.Instance.challengeLevel.Value;
@@ -788,6 +800,9 @@ namespace HotFix.UI {
 // TODO: 下面这行好像是调用得多了,连续调用了两次 ?
             Start(new GameEnterEventInfo()); // 当且仅当第一次启动,miss旧游戏开始事件的时候,用于第一次触发启动(切换过程中是存在不断地激活与失活的过程的) 
              revealed = true;
+        }
+        void onGridSizeChanged(int pre, int cur) {
+// TODO: 3 4 5            
         }
         public void Start(GameEnterEventInfo info) { // 刚才以loadSavedGame为驱动的模式有问题,因为它的值总是会被重置,被重置的时候并不希望再次触发回调,所以需要使用游戏状态事件
             Debug.Log(TAG + " Start(GameEnterEventInfo info)");
@@ -879,7 +894,7 @@ namespace HotFix.UI {
             baseBoard5 = GameObject.FindChildByName("BaseBoard5");
             setAllBaseBoardInactive();
 // 当视图想要通过视图模型来获取父视图模型的数据时,实际上当前视图模型还没能启动好,还没有设置好其父视图模型,所以会得到空,要换种写法
-            switch (GloData.Instance.gridSize) { // 大方格的类型
+            switch (GloData.Instance.gridSize.Value) { // 大方格的类型
                 case 3: baseBoard3.SetActive(true);break;
                 case 4: baseBoard4.SetActive(true); break;
                 case 5: baseBoard5.SetActive(true); break;
