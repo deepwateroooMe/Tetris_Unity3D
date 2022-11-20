@@ -79,6 +79,7 @@ namespace HotFix.UI {
 
             newContinuePanel = GameObject.FindChildByName("BgnNewContinueView");
             newButton = GameObject.FindChildByName("newBtn").GetComponent<Button>();
+            
             newButton.onClick.AddListener(OnClickNewGameButton);
 
             conButton = GameObject.FindChildByName("lodBtn").GetComponent<Button>();
@@ -108,9 +109,9 @@ namespace HotFix.UI {
             GloData.Instance.gridZSize = 5;
             GloData.Instance.camPos.Value = new Vector3(14.10899f, 23.11789f, -1.698298f);
             GloData.Instance.camRot.Value = Quaternion.Euler(new Vector3(490.708f, -251.184f, -539.973f));
-            offerGameLoadChoice();
             GloData.Instance.gameMode.Value = 1;
             GameView.nextTetrominoSpawnPos = new Vector3(2.0f, Model.gridHeight - 1f, 2.0f);
+            offerGameLoadChoice();
         }
         void OnClickChaButton() { // CHALLENGE MODE
             Debug.Log(TAG + " OnClickClallengeButton()");
@@ -125,11 +126,9 @@ namespace HotFix.UI {
 #region EducaModesPanel
         void OnClickConfirmButton() {
             Debug.Log(TAG + " OnClickConfirmButton()");
-            // 检查是否存有先前游戏进度数据,有则弹窗;无直接进游戏界面,这一小步暂时跳过
             ActiveToggle();
-// TODO: BUG 因为射线检测还是什么原因,直接调用了加载保存过的游戏,这里需要再改一下            
-            offerGameLoadChoice();
             educaModesViewPanel.SetActive(false);
+            offerGameLoadChoice();
         }
         void prepareEnteringNewGame() {
             EventManager.Instance.FireEvent("entergame"); // Audio

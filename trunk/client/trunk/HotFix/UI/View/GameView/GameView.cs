@@ -101,29 +101,37 @@ namespace HotFix.UI {
 
         public ModelMono modelMono;
         public bool isPaused = false;
-// 感觉这里的想法是狠好的,可是因为调用的延迟,反应极慢?再测试一下,不行就不用这个了        
-        BindableProperty<Dictionary<GameObject, bool>> btnState = new BindableProperty<Dictionary<GameObject, bool>>();
 
         // 游戏主场景: 得分等游戏进展框,自动观察视图模型的数据自动,刷新
         void onGameModeChanged(int pre, int cur) {
             Debug.Log(TAG + " onGameModeChanged(): " + " cur: " + cur);
-            if (cur > 0) { // CLASSIC
+            undoBtn.SetActive(false); // 最开始是不允许 撤销的,除非落下一个方块砖之后
+            if (cur > 0) { // CLASSIC: 当从其它模式切换过来,仍有很多需要做的
                 eduTetroView.SetActive(false); 
                 swaBtn.SetActive(false);
-                undoBtn.SetActive(false); // 不可撤销(挑战模式是仍可以再考虑)
+                comLevelView.SetActive(false);
+                pvBtnOne.SetActive(false); // 在经典模式下,这个按钮,只可看,不可点击
+                baseBoard5.SetActive(true); // TODO: 有其它更为的实现
+                linTextDes.SetActive(true); // LINE 
+                linText.gameObject.SetActive(true);
+                lvlText.text = GloData.Instance.gameLevel.ToString();
+                linText.text = ViewModel.numLinesCleared.Value.ToString();
+                togBtn.SetActive(true);
+                falBtn.SetActive(true);
             } else if (cur == 0) { // 这个模式下的三个组件都是要的
                 eduTetroView.SetActive(true); 
                 swaBtn.SetActive(true);
-                undoBtn.SetActive(true); // 不可撤销(挑战模式是仍可以再考虑)
-                btnState.Value[togBtn] = false;
-                btnState.Value[falBtn] = false;
-                btnState.Value[undoBtn] = false;
+                pvBtnOne.SetActive(true); // 在经典模式下,这个按钮,只可看,不可点击
+                togBtn.SetActive(false);
+                falBtn.SetActive(false);
+                Debug.Log(TAG + " (cur == 0 && GloData.Instance.isChallengeMode): " + (cur == 0 && GloData.Instance.isChallengeMode));
                 if (cur == 0 && GloData.Instance.isChallengeMode) { // 挑战模式 下
                     linText.gameObject.SetActive(false);
                     linTextDes.SetActive(false); // LINE 
                     initializeChallengingMode(); // <<<<<<<<<< 
                     CoroutineHelperP.StartCoroutine(displayChallengeGoal());
                     baseBoard5.SetActive(false); // 可以根据层级再细化,暂时这样
+                    pvBtnOne.SetActive(true); // 在经典模式下,这个可能会被失活过
                     // loadInitCubesforChallengeMode(); // 这里做得太早了,会报空异常
                 } else { // EDUCATIONAL: 需要把如果先前是 挑战模式 下的相关控件清除
                     comLevelView.SetActive(false);
@@ -137,13 +145,6 @@ namespace HotFix.UI {
             } else { // else cur == -1 这种情况下,就把相机的视角等调回原位
                 GloData.Instance.camPos.Value = new Vector3(14.108f, 23.117f, -1.6983f);
                 GloData.Instance.camRot.Value = Quaternion.Euler(new Vector3(490.708f, -251.184f, -539.973f));
-                // if (!GloData.Instance.isChallengeMode) { // 这里只是测试用一下
-                //     comLevelView.SetActive(false);
-                //     goalPanel.SetActive(false);
-                //     baseBoard5.SetActive(true); // TODO: 有其它更为的实现
-                //     linTextDes.SetActive(true); // LINE 
-                //     linText.gameObject.SetActive(true);
-                // }
             }
         }
         void initializeChallengingMode() {
@@ -153,10 +154,8 @@ namespace HotFix.UI {
 // 每个层级的底坐: 这里可能还需要更多的控件索引,因为底座需要能够更新材质                
             ViewManager.basePlane.SetActive(true);
         }
-
         public void SpawnnextTetromino() {
-            Debug.Log(TAG + ": SpawnnextTetromino()");
-            Debug.Log(TAG + " gameStarted: " + gameStarted);
+            Debug.Log(TAG + ": SpawnnextTetromino()" + " gameStarted: " + gameStarted);
             if (!gameStarted) {
                 if (ViewModel.gameMode == 0) {
                     SpawnPreviewTetromino();
@@ -168,7 +167,7 @@ namespace HotFix.UI {
                        nextTetrominoSpawnPos,
                        Quaternion.identity, Vector3.one);
                    currentActiveTetrominoPrepare();
-                   btnState.Value[pvBtnOne] = false;
+                   // pvBtnOne.SetActive(false); // for classic mode only, cause it does NOT require click at all.
                    ViewManager.moveCanvas.transform.rotation = Quaternion.Euler(0, 0, 0);
                    ViewManager.moveCanvas.gameObject.SetActive(true);  
                    SpawnGhostTetromino();
@@ -210,7 +209,7 @@ namespace HotFix.UI {
             Debug.Log(TAG + " (initCubes != null): " + (initCubes != null));
             if (initCubes != null) {
                 Debug.Log(TAG + " loadInitCubesforChallengeMode() initCubes.transform.childCount: " + initCubes.transform.childCount);
-                Model.UpdateGrid(initCubes); // parent GameObject
+                Model.UpdateGrid(initCubes); // parent GameObject: 这里面必要的情况下会需要更新地板砖的颜色
                 Debug.Log(TAG + ": gridOcc()"); // 这里不知道是怎么回事,想要它打印三维数据的时候,它还没有处理完,总是打不出来
                 MathUtilP.printBoard(Model.gridOcc);
                 Debug.Log(TAG + ": gridClr()");
@@ -315,8 +314,10 @@ namespace HotFix.UI {
 #region eventsCallbacks
         public void onActiveTetrominoLand(TetrominoLandEventInfo info) {
             Debug.Log(TAG + ": onActiveTetrominoLand()");
-            btnState.Value[togBtn] = false;
-            btnState.Value[falBtn] = false;
+            if (GloData.Instance.gameMode.Value == 0) { // 经典模式下不能失活
+                togBtn.SetActive(false);
+                falBtn.SetActive(false);
+            }
 
             Debug.Log(TAG + ": gridOcc[][][] BEFORE Land BEFORE UpdateGrid()"); 
             MathUtilP.printBoard(Model.gridOcc);  // Model.
@@ -375,13 +376,11 @@ namespace HotFix.UI {
                 Debug.Log(TAG + " (ViewModel.tetroCnter.Value == 0): " + (ViewModel.tetroCnter.Value == 0));
                 GameOver();
             }
-            if (ViewModel.gameMode == 0) { // 初始化写反的,才能够触发回调.....
-                btnState.Value[undoBtn] = false;
-                btnState.Value[pvBtnOne] = false;
-                btnState.Value[pvBtnTwo] = false;
-                btnState.Value[swaBtn] = false;
-                btnState.Value[togBtn] = true; // TODO: 这个好像有点儿什么问题
-                btnState.Value[falBtn] = true; // 点击的时候就失活了;但是如果没有点击呢?
+            if (ViewModel.gameMode == 0) { 
+                undoBtn.SetActive(true);
+                pvBtnOne.SetActive(true);
+                pvBtnTwo.SetActive(true);
+                swaBtn.SetActive(true);
             }
 
             if (GloData.Instance.gameMode.Value != 0) 
@@ -413,17 +412,12 @@ namespace HotFix.UI {
 
 #region GameViewCallbacks
 // 游戏主面板中7个按钮的点击回调
-        public void OnClickUndButton() {
+        public void OnClickUndButton() { // 这里可能还要再多失活几个
             EventManager.Instance.FireEvent("undo");
-            btnState.Value[undoBtn] = false;
-            btnState.Value[pvBtnOne] = false;
-            btnState.Value[pvBtnTwo] = false;
-            btnState.Value[swaBtn] = false;
+            undoBtn.SetActive(false);
         }
-        // public void onUndoGame(UndoLastTetrominoInfo info) { // 新系统,需要适配这套系统
         public void onUndoGame(UndoGameEventInfo info) { // 新系统,需要适配这套系统
             Debug.Log(TAG + " onUndoGame() isDuringUndo: " + isDuringUndo);
-
             if (gameOverPanel.activeSelf)
                 gameOverPanel.SetActive(false);
             if (GloData.Instance.isChallengeMode && ViewModel.undoCnter.Value == 0) return;
@@ -444,11 +438,7 @@ namespace HotFix.UI {
                 else 
                     SpawnPreviewTetromino(type.Append(gameData.prevPreview).ToString(), type2);
             }
-            btnState.Value[pvBtnOne] = true;
-            btnState.Value[pvBtnTwo] = true;
-            btnState.Value[swaBtn] = true;
         }
-
         void OnClickPauButton() { 
             Debug.Log(TAG + " OnClickPauButton");
             isPaused = true;
@@ -458,7 +448,8 @@ namespace HotFix.UI {
         }
         void OnClickFalButton() { // SlamDown FallFast
             Debug.Log(TAG + " OnClickFallFastButton");
-            btnState.Value[falBtn] = false;
+            if (GloData.Instance.gameMode.Value == 0)
+                falBtn.SetActive(false);
             delta = new Vector3(0, -1, 0);
             ViewManager.nextTetromino.transform.position += delta;
             while (Model.CheckIsValidPosition()) { 
@@ -474,51 +465,37 @@ namespace HotFix.UI {
 // TODO: BUG 这个计数没能及时反映到UI上的刷新        
         public void onSwapPreviewTetrominos () { // 这里需要下发指令到视图数据层,并根据随机数生成的新的tetromino来重新刷新UI
             Debug.Log(TAG + " onSwapPreviewTetrominos");
-            btnState.Value[swaBtn] = false;
-            btnState.Value[undoBtn] = false;
+            swaBtn.SetActive(false);
             Debug.Log(TAG + " ViewModel.swapCnter.Value: " + ViewModel.swapCnter.Value);
             --ViewModel.swapCnter.Value;
-            // ViewModel.onSwapPreviewTetromino();
-            
-            // 当 ViewModel.swapCnter.Value == 1的时候点击,就将这个按钮短暂失活,直到重新游戏或是下一关卡
             if (ViewModel.swapCnter.Value == 0 && GloData.Instance.isChallengeMode) // 
                 swaBtn.SetActive(false);
             Debug.Log(TAG + " ViewModel.swapCnter.Value: " + ViewModel.swapCnter.Value);
             PoolHelper.recyclePreviewTetrominos(previewTetromino);
             PoolHelper.recyclePreviewTetrominos(previewTetromino2);
             SpawnPreviewTetromino();
-            btnState.Value[swaBtn] = true;
+            swaBtn.SetActive(true);
         }
         void OnClickTogButton() { // toggle moveCanvas rotateCanvas
-			// btnState.Value[togBtn] = false;
             EventManager.Instance.FireEvent("canvas");
         }
-// TODO: 对UI按钮的控制,因为很容易在程序还没有就绪的时候用户就点了打第一个或是第二个,导致空异常(尤其是在撤销一次之后重新生成与点击)
-        // GameView onCameraRotChanged
-        // PoolHelper GetFromPool(): type: TetrominoT, color: 2
-        //     PoolHelper GetFromPool(): type: TetrominoI, color: 1
-        //     NullReferenceException: A null value was found where an object instance was required.
-        //     Rethrow as ILRuntimeException: A null value was found where an object instance was required.
-        
         public void playFirstTetromino() { // pvBtnOne: comTetroView Button
-            btnState.Value[pvBtnOne] = false; // 主要是防不小心的连击
+            pvBtnOne.SetActive(false);
             if (GloData.Instance.isChallengeMode) {
                 ViewModel.prevPreviewColor = previewTetromino.GetComponent<TetrominoType>().color;
                 ViewModel.prevPreviewColor2 = previewTetromino2.GetComponent<TetrominoType>().color;
             }
             ViewModel.playFirstTetromino(previewTetromino, previewTetromino2);
-
             currentActiveTetrominoPrepare();
-            
             SpawnGhostTetromino();  
-            moveRotatecanvasPrepare(); // <<<<<<<<<<<<<<<<<<<< 
+            moveRotatecanvasPrepare(); 
             SpawnPreviewTetromino();
             if (ViewModel.gameMode == 0)
                 onTetroViewClickChosed();
         }
         public void playSecondTetromino() { // pvBtnTwo: eduTetroView Button
             Debug.Log(TAG + " playSecondTetromino");
-            btnState.Value[pvBtnTwo] = false;
+            pvBtnTwo.SetActive(false);
             if (GloData.Instance.isChallengeMode) {
                 ViewModel.prevPreviewColor = previewTetromino.GetComponent<TetrominoType>().color;
                 ViewModel.prevPreviewColor2 = previewTetromino2.GetComponent<TetrominoType>().color;
@@ -534,12 +511,11 @@ namespace HotFix.UI {
             onTetroViewClickChosed();
         }
         void onTetroViewClickChosed() {
-// 不可 点击选择,不可交换,不可undo            
-            btnState.Value[pvBtnOne] = false;
-            btnState.Value[pvBtnTwo] = false;
-            btnState.Value[swaBtn] = false;
-            btnState.Value[togBtn] = true;
-            btnState.Value[falBtn] = true;
+            pvBtnOne.SetActive(false);
+            pvBtnTwo.SetActive(false);
+            swaBtn.SetActive(false);
+            togBtn.SetActive(true);
+            falBtn.SetActive(true);
         }
 #endregion
 
@@ -719,14 +695,13 @@ namespace HotFix.UI {
             onPreviewTetroSpawn();
         }
         void onPreviewTetroSpawn() {
-            btnState.Value[pvBtnOne] = false;
             if (ViewModel.gameMode == 0) {
-                btnState.Value[togBtn] = false;
-                btnState.Value[falBtn] = false;
-                btnState.Value[undoBtn] = false;
+                togBtn.SetActive(false);
+                falBtn.SetActive(false);
             } else { // CLASSIC: 不能点击
-                btnState.Value[pvBtnOne] = false;
+                pvBtnOne.SetActive(false);
             }
+            
         }
         private void SpawnPreviewTetromino(string type1, string type2, int color1, int color2) {
             previewTetromino = PoolHelper.GetFromPool(type1, previewTetrominoPosition, Quaternion.identity, ViewModel.previewTetrominoScale + Vector3.one, color1);
@@ -769,21 +744,18 @@ namespace HotFix.UI {
             GloData.Instance.gameMode.Value = -1;
             GloData.Instance.gameMode.OnValueChanged += onGameModeChanged;
             GloData.Instance.gameMode.Value = tmpGameMode;
-
 // GloData.Instance.gridSize: 在启蒙模式下,这个也是需要触发来设置一些初始化的变量的
             tmpGameMode = GloData.Instance.gridSize.Value;
             GloData.Instance.gridSize.Value = 2;
             GloData.Instance.gridSize.OnValueChanged += onGridSizeChanged; // 现在设置的是 5, 到时会有3 4 5 
             GloData.Instance.gridSize.Value = tmpGameMode;
-            
-            if (GloData.Instance.isChallengeMode) {
+            // if (GloData.Instance.isChallengeMode) { // 会影响它的第一次的注册
 // TODO: 为了触发第一次的回调,稍微绕了一下,只能触发第一次的回调是不可以的
                 int tmpl = GloData.Instance.challengeLevel.Value;
                 GloData.Instance.challengeLevel.Value = -1;
                 GloData.Instance.challengeLevel.OnValueChanged += onChallengeLevelChanged;
                 GloData.Instance.challengeLevel.Value = tmpl;
-            }
-
+            // }
 // 主要是方便从数据加载游戏进度的时候
             ViewModel.cameraPos.OnValueChanged += onCameraPosChanged;
             ViewModel.cameraRot.OnValueChanged += onCameraRotChanged;
@@ -796,20 +768,20 @@ namespace HotFix.UI {
             GloData.Instance.camRot.Value = Quaternion.identity;
             GloData.Instance.camRot.OnValueChanged += onCamRotChanged;
             GloData.Instance.camRot.Value = tmq;
-
 // TODO: 下面这行好像是调用得多了,连续调用了两次 ?
             Start(new GameEnterEventInfo()); // 当且仅当第一次启动,miss旧游戏开始事件的时候,用于第一次触发启动(切换过程中是存在不断地激活与失活的过程的) 
              revealed = true;
         }
         void onGridSizeChanged(int pre, int cur) {
-// TODO: 3 4 5            
+            Debug.Log(TAG + " onGridSizeChanged()" + " cur: " + cur);
+            if (cur == 5)
+                baseBoard5.SetActive(true); 
         }
         public void Start(GameEnterEventInfo info) { // 刚才以loadSavedGame为驱动的模式有问题,因为它的值总是会被重置,被重置的时候并不希望再次触发回调,所以需要使用游戏状态事件
             Debug.Log(TAG + " Start(GameEnterEventInfo info)");
             Time.timeScale = 1.0f;
             isPaused = false;
             gameStarted = false;
-            btnState.Value[undoBtn] = false;
             if (GloData.Instance.loadSavedGame)  // loadSavedGame
                 LoadGame(GloData.Instance.getFilePath());
             else 
@@ -825,6 +797,9 @@ namespace HotFix.UI {
             Debug.Log(TAG + " onChallengeLevelChanged()" + " cur: " + cur);
             if (GloData.Instance.gameMode.Value == 0 && GloData.Instance.isChallengeMode) // 不知道在这里添加脚本会不会太晚,好像是可以的
                 ComponentHelper.AddBBSkinComponent(ViewManager.basePlane.FindChildByName("level" + GloData.Instance.challengeLevel).gameObject);
+// tetroCnter text
+            ViewModel.tetroCnter.OnValueChanged += onTetroCnterChanged;
+            ViewModel.tetroCnter.Value = GloData.Instance.tetroCnter;
             if (cur != 1 && cur != 11)
 				baseBoard5.SetActive(false);
             else 
@@ -883,7 +858,7 @@ namespace HotFix.UI {
             linText.text = cur.ToString();
         }
 #endregion
-        
+
 #region Initialize
         protected override void OnInitialize() {
             base.OnInitialize();
@@ -966,21 +941,13 @@ namespace HotFix.UI {
                 initCubes = new GameObject();
  
 // 启动并控制游戏主场景面板上几个按钮的是否可点击状态: 有的起作用,有的不起作用.....
-            btnState.Value = new Dictionary<GameObject, bool>() {
-                {pvBtnOne, false}, // comTetroView button
-                {pvBtnTwo, false}, // eduTetroView button
-                {swaBtn, false},   // swap
-                {undoBtn, true},  // undo
-                {togBtn, true},   // toggle
-                {falBtn, true},   // fall fast
-                {pauBtn, true}    // pause game
-            };
-            btnState.OnValueChanged += onButtonStateChanged;
-        }
-        void onButtonStateChanged(Dictionary<GameObject, bool> pre, Dictionary<GameObject, bool> cur) {
-            Debug.Log(TAG + " onButtonStateChanged()");
-            foreach (GameObject key in btnState.Value.Keys) 
-                if (pre[key] != cur[key]) key.SetActive(cur[key]);
+            pvBtnOne.SetActive(true);
+            pvBtnTwo.SetActive(true);
+            swaBtn.SetActive(true);
+            undoBtn.SetActive(false);
+            togBtn.SetActive(false);
+            falBtn.SetActive(false);
+            pauBtn.SetActive(true);
         }
         void RegisterListeners() {
             Debug.Log(TAG + " RegisterListeners");

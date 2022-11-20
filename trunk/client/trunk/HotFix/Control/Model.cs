@@ -149,21 +149,26 @@ namespace HotFix.Control {
             resetPrevSkin();
             foreach (Transform mino in go.transform) { // 当挑战模式更新地板砖的时候,这里就是地板砖的着色
                 Vector3 pos = MathUtilP.Round(mino.position);
-                if (pos.y >= 0 && pos.y < gridHeight && pos.x >= 0 && pos.x < gridXWidth && pos.z >= 0 && pos.z < gridZWidth) { 
-                    grid[(int)pos.x][(int)pos.y][(int)pos.z] = mino;
+                int x = (int)Mathf.Round(pos.x);
+                int y = (int)Mathf.Round(pos.y);
+                int z = (int)Mathf.Round(pos.z);
+                MathUtilP.print(x, y, z);
+                if (y >= 0 && y < gridHeight && x >= 0 && x < gridXWidth && z >= 0 && z < gridZWidth) { 
+                    grid[x][y][z] = mino;
 // 把它独立成一个单独的方法,会效率高一点儿;要不然每个方块砖坠落,都需要检查一下
 // 对于标签为InitCubes的来说,暂时的游戏逻辑设置为不可以消除,但VALICATE为可接触
                     if (go.CompareTag("InitCubes"))
-                        gridOcc[(int)pos.x][(int)pos.y][(int)pos.z] = 8;
+                        gridOcc[x][y][z] = 8;
                     else
-                        gridOcc[(int)pos.x][(int)pos.y][(int)pos.z] = 1;
+                        gridOcc[x][y][z] = 1;
                     if (GloData.Instance.isChallengeMode) {
-                        gridClr[(int)pos.x][(int)pos.y][(int)pos.z] = mino.GetComponent<MinoType>().color;
-                        if ((int)pos.y == 0) { // 地板砖的着色,要这个时候更新吗
-                            int idx =  (int)(Mathf.Round(pos.x) + GloData.Instance.gridXSize * Mathf.Round(pos.z)); // y = 0
-                            prevIdx[i++] = idx;
-                            prevSkin[idx] = baseCubes[idx]; //getChallengedMaterialIdx(cubes[idx].gameObject.GetComponent<Renderer>().sharedMaterial);
-                            baseCubes[(int)pos.x + Model.gridXWidth * (int)pos.z] = gridClr[(int)pos.x][(int)pos.y][(int)pos.z];
+                        gridClr[x][y][z] = mino.GetComponent<MinoType>().color;
+                        // Debug.Log(TAG + " (y == 0 && !grid[x][y][z].gameObject.CompareTag()): " + (y == 0 && !grid[x][y][z].gameObject.CompareTag())CompareTag("I);
+                        if (y == 0 && !grid[x][y][z].gameObject.CompareTag("InitCubes")) { // 地板砖的着色,要这个时候更新吗
+                            int idx = x + gridXWidth * z; // y = 0
+                            prevIdx[i] = idx;
+                            prevSkin[i++] = baseCubes[idx]; //getChallengedMaterialIdx(cubes[idx].gameObject.GetComponent<Renderer>().sharedMaterial);
+                            baseCubes[x + gridXWidth * z] = gridClr[x][y][z];
                         }
                     }
                 }

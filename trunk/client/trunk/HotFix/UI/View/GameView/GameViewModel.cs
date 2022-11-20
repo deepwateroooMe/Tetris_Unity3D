@@ -96,6 +96,7 @@ namespace HotFix.UI {
             GloData.Instance.loadSavedGame = false; // 缺省开始新游戏
             GloData.Instance.gameMode.Value = -1; // 因为比如:从挑战模式 切换到 启蒙模式,不改值不能调用回调
             GloData.Instance.gameLevel = 1;
+            // GloData.Instance.challengeLevel.Value = 0;
             if (!hasSavedGameAlready) { // 不保存游戏:// 如果同户不要保存游戏进度,则必要情况下需要删除保存过的游戏进度文件
                 string path = GloData.Instance.getFilePath();
                 if (File.Exists(path)) {
@@ -115,7 +116,8 @@ namespace HotFix.UI {
             currentLevel.Value = 1;
             tetroCnter.Value = -1;
             undoCnter.Value = 5;
-            swapCnter.Value = 5; 
+            swapCnter.Value = 5;
+            GloData.Instance.saveGamePathFolderName = "";
         }
 
         public void onUndoGame(GameData gameData) { 
@@ -218,8 +220,6 @@ namespace HotFix.UI {
 // 最大各种数组的初始化
             Debug.Log(TAG + " GloData.Instance.maxXWidth: " + GloData.Instance.maxXWidth);
             Debug.Log(TAG + " GloData.Instance.maxZWidth: " + GloData.Instance.maxZWidth);
-            Model.prevSkin = new int[4];
-            Model.prevIdx = new int[4];
             // modelArraysReset();
         }
         public void modelArraysInitiation() {
@@ -239,6 +239,8 @@ namespace HotFix.UI {
                     Model.gridClr[i][j] = new int [GloData.Instance.maxZWidth];
                 }
             }
+            Model.prevSkin = new int[4];
+            Model.prevIdx = new int[4];
             Debug.Log(TAG + ": gridClr[,,]  after modelArraysInitiation()"); 
             MathUtilP.printBoard(Model.gridClr);  // Model.
             // EventManager.Instance.FireEvent("arrReady"); // 这个事件发送得还是太早了,换个地方发

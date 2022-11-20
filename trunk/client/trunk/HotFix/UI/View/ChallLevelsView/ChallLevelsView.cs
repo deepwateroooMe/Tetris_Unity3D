@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace HotFix.UI {
 
-// 这里已经写了就不想再改写了;代码最后优化的时候可以再试着改写按钮的监听与回调事件3
+// 这里已经写了就不想再改写了;代码最后优化的时候e可以再试着改写按钮的监听与回调事件3
     public class ChallLevelsView : UnityGuiView {
         private const string TAG = "ChallLevelsView"; 
         public override string BundleName { get { return "ui/view/challlevelsview"; } }
