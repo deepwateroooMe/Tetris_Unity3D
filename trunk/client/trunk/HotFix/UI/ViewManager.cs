@@ -182,6 +182,7 @@ namespace HotFix.UI {
 
         static void ShowStartPanel() {
             MenuView.Reveal();
+            SettingsView.Reveal();
         }
 
 #region Other
@@ -226,6 +227,17 @@ namespace HotFix.UI {
                 return _menuView;
             }
         }
+        static LoginView _loginView;
+        public static LoginView LoginView {
+            get {
+                if (_loginView == null) {
+                    _loginView = new LoginView();
+                    _loginView.BindingContext = new LoginViewModel();
+                    views.Add(_loginView.ViewName, _loginView);
+                }
+                return _loginView;
+            }
+        }
         static GameView _GameView;
         public static GameView GameView {
             get {
@@ -262,3 +274,4 @@ namespace HotFix.UI {
 #endregion
     }
 }
+

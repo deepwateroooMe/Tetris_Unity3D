@@ -211,6 +211,8 @@ namespace Framework.Core {
             return instance;
         }
 #endregion
+
+// 回想一下:热更新程序域里是如何使用这三个方法的? 那么就可以照葫芦画飘地定义类似的方法作为桥梁来调用安卓原生音量控制里的相关设置        
         public unsafe static StackObject* CreateInstance(ILIntepreter intp, StackObject* esp, IList<object> mStack, CLRMethod method, bool isNewObj) {
             Debug.Log(TAG + " CreateInstance()");
             // 获取泛型参数<T>的实际类型

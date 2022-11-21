@@ -36,6 +36,7 @@ namespace Framework.Core {
             get;
             private set;
         }
+        
 // google, hotmail, LinkedIn facebook etc        
         // public ShareSDK ShareSDK { 
         //     get;

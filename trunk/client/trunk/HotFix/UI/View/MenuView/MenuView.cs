@@ -100,6 +100,7 @@ namespace HotFix.UI {
             educaModesViewPanel.SetActive(true);
             GloData.Instance.gameMode.Value = 0;
             GameView.nextTetrominoSpawnPos = new Vector3(2.0f, Model.gridHeight - 1f, 2.0f);
+            ViewManager.SettingsView.Hide();
         }
         void OnClickClaButton() { // CLASSIC MODE
             Debug.Log(TAG + " OnClickClassicButton()");
@@ -112,6 +113,7 @@ namespace HotFix.UI {
             GloData.Instance.gameMode.Value = 1;
             GameView.nextTetrominoSpawnPos = new Vector3(2.0f, Model.gridHeight - 1f, 2.0f);
             offerGameLoadChoice();
+            ViewManager.SettingsView.Hide();
         }
         void OnClickChaButton() { // CHALLENGE MODE
             Debug.Log(TAG + " OnClickClallengeButton()");
@@ -119,6 +121,7 @@ namespace HotFix.UI {
             GloData.Instance.isChallengeMode = true;
             ViewManager.ChallLevelsView.Reveal();
             GloData.Instance.gameMode.Value = 0;
+            ViewManager.SettingsView.Hide();
             Hide();
         }
 #endregion
