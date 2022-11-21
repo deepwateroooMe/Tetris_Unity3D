@@ -134,7 +134,7 @@ namespace HotFix.UI {
                     pvBtnOne.SetActive(true); // 在经典模式下,这个可能会被失活过
                     // loadInitCubesforChallengeMode(); // 这里做得太早了,会报空异常
                 } else { // EDUCATIONAL: 需要把如果先前是 挑战模式 下的相关控件清除
-                    comLevelView.SetActive(false);
+                    comLevelView.SetActive(false); 
                     goalPanel.SetActive(false);
                     baseBoard5.SetActive(true); // TODO: 有其它更为的实现
                     linTextDes.SetActive(true); // LINE 
@@ -974,3 +974,6 @@ namespace HotFix.UI {
 #endregion
     }
 }
+
+
+

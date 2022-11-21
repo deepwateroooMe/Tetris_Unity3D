@@ -35,15 +35,19 @@ namespace HotFix.UI {
             }
         }
 
+        Button lgiBtn; // LOGIN
         Button creBtn; // CREDIT
         Button ratBtn; // RATE GAME
-        Button sunBtn; // SUNUME GAME
-        Button adsBtn; // SUNUME GAME
-        Button lotBtn; // TUTORIAL
-        Button setBtn; // BACK TO MAIN MENU
+        Button sunBtn; // SOUND ON/OFF ADJUSTMENT
+        Button adsBtn; // ads free
+        Button lotBtn; // LOGOUT
+        Button setBtn; // user account profiles settings or what ?
 
         protected override void OnInitialize() {
             base.OnInitialize();
+
+            lgiBtn = GameObject.FindChildByName("lgiBtn").GetComponent<Button>();
+            lgiBtn.onClick.AddListener(OnClickLgiButton);
 
             creBtn = GameObject.FindChildByName("creBtn").GetComponent<Button>();
             creBtn.onClick.AddListener(OnClickCreButton);
@@ -65,6 +69,8 @@ namespace HotFix.UI {
 
         }
 
+        void OnClickLgiButton() { // LOGIN
+        }
         void OnClickCreButton() {
         }
         void OnClickRatButton() {
@@ -73,8 +79,7 @@ namespace HotFix.UI {
         }
         void OnClickAdsButton() {
         }
-        void OnClickLotButton() {
-            // ViewSetager.DesginView.Reveal();
+        void OnClickLotButton() { // LOGOUT
         }
         void OnClickSetButton() {
         }

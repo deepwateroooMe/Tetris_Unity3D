@@ -3,13 +3,23 @@
 #+author: deepwaterooo 
 
 * 游戏基本场景设计
-  
+- 到目前为止,游戏热更新程序域里的逻辑(除了挑战模式最后一关level 11还没怎么测试以外)算是基本连通,扫除了所有能够轻易察觉的bug
+- 接下来需要进行热更新域之外的工作: SettingsView用户帐户管理,登录等,热更新的服务器,安卓SDK打安卓包等,以及游戏上架google play store所有必须的准备工作.
+- 剩余的部分对自己还说才算是真正的挑战,基本都不曾自己亲自从来么尾地做过一遍.但所有的过程都有一第一遍.会每天逐步完成一些这个模块的内容,希望能够在一两个周之内把这所有剩余的工作做完.最难的是现在剩余不曾做过的这个部分,但最喜欢的也必须是这个学习的过程. 爱表哥,爱生活!!!
+- 对游戏的整体 UI 看起来的效果感觉不理想,除了moveCanvas四个按钮的那个图片可以做得好一点儿,rotateCanvas上六个按钮很不满意,不知道是否要考虑底层opengl c++ 再连一个dll域来画册(会要好好考虑一下怎么把那6个按键摆放得更体会玩家心态.)
+
 [[./pic/readme_20221119_113227.png]]
 - fix all idenfied bugs during modes switches and ILRuntime Hotfix callback delays.
   
 [[./pic/readme_20221115_220027.png]]
 - CHALLENGING MODE: ALL kinds of bugs awaiting to be fixed. will work on them tomorrow.
 - working on identified bugs.前几天估算时间的时候没有意识到之前自己的游戏逻辑并没有写完整,还是想尽快把挑战模式下的游戏逻辑按照原计划实现出相对理想的状态,这几天会把游戏逻辑补充完整,并尽量同步修复意识到的bug
+- *TODO:*
+- 要想个办法怎么把材质等相关加载到热更新程序域里去
+-  CHALLENGING mode paritcle system NOT integrated yet; materials and colors for CHALLENGING mode to be integrated.
+- 现在前两个模式的BUG已经修得差不多了,现在打很久可能才会遇见一个bug
+- 有时候,某个方块砖在某自旋转画面上延那个轴的两个按钮转不动, 现加必要的日志,改天再遇到,希望能把它们再遇到的BUG都改正过来
+  - Integrating challenging levels modes. 
 - 今天修改了几个BUG后能够意识到现从保存文件加载游戏进度中(主要是由启蒙和挑战模式下的撤销最后一块即使已经消除了的方块砖所引起的)所存在的诸多问题,想要重新走最原始的,就是用户想要撤销最后一块方块砖的时候,如果不曾有消除,只削除最后一块方块砖就可以了,如果有,就清理面板,再由保存文件从头加载
 - 因为几年前自己考虑游戏的逻辑的时候可能想得并不是很完整,所有会有很多逻辑上不合理的地方.现在游戏过程中能够意识到的逻辑问题,会尽力重构使游戏逻辑更合理.
 - 考虑热更新服务器该如何处理
@@ -32,13 +42,6 @@
 [[./pic/readme_20221106_092732.png]]
 
 [[./pic/readme_20221105_142752.png]]
-
-- *TODO:*
-- 要想个办法怎么把材质等相关加载到热更新程序域里去
--  CHALLENGING mode paritcle system NOT integrated yet; materials and colors for CHALLENGING mode to be integrated.
-- 现在前两个模式的BUG已经修得差不多了,现在打很久可能才会遇见一个bug
-- 有时候,某个方块砖在某自旋转画面上延那个轴的两个按钮转不动, 现加必要的日志,改天再遇到,希望能把它们再遇到的BUG都改正过来
-  - Integrating challenging levels modes. 
   
 [[./pic/readme_20221104_102732.png]]
 
