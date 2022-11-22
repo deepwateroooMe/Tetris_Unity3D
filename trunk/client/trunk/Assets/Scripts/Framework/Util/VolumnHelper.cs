@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Framework.Util {
 
 // 这里想先用个最简单的做法: 不打安卓JAVA .AAR包,或是C++ JNI DLLSO 包    
-    public class VolumnHelper {
+    public class VolumnHelper { // 这个类的问题是:可能不能写成这样的静态方法,而应该是可以实例化的,可以挂在控件上的,搬进HotFixILRuuntime.cs 里去
         private const string TAG = "VolumnHelper";
 
 // 这里可能还需要再判断一下平台:因为目前我仍是在PC端在运行程序        
