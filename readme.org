@@ -3,6 +3,13 @@
 #+author: deepwaterooo 
 
 * 游戏基本场景设计
+- debug current problems: 现从unity直接安装的应用,手机上是空屏,感觉是游戏的第一个场景加载不成功,原因包括:
+  - 我用android 26构建工具运行在android 12 api 31上.没有用31的构建工具是因为项目中引用了众多的库,现在测试知道可行的,必须用java 8和安卓26的构建工具
+  - 另一个需要深入理解和测试的方案是unity导出为安卓工程,第一个场景仍是空场景
+  - 那么我热更新域项目中没有真正涉及和管理的关于场景加载的部分,我需要把这部分再弄懂弄透.在editor中运行不涉及这个部分,我想当然地以为unity打包安装后也会自动运行这第一个主场景
+  - 等弄出一个可以我安卓手机上真正运行的游戏之后,会赶快实现一个安卓SDK,同时搜索寻找服务器的可行解决方案(这个服务器对自己来说是了最难的知识版块,因为不曾涉及过)
+- 等把接各种SDK做熟了,可以把现有的录屏功能加进游戏里
+- 安卓SDK: 对我来说,现在这个相对比较容易,因为以前做过,现在有机会再自己从头到尾做一遍,是整体上巩固知识的过程;
 - finally I am able to build unity apk using android-api level 26 and install in my Android 12 phone. but Not running well yet. Adding android-31, and will try to get it runnable on my phone tomorrow, test basic Volume android calls, work on Android SDK implementation. meanwhile, try to get hotfix server ideas clear.  
 - 到目前为止,游戏热更新程序域里的逻辑(除了挑战模式最后一关level 11还没怎么测试以外)算是基本连通,扫除了所有能够轻易察觉的bug
 - 接下来需要进行热更新域之外的工作: SettingsView用户帐户管理,登录等,热更新的服务器,安卓SDK打安卓包等,以及游戏上架google play store所有必须的准备工作.
