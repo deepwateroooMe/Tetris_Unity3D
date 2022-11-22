@@ -39,7 +39,8 @@ namespace HotFix.UI {
                         EventManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
                         AudioManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
                         ModelMono.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
-
+                        VolumeManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
+                        
                         var viewRect = viewRoot.AddComponent<RectTransform>();
                         viewRect.SetParent(UI2DRoot.transform, false);
                         viewRect.sizeDelta = new Vector2(0, 0);

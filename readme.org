@@ -3,6 +3,7 @@
 #+author: deepwaterooo 
 
 * 游戏基本场景设计
+- finally I am able to build unity apk using android-api level 26 and install in my Android 12 phone. but Not running well yet. Adding android-31, and will try to get it runnable on my phone tomorrow, test basic Volume android calls, work on Android SDK implementation. meanwhile, try to get hotfix server ideas clear.  
 - 到目前为止,游戏热更新程序域里的逻辑(除了挑战模式最后一关level 11还没怎么测试以外)算是基本连通,扫除了所有能够轻易察觉的bug
 - 接下来需要进行热更新域之外的工作: SettingsView用户帐户管理,登录等,热更新的服务器,安卓SDK打安卓包等,以及游戏上架google play store所有必须的准备工作.
 - 剩余的部分对自己还说才算是真正的挑战,基本都不曾自己亲自从来么尾地做过一遍.但所有的过程都有一第一遍.会每天逐步完成一些这个模块的内容,希望能够在一两个周之内把这所有剩余的工作做完.最难的是现在剩余不曾做过的这个部分,但最喜欢的也必须是这个学习的过程. 爱表哥,爱生活!!!
