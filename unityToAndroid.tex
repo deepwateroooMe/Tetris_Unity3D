@@ -1,4 +1,4 @@
-% Created 2022-11-23 Wed 22:09
+% Created 2022-11-24 Thu 10:18
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -39,7 +39,7 @@
 \item 大致过程记一下,用作参考,原理还没有吃透,细节又比较多,容易忘记.作个笔记记一下,给自己用作参考
 \end{itemize}
 
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_212322.png}
+\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_222322.png}
 \begin{itemize}
 \item 下面是2019年的版本可以打出两个文件夹,一个主工程,一个类库的导出包,2017年我用的版本打不出来,还需要想得再深一点多点儿,到可以按照这个笔记过程打包才行
 \end{itemize}
@@ -48,19 +48,19 @@
 \subsection{首先新建一个Android项目}
 \label{sec-2-1}
 
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_212542.png}
+\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_222542.png}
 \begin{itemize}
 \item 包名Package name跟unity的包名设置成一致，unity包名一般是 \textbf{com.unity3d.player} 。包名不一致的话，我试过也可以实现，但是在调用的时候要指明包，容易混淆，可能还有其他的一些问题，个人也不是很清楚。推荐保持一致，避免麻烦。Android项目名Name等随意。
 \end{itemize}
 \subsection{将unity项目以Module的方式导入Android}
 \label{sec-2-2}
 
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_212637.png}
+\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_222637.png}
 
 \subsection{选择unityLibrary导入。点击Finish}
 \label{sec-2-3}
 
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_212720.png}
+\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_222720.png}
 \subsection{导入之后，为Android添加unityLibrary的引用}
 \label{sec-2-4}
 \begin{itemize}
@@ -68,7 +68,7 @@
 \item 选择Dependencies  ——>  app ，然后点击右边这个加号 + ，选择第三个Moudule Dependency
 \end{itemize}
 
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_220455.png}
+\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_220755.png}
 \begin{itemize}
 \item 勾选刚刚导入的unity，点击OK。再点击上图的OK。
 \end{itemize}
@@ -93,7 +93,7 @@ android:process=":raadidcard"
 \end{minted}
 \end{itemize}
 
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_213229.png}
+\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_223227.png}
 \subsection{在app的AndroidMainfest.xml文件里，在图中位置加入这两行代码：}
 \label{sec-3-2}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
@@ -138,7 +138,7 @@ tools:replace="android:icon,android:theme,android:allowBackup"
 \end{minted}
 \end{itemize}
 
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_213646.png}
+\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_223757.png}
 
 \subsection{在app的build.gradle里加入这行代码。}
 \label{sec-3-3}
@@ -148,7 +148,7 @@ ndk {
 }
 \end{minted}
 
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_213842.png}
+\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_223842.png}
 \subsection{在app的main->res->values->strings.xml里加入这行代码}
 \label{sec-3-4}
 \begin{itemize}
@@ -156,15 +156,11 @@ ndk {
 \begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
 <string name="game_view_content_description">Game view</string>
 \end{minted}
-\end{itemize}
-
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_214020.png}
-\begin{itemize}
 \item 进行这两步操作的原因是，我在运行到手机时，他显示硬件不支持或者闪退。加入上面两个代码后就可以正常启动unity。
 \item 我个人认为真正起作用的是上上一步关于手机架构的设置的ndk那三行,与上面字符串无关,应该是无关的
 \end{itemize}
 
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_215409.png}
+\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_225409.png}
 
 \subsection{点击按钮启动unity(画蛇添足)}
 \label{sec-3-5}
@@ -180,7 +176,7 @@ ndk {
     android:text="Show Unity"/>
 \end{minted}
 
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_214251.png}
+\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_223751.png}
 \begin{itemize}
 \item MainActivity.cs 里的回调设置
 \end{itemize}
@@ -198,12 +194,24 @@ btn.setOnClickListener(new View.OnClickListener() {
     });
 \end{minted}
 
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_214852.png}
+\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_223852.png}
+\subsection{在build.gradle中申明包裹类名称}
+\label{sec-3-6}
+\begin{itemize}
+\item 说是现在在AndroidManifest.xml里申明包裹名称已经过时了,要在配置文件里申明,于是我在这里申明的:
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{groovy}
+android {
+    namespace 'com.unity3d.player'
+}
+\end{minted}
+
+\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221124_090438.png}
 
 \section{启动运行}
 \label{sec-4}
 
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_215517.png}
+\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_225517.png}
 
 \section{那么现在就是说:安卓SDK与unity的交互与打包基本没有问题了}
 \label{sec-5}
@@ -212,5 +220,22 @@ btn.setOnClickListener(new View.OnClickListener() {
 \item 过程中遇到过,还会遇到很多不懂的问题,比如同样的某些android studio里加android:exported="true"各种标签等,如果只用unity打包,该如何实现呢?两套不同的打包机制都得弄明白.但都是这么一个学习的过程,不会被轻易挫败.
 \item 相比之下,安卓SDK的实现极其简单,可以放在后面,等这些疑难杂症都解决放心了,再去写简单一点儿的
 \end{itemize}
+\subsection{FATAL EXCEPTION: main}
+\label{sec-5-1}
+
+\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221124_101807.png}
+\begin{itemize}
+\item 这个没有再出现了,根据这里改的:\url{https://forum.unity.com/threads/android-crashes-after-update-project-to-unity-2020-3-9f.1126979/}
+\item 但是游戏的界面仍然是渲染不出来,还在找原因
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{java}
+@Override protected void onDestroy () {
+    Log.d(TAG, "onDestroy() ");
+    // mUnityPlayer.destroy();
+    mUnityPlayer.removeAllViews();
+    mUnityPlayer.quit();
+    super.onDestroy();
+}
+\end{minted}
 % Emacs 27.2 (Org mode 8.2.7c)
 \end{document}

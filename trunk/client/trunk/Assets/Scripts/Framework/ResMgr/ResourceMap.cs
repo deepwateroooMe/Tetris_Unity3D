@@ -13,6 +13,7 @@ namespace Framework.ResMgr {
 
     // 按需加载
     public class ResourceMap : MonoBehaviour, IResourceLoader {
+        private const string TAG = "ResourceMap"; 
 
         // 静态实例，在是游戏程序集，但是借助公用接口，这个实例用样作为引用借给热更新程序集调用相关函数获取资源等
         static ResourceMap _instance; 
@@ -95,6 +96,7 @@ namespace Framework.ResMgr {
         }
         // 从资源服务器下载bundleList
         void DownLoadServerResourceList() {
+            Debug.Log(TAG + " DownLoadServerResourceList() (!GameApplication.Instance.useLocal): " + (!GameApplication.Instance.useLocal));
             if (!GameApplication.Instance.useLocal) { // 如果有热更新服务器可供热更新的话
                 // Debug.Log("DownLoadServerResourceList");
                 string url = Path.Combine(ResourceConstant.RemoteAssetBundleUrl, "AssetBundleList.txt");
@@ -112,6 +114,7 @@ namespace Framework.ResMgr {
                 }, 3);
             } else { // 如果没有或是不是热更新服务器,则把本地资源再遍历检查一遍
                 string text = FileHelp.ReadString("AssetBundleList.txt");
+                Debug.Log(TAG + " text: " + text);
                 if (!string.IsNullOrEmpty(text)) {
                     AnalysisResourceList(text, EAssetBunbleSourceType.Server);
                 }
@@ -138,6 +141,7 @@ namespace Framework.ResMgr {
                     DebugHelper.LogError("fileInfo error! fileInfo: " + fileInfos[i]);
                 }
             }
+            Debug.Log(TAG + " AnalysisResourceList() assetBundleSpecs.Count: " + assetBundleSpecs.Count);
         }
 #endregion
 #region Util

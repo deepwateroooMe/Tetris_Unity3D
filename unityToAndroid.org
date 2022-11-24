@@ -81,7 +81,7 @@ tools:replace="android:icon,android:theme,android:allowBackup"
 </manifest>
   #+END_SRC 
 
-[[./pic/unityToAndroid_20221123_223727.png]]
+[[./pic/unityToAndroid_20221123_223757.png]]
 
 ** 在app的build.gradle里加入这行代码。
    #+begin_SRC xml
@@ -96,8 +96,6 @@ ndk {
    #+begin_SRC xml
 <string name="game_view_content_description">Game view</string>
    #+END_SRC 
-   
-[[./pic/unityToAndroid_20221123_224027.png]]
 - 进行这两步操作的原因是，我在运行到手机时，他显示硬件不支持或者闪退。加入上面两个代码后就可以正常启动unity。
 - 我个人认为真正起作用的是上上一步关于手机架构的设置的ndk那三行,与上面字符串无关,应该是无关的
   
@@ -131,6 +129,15 @@ btn.setOnClickListener(new View.OnClickListener() {
 #+END_SRC
 
 [[./pic/unityToAndroid_20221123_223852.png]]
+** 在build.gradle中申明包裹类名称
+- 说是现在在AndroidManifest.xml里申明包裹名称已经过时了,要在配置文件里申明,于是我在这里申明的:
+#+BEGIN_SRC groovy
+android {
+    namespace 'com.unity3d.player'
+}
+#+END_SRC
+
+[[./pic/unityToAndroid_20221124_090438.png]]
 
 * 启动运行
   
@@ -140,9 +147,17 @@ btn.setOnClickListener(new View.OnClickListener() {
 - 但对自己更大的挑战是:为什么unity里一个空物件挂载到热更新的过程,我打包之后在安卓手机上运行不出来,仍需要时间debug这个过程
 - 过程中遇到过,还会遇到很多不懂的问题,比如同样的某些android studio里加android:exported="true"各种标签等,如果只用unity打包,该如何实现呢?两套不同的打包机制都得弄明白.但都是这么一个学习的过程,不会被轻易挫败.
 - 相比之下,安卓SDK的实现极其简单,可以放在后面,等这些疑难杂症都解决放心了,再去写简单一点儿的
-
-
-
-
-
-
+** FATAL EXCEPTION: main
+   
+[[./pic/unityToAndroid_20221124_101807.png]]
+- 这个没有再出现了,根据这里改的:https://forum.unity.com/threads/android-crashes-after-update-project-to-unity-2020-3-9f.1126979/
+- 但是游戏的界面仍然是渲染不出来,还在找原因 
+#+BEGIN_SRC java
+@Override protected void onDestroy () {
+    Log.d(TAG, "onDestroy() ");
+    // mUnityPlayer.destroy();
+    mUnityPlayer.removeAllViews();
+    mUnityPlayer.quit();
+    super.onDestroy();
+}
+#+END_SRC 
