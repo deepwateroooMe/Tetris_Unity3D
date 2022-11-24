@@ -3,7 +3,7 @@ using UnityEngine;
 using Framework.ResMgr;
 using Framework.Util;
 using System.Json;
-using cn.sharesdk.unity3d;
+//using cn.sharesdk.unity3d;
 //using cn.sharesdk.unity3d;
 //using cn.sharesdk.unity3d;
 
@@ -41,10 +41,10 @@ namespace Framework.Core {
         }
         
 // google, hotmail, LinkedIn facebook etc        
-        public ShareSDK ShareSDK { // 这只是一个微信登录的 单微信 第三方接入的库
-            get;
-            private set;
-        }
+        //public ShareSDK ShareSDK { // 这只是一个微信登录的 单微信 第三方接入的库
+        //    get;
+        //    private set;
+        //}
         void Awake() {
             _instance = this;
 
@@ -54,7 +54,7 @@ namespace Framework.Core {
 
             DontDestroyOnLoad(gameObject);
             // InitializeClientConfig();
-            InitializeSDKs(); // 可是这里仍然只是多一步登录的步骤,并不该影响热更新域的加载,这是可能会涉及到一点儿服务端的授权许可热更新域的加载?
+            //InitializeSDKs(); // 可是这里仍然只是多一步登录的步骤,并不该影响热更新域的加载,这是可能会涉及到一点儿服务端的授权许可热更新域的加载?
             CoroutineHelper.StartCoroutine(Initialize());
 #region TestSamples
             // FingerEventTemp.Instance.RegisterGestureEvents();
@@ -81,25 +81,25 @@ namespace Framework.Core {
                 }
             }
         }
-        void InitializeSDKs() {
-            if (Application.platform == RuntimePlatform.IPhonePlayer || Application.platform == RuntimePlatform.Android) 
-                InitializeShareSDK();
-        }
-        void InitializeShareSDK() {
-            ShareSDK = GetComponent<ShareSDK>();
-            ShareSDK.authHandler = AuthResultHandler;
-            ShareSDK.Authorize(PlatformType.WeChat);
-        }
-        // ShareSDK执行授权回调: 这里因为需要接入不同的SDK, 所以这里暂时再等一等再来实现
-        void AuthResultHandler(int reqID, ResponseState state, PlatformType type, Hashtable result) {
-            if (state == ResponseState.Success) {
-                Debug.Log("ShareSDK authorize success!");
-            } else if (state == ResponseState.Fail) {
-                Debug.Log("fail! error code = " + result["error_code"] + "; error msg = " + result["error_msg"]);
-            } else if (state == ResponseState.Cancel) {
-                Debug.Log("cancel!");
-            }
-        }
+        //void InitializeSDKs() {
+        //    if (Application.platform == RuntimePlatform.IPhonePlayer || Application.platform == RuntimePlatform.Android) 
+        //        InitializeShareSDK();
+        //}
+        //void InitializeShareSDK() {
+        //    ShareSDK = GetComponent<ShareSDK>();
+        //    ShareSDK.authHandler = AuthResultHandler;
+        //    ShareSDK.Authorize(PlatformType.WeChat);
+        //}
+        //// ShareSDK执行授权回调: 这里因为需要接入不同的SDK, 所以这里暂时再等一等再来实现
+        //void AuthResultHandler(int reqID, ResponseState state, PlatformType type, Hashtable result) {
+        //    if (state == ResponseState.Success) {
+        //        Debug.Log("ShareSDK authorize success!");
+        //    } else if (state == ResponseState.Fail) {
+        //        Debug.Log("fail! error code = " + result["error_code"] + "; error msg = " + result["error_msg"]);
+        //    } else if (state == ResponseState.Cancel) {
+        //        Debug.Log("cancel!");
+        //    }
+        //}
 
         IEnumerator Initialize() {
             ResourceMap resourceMap = gameObject.AddComponent<ResourceMap>();

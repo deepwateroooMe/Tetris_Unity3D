@@ -7,7 +7,7 @@ using ILRuntime.Runtime.Intepreter;
 using ILRuntime.Runtime.Stack;
 using System;
 using System.Collections.Generic;
-using TMPro;
+//using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -72,7 +72,7 @@ namespace Framework.Core {
             appDomain.DelegateManager.RegisterMethodDelegate<object, MessageArgs<ILTypeInstance>>();
             appDomain.DelegateManager.RegisterMethodDelegate<GameObject>();
             appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Networking.UnityWebRequest>();
-            appDomain.DelegateManager.RegisterMethodDelegate<TMP_FontAsset>();
+            //appDomain.DelegateManager.RegisterMethodDelegate<TMP_FontAsset>();
             appDomain.DelegateManager.RegisterMethodDelegate<Font>();
             appDomain.DelegateManager.RegisterMethodDelegate<AnimationClip>();
             appDomain.DelegateManager.RegisterMethodDelegate<AnimatorOverrideController>();

@@ -6,7 +6,7 @@ using System;
 using System.Linq;
 using System.Text;
 using System.Collections;
-using TMPro;
+//using TMPro;
 using Framework.Core;
 
 namespace Framework.ResMgr {
@@ -164,17 +164,17 @@ namespace Framework.ResMgr {
                 return null;
             }
         }
-        public TMPro.TMP_FontAsset LoadTMP_FontAsset(string bundleName, string assetName, 
-                                               EAssetBundleUnloadLevel unloadLevel = 
-                                               EAssetBundleUnloadLevel.ChangeSceneOver) {
-            string finalBundleName = GetFinalBundleName(bundleName);
-            if (assetBundleSpecs.ContainsKey(finalBundleName)) {
-                return assetBundleSpecs[finalBundleName].LoadTMP_FontAsset(assetName, unloadLevel);
-            } else {
-                DebugHelper.LogError("ResourceMap not contains " + finalBundleName, true);
-                return null;
-            }
-        }
+        //public TMPro.TMP_FontAsset LoadTMP_FontAsset(string bundleName, string assetName, 
+        //                                       EAssetBundleUnloadLevel unloadLevel = 
+        //                                       EAssetBundleUnloadLevel.ChangeSceneOver) {
+        //    string finalBundleName = GetFinalBundleName(bundleName);
+        //    if (assetBundleSpecs.ContainsKey(finalBundleName)) {
+        //        return assetBundleSpecs[finalBundleName].LoadTMP_FontAsset(assetName, unloadLevel);
+        //    } else {
+        //        DebugHelper.LogError("ResourceMap not contains " + finalBundleName, true);
+        //        return null;
+        //    }
+        //}
         public Font LoadFont(string bundleName, string assetName, 
                              EAssetBundleUnloadLevel unloadLevel = 
                              EAssetBundleUnloadLevel.ChangeSceneOver) {
@@ -309,15 +309,15 @@ namespace Framework.ResMgr {
             assetLoader.unloadLevel = unloadLevel;
             AddAssetLoaderToLoadQueue(assetLoader, unloadLevel, isForceInterrupLoad);
         }
-        public void LoadTMP_FontAssetAsyn(string bundleName, string assetName, Action<TMP_FontAsset> loadOver, 
-                                          EAssetBundleUnloadLevel unloadLevel, bool isForceInterrupLoad = false) {
-            AssetLoader<TMP_FontAsset> assetLoader = new AssetLoader<TMP_FontAsset>();
-            assetLoader.bundleName = bundleName.ToLower();
-            assetLoader.assetName = assetName;
-            assetLoader.onLoadOver = loadOver;
-            assetLoader.unloadLevel = unloadLevel;
-            AddAssetLoaderToLoadQueue(assetLoader, unloadLevel, isForceInterrupLoad);
-        }
+        //public void LoadTMP_FontAssetAsyn(string bundleName, string assetName, Action<TMP_FontAsset> loadOver, 
+        //                                  EAssetBundleUnloadLevel unloadLevel, bool isForceInterrupLoad = false) {
+        //    AssetLoader<TMP_FontAsset> assetLoader = new AssetLoader<TMP_FontAsset>();
+        //    assetLoader.bundleName = bundleName.ToLower();
+        //    assetLoader.assetName = assetName;
+        //    assetLoader.onLoadOver = loadOver;
+        //    assetLoader.unloadLevel = unloadLevel;
+        //    AddAssetLoaderToLoadQueue(assetLoader, unloadLevel, isForceInterrupLoad);
+        //}
         public void LoadFontAsyn(string bundleName, string assetName, Action<Font> loadOver, 
                                  EAssetBundleUnloadLevel unloadLevel, bool isForceInterrupLoad = false) {
             AssetLoader<Font> assetLoader = new AssetLoader<Font>();
