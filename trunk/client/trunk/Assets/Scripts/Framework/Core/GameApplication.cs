@@ -11,7 +11,8 @@ using System.Json;
 namespace Framework.Core {
     // 入口类
     public class GameApplication : MonoBehaviour {
-        
+        private const string TAG = "GameApplication"; 
+
         private static GameApplication _instance;
         public static GameApplication Instance {
             get {
@@ -46,6 +47,7 @@ namespace Framework.Core {
         //    private set;
         //}
         void Awake() {
+            Debug.Log(TAG + " Awake()");
             _instance = this;
 
 // 这里相当于是自己实现了射线检测，是否点击中某个UI上控件的按钮，比如最开始第一屏的“开始游戏”等。＝＝＞　去追到这个按钮的回调过程            
@@ -112,6 +114,7 @@ namespace Framework.Core {
 
         }
         public void StartHotFix() {
+            Debug.Log(TAG + " StartHotFix()");
             if (Application.platform == RuntimePlatform.IPhonePlayer) {
                 HotFix = HotFixILRunTime.Instance;
             } else {
@@ -124,3 +127,4 @@ namespace Framework.Core {
         }
     }
 }
+

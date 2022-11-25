@@ -7,6 +7,7 @@
    
 [[./pic/unityToAndroid_20221123_222322.png]]
 - 下面是2019年的版本可以打出两个文件夹,一个主工程,一个类库的导出包,2017年我用的版本打不出来,还需要想得再深一点多点儿,到可以按照这个笔记过程打包才行
+- 原始自己参考的项目是用2017版本的,当时没有吃透这里面的构建关系,当时以为只能用2017的unity和2017的Visual Studio才能开发.现在知道2019的版本能够导出自己可以调试的Android Studio项目,而unity 2017版本的导出来自己还仍不知道该如何从Android Studio打包,那么就暂时先用2019的版本,先试图打出在安卓设备上可运行的包,才能move on.
 * Android创建、unity导入
 ** 首先新建一个Android项目 
     
@@ -143,6 +144,30 @@ android {
   
 [[./pic/unityToAndroid_20221123_225517.png]]
 
+* Android Studio 类库中重复类的修复
+  
+[[./pic/unityToAndroid_20221124_221720.png]]
+- 如果新导入的依赖库发生了 Duplicate class android.xx.xx 这种类型的报错可能就是两个库导入了重复的类，这时候只需要把build.gradle中新导入的依赖做如下处理
+  #+begin_SRC xml
+implementation ('com.xxx.xxx.xx:xx:1.0.0'){
+    exclude group: "com.xxxx.xxxx"
+}
+  #+END_SRC 
+- 上面这个方法我还没有试.下面的试过了可行
+- 对，就是把新导入的依赖库的后面加上大括号并把重复导入包名填入相应的位置就可以解决了，有时候可能会好几个依赖库都重复了，这就比较难判断了
+- 1.把MiyataOpenUISdk-1.0.2.aar改后缀成zip，得到解压后的MiyataOpenUISdk-1.0.2文件夹，里面包含classes.jar和res等。
+  
+[[./pic/unityToAndroid_20221124_221954.png]]
+- 2.同理把classes.jar改后缀成zip，解压后得到classes文件夹，找到冲突的包，直接删除整个文件夹，如图
+- 3.使用jar命令重新对classes文件夹打包成jar ,并替换掉之前的classes.jar。
+#+begin_SRC shell
+jar cvf classes.jar -C classes/ .
+#+END_SRC 
+- 4.同理，使用jar命令重新对MiyataOpenUISdk-1.0.2文件夹打包成aar ,得到的newMiyataOpenUISdk.aar即可使用。
+#+begin_SRC shell
+ jar cvf com.android.support.support-compat-26.1.0.aar -C com.android.support.support-compat-26.1.0/ .
+#+END_SRC 
+
 * 那么现在就是说:安卓SDK与unity的交互与打包基本没有问题了
 - 但对自己更大的挑战是:为什么unity里一个空物件挂载到热更新的过程,我打包之后在安卓手机上运行不出来,仍需要时间debug这个过程
 - 过程中遇到过,还会遇到很多不懂的问题,比如同样的某些android studio里加android:exported="true"各种标签等,如果只用unity打包,该如何实现呢?两套不同的打包机制都得弄明白.但都是这么一个学习的过程,不会被轻易挫败.
@@ -160,4 +185,63 @@ android {
     mUnityPlayer.quit();
     super.onDestroy();
 }
+#+END_SRC 
+** 安卓Android Studio库包中有依赖的库包的解决方案 7.2.2
+   #+BEGIN_SRC tex
+Direct local .aar file dependencies are not supported when building an AAR.
+   #+END_SRC 
+- 在高版本的AndroidStudio并且使用了版本的gradle出现了上述问题可以按着如下引用
+*** 在你工程根目录下新建一个文件夹 *unitylibs* ，将你的aar文件放入，然后在该目录下新建一个build.gradle文件
+    
+[[./pic/unityToAndroid_20221124_161335.png]]
+*** 在settings.gradle 导入该工程
+    #+begin_SRC xml
+include ':unitylibs
+    #+END_SRC 
+    
+[[./pic/unityToAndroid_20221124_161424.png]]
+*** 在你需要依赖的工程里面的build.gradle中增加依赖
+- // 这里需要注意的是，unitylibs是你aar库所在文件夹
+    #+begin_SRC xml
+implementation project(path: ':unitylibs') 
+    #+END_SRC 
+
+[[./pic/unityToAndroid_20221124_162337.png]]
+- 当然如果你有很多aar库，那么你需要在根目录创建一个LocalRepo目录，然后将你不同的aar库放在不同文件夹下。在setting.gradle分别导入
+- 下面它是这么说的,可是我都把它们放在同一个类库里,看不行的话再移.为什么每个包都需要一个单独的类库呢?解偶多个不同包之间的依赖性?加载时的内存性能影响等?
+
+** 类库包里的错误的修复问题
+- 现在还不是很懂,或是还没有经历狠好地锻炼怎么改类库包里的错误,晚点儿再理会这些
+  
+[[./pic/unityToAndroid_20221124_163004.png]]
+- 先只把这些有错误的类库包不连上
+
+* 安卓设备上资源包的存放位置,以及是否本地存放有需要的资源包
+  
+[[./pic/unityToAndroid_20221124_135846.png]]
+
+  #+BEGIN_SRC tex
+Application.dataPath             /data/app/package name-1/base.apk
+Application.streamingAssetsPath jar:file:///data/app/package name-1/base.apk!/assets
+Application.temporaryCachePath  /storage/emulated/0/Android/data/package name/cache
+Application.persistentDataPath  /storage/emulated/0/Android/data/package name/files
+  #+END_SRC 
+- 看Android上的路径，跟iOS有点类似，简单说一下。Android的几个目录是apk程序包、内存存储(InternalStorage)和外部存储(ExternalStorage)目录。
+- *apk程序包目录*: apk的安装路径，/data/app/package name-n/base.apk，dataPath就是返回此目录。
+- *内部存储目录*: /data/data/package name-n/，用户自己或其它app都不能访问该目录。打开会发现里面有4个目录（需要root）
+-     cache 缓存目录，类似于iOS的Cache目录
+-     databases 数据库文件目录
+-     files 类似于iOS的Documents目录
+-     shared_prefs 类似于iOS的Preferences目录，用于存放常用设置，比如Unity3D的PlayerPrefs就存放于此
+- 外部存储目录: 在内置或外插的sd上，用户或其它app都可以访问，外部存储目录又分私有和公有目录。
+-     公有目录是像DCIM、Music、Movies、Download这样系统创建的公共目录，当然你也可以像微信那样直接在sd卡根目录创建一个文件夹。好处嘛，就是卸载app数据依旧存在。
+-     私有目录在/storage/emulated/n/Android/data/package name/，打开可以看到里面有两个文件夹cache和files。为什么跟内部存储目录重复了？这是为了更大的存储空间，以防内存存储空间较小。推荐把不需要隐私的、较大的数据存在这里，而需要隐私的或较小的数据存在内部存储空间。
+- 下面是各路径对应的Java访问方法：
+  - apk包内: AssetManager.open(String filename)
+  - 内部存储: context.getFilesDir().getPath() or context.getCacheDir().getPath()
+  - 外部存储: context.getExternalFilesDir(null).getPath() or context.getExternalCacheDir().getPath()
+理解了Android存储的原理，最后来说说开头提到的bug，Application.temporaryCachePath/persistentDataPath返回空字符串。这其实因为权限的原因，app没有声明访问外部存储空间的权限，但是Application.temporaryCachePath/ ApplicationpersistentDataPath却想返回外部存储的路径。这是Unity3D的bug，没有权限本应该抛出一个异常或者错误，让开发者知道原因。
+- 经反复测试发现，有【外置SD卡】的设备上，如果声明读/写外部存储设备的权限，会返回外部存储路径，不声明则会返回内部存储路径，这样不会有问题。而在【无外置SD卡】的设备上，不管是否声明读/写外部存储设备的权限，Application.temporaryCachePath/persistentDataPath都返回外部存储路径，但是又没有权限，就可能会导致返回null了，之所以说可能是因为这个bug不是必现，如果出现了设备重启之后就好了，怀疑是linux设备mount问题。但是出了问题，我们不能跟用户说你重启一下手机就好了。
+#+begin_SRC xml
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 #+END_SRC 
