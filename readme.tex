@@ -1,4 +1,4 @@
-% Created 2022-11-19 Sat 11:37
+% Created 2022-11-25 Fri 17:58
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -35,6 +35,34 @@
 
 \section{游戏基本场景设计}
 \label{sec-1}
+\begin{itemize}
+\item 安卓SDK 设计: 这个项目可以略去SDK的设计与实现,因为加入一个SDK,将不得不需要将主菜单界面移出热更新域,放在unity程序域里,会改变现有的游戏架构(绝大部分((99.99\%的游戏逻辑都放在热更新域里可以随时热更新)): 程序的逻辑只有一个热更新域的入口,且只进不出.会不会造成什么问题,可能还有20\%感觉还没有想透,但是有一个安卓SDK是很方便,也很帮忙的,很想要实现一下
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221125_173637.png}
+\begin{itemize}
+\item 如上图所示,需要把热更新域里的菜单主办面提出热更新域,放主程序里,作为安卓SDK与热更新域交互的的桥梁
+\item 安卓相关的,或普通游戏逻辑相关的,包装入安卓SDK,比如安卓音量控制,电池电量提醒,登录登出,给游戏打分等,网络访问?
+\item 其实游戏逻辑仍放在热更新域里
+\item 从这次打包进安卓来看,其实很简单,但自己仍然走了很多的弯路才最终可以打出一个可运行的安卓包来,某些自己不够熟悉的可能需要花点儿时间
+\item 也就是说,接下来自己最不主熟悉的领域,热更新的服务器,将会成为自己最大的挑战,我会倾向于上午上网查些相关资料,理清逻辑,希望能够实现一个至少逻辑功能上相对完整的热更新服务器,但要花点时间,.这个过程可能会比较长
+\item 所以,这个过程中,下午和晚上的时间希望自己还是能够好好实现一个安卓SDK,并将现游戏按照上面的大体设计完成
+\item 从今天晚上把游戏菜单界面连接等相关的改bug开始,就开始打一个安卓SDK好了.服务器有没有思路,过一个周左右再更新.从今天晚上开始,接下来就写安卓SDK的封装
+\item debug current problems: 现从unity直接安装的应用,手机上是空屏,感觉是游戏的第一个场景加载不成功,原因包括:
+\begin{itemize}
+\item 我用android 26构建工具运行在android 12 api 31上.没有用31的构建工具是因为项目中引用了众多的库,现在测试知道可行的,必须用java 8和安卓26的构建工具
+\item 另一个需要深入理解和测试的方案是unity导出为安卓工程,第一个场景仍是空场景
+\item 那么我热更新域项目中没有真正涉及和管理的关于场景加载的部分,我需要把这部分再弄懂弄透.在editor中运行不涉及这个部分,我想当然地以为unity打包安装后也会自动运行这第一个主场景
+\item 等弄出一个可以我安卓手机上真正运行的游戏之后,会赶快实现一个安卓SDK,同时搜索寻找服务器的可行解决方案(这个服务器对自己来说是了最难的知识版块,因为不曾涉及过)
+\end{itemize}
+\item 等把接各种SDK做熟了,可以把现有的录屏功能加进游戏里
+\item 安卓SDK: 对我来说,现在这个相对比较容易,因为以前做过,现在有机会再自己从头到尾做一遍,是整体上巩固知识的过程;
+\item finally I am able to build unity apk using android-api level 26 and install in my Android 12 phone. but Not running well yet. Adding android-31, and will try to get it runnable on my phone tomorrow, test basic Volume android calls, work on Android SDK implementation. meanwhile, try to get hotfix server ideas clear.
+\item 到目前为止,游戏热更新程序域里的逻辑(除了挑战模式最后一关level 11还没怎么测试以外)算是基本连通,扫除了所有能够轻易察觉的bug
+\item 接下来需要进行热更新域之外的工作: SettingsView用户帐户管理,登录等,热更新的服务器,安卓SDK打安卓包等,以及游戏上架google play store所有必须的准备工作.
+\item 剩余的部分对自己还说才算是真正的挑战,基本都不曾自己亲自从来么尾地做过一遍.但所有的过程都有一第一遍.会每天逐步完成一些这个模块的内容,希望能够在一两个周之内把这所有剩余的工作做完.最难的是现在剩余不曾做过的这个部分,但最喜欢的也必须是这个学习的过程. 爱表哥,爱生活!!!
+\item 对游戏的整体 UI 看起来的效果感觉不理想,除了moveCanvas四个按钮的那个图片可以做得好一点儿,rotateCanvas上六个按钮很不满意,不知道是否要考虑底层opengl c++ 再连一个dll域来画册(会要好好考虑一下怎么把那6个按键摆放得更体会玩家心态.)
+\end{itemize}
 
 \includegraphics[width=.9\linewidth]{./pic/readme_20221119_113227.png}
 \begin{itemize}
@@ -45,6 +73,14 @@
 \begin{itemize}
 \item CHALLENGING MODE: ALL kinds of bugs awaiting to be fixed. will work on them tomorrow.
 \item working on identified bugs.前几天估算时间的时候没有意识到之前自己的游戏逻辑并没有写完整,还是想尽快把挑战模式下的游戏逻辑按照原计划实现出相对理想的状态,这几天会把游戏逻辑补充完整,并尽量同步修复意识到的bug
+\item \textbf{TODO:}
+\item 要想个办法怎么把材质等相关加载到热更新程序域里去
+\item CHALLENGING mode paritcle system NOT integrated yet; materials and colors for CHALLENGING mode to be integrated.
+\item 现在前两个模式的BUG已经修得差不多了,现在打很久可能才会遇见一个bug
+\item 有时候,某个方块砖在某自旋转画面上延那个轴的两个按钮转不动, 现加必要的日志,改天再遇到,希望能把它们再遇到的BUG都改正过来
+\begin{itemize}
+\item Integrating challenging levels modes.
+\end{itemize}
 \item 今天修改了几个BUG后能够意识到现从保存文件加载游戏进度中(主要是由启蒙和挑战模式下的撤销最后一块即使已经消除了的方块砖所引起的)所存在的诸多问题,想要重新走最原始的,就是用户想要撤销最后一块方块砖的时候,如果不曾有消除,只削除最后一块方块砖就可以了,如果有,就清理面板,再由保存文件从头加载
 \item 因为几年前自己考虑游戏的逻辑的时候可能想得并不是很完整,所有会有很多逻辑上不合理的地方.现在游戏过程中能够意识到的逻辑问题,会尽力重构使游戏逻辑更合理.
 \item 考虑热更新服务器该如何处理
@@ -72,17 +108,6 @@
 \includegraphics[width=.9\linewidth]{./pic/readme_20221106_092732.png}
 
 \includegraphics[width=.9\linewidth]{./pic/readme_20221105_142752.png}
-
-\begin{itemize}
-\item \textbf{TODO:}
-\item 要想个办法怎么把材质等相关加载到热更新程序域里去
-\item CHALLENGING mode paritcle system NOT integrated yet; materials and colors for CHALLENGING mode to be integrated.
-\item 现在前两个模式的BUG已经修得差不多了,现在打很久可能才会遇见一个bug
-\item 有时候,某个方块砖在某自旋转画面上延那个轴的两个按钮转不动, 现加必要的日志,改天再遇到,希望能把它们再遇到的BUG都改正过来
-\begin{itemize}
-\item Integrating challenging levels modes.
-\end{itemize}
-\end{itemize}
 
 \includegraphics[width=.9\linewidth]{./pic/readme_20221104_102732.png}
 

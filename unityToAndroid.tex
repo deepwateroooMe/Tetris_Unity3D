@@ -1,4 +1,4 @@
-% Created 2022-11-25 Fri 17:21
+% Created 2022-11-25 Fri 17:26
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -355,6 +355,9 @@ implementation project(path: ':unitylibs')
 
 \section{安卓设备上资源包的存放位置,以及是否本地存放有需要的资源包}
 \label{sec-8}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{text}
+This PC\HEYAN's S10+\Internal storage\Android\data\com.defaultcompany.trunk\files
+\end{minted}
 
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221124_135846.png}
 
@@ -389,5 +392,21 @@ Application.persistentDataPath  /storage/emulated/0/Android/data/package nam
 \begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 \end{minted}
+
+\section{some commands use as reference for later debugging}
+\label{sec-9}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{shell}
+tac log1.log | awk '!flag; /11-25 15:56:00/{flag = 1};' | tac > cur.log
+
+grep -nE "FATAL EXCEPTION:" log1.log
+
+grep -nE "com.unity3d.player|UnityPlayerActivity|GameApplication" cur.log > tmp.log
+
+grep -nE "com.unity3d.player | UnityPlayerActivity" cur.log
+
+grep -nE "com.defaultcompany.trunk | UnityPlayerActivity" cur.log
+\end{minted}
+
+\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221125_172601.png}
 % Emacs 27.2 (Org mode 8.2.7c)
 \end{document}

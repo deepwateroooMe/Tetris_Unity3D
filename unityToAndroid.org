@@ -252,7 +252,10 @@ implementation project(path: ':unitylibs')
 - 先只把这些有错误的类库包不连上
 
 * 安卓设备上资源包的存放位置,以及是否本地存放有需要的资源包
-  
+  #+BEGIN_SRC text
+This PC\HEYAN's S10+\Internal storage\Android\data\com.defaultcompany.trunk\files
+  #+END_SRC
+
 [[./pic/unityToAndroid_20221124_135846.png]]
 
   #+BEGIN_SRC tex
@@ -280,3 +283,18 @@ Application.persistentDataPath  /storage/emulated/0/Android/data/package nam
 #+begin_SRC xml
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 #+END_SRC 
+
+* some commands use as reference for later debugging 
+  #+BEGIN_SRC shell
+tac log1.log | awk '!flag; /11-25 15:56:00/{flag = 1};' | tac > cur.log
+
+grep -nE "FATAL EXCEPTION:" log1.log
+
+grep -nE "com.unity3d.player|UnityPlayerActivity|GameApplication" cur.log > tmp.log
+
+grep -nE "com.unity3d.player | UnityPlayerActivity" cur.log
+
+grep -nE "com.defaultcompany.trunk | UnityPlayerActivity" cur.log
+  #+END_SRC
+  
+[[./pic/unityToAndroid_20221125_172601.png]]
