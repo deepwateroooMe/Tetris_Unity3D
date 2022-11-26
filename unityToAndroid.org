@@ -168,10 +168,69 @@ jar cvf classes.jar -C classes/ .
  jar cvf com.android.support.support-compat-26.1.0.aar -C com.android.support.support-compat-26.1.0/ .
 #+END_SRC 
 
+* 安卓Android Studio库包中有依赖的库包的解决方案 7.2.2
+   #+BEGIN_SRC tex
+Direct local .aar file dependencies are not supported when building an AAR.
+   #+END_SRC 
+- 在高版本的AndroidStudio并且使用了版本的gradle出现了上述问题可以按着如下引用
+** 比较好一点的,是如下:在项目的根目录的build.gradle里申明类库unityLibrary的依赖的文件路径就可找到
+#+begin_SRC xml
+allprojects {
+  buildscript {
+      repositories {
+          google()
+          jcenter()
+      }
+
+      dependencies {
+          classpath 'com.android.tools.build:gradle:7.2.2'
+      }
+  }
+
+  repositories {
+      google()
+      jcenter()
+     flatDir {
+         dirs "${project(':unityLibrary').projectDir}/libs"
+     }
+  }
+}
+
+task clean(type: Delete) {
+  delete rootProject.buildDir
+}
+#+END_SRC
+
+[[./pic/unityToAndroid_20221125_144439.png]]
+
+** 下面的只是一种解决方案,可能还不是很好
+** 在你工程根目录下新建一个文件夹 *unitylibs* ，将你的aar文件放入，然后在该目录下新建一个build.gradle文件
+    
+[[./pic/unityToAndroid_20221124_161335.png]]
+** 在settings.gradle 导入该工程
+    #+begin_SRC xml
+include ':unitylibs
+    #+END_SRC 
+    
+[[./pic/unityToAndroid_20221124_161424.png]]
+** 在你需要依赖的工程里面的build.gradle中增加依赖
+- // 这里需要注意的是，unitylibs是你aar库所在文件夹
+    #+begin_SRC xml
+implementation project(path: ':unitylibs') 
+    #+END_SRC 
+
+[[./pic/unityToAndroid_20221124_162337.png]]
+- 当然如果你有很多aar库，那么你需要在根目录创建一个LocalRepo目录，然后将你不同的aar库放在不同文件夹下。在setting.gradle分别导入
+- 下面它是这么说的,可是我都把它们放在同一个类库里,看不行的话再移.为什么每个包都需要一个单独的类库呢?解偶多个不同包之间的依赖性?加载时的内存性能影响等?
+
 * 那么现在就是说:安卓SDK与unity的交互与打包基本没有问题了
-- 但对自己更大的挑战是:为什么unity里一个空物件挂载到热更新的过程,我打包之后在安卓手机上运行不出来,仍需要时间debug这个过程
+- This PC\HEYAN's S10+\Internal storage\Android\data\com.defaultcompany.trunk\files
+  
+[[./pic/unityToAndroid_20221125_171932.png]]
+
+- 但对自己更大的挑战是:为什么unity里一个空物件挂载到热更新的过程,我打包之后在安卓手机上运行不出来,仍需要时间debug这个过程(呵呵,前面昨天还是前天已经想到问题的原因,不到因为探讨其它的想法,直到今天傍晚刚才整个过程才理通.不过目前仍是用unity直接到包,还有许多其它的细节小问题需要解决)
 - 过程中遇到过,还会遇到很多不懂的问题,比如同样的某些android studio里加android:exported="true"各种标签等,如果只用unity打包,该如何实现呢?两套不同的打包机制都得弄明白.但都是这么一个学习的过程,不会被轻易挫败.
-- 相比之下,安卓SDK的实现极其简单,可以放在后面,等这些疑难杂症都解决放心了,再去写简单一点儿的
+- 相比之下,安卓SDK的实现极其简单,可以放在后面
 ** FATAL EXCEPTION: main
    
 [[./pic/unityToAndroid_20221124_101807.png]]
@@ -186,30 +245,6 @@ jar cvf classes.jar -C classes/ .
     super.onDestroy();
 }
 #+END_SRC 
-** 安卓Android Studio库包中有依赖的库包的解决方案 7.2.2
-   #+BEGIN_SRC tex
-Direct local .aar file dependencies are not supported when building an AAR.
-   #+END_SRC 
-- 在高版本的AndroidStudio并且使用了版本的gradle出现了上述问题可以按着如下引用
-*** 在你工程根目录下新建一个文件夹 *unitylibs* ，将你的aar文件放入，然后在该目录下新建一个build.gradle文件
-    
-[[./pic/unityToAndroid_20221124_161335.png]]
-*** 在settings.gradle 导入该工程
-    #+begin_SRC xml
-include ':unitylibs
-    #+END_SRC 
-    
-[[./pic/unityToAndroid_20221124_161424.png]]
-*** 在你需要依赖的工程里面的build.gradle中增加依赖
-- // 这里需要注意的是，unitylibs是你aar库所在文件夹
-    #+begin_SRC xml
-implementation project(path: ':unitylibs') 
-    #+END_SRC 
-
-[[./pic/unityToAndroid_20221124_162337.png]]
-- 当然如果你有很多aar库，那么你需要在根目录创建一个LocalRepo目录，然后将你不同的aar库放在不同文件夹下。在setting.gradle分别导入
-- 下面它是这么说的,可是我都把它们放在同一个类库里,看不行的话再移.为什么每个包都需要一个单独的类库呢?解偶多个不同包之间的依赖性?加载时的内存性能影响等?
-
 ** 类库包里的错误的修复问题
 - 现在还不是很懂,或是还没有经历狠好地锻炼怎么改类库包里的错误,晚点儿再理会这些
   
