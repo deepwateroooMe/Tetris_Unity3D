@@ -59,6 +59,15 @@ namespace Framework.Core {
         public object CreateInstance(string typeName) {
             return Activator.CreateInstance(LoadType(typeName));
         }
+        public void startEducational() {
+            //DoStaticMethod("HotFix.HotFixMain", "startEducational");
+        }
+        public void startClassical() {
+            //DoStaticMethod("HotFix.HotFixMain", "startClassical");
+        }
+        public void startChallenging() {
+            //DoStaticMethod("HotFix.HotFixMain", "startChallenging");
+        }
 #endregion
     }
 }

@@ -39,7 +39,7 @@ namespace HotFix.UI {
                         EventManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
                         AudioManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
                         ModelMono.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
-                        VolumeManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
+                        // VolumeManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
                         
                         var viewRect = viewRoot.AddComponent<RectTransform>();
                         viewRect.SetParent(UI2DRoot.transform, false);
@@ -49,7 +49,7 @@ namespace HotFix.UI {
                         viewRect.pivot = new Vector2(0.5f, 0.5f);
 
                         // GloData.Instance.gameMode.Value = -1; 
-                        ShowStartPanel(); 
+                        // ShowStartPanel(); // 这里不要它再显示什么
                     }, EAssetBundleUnloadLevel.Never);
             ResourceHelper
                 .LoadCloneAsyn(
@@ -181,10 +181,10 @@ namespace HotFix.UI {
                     view.Hide();
         }
 
-        static void ShowStartPanel() {
-            MenuView.Reveal();
-            SettingsView.Reveal();
-        }
+        // static void ShowStartPanel() {
+        //     MenuView.Reveal();
+        //     SettingsView.Reveal();
+        // }
 
 #region Other
         static bool isOverUI = false;

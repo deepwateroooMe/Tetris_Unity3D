@@ -34,6 +34,8 @@ namespace Framework.Core {
         // 强制登录
         public bool forceLogin = false;
 
+        private GameObject menu;
+        
 // 手指的触屏系统相关的逻辑晚点儿再补: 当分处在两个不同的程序域，热更新程序域里是无法检测到用户的点击事件的，
 // 所以这个手势识别库包用来判定视图上点击触摸事件的程序包必须得包装给热更新程序域使用
         public ScreenRaycaster ScreenRaycaster { // 这个包裹里还有两个没能适配的小BUG,可能会出问题，到时再解决　Handle.CircleCap() ==> Handle.CircleHandleCap()
@@ -49,7 +51,9 @@ namespace Framework.Core {
         void Awake() {
             Debug.Log(TAG + " Awake()");
             _instance = this;
-
+            menu = GameObject.Find("menu");
+            Debug.Log(TAG + " (menu != null): " + (menu != null));
+            menu.SetActive(false);
 // 这里相当于是自己实现了射线检测，是否点击中某个UI上控件的按钮，比如最开始第一屏的“开始游戏”等。＝＝＞　去追到这个按钮的回调过程            
 // 这里有点儿没有弄明白，这个的启动过程和起作用的过程细节是什么样的？？？
             ScreenRaycaster = GameObject.Find("Gestures").GetComponent<ScreenRaycaster>();
@@ -115,6 +119,7 @@ namespace Framework.Core {
         }
         public void StartHotFix() {
             Debug.Log(TAG + " StartHotFix()");
+            menu.SetActive(true);
             if (Application.platform == RuntimePlatform.IPhonePlayer) {
                 HotFix = HotFixILRunTime.Instance;
             } else {
@@ -127,4 +132,3 @@ namespace Framework.Core {
         }
     }
 }
-

@@ -39,11 +39,6 @@ namespace Framework.Core {
             // ILRuntime.Runtime.Generated.CLRBindings.Initialize(appDomain);
         }
         
-		void StartApplication() {
-            InitializeILRunTimeHotFixSetting();
-            DoStaticMethod("HotFix.HotFixMain", "Start");
-        }
-
         void InitializeILRunTimeHotFixSetting() {
             InitializeDelegateSetting();
             InitializeCLRBindSetting();
@@ -196,9 +191,24 @@ namespace Framework.Core {
             var staticMethod = hotfixType.GetMethod(method, 0);
             return appDomain.Invoke(staticMethod, null, null);
         }
-
+		void StartApplication() {
+            InitializeILRunTimeHotFixSetting();
+            DoStaticMethod("HotFix.HotFixMain", "Start");
+        }
 // IHotFixMain 里的两个方法的实现         
 #region Override
+        public void startEducational() {
+            Debug.Log(TAG + " startEducational");
+            DoStaticMethod("HotFix.HotFixMain", "startEducational");
+        }
+        public void startClassical() {
+            Debug.Log(TAG + " startClassical");
+            DoStaticMethod("HotFix.HotFixMain", "startClassical");
+        }
+        public void startChallenging() {
+            Debug.Log(TAG + " startChallenging");
+            DoStaticMethod("HotFix.HotFixMain", "startChallenging");
+        }
         public Type LoadType(string typeName) {
             if (appDomain.LoadedTypes.ContainsKey(typeName)) {
                 return appDomain.LoadedTypes[typeName].ReflectionType;
