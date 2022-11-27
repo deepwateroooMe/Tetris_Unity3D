@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /usr/local/Cellar/mono/4.8.1.0/bin/mono $MONO_OPTIONS /usr/local/Cellar/mono/4.8.1.0/lib/mono/4.5/pdb2mdb.exe "$@"

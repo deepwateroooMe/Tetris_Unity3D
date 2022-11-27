@@ -119,7 +119,7 @@ namespace Framework.Core {
         }
         public void StartHotFix() {
             Debug.Log(TAG + " StartHotFix()");
-            menu.SetActive(true);
+            menu.SetActive(true); // 为了点一个按钮测试一下
             if (Application.platform == RuntimePlatform.IPhonePlayer) {
                 HotFix = HotFixILRunTime.Instance;
             } else {

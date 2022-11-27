@@ -19,6 +19,9 @@ namespace HotFix.UI {
             CreateBaseUI();
         }
         static void CreateBaseUI() {
+            Debug.Log(TAG + " CreateBaseUI()");
+            Debug.Log(TAG + " (Application.platform == RuntimePlatform.Android): " + (Application.platform == RuntimePlatform.Android));
+            //Debug.Log(TAG + " UNITY_ANDROID: " + UNITY_ANDROID);
             ResourceHelper
                 .LoadCloneAsyn(
                     "ui/ui2droot",
@@ -39,8 +42,15 @@ namespace HotFix.UI {
                         EventManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
                         AudioManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
                         ModelMono.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
-                        // VolumeManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
-                        
+
+                        // if (Application.platform == RuntimePlatform.Android) {
+                        //     Debug.Log(TAG + " CreateBaseUI() 0 VolumeManager.Instance.gameObject.transform.SetParent()");
+                        //     VolumeManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
+                        // }
+// #if UNITY_ANDROID //&& !UNITY_EDITOR
+//                         Debug.Log(TAG + " CreateBaseUI() VolumeManager.Instance.gameObject.transform.SetParent()");
+//                         VolumeManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
+// #endif                        
                         var viewRect = viewRoot.AddComponent<RectTransform>();
                         viewRect.SetParent(UI2DRoot.transform, false);
                         viewRect.sizeDelta = new Vector2(0, 0);
@@ -182,6 +192,7 @@ namespace HotFix.UI {
         }
 
         static void ShowStartPanel() {
+            Debug.Log(TAG + " ShowStartPanel()");
             MenuView.Reveal();
             SettingsView.Reveal();
         }

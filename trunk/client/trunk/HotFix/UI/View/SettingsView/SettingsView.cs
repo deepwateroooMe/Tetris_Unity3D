@@ -75,10 +75,11 @@ namespace HotFix.UI {
             sndSdr = GameObject.FindChildByName("volSdr").GetComponent<Slider>(); // 这个滑动条有一些相关的事件需要处理
 // 所以最简单的办法,实现一个安卓SDK,将此界面同样地(实际上是音量控制安卓原生相关功能模块移植到SDK中去,这里不再保留)定义在安卓中,调用安卓中的Activity来显示或调控音量.那么如果这样,就涉及到热更新域(或者大一点儿Unity,但热更新域比起普通游戏unity里会更难一点儿)与安卓SDK的相互调用与传值,需要一个真心强大的安卓SDK(或是说安卓SDK与热更新域的相互调用),活宝妹也狠强大,爱表哥,爱生活!!!
 // // TODO:现在的问题就是:以不写SDK的形式加入,无法转化到安卓平台测试这个prototype;所以还是接个比较完整的安卓SDK会比较方便
-            maxVol = VolumeManager.Instance.getMaxVolume();
+            maxVol = VolumeManager.getMaxVolume();
             Debug.Log(TAG + " OnInitialize() maxVol: " + maxVol);
-            curVol = VolumeManager.Instance.getCurrentVolume();
+            curVol = VolumeManager.getCurrentVolume();
             Debug.Log(TAG + " OnInitialize() curVol: " + curVol);
+            VolumeManager.setVolume(50);
         }
 
         void OnClickLgiButton() { // LOGIN

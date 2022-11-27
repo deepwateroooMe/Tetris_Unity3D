@@ -1,0 +1,1018 @@
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: FATAL EXCEPTION: main
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: Process: com.defaultcompany.trunk, PID: 18741
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: java.lang.RuntimeException: Unable to instantiate activity ComponentInfo{com.defaultcompany.trunk/com.deepwaterooo.dwsdk.MainActivity}: java.lang.ClassNotFoundException: Didn't find class "com.deepwaterooo.dwsdk.MainActivity" on path: DexPathList[[zip file "/data/app/~~ZhGsGAJBdoFaGA3TnBg7LA==/com.defaultcompany.trunk-HivSdVddD5b33--E7l5zHA==/base.apk"],nativeLibraryDirectories=[/data/app/~~ZhGsGAJBdoFaGA3TnBg7LA==/com.defaultcompany.trunk-HivSdVddD5b33--E7l5zHA==/lib/arm, /data/app/~~ZhGsGAJBdoFaGA3TnBg7LA==/com.defaultcompany.trunk-HivSdVddD5b33--E7l5zHA==/base.apk!/lib/armeabi-v7a, /system/lib, /system/system_ext/lib]]
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3914)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:4201)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:103)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:135)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:95)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2438)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:226)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:313)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:8663)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:567)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1135)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: Caused by: java.lang.ClassNotFoundException: Didn't find class "com.deepwaterooo.dwsdk.MainActivity" on path: DexPathList[[zip file "/data/app/~~ZhGsGAJBdoFaGA3TnBg7LA==/com.defaultcompany.trunk-HivSdVddD5b33--E7l5zHA==/base.apk"],nativeLibraryDirectories=[/data/app/~~ZhGsGAJBdoFaGA3TnBg7LA==/com.defaultcompany.trunk-HivSdVddD5b33--E7l5zHA==/lib/arm, /data/app/~~ZhGsGAJBdoFaGA3TnBg7LA==/com.defaultcompany.trunk-HivSdVddD5b33--E7l5zHA==/base.apk!/lib/armeabi-v7a, /system/lib, /system/system_ext/lib]]
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	at dalvik.system.BaseDexClassLoader.findClass(BaseDexClassLoader.java:218)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	at java.lang.ClassLoader.loadClass(ClassLoader.java:379)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	at java.lang.ClassLoader.loadClass(ClassLoader.java:312)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	at android.app.AppComponentFactory.instantiateActivity(AppComponentFactory.java:95)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	at android.app.Instrumentation.newActivity(Instrumentation.java:1273)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:3901)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	... 12 more
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	Suppressed: java.lang.NoClassDefFoundError: Failed resolution of: Landroidx/appcompat/app/AppCompatActivity;
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 		at java.lang.VMClassLoader.findLoadedClass(Native Method)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 		at java.lang.ClassLoader.findLoadedClass(ClassLoader.java:738)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 		at java.lang.ClassLoader.loadClass(ClassLoader.java:363)
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 		... 16 more
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 	Caused by: java.lang.ClassNotFoundException: androidx.appcompat.app.AppCompatActivity
+11-26 18:41:25.756 18741 18741 E AndroidRuntime: 		... 19 more
+11-26 18:41:25.758 30379 30871 I SAMSUNGWALLET: [ResetData] getSAResetDialogFlag : false
+11-26 18:41:25.760 30379 30871 I SAMSUNGWALLET: [Hint_d] isHomePackageRunning topPkgName = com.defaultcompany.trunk, topClsName = com.deepwaterooo.dwsdk.MainActivity, return false , se : false
+11-26 18:41:25.761 30379 30379 I SAMSUNGWALLET: [ServiceTypeTable] isSupportOperator : VZW, US
+11-26 18:41:25.761 30379 30379 I SAMSUNGWALLET: [ServiceTypeTable] Upgrade - ServiceTypeTable - entryFromCountryIso - index is : 101, iso : US
+11-26 18:41:25.761 30379 30379 I SAMSUNGWALLET: [Hint_IntroHintService] Hint Status - already invisible, skip hide : [4000000] - Home Package Not Running
+11-26 18:41:25.761  1115  4587 D InputDispatcher: Focus left window (0): 62ee612 com.sec.android.app.launcher/com.sec.android.app.launcher.activities.LauncherActivity
+11-26 18:41:25.761  2680  2680 I ViewRootImpl@635960b[LauncherActivity]: MSG_WINDOW_FOCUS_CHANGED 0 1
+11-26 18:41:25.762  2680  2680 I BaseActivity: removeActivityFlags, flags : 8
+11-26 18:41:25.762  1999  2252 I BufferQueueProducer: [ViewRootImpl@93efde3[trunk]#556(BLAST Consumer)556](id:7cf0000022c,api:1,p:1999,c:1999) queueBuffer: queued for the first time.
+11-26 18:41:25.763  1115 18774 I DropBoxManagerService: add tag=data_app_crash isTagEnabled=true flags=0x2
+11-26 18:41:25.766  1999  2081 I ViewRootImpl@93efde3[trunk]: [DP] pdf(0) 0 android.view.ViewRootImpl.lambda$addFrameCompleteCallbackIfNeeded$3$ViewRootImpl:4969 android.view.ViewRootImpl$$ExternalSyntheticLambda16.run:6 android.os.Handler.handleCallback:938 
+11-26 18:41:25.766  1999  2081 I ViewRootImpl@93efde3[trunk]: [DP] rdf()
+11-26 18:41:25.766  1999  2081 D ViewRootImpl@93efde3[trunk]: reportDrawFinished (fn: -1) 
+11-26 18:41:25.766  1115  4587 D WindowManager: finishDrawingWindow: Window{c045e4d u0 Splash Screen com.defaultcompany.trunk} mDrawState=DRAW_PENDING
+11-26 18:41:25.766  1115  1461 D WindowManager: performShow logReadyForDisplay  mToken.waitingToShow:true isTransitionSet:true
+11-26 18:41:25.767  1115  1461 D TaskOrganizerController: Task appeared taskId=3580
+11-26 18:41:25.767  1115  1461 D WindowManager: createAnimationAdapter(): container=Task{ed3f101 #1 type=home ?? U=0 visible=false mode=fullscreen translucent=true sz=1}
+11-26 18:41:25.767  1115  1461 I WindowManager: Reparenting to leash, surface=Surface(name=Task=1)/@0xc822f5e, leashParent=Surface(name=DefaultTaskDisplayArea)/@0xdda5962
+11-26 18:41:25.768  1999  1999 D FullscreenTaskListener: Fullscreen Task Appeared: #3580, caller=com.android.wm.shell.ShellTaskOrganizer.onTaskAppeared:387 com.android.wm.shell.ShellTaskOrganizer.onTaskAppeared:376 android.window.TaskOrganizer$1.lambda$onTaskAppeared$4$TaskOrganizer$1:297 
+11-26 18:41:25.768   940  3148 I SurfaceFlinger: id=17426 createSurf (0x0),-1 flag=24000, Surface(name=Task=1)/@0xc822f5e - animation-leash of app_transition#0
+11-26 18:41:25.769  1115  1461 D WindowManager: makeSurface duration=2 leash=Surface(name=Surface(name=Task=1)/@0xc822f5e - animation-leash of app_transition)/@0x217d46b
+11-26 18:41:25.769  1115  1461 D WindowManager: startAnimation
+11-26 18:41:25.769  1115  1461 D WindowManager: createAnimationAdapter(): container=Task{367b211 #3580 type=standard A=10737:com.defaultcompany.trunk U=0 visible=true mode=fullscreen translucent=false sz=1}
+11-26 18:41:25.769  1115  1461 I WindowManager: Reparenting to leash, surface=Surface(name=Task=3580)/@0xca03bc8, leashParent=Surface(name=DefaultTaskDisplayArea)/@0xdda5962
+11-26 18:41:25.769   940  3148 I SurfaceFlinger: id=17427 createSurf (0x0),-1 flag=24004, Surface(name=Task=3580)/@0xca03bc8 - animation-leash of app_transition#0
+11-26 18:41:25.770  1115  1461 D WindowManager: makeSurface duration=1 leash=Surface(name=Surface(name=Task=3580)/@0xca03bc8 - animation-leash of app_transition)/@0xdd4c47
+11-26 18:41:25.770  1115  1461 D WindowManager: startAnimation
+11-26 18:41:25.770  1115  1461 D WindowManager: goodToGo()
+11-26 18:41:25.770  1115  1461 D WindowManager: createAppAnimations()
+11-26 18:41:25.770  1115  1461 D WindowManager: 	Add container=Task{367b211 #3580 type=standard A=10737:com.defaultcompany.trunk U=0 visible=true mode=fullscreen translucent=false sz=1}
+11-26 18:41:25.771  1115  1461 D WindowManager: 	Add container=Task{ed3f101 #1 type=home ?? U=0 visible=false mode=fullscreen translucent=true sz=1}
+11-26 18:41:25.771  1115  1461 D WindowManager: createWallpaperAnimations()
+11-26 18:41:25.771  1115  1461 D WindowManager: 	visible=WallpaperWindowToken{d16ff53 token=android.os.Binder@fe69342}
+11-26 18:41:25.771  1115  1461 I WindowManager: Reparenting to leash, surface=Surface(name=WallpaperWindowToken{d16ff53 token=android.os.Binder@fe69342})/@0x878856, leashParent=Surface(name=Leaf:0:1)/@0xdc370d7
+11-26 18:41:25.771   940  3148 I SurfaceFlinger: id=17428 createSurf (0x0),-1 flag=24000, Surface(name=WallpaperWindowToken{d16ff53 token=android.os.Binder@fe69342})/@0x878856 - animation-leash of window_animation#0
+11-26 18:41:25.771  1115  1461 D WindowManager: makeSurface duration=1 leash=Surface(name=Surface(name=WallpaperWindowToken{d16ff53 token=android.os.Binder@fe69342})/@0x878856 - animation-leash of window_animation)/@0x62a3a12
+11-26 18:41:25.771  1115  1461 D WindowManager: startAnimation
+11-26 18:41:25.771  1115  1461 D WindowManager: createNonAppWindowAnimations()
+11-26 18:41:25.772  1115  1461 I WindowManager: Cancelling animation restarting=true, leash=Surface(name=Surface(name=13583cb StatusBar)/@0x336d7fd - animation-leash of insets_animation)/@0xcbde606
+11-26 18:41:25.772  1115  1461 I WindowManager: Reparenting to original parent: Surface(name=WindowToken{e42fe9a android.os.BinderProxy@2230bbc})/@0xed73cf2, destroy=false, surface=Surface(name=13583cb StatusBar)/@0x336d7fd
+11-26 18:41:25.772  1115  1461 I WindowManager: Reparenting to leash, surface=Surface(name=13583cb StatusBar)/@0x336d7fd, leashParent=Surface(name=WindowToken{e42fe9a android.os.BinderProxy@2230bbc})/@0xed73cf2
+11-26 18:41:25.772   940  3148 I SurfaceFlinger: id=17429 createSurf (0x0),-1 flag=24000, Surface(name=13583cb StatusBar)/@0x336d7fd - animation-leash of insets_animation#0
+11-26 18:41:25.772  1115  1461 D WindowManager: makeSurface duration=0 leash=Surface(name=Surface(name=13583cb StatusBar)/@0x336d7fd - animation-leash of insets_animation)/@0xa6de55e
+11-26 18:41:25.772  1115  1461 I WindowManager: Cancelling animation restarting=true, leash=Surface(name=Surface(name=234d322 NavigationBar0)/@0x398363e - animation-leash of insets_animation)/@0x5eb0af4
+11-26 18:41:25.772  1115  1461 I WindowManager: Reparenting to original parent: Surface(name=WindowToken{8b128ed android.os.BinderProxy@72b3b17})/@0xa4a2c9f, destroy=false, surface=Surface(name=234d322 NavigationBar0)/@0x398363e
+11-26 18:41:25.773  1115  1461 I WindowManager: Reparenting to leash, surface=Surface(name=234d322 NavigationBar0)/@0x398363e, leashParent=Surface(name=WindowToken{8b128ed android.os.BinderProxy@72b3b17})/@0xa4a2c9f
+11-26 18:41:25.773   940  3148 I SurfaceFlinger: id=17430 createSurf (0x0),-1 flag=24000, Surface(name=234d322 NavigationBar0)/@0x398363e - animation-leash of insets_animation#0
+11-26 18:41:25.773  1115  1461 D WindowManager: makeSurface duration=1 leash=Surface(name=Surface(name=234d322 NavigationBar0)/@0x398363e - animation-leash of insets_animation)/@0xa0e5b55
+11-26 18:41:25.774  1999  1999 D NavigationBar: onSystemBarAttributesChanged() -  displayId:0, appearance:24 (APPEARANCE_LIGHT_STATUS_BARS APPEARANCE_LIGHT_NAVIGATION_BARS ), navbarColorManagedByIme:false
+11-26 18:41:25.774  1999  1999 V Navbar.Store: handleEvent [EventType] GET_BOOL_REGION_SAMPLING_ENABLED [Module] LightBarController  KEYS_DEFAULT=false
+11-26 18:41:25.774  1999  1999 V Navbar.Store: --[Band]COLOR_PACK_GET_REGION_SAMPLING_ENABLED
+11-26 18:41:25.774  1999  1999 V Navbar.Store: ----getValue(BOOL_REGION_SAMPLING_ENABLED)=false
+11-26 18:41:25.774  1115  1460 D SGM:GameManager: identifyGamePackage. com.defaultcompany.trunk, mCurrentUserId: 0, callerUserId: 0, callingMethodInfo: com.android.server.ssrm.fgapps.GameAppUtils.isGame(GameAppUtils.java:84)
+11-26 18:41:25.774  1115  1460 D SGM:PkgDataHelper: getGamePkgData(). com.defaultcompany.trunk
+11-26 18:41:25.774  1115  1461 D WindowManager: RemoteAnimationController::onAnimationStart, animations=[Landroid.view.RemoteAnimationTarget;@c7aae5b
+11-26 18:41:25.774  1115  1461 D WindowManager: goodToGo(): onAnimationStart, transit=TRANSIT_OLD_WALLPAPER_CLOSE, apps=2, wallpapers=1, nonApps=0
+11-26 18:41:25.775  1115  1461 D WindowManager: startAnimation(): Notify animation start:
+11-26 18:41:25.775  1115  1461 I WindowManager: Starting remote animation
+11-26 18:41:25.775  1115  1461 I WindowManager: container=Task{367b211 #3580 type=standard A=10737:com.defaultcompany.trunk U=0 visible=true mode=fullscreen translucent=false sz=1}
+11-26 18:41:25.775  1115  1461 I WindowManager: Target:
+11-26 18:41:25.775  1115  1461 I WindowManager:   mode=0 taskId=3580 isTranslucent=false clipRect=[0,0][0,0] contentInsets=[0,142][0,168] prefixOrderIndex=23 position=[0,0] sourceContainerBounds=[0,0][1440,3040] screenSpaceBounds=[0,0][1440,3040] localBounds=[0,0][1440,3040]
+11-26 18:41:25.775  1115  1461 I WindowManager:   windowConfiguration={ mBounds=Rect(0, 0 - 1440, 3040) mAppBounds=Rect(0, 142 - 1440, 2872) mMaxBounds=Rect(0, 0 - 1440, 3040) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=standard mAlwaysOnTop=undefined mRotation=ROTATION_0 mPopOver=undefined mFreeformTaskPinningState=unpinned}
+11-26 18:41:25.775  1115  1461 I WindowManager:   leash=Surface(name=Surface(name=Task=3580)/@0xca03bc8 - animation-leash of app_transition)/@0xdd4c47
+11-26 18:41:25.775  1115  1461 I WindowManager:   taskInfo=TaskInfo{userId=0 taskId=3580 displayId=0 isRunning=true baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.defaultcompany.trunk/com.deepwaterooo.dwsdk.MainActivity } baseActivity=ComponentInfo{com.defaultcompany.trunk/com.deepwaterooo.dwsdk.MainActivity} topActivity=ComponentInfo{com.defaultcompany.trunk/com.deepwaterooo.dwsdk.MainActivity} origActivity=null realActivity=ComponentInfo{com.defaultcompany.trunk/com.deepwaterooo.dwsdk.MainActivity} numActivities=1 lastActiveTime=332423143 supportsSplitScreenMultiWindow=true supportsMultiWindow=true resizeMode=1 isResizeable=true token=WCT{RemoteToken{6be26f8 Task{367b211 #3580 type=standard A=10737:com.defaultcompany.trunk U=0 visible=true mode=fullscreen translucent=false sz=1}}} topActivityType=1 pictureInPictureParams=PictureInPictureParams( aspectRatio=null sourceRectHint=null hasSetActions=false isAutoPipEnabled=false isSeamlessResizeEnabled=true) displayCutoutSafeInsets=Rect(0, 142 - 0, 0) topActivityInfo=ActivityInfo{aa657d1 com.deepwaterooo.dwsdk.MainActivity} launchCookies=[android.os.BinderProxy@43b4236] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=true topActivityInSizeCompat=false locusId= null topLaunchHome=false launchSplitWindowingMode=0 isPairTask=false pairedTaskIds=[] pairWindowingMode=0 pairDockSide=0 isAnimatingByRecent=false originallySupportedSplitScreen=true isAnimatingFreeformToFullscreen=false topActivityInFixedAspectRatio=false isTopTransparentActivity=true}
+11-26 18:41:25.775  1115  1461 I WindowManager:   windowType=-1container=Task{ed3f101 #1 type=home ?? U=0 visible=false mode=fullscreen translucent=true sz=1}
+11-26 18:41:25.775  1115  1461 I WindowManager: Target:
+11-26 18:41:25.775  1115  1461 I WindowManager:   mode=1 taskId=3293 isTranslucent=false clipRect=[0,0][0,0] contentInsets=[0,142][0,168] prefixOrderIndex=20 position=[0,0] sourceContainerBounds=[0,0][1440,3040] screenSpaceBounds=[0,0][1440,3040] localBounds=[0,0][1440,3040]
+11-26 18:41:25.775  1115  1461 I WindowManager:   windowConfiguration={ mBounds=Rect(0, 0 - 1440, 3040) mAppBounds=Rect(0, 142 - 1440, 2872) mMaxBounds=Rect(0, 0 - 1440, 3040) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=home mAlwaysOnTop=undefined mRotation=ROTATION_0 mPopOver=undefined mFreeformTaskPinningState=unpinned}
+11-26 18:41:25.775  1115  1461 I WindowManager:   leash=Surface(name=Surface(name=Task=1)/@0xc822f5e - animation-leash of app_transition)/@0x217d46b
+11-26 18:41:25.775  1115  1461 I WindowManager:   taskInfo=TaskInfo{userId=0 taskId=3293 displayId=0 isRunning=true baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=com.sec.android.app.launcher/.activities.LauncherActivity } baseActivity=ComponentInfo{com.sec.android.app.launcher/com.sec.android.app.launcher.activities.LauncherActivity} topActivity=ComponentInfo{com.sec.android.app.launcher/com.android.launcher3.uioverrides.QuickstepLauncher} origActivity=ComponentInfo{com.sec.android.app.launcher/com.sec.android.app.launcher.activities.LauncherActivity} realActivity=ComponentInfo{com.sec.android.app.launcher/com.android.launcher3.uioverrides.QuickstepLauncher} numActivities=1 lastActiveTime=332423110 supportsSplitScreenMultiWindow=true supportsMultiWindow=true resizeMode=2 isResizeable=true token=WCT{RemoteToken{20bd3e2 Task{2d92c1e #3293 type=home A=10111:com.sec.android.app.launcher.activities.LauncherActivity U=0 rootTaskId=1 visible=false mode=fullscreen translucent=true sz=1}}} topActivityType=2 pictureInPictureParams=null displayCutoutSafeInsets=Rect(0, 142 - 0, 0) topActivityInfo=ActivityInfo{c644373 com.sec.android.app.launcher.activities.LauncherActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false topActivityInSizeCompat=false locusId= LocusId[17_chars] topLaunchHome=false launchSplitWindowingMode=0 isPairTask=false pairedTaskIds=[] pairWindowingMode=0 pairDockSide=0 isAnimatingByRecent=false originallySupportedSplitScreen=true isAnimatingFreeformToFullscreen=false topActivityInFixedAspectRatio=false isTopTransparentActivity=false}
+11-26 18:41:25.775  1115  1461 I WindowManager:   windowType=-1
+11-26 18:41:25.775  1999  1999 D SecLightBarControlHelper: updateStatus(BLACK icon) NumLightStacks:1, NumStacks:1, IndexLightStack:0, StatusBarMode:0, StatusBarState:SHD, NeedDarkFontFromWallpaper:false, isWhiteKeyguardStatusBarBySettings:false
+11-26 18:41:25.777  2680  2839 I QuickstepTransition: finishWaitingForResponse
+11-26 18:41:25.777  2680  2839 I LauncherAnimationRunner: onAnimationStart, appTargets : [Lcom.android.systemui.shared.system.RemoteAnimationTargetCompat;@9ee0e70 mStartAtFrontOfQueue : true
+11-26 18:41:25.777  2680  2680 I QuickstepTransition: AppLaunchAnimationRunner, onCreateAnimation
+11-26 18:41:25.777  2680  2680 W AppTransitionAnimatorImpl: animation with floating icon
+11-26 18:41:25.777  2680  2680 I FloatingIconView: drawable is not adaptive icon: true
+11-26 18:41:25.777  2680  2680 I RemoteAnimationTargets: unfilteredApps : [Lcom.android.systemui.shared.system.RemoteAnimationTargetCompat;@9ee0e70 apps : [Lcom.android.systemui.shared.system.RemoteAnimationTargetCompat;@9ee0e70 wallpapers : [Lcom.android.systemui.shared.system.RemoteAnimationTargetCompat;@e0f626e targetMode : 0 hasRecents : false
+11-26 18:41:25.777  2680  2680 W AppTransitionAnimatorImpl: onAnimationStart - APP IN
+11-26 18:41:25.777   940   940 I Layer   : id=17421 removedFromDrawingState Surface(name=234d322 NavigationBar0)/@0x398363e - animation-leash of insets_animation#1 (118)
+11-26 18:41:25.778   940   940 I Layer   : id=69 removedFromDrawingState 234d322 NavigationBar0#0 (118)
+11-26 18:41:25.778   940   940 I Layer   : id=81 removedFromDrawingState NavigationBar0$_1999#0 (118)
+11-26 18:41:25.778   940   940 I Layer   : id=17420 removedFromDrawingState Surface(name=13583cb StatusBar)/@0x336d7fd - animation-leash of insets_animation#1 (118)
+11-26 18:41:25.778   940   940 I Layer   : id=69 addToCurrentState 234d322 NavigationBar0#0 (118)
+11-26 18:41:25.778   940   940 I Layer   : id=81 addToCurrentState NavigationBar0$_1999#0 (118)
+11-26 18:41:25.778  2680  2680 I BadgeRenderer: Invalid count : 0
+11-26 18:41:25.778  2680  2680 I BadgeRenderer: Invalid count : 0
+11-26 18:41:25.778  1115  2617 V WindowManager: Relayout Window{4cdbd53 u0 NotificationShade}: viewVisibility=4 req=1440x3040 d0
+11-26 18:41:25.780  1115  2617 V WindowManager: Relayout hash=4cdbd53, pid=1999: mAttrs={(0,0)(fillxfill) gr=TOP CENTER_VERTICAL sim={adjust=resize} layoutInDisplayCutoutMode=always ty=2040 fmt=TRANSLUCENT
+11-26 18:41:25.780  1115  2617 V WindowManager:   fl=81840048
+11-26 18:41:25.780  1115  2617 V WindowManager:   pfl=1b000000
+11-26 18:41:25.780  1115  2617 V WindowManager:   vsysui=2000
+11-26 18:41:25.780  1115  2617 V WindowManager:   apr=LIGHT_STATUS_BARS
+11-26 18:41:25.780  1115  2617 V WindowManager:   bhv=SHOW_TRANSIENT_BARS_BY_SWIPE naviIconColor=0
+11-26 18:41:25.780  1115  2617 V WindowManager:   sfl=42000}
+11-26 18:41:25.780  2680  6098 I TouchInteractionService: onSystemUiStateChanged, stateFlags : 131072
+11-26 18:41:25.780  1115  1460 D SGM:GameManager: identifyGamePackage. com.defaultcompany.trunk, mCurrentUserId: 0, callerUserId: 0, callingMethodInfo: com.android.server.ssrm.SortingMachine.isGame(SortingMachine.java:162)
+11-26 18:41:25.780  1115  1460 D SGM:PkgDataHelper: getGamePkgData(). com.defaultcompany.trunk
+11-26 18:41:25.780  1999  1999 I ViewRootImpl@d8197b4[NotificationShade]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)4 dur=2 res=0x1 s={false 0} ch=false fn=-1
+11-26 18:41:25.781  1999  1999 D KeyguardBottomAreaShortcutView: updateCameraVisibility isCameraDisabled:false visible:true
+11-26 18:41:25.781  1999  1999 D KeyguardBottomAreaShortcutView: mIndicationArea margin start : 217, end : 217, bottom : 513
+11-26 18:41:25.782  1115  1460 D SGM:GameManager: noteResumeComponent(), received pkgName: com.defaultcompany.trunk, userId: 0
+11-26 18:41:25.782  1999  1999 D QS      : setQSExpansion 0.0 -157.325
+11-26 18:41:25.782  1999  1999 D QS      : setQSExpansion 0.0 -157.325
+11-26 18:41:25.782  1115  1460 I GameSDK@LifeCycle: noteResumeComponent(): package name  : com.defaultcompany.trunk
+11-26 18:41:25.783  1999  1999 D IndicatorGardenInputProperty: updateRotation() prv:-1 >> new:0
+11-26 18:41:25.783  1115  1795 D SGM:GameManager: onLooperPrepared(), msg: MSG_APP_RESUME, pkgName: com.defaultcompany.trunk, userid: 0
+11-26 18:41:25.783  1999  1999 D DeviceState: getDeviceResolutionPixelSize - currentDensity = 560 deviceDensity = 560 initialDisplaySizeFactor = 1440 currentDisplaySizeFactor = 1440 initialDisplayDensity = 560 proportionalDensity = 560 proportionalPixel = 75
+11-26 18:41:25.783  1115  1795 D SGM:GameManager: handleResume().
+11-26 18:41:25.783  1999  1999 D DeviceState: getDeviceResolutionPixelSize - currentDensity = 560 deviceDensity = 560 initialDisplaySizeFactor = 1440 currentDisplaySizeFactor = 1440 initialDisplayDensity = 560 proportionalDensity = 560 proportionalPixel = 34
+11-26 18:41:25.783  1115  1795 D SGM:GameManager:   handleResume(). same package with Prev KILL_YOURSELF. ignore
+11-26 18:41:25.783  1999  1999 D DeviceState: getDeviceResolutionPixelSize - currentDensity = 560 deviceDensity = 560 initialDisplaySizeFactor = 1440 currentDisplaySizeFactor = 1440 initialDisplayDensity = 560 proportionalDensity = 560 proportionalPixel = 32
+11-26 18:41:25.783  1115  1115 I CocktailBarManagerServiceContainer: handleMessage: entry what = 5
+11-26 18:41:25.784  1115  1460 D SGM:GameManager: identifyGamePackage. com.defaultcompany.trunk, mCurrentUserId: 0, callerUserId: 0, callingMethodInfo: com.samsung.android.game.SemGameManager.isGamePackage(SemGameManager.java:104)
+11-26 18:41:25.784  1115  1460 D SGM:PkgDataHelper: getGamePkgData(). com.defaultcompany.trunk
+11-26 18:41:25.784  1115  1460 D SGM:SemGameManager: isGamePackage(), pkgName=com.defaultcompany.trunk, ret=false
+11-26 18:41:25.784  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@ecd5146 fN = 151 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:25.784  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:25.784   940  3149 I SurfaceFlinger: id=17421 Removed Surface(name=234d322 NavigationBar0)/@0x398363e - animation-leash of insets_animation#1 (118)
+11-26 18:41:25.784  2680  2680 I TouchInteractionService: onSystemUiFlagsChanged, userUnlocked
+11-26 18:41:25.784   940  3149 I SurfaceFlinger: id=17420 Removed Surface(name=13583cb StatusBar)/@0x336d7fd - animation-leash of insets_animation#1 (118)
+11-26 18:41:25.785  1115  1460 D PowerManagerService: [api] setScreenDimDurationOverrideFromWindowManagerInternal: timeoutMillis: -1
+11-26 18:41:25.785  1115  2714 D Debug   : low && ship && 3rdparty app crash, do not dump
+11-26 18:41:25.785  1115  2714 W ActivityManager: crash : com.defaultcompany.trunk,10737
+11-26 18:41:25.785  1115  2714 W ContextImpl: Calling a method in the system process without a qualified user: android.app.ContextImpl.sendBroadcast:1242 com.android.server.am.AppErrors.crashApplicationInner:723 com.android.server.am.AppErrors.crashApplication:584 com.android.server.am.ActivityManagerService.handleApplicationCrashInner:9723 com.android.server.am.ActivityManagerService.handleApplicationCrash:9602 
+11-26 18:41:25.785  1115  2714 W ActivityTaskManager:   Force finishing activity com.defaultcompany.trunk/com.deepwaterooo.dwsdk.MainActivity
+11-26 18:41:25.785  1115  2714 W WindowManager: Prepare app transition: mNextAppTransitionRequests=[TRANSIT_CLOSE], mNextAppTransitionFlags=TRANSIT_FLAG_APP_CRASHED, displayId: 0 Callers=com.android.server.wm.DisplayContent.prepareAppTransition:6358 com.android.server.wm.Task.finishTopCrashedActivityLocked:8869 com.android.server.wm.RootWindowContainer.lambda$finishTopCrashedActivities$20:2776 com.android.server.wm.RootWindowContainer$$ExternalSyntheticLambda30.accept:10 com.android.server.wm.Task.forAllTasks:5185 
+11-26 18:41:25.785  1115  2714 W WindowManager: Prepare app transition: mNextAppTransitionRequests=[TRANSIT_CLOSE, TRANSIT_CLOSE], mNextAppTransitionFlags=TRANSIT_FLAG_APP_CRASHED, displayId: 0 Callers=com.android.server.wm.DisplayContent.prepareAppTransition:6358 com.android.server.wm.DisplayContent.requestTransitionAndLegacyPrepare:6373 com.android.server.wm.Task.finishTopCrashedActivityLocked:8870 com.android.server.wm.RootWindowContainer.lambda$finishTopCrashedActivities$20:2776 com.android.server.wm.RootWindowContainer$$ExternalSyntheticLambda30.accept:10 
+11-26 18:41:25.786  1115  3218 W NetlinkSocket: maximum read
+11-26 18:41:25.786  1115  2714 D InputDispatcher: Focused application set to (0): 19d74a0
+11-26 18:41:25.786  1115  2714 D SGM:GameManager: TaskStackListener.onTaskFocusChanged(), taskId=3580, focused=false
+11-26 18:41:25.786  1115  2714 D SGM:GameManager: TaskStackListener.onTaskFocusChanged(), taskId=3293, focused=true
+11-26 18:41:25.786  1115  2714 D SGM:GameManager:   sendRunningComponentFocus(), pkgName: com.sec.android.app.launcher, userId: 0
+11-26 18:41:25.786  1115  1795 D SGM:GameManager: onLooperPrepared(), msg: MSG_TASK_FOCUSED, pkgName: com.sec.android.app.launcher, userId: 0
+11-26 18:41:25.786  1115  1795 D SGM:GameManager: handleTaskFocused().
+11-26 18:41:25.786  1115  1795 D SGM:GameManager: sendFocusOutConditionally() - mPrevNotiPkg: KILL_YOURSELF, userId: 0
+11-26 18:41:25.786  1115  1795 D SGM:GameManager:   handleTaskFocused(), pkgName: com.sec.android.app.launcher, userID:0 mResumedPkgMap does not containsKey.
+11-26 18:41:25.787  1115  2714 W WindowManager: Prepare app transition: mNextAppTransitionRequests=[TRANSIT_CLOSE, TRANSIT_CLOSE, TRANSIT_CLOSE], mNextAppTransitionFlags=TRANSIT_FLAG_APP_CRASHED, displayId: 0 Callers=com.android.server.wm.DisplayContent.prepareAppTransition:6358 com.android.server.wm.DisplayContent.prepareAppTransition:6353 com.android.server.wm.ActivityRecord.finishIfPossible:3619 com.android.server.wm.ActivityRecord.finishIfPossible:3425 com.android.server.wm.Task.finishTopCrashedActivityLocked:8871 
+11-26 18:41:25.787  1115  2714 D RestrictionPolicy: isScreenCaptureEnabled : ret=true userId=0
+11-26 18:41:25.787  8812  8812 I Utils   : HomePackage : com.sec.android.app.launcher, resumePackageName : com.defaultcompany.trunk
+11-26 18:41:25.790   940   940 I Layer   : id=17431 Destroyed Screenshot Parent
+11-26 18:41:25.794   940   940 I Layer   : id=17420 Destroyed Surface(name=13583cb StatusBar)/@0x336d7fd - animation-leash of insets_animation#1
+11-26 18:41:25.794   940   940 I Layer   : id=17421 Destroyed Surface(name=234d322 NavigationBar0)/@0x398363e - animation-leash of insets_animation#1
+11-26 18:41:25.794  2680  5160 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@e531f07 fN = 152 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:25.794  2680  5160 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:25.795  1115  1794 V ActivityManager: Changed top to ProcessRecord{7b9bddf 2680:com.sec.android.app.launcher/u0a111}
+11-26 18:41:25.795  1115  1484 W BroadcastQueue: Background execution not allowed: receiving Intent { act=android.intent.action.DROPBOX_ENTRY_ADDED flg=0x10 (has extras) } to com.google.android.gms/.stats.service.DropBoxEntryAddedReceiver
+11-26 18:41:25.795  1115  1484 W BroadcastQueue: Background execution not allowed: receiving Intent { act=android.intent.action.DROPBOX_ENTRY_ADDED flg=0x10 (has extras) } to com.google.android.gms/.chimera.GmsIntentOperationService$PersistentTrustedReceiver
+11-26 18:41:25.796 18741 18741 I Process : Sending signal. PID: 18741 SIG: 9
+11-26 18:41:25.799  1115  3218 W NetlinkSocket: maximum read
+11-26 18:41:25.800  1115  3218 W NetlinkSocket: maximum read
+11-26 18:41:25.801  4404  4404 I DMASA[D]: [DropBoxReceiverManager]blockList : com.samsung.context.sdk.sampleapp2
+11-26 18:41:25.801  4404  4404 I DMASA[D]: [DropBoxReceiverManager]allowList : com.whatsapp
+11-26 18:41:25.801  4404  4404 I DMASA[D]: [DropBoxReceiverManager]allowList : com.google.android.apps.maps
+11-26 18:41:25.801  4404  4404 I DMASA[D]: [DropBoxReceiverManager]allowList : com.samsung.context.sdk.sampleapp*
+11-26 18:41:25.802  4404  4404 I DMASA[D]: [DropBoxReceiverManager]allowList : com.snapchat.android
+11-26 18:41:25.802   940   940 D SurfaceFlinger: Display 4630947232161729153 HWC layers:
+11-26 18:41:25.802   940   940 D SurfaceFlinger:      CLIENT | 0xb400007a2c826dc0 | 0100 | RGBx_8888    |    1.0    0.0 1081.0 2280.0 |    0    0 1440 3040 | Wallpaper BBQ wrapper#0
+11-26 18:41:25.802   940   940 D SurfaceFlinger:      CLIENT |              | 0000 |  Unknown  |    0.0    0.0    0.0    0.0 |    0    0 1440 3040 | OneUiHome-BlurLayer#0 (backgroundBlurRadius)
+11-26 18:41:25.802   940   940 D SurfaceFlinger:      CLIENT | 0xb400007a2c84b2d0 | 0100 | RGBA_8888    |    0.0    0.0 1440.0 3040.0 |    0    0 1440 3040 | com.sec.android.app.launcher/com.sec[...].activities.LauncherActivity$_2680#0
+11-26 18:41:25.802   940   940 D SurfaceFlinger:      CLIENT | 0xb400007a2c863150 | 0100 | RGBA_8888    |    0.0  537.0 1440.0 1977.0 |  436  906  671 1142 | Splash Screen com.defaultcompany.trunk$_1999#0
+11-26 18:41:25.802   940   940 D SurfaceFlinger:      DEVICE | 0xb400007a2c847b20 | 0100 | RGBA_8888    |    0.0    0.0 1440.0  142.0 |    0    0 1440  142 | StatusBar$_1999#0
+11-26 18:41:25.802   940   940 D SurfaceFlinger:      DEVICE | 0xb400007a2c85e9e0 | 0100 | RGBA_8888    |    0.0    0.0   67.0  568.0 |    0  806   67 1374 | com.samsung.android.app.cocktailbars[...]arservice.CocktailBarService$_8812#0
+11-26 18:41:25.802   940   940 D SurfaceFlinger:      DEVICE | 0xb400007a2c865820 | 0100 | RGBA_8
+11-26 18:41:25.802   940   940 D SurfaceFlinger: 888    |    0.0    0.0 1440.0  168.0 |    0 2872 1440 3040 | NavigationBar0$_1999#0
+11-26 18:41:25.802   940   940 D SurfaceFlinger: 
+11-26 18:41:25.802  4404  4404 I DMASA[D]: [DropBoxReceiverManager]allowList : com.nhn.android.nmap
+11-26 18:41:25.802  4404  4404 I DMASA[D]: [DropBoxReceiverManager]allowList : com.facebook.katana
+11-26 18:41:25.802  4404  4404 I DMASA[D]: [DropBoxReceiverManager]allowList : com.yahoo.mobile.client.android.mail
+11-26 18:41:25.802  4404  4404 I DMASA[D]: [DropBoxReceiverManager]allowList : com.samsung.diagmonagenttest
+11-26 18:41:25.802  4404  4404 I DMASA[D]: [DropBoxReceiverManager]allowList : com.nhn.android.search
+11-26 18:41:25.802  4404  4404 I DMASA[D]: [DropBoxReceiverManager]allowList : com.instagram.android
+11-26 18:41:25.802   940  3151 D NativeSemDvfsManager: acquire:: timeout = 2000 mIsAcquired = 1  mTagName : SurfaceFlinger 
+11-26 18:41:25.802  4404  4404 I DMASA[D]: [DropBoxReceiverManager]allowList : com.google.android.googlequicksearchbox
+11-26 18:41:25.803  4404  4404 I DMASA[D]: [DropBoxReceiverManager]allowList : com.zhiliaoapp.musically
+11-26 18:41:25.803   862   901 I HYPER-HAL: [RequestManager.cpp]acquire(): Acquired ID : 1883770  [940 / 1000]    HINT : SF_GPU_MINLOCK    list : [TIMEOUT / 2000] 
+11-26 18:41:25.803   940  3151 E NativeCustomFrequencyManager: [NativeCFMS] BpCustomFrequencyManager::acquire()
+11-26 18:41:25.804  4404  4404 I DMASA[D]: [DropBoxReceiverManager]allowList : com.google.android.gm
+11-26 18:41:25.804  4404  4404 I DMASA[D]: [DropBoxReceiverManager]allowList : com.kakao.talk
+11-26 18:41:25.804  1999  2247 E TaskStackListenerAbstract: onTaskSnapshotChanged called by Binder.getCallingPid() 0 android.app.ITaskStackListener$Stub.onTransact:585 android.os.Binder.execTransactInternal:1220 android.os.Binder.execTransact:1179 <bottom of call stack> 
+11-26 18:41:25.804  4404  4404 I DMASA[D]: [DropBoxReceiverManager]allowList : com.google.android.youtube
+11-26 18:41:25.804  1115  3218 W NetlinkSocket: maximum read
+11-26 18:41:25.804  1115  3218 W NetlinkSocket: maximum read
+11-26 18:41:25.804  4404  4404 I DMASA[D]: [DropBoxReceiverManager]allowList : com.microsoft.office.outlook
+11-26 18:41:25.804  1999  5961 E TaskStackListenerAbstract: onTaskSnapshotChanged called by Binder.getCallingPid() 0 android.app.ITaskStackListener$Stub.onTransact:585 android.os.Binder.execTransactInternal:1220 android.os.Binder.execTransact:1179 <bottom of call stack> 
+11-26 18:41:25.804  1115  3218 W NetlinkSocket: maximum read
+11-26 18:41:25.804  1115  3218 W NetlinkSocket: maximum read
+11-26 18:41:25.804  4404  4404 I DMASA[D]: [DropBoxReceiverManager]allowList : com.facebook.orca
+11-26 18:41:25.804  4404  4404 I DMASA[D]: [DropBoxReceiverManager]allowList : com.netflix.mediaclient
+11-26 18:41:25.804  4404  4404 W DMASA[D]: [DropBoxReceiverManager]This app does not allow 3rd-party FC detection: com.defaultcompany.trunk
+11-26 18:41:25.805  4427 22989 E TaskStackListenerAbstract: onTaskSnapshotChanged called by Binder.getCallingPid() 0 android.app.ITaskStackListener$Stub.onTransact:585 android.os.Binder.execTransactInternal:1220 android.os.Binder.execTransact:1179 <bottom of call stack> 
+11-26 18:41:25.811  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@3428834 fN = 153 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:25.811  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:25.824   772   772 I Zygote  : Process 18741 exited due to signal 9 (Killed)
+11-26 18:41:25.825  1115  2617 I ActivityManager: Process com.defaultcompany.trunk (pid 18741) has died: prcp TOP (348,3539)
+11-26 18:41:25.825  1115  1486 I libprocessgroup: Successfully killed process cgroup uid 10737 pid 18741 in 0ms
+11-26 18:41:25.827  1115  2617 I ActivityTaskManager: Removing activity ActivityRecord{4e76e9b u0 com.defaultcompany.trunk/com.deepwaterooo.dwsdk.MainActivity t3580 f}}(appDied)  from stack callers=com.android.server.wm.ActivityRecord.handleAppDied:4261 com.android.server.wm.WindowProcessController.handleAppDied:1287 com.android.server.wm.ActivityTaskManagerService$LocalService.handleAppDied:7031 com.android.server.am.ActivityManagerService.handleAppDiedLocked:3649 com.android.server.am.ActivityManagerService.appDiedLocked:3839 
+11-26 18:41:25.828  1115  3218 W NetlinkSocket: maximum read
+11-26 18:41:25.828  2680  5160 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@50c065d fN = 154 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:25.828  2680  5160 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:25.829  1115  3181 D PkgPredictorService-IpmNapPreloadController: app:0_&_com.defaultcompany.trunk die, remove from <launchTime:2022-11-26 18:41:19 hour:18 day:7 previous:[com.defaultcompany.trunk, com.defaultcompany.trunk, com.defaultcompany.trunk] running:com.defaultcompany.trunk/unknown apkVersion:1.0 userId:0 screenOrientation:1 wifi:3 bt:0 predictTime:1 launching Time:0 predicted:true prediction:[0_&_com.tencent.mm, 0_&_com.defaultcompany.trunk, 0_&_com.android.settings] preloaded:true preloading:[0_&_com.tencent.mm, 0_&_com.defaultcompany.trunk]>
+11-26 18:41:25.830  1115  2617 D InputTransport: Input channel destroyed: 'c045e4d', fd=559
+11-26 18:41:25.830  1115  2617 W InputManager-JNI: Input channel object 'c045e4d Splash Screen com.defaultcompany.trunk (client)' was disposed without first being removed with the input manager!
+11-26 18:41:25.830  1115  2617 D InputTransport: Input channel destroyed: 'c045e4d', fd=640
+11-26 18:41:25.831  1115  2617 I WindowManager: Destroying surface Surface(name=Splash Screen com.defaultcompany.trunk$_1999)/@0xb9bd741 called by com.android.server.wm.WindowStateAnimator.destroySurface:987 com.android.server.wm.WindowStateAnimator.destroySurfaceLocked:518 com.android.server.wm.WindowState.removeImmediately:2960 com.android.server.wm.WindowContainer.removeImmediately:723 com.android.server.wm.WindowToken.removeImmediately:377 com.android.server.wm.ActivityRecord.removeImmediately:4273 com.android.server.wm.ActivityRecord.removeIfPossible:4280 com.android.server.wm.ActivityRecord.onRemovedFromDisplay:4369 
+11-26 18:41:25.835  1115  2617 W ActivityTaskManager: removeImmediately: remove leash of taskId=3580
+11-26 18:41:25.835  1115  2617 I WindowManager: Cancelling animation restarting=false, leash=Surface(name=Surface(name=Task=3580)/@0xca03bc8 - animation-leash of app_transition)/@0xdd4c47
+11-26 18:41:25.835  1115  2617 I WindowManager: Reparenting to original parent: Surface(name=DefaultTaskDisplayArea)/@0xdda5962, destroy=false, surface=Surface(name=Task=3580)/@0xca03bc8
+11-26 18:41:25.835   940  1546 I SurfaceFlinger: id=17432 createSurf (0x0),-1 flag=24004, Task=3580#1
+11-26 18:41:25.837  4427  4427 I SDHMS:BarTender:Gatherer:AppError: update AppError : uid=10737, pkg=com.defaultcompany.trunk, errorType=crash
+11-26 18:41:25.837  1115  2617 V MARsPolicyManager: Current Home Package com.sec.android.app.launcher Resumed
+11-26 18:41:25.837  1115  2617 I SemDvfsHyPerManager: acquire hyper - AMS_APP_HOME/1115@32, type = -999
+11-26 18:41:25.837   862   901 I HYPER-HAL: [RequestManager.cpp]acquire(): Acquired ID : 658410  [1115 / 32]    HINT : AMS_APP_HOME    list : 
+11-26 18:41:25.838  1115  2617 D ActivityManagerPerformance: AMP_acquire() HOME
+11-26 18:41:25.838  1115  2617 W WindowManager: Prepare app transition: mNextAppTransitionRequests=[TRANSIT_CLOSE, TRANSIT_CLOSE, TRANSIT_CLOSE, TRANSIT_OPEN], mNextAppTransitionFlags=TRANSIT_FLAG_APP_CRASHED, displayId: 0 Callers=com.android.server.wm.DisplayContent.prepareAppTransition:6358 com.android.server.wm.DisplayContent.prepareAppTransition:6353 com.android.server.wm.Task.resumeTopActivityInnerLocked:8420 com.android.server.wm.Task.resumeTopActivityInnerLocked:8129 com.android.server.wm.Task.resumeTopActivityUncheckedLocked:8027 
+11-26 18:41:25.838  1115  3218 W NetlinkSocket: maximum read
+11-26 18:41:25.838  1115  2617 V WindowManager: rotationForOrientation(orient=SCREEN_ORIENTATION_NOSENSOR (5), last=ROTATION_0 (0)); user=ROTATION_0 (0) 
+11-26 18:41:25.838  1115  2617 D WindowManager: rotationForOrientation, orientationSource=ActivityRecord{19d74a0 u0 com.sec.android.app.launcher/.activities.LauncherActivity t3293}
+11-26 18:41:25.839  1115  2617 V WindowManager: Computed rotation=ROTATION_0 (0) for display id=0 based on lastOrientation=SCREEN_ORIENTATION_NOSENSOR (5) and oldRotation=ROTATION_0 (0), caller=com.android.server.wm.DisplayRotation.updateOrientation:407 com.android.server.wm.DisplayContent.updateOrientation:1932 com.android.server.wm.DisplayContent.updateOrientation:1870 com.android.server.wm.RootWindowContainer.ensureVisibilityAndConfig:2207 com.android.server.wm.Task.resumeTopActivityInnerLocked:8488 com.android.server.wm.Task.resumeTopActivityInnerLocked:8129 
+11-26 18:41:25.839  1115  2617 D TspStateManager: updateCustomValue customSetting=
+11-26 18:41:25.839  1115  2617 D TspStateManager: updateCustomValue customSetting=
+11-26 18:41:25.839  2680  2680 I ViewRootImpl@635960b[LauncherActivity]: stopped(false) old=false
+11-26 18:41:25.839  2680  2680 I Launcher: !@Boot_DEBUG: Launcher.onResume()
+11-26 18:41:25.839  2680  2680 I Launcher: !@Boot_EBS_D: Launcher.onResume()
+11-26 18:41:25.840  2680  2680 I BaseActivity: addActivityFlags, flags : 18
+11-26 18:41:25.840  2680  2680 I BaseActivity: removeActivityFlags, flags : 32
+11-26 18:41:25.840  2680  2680 I AppsSearchBar: restoreCurrentCellLayoutAlpha: null
+11-26 18:41:25.840  2680  2680 W PageOverlayMover: isMoving : false
+11-26 18:41:25.840  2680  2680 I DecorView: notifyKeepScreenOnChanged: keepScreenOn=false
+11-26 18:41:25.840  2680  2739 I IMM_LC  : hsifw() - flags=0, caller=android.view.inputmethod.InputMethodManager.hideSoftInputFromWindow:1846 android.view.inputmethod.InputMethodManager.hideSoftInputFromWindow:1815 com.android.launcher3.util.UiThreadHelper$UiCallbacks.handleMessage:103 android.os.Handler.dispatchMessage:102 android.os.Looper.loopOnce:226 
+11-26 18:41:25.840  2680  2739 I IMM_LC  : hideSoftInputFromWindow - mService.hideSoftInput
+11-26 18:41:25.840   769   776 E statsd  : Predicate -7037417284711607308 dropping data for dimension key (10)0x2010101->10737[I] (10)0x30000->*launch*[S] 
+11-26 18:41:25.840  2680  2680 I Launcher: setWallpaperOffsets
+11-26 18:41:25.840  1115  2714 D InputMethodManagerService: hideSoftInput
+11-26 18:41:25.840  1115  2714 V InputMethodManagerService: Client requesting input be hidden
+11-26 18:41:25.840  1115  2714 V InputMethodManagerService: hideCurrentInputLocked : shouldHideSoftInput is false
+11-26 18:41:25.841  2680  2680 I DecorView: notifyKeepScreenOnChanged: keepScreenOn=false
+11-26 18:41:25.841   769   776 E statsd  : Predicate 5980654721335871649 dropping data for dimension key (10)0x2010101->10737[I] (10)0x30000->*launch*[S] 
+11-26 18:41:25.841  2680  2680 I BaseActivity: addActivityFlags, flags : 4
+11-26 18:41:25.841  2680  2680 I Launcher: onDeferredResumed
+11-26 18:41:25.841  2680  2680 W Launcher.NotificationListener: setNotificationsChangedListener connected : false
+11-26 18:41:25.841  2680  2680 I BadgeCountUpdaterImpl: onNotificationsChangedConnected
+11-26 18:41:25.841  2680  2680 W LauncherAppWidgetHost: setShouldListenFlag, mFlags:7 flag:resume on:true isFront:false
+11-26 18:41:25.841  1115  2617 W WindowManager: Execute app transition: mNextAppTransitionRequests=[TRANSIT_CLOSE, TRANSIT_CLOSE, TRANSIT_CLOSE, TRANSIT_OPEN], mNextAppTransitionFlags=TRANSIT_FLAG_APP_CRASHED, displayId: 0 Callers=com.android.server.wm.RootWindowContainer.executeAppTransitionForAllDisplay:2701 com.android.server.wm.ActivityTaskSupervisor.reportResumedActivityLocked:2252 com.android.server.wm.ActivityRecord.completeResumeLocked:6320 com.android.server.wm.Task.resumeTopActivityInnerLocked:8578 com.android.server.wm.Task.resumeTopActivityInnerLocked:8129 
+11-26 18:41:25.843  2680  9053 I Launcher: DisplayMetrics from Resources : DisplayMetrics{density=3.5, width=1440, height=2730, scaledDensity=3.8500001, xdpi=522.514, ydpi=521.729}
+11-26 18:41:25.843  2680  9053 I Launcher: realMetrics from Wm : DisplayMetrics{density=3.5, width=1440, height=3040, scaledDensity=3.5, xdpi=522.514, ydpi=521.729}
+11-26 18:41:25.843  2680  9053 I Launcher: DeviceProfile, isLand : false, isMultiWin :false, availableWidthPx : 1440, availableHeightPx : 2872
+11-26 18:41:25.843  1115  2617 W ActivityTaskManager: Can't find TaskDisplayArea to determine support for multi window. Task id=3580 attached=false
+11-26 18:41:25.843  1115  2617 W ActivityTaskManager: Can't find TaskDisplayArea to determine support for multi window. Task id=3580 attached=false
+11-26 18:41:25.843  1115  2617 W ActivityTaskManager: Can't find TaskDisplayArea to determine support for multi window. Task id=3580 attached=false
+11-26 18:41:25.843  1115  2617 D WindowManager: Loading animation for app transition. transit=TRANSIT_OLD_CRASHING_ACTIVITY_CLOSE enter=true frame=Rect(0, 0 - 1440, 2730) insets=Rect(0, 0 - 0, 0) surfaceInsets=Rect(0, 0 - 0, 0)
+11-26 18:41:25.843   940   940 I Layer   : id=17425 removedFromDrawingState Splash Screen com.defaultcompany.trunk$_1999#0 (117)
+11-26 18:41:25.844   940   940 I Layer   : id=17424 removedFromDrawingState c045e4d Splash Screen com.defaultcompany.trunk#0 (117)
+11-26 18:41:25.844   940   940 I Layer   : id=17423 removedFromDrawingState ActivityRecord{4e76e9b u0 com.defaultcompany.trunk/com.deepwaterooo.dwsdk.MainActivity t3580}#0 (117)
+11-26 18:41:25.844   940   940 I Layer   : id=17422 removedFromDrawingState Task=3580#0 (117)
+11-26 18:41:25.844   940   940 I Layer   : id=17432 removedFromDrawingState Task=3580#1 (117)
+11-26 18:41:25.844   940   940 I Layer   : id=17427 removedFromDrawingState Surface(name=Task=3580)/@0xca03bc8 - animation-leash of app_transition#0 (117)
+11-26 18:41:25.844   940   940 I SurfaceFlinger: id=17423 Removed ActivityRecord{4e76e9b u0 com.defaultcompany.trunk/com.deepwaterooo.dwsdk.MainActivity t3580}#0 (117)
+11-26 18:41:25.844   940   940 I SurfaceFlinger: id=17432 Removed Task=3580#1 (117)
+11-26 18:41:25.844   940   940 I SurfaceFlinger: id=17424 Removed c045e4d Splash Screen com.defaultcompany.trunk#0 (117)
+11-26 18:41:25.844   940   940 I Layer   : id=17432 Destroyed Task=3580#1
+11-26 18:41:25.844   940   940 I Layer   : id=17423 Destroyed ActivityRecord{4e76e9b u0 com.defaultcompany.trunk/com.deepwaterooo.dwsdk.MainActivity t3580}#0
+11-26 18:41:25.845   940   940 I Layer   : id=17424 Destroyed c045e4d Splash Screen com.defaultcompany.trunk#0
+11-26 18:41:25.846  1115  2617 I WindowManager: Cancelling animation restarting=true, leash=Surface(name=Surface(name=13583cb StatusBar)/@0x336d7fd - animation-leash of insets_animation)/@0xa6de55e
+11-26 18:41:25.846  1115  2617 I WindowManager: Reparenting to original parent: Surface(name=WindowToken{e42fe9a android.os.BinderProxy@2230bbc})/@0xed73cf2, destroy=false, surface=Surface(name=13583cb StatusBar)/@0x336d7fd
+11-26 18:41:25.846  1115  2617 I WindowManager: Reparenting to leash, surface=Surface(name=13583cb StatusBar)/@0x336d7fd, leashParent=Surface(name=WindowToken{e42fe9a android.os.BinderProxy@2230bbc})/@0xed73cf2
+11-26 18:41:25.846   940  1016 I SurfaceFlinger: id=17433 createSurf (0x0),-1 flag=24000, Surface(name=13583cb StatusBar)/@0x336d7fd - animation-leash of insets_animation#1
+11-26 18:41:25.847  4427  4427 I SDHMS:BarTender:Analyzer:AppError: analyze app error : uid=10737, pkg=com.defaultcompany.trunk, appErrorCount=3
+11-26 18:41:25.847  4427  4427 I SemDvfsHyPerManager: acquire hyper - APP_START_SHORT/4427@14, type = -999
+11-26 18:41:25.847   862   901 I HYPER-HAL: [RequestManager.cpp]acquire(): Acquired ID : 9863475  [4427 / 14]    HINT : APP_START    list : [TIMEOUT / 1500] 
+11-26 18:41:25.849  1115  2617 D WindowManager: makeSurface duration=2 leash=Surface(name=Surface(name=13583cb StatusBar)/@0x336d7fd - animation-leash of insets_animation)/@0xed32d79
+11-26 18:41:25.849  1115  2617 I WindowManager: Cancelling animation restarting=true, leash=Surface(name=Surface(name=234d322 NavigationBar0)/@0x398363e - animation-leash of insets_animation)/@0xa0e5b55
+11-26 18:41:25.849  1115  2617 I WindowManager: Reparenting to original parent: Surface(name=WindowToken{8b128ed android.os.BinderProxy@72b3b17})/@0xa4a2c9f, destroy=false, surface=Surface(name=234d322 NavigationBar0)/@0x398363e
+11-26 18:41:25.849  1115  2617 I WindowManager: Reparenting to leash, surface=Surface(name=234d322 NavigationBar0)/@0x398363e, leashParent=Surface(name=WindowToken{8b128ed android.os.BinderProxy@72b3b17})/@0xa4a2c9f
+11-26 18:41:25.849   940  1016 I SurfaceFlinger: id=17434 createSurf (0x0),-1 flag=24000, Surface(name=234d322 NavigationBar0)/@0x398363e - animation-leash of insets_animation#1
+11-26 18:41:25.849  1115  2617 D WindowManager: makeSurface duration=0 leash=Surface(name=Surface(name=234d322 NavigationBar0)/@0x398363e - animation-leash of insets_animation)/@0xa66871f
+11-26 18:41:25.849  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.850  1999  1999 D NavigationBar: onSystemBarAttributesChanged() -  displayId:0, appearance:0, navbarColorManagedByIme:false
+11-26 18:41:25.850  1999  1999 V Navbar.Store: handleEvent [EventType] GET_BOOL_REGION_SAMPLING_ENABLED [Module] LightBarController  KEYS_DEFAULT=false
+11-26 18:41:25.850  1999  1999 V Navbar.Store: --[Band]COLOR_PACK_GET_REGION_SAMPLING_ENABLED
+11-26 18:41:25.850  1999  1999 V Navbar.Store: ----getValue(BOOL_REGION_SAMPLING_ENABLED)=false
+11-26 18:41:25.851  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.851  1115  2706 V WindowManager: Relayout Window{62ee612 u0 com.sec.android.app.launcher/com.sec.android.app.launcher.activities.LauncherActivity}: viewVisibility=0 req=1440x3040 d0
+11-26 18:41:25.852   940   940 D SurfaceFlinger: Display 4630947232161729153 HWC layers:
+11-26 18:41:25.852   940   940 D SurfaceFlinger:      CLIENT | 0xb400007a2c826dc0 | 0100 | RGBx_8888    |    1.0    0.0 1081.0 2280.0 |    0    0 1440 3040 | Wallpaper BBQ wrapper#0
+11-26 18:41:25.852   940   940 D SurfaceFlinger:      CLIENT |              | 0000 |  Unknown  |    0.0    0.0    0.0    0.0 |    0    0 1440 3040 | OneUiHome-BlurLayer#0 (backgroundBlurRadius)
+11-26 18:41:25.852   940   940 D SurfaceFlinger:      DEVICE | 0xb400007a2c84b2d0 | 0100 | RGBA_8888    |    0.0    0.0 1440.0 3040.0 |    0    0 1440 3040 | com.sec.android.app.launcher/com.sec[...].activities.LauncherActivity$_2680#0
+11-26 18:41:25.852   940   940 D SurfaceFlinger:      DEVICE | 0xb400007a2c847b20 | 0100 | RGBA_8888    |    0.0    0.0 1440.0  142.0 |    0    0 1440  142 | StatusBar$_1999#0
+11-26 18:41:25.852   940   940 D SurfaceFlinger:      DEVICE | 0xb400007a2c85e9e0 | 0100 | RGBA_8888    |    0.0    0.0   67.0  568.0 |    0  806   67 1374 | com.samsung.android.app.cocktailbars[...]arservice.CocktailBarService$_8812#0
+11-26 18:41:25.852   940   940 D SurfaceFlinger:      DEVICE | 0xb400007a2c865820 | 0100 | RGBA_8888    |    0.0    0.0 1440.0  168.0 |    0 2872 1440 3040 | NavigationBar0$_1999#0
+11-26 18:41:25.852   940   940 D SurfaceFlinger: 
+11-26 18:41:25.852  2680  2839 I TouchInteractionService: onSystemUiStateChanged, stateFlags : 0
+11-26 18:41:25.852  1999  1999 D SecLightBarControlHelper: updateStatus(WHITE icon) NumLightStacks:0, NumStacks:1, IndexLightStack:-1, StatusBarMode:0, StatusBarState:SHD, NeedDarkFontFromWallpaper:false, isWhiteKeyguardStatusBarBySettings:false
+11-26 18:41:25.852  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.853  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.854  1115  2706 V WindowManager: Relayout hash=62ee612, pid=2680: mAttrs={(0,0)(fillxfill) sim={adjust=nothing forwardNavigation} layoutInDisplayCutoutMode=shortEdges ty=BASE_APPLICATION fmt=TRANSPARENT wanim=0x10302f2
+11-26 18:41:25.854  1115  2706 V WindowManager:   fl=81910100
+11-26 18:41:25.854  1115  2706 V WindowManager:   pfl=1e020040
+11-26 18:41:25.854  1115  2706 V WindowManager:   vsysui=1700
+11-26 18:41:25.854  1115  2706 V WindowManager:   bhv=SHOW_TRANSIENT_BARS_BY_SWIPE
+11-26 18:41:25.854  1115  2706 V WindowManager:   fitSides= screenDimDuration=200000 naviIconColor=0}
+11-26 18:41:25.854  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.857  2680  2680 I ViewRootImpl@635960b[LauncherActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)0 dur=10 res=0x1 s={true -5476376670692175488} ch=false fn=155
+11-26 18:41:25.857  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@8fd3bd2 fN = 155 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:25.857  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:25.858  2680  2680 I PopupDataProvider: onNotificationFullRefresh prev dotInfoSize : 0
+11-26 18:41:25.858  2680  2680 I TouchInteractionService: onSystemUiFlagsChanged, userUnlocked
+11-26 18:41:25.859  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.860  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.860   940   940 I Layer   : id=17429 removedFromDrawingState Surface(name=13583cb StatusBar)/@0x336d7fd - animation-leash of insets_animation#0 (116)
+11-26 18:41:25.860   940   940 I Layer   : id=17430 removedFromDrawingState Surface(name=234d322 NavigationBar0)/@0x398363e - animation-leash of insets_animation#0 (116)
+11-26 18:41:25.860   940   940 I Layer   : id=69 removedFromDrawingState 234d322 NavigationBar0#0 (116)
+11-26 18:41:25.860   940   940 I Layer   : id=81 removedFromDrawingState NavigationBar0$_1999#0 (116)
+11-26 18:41:25.860   940   940 I Layer   : id=69 addToCurrentState 234d322 NavigationBar0#0 (116)
+11-26 18:41:25.860   940   940 I Layer   : id=81 addToCurrentState NavigationBar0$_1999#0 (116)
+11-26 18:41:25.862  2680  5160 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@278a4a3 fN = 156 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:25.862  2680  5160 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:25.864  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.864  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.865  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.865  1115  2714 V WindowManager: Relayout Window{4cdbd53 u0 NotificationShade}: viewVisibility=4 req=1440x3040 d0
+11-26 18:41:25.867  1115  2714 V WindowManager: Relayout hash=4cdbd53, pid=1999: mAttrs={(0,0)(fillxfill) gr=TOP CENTER_VERTICAL sim={adjust=resize} layoutInDisplayCutoutMode=always ty=2040 fmt=TRANSLUCENT
+11-26 18:41:25.867  1115  2714 V WindowManager:   fl=81840048
+11-26 18:41:25.867  1115  2714 V WindowManager:   pfl=1b000000
+11-26 18:41:25.867  1115  2714 V WindowManager:   bhv=SHOW_TRANSIENT_BARS_BY_SWIPE naviIconColor=0
+11-26 18:41:25.867  1115  2714 V WindowManager:   sfl=42000}
+11-26 18:41:25.867  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.868  1999  1999 I ViewRootImpl@d8197b4[NotificationShade]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)4 dur=2 res=0x1 s={false 0} ch=false fn=-1
+11-26 18:41:25.868  1999  1999 D KeyguardBottomAreaShortcutView: updateCameraVisibility isCameraDisabled:false visible:true
+11-26 18:41:25.869  1999  1999 D KeyguardBottomAreaShortcutView: mIndicationArea margin start : 217, end : 217, bottom : 513
+11-26 18:41:25.869  1115  3218 W NetlinkSocket: maximum read
+11-26 18:41:25.869  1999  1999 D QS      : setQSExpansion 0.0 -157.325
+11-26 18:41:25.869  1999  1999 D QS      : setQSExpansion 0.0 -157.325
+11-26 18:41:25.869  1115  3218 W NetlinkSocket: maximum read
+11-26 18:41:25.869  2680  2680 I RecentsView: onTaskRemoved() taskId : 3580
+11-26 18:41:25.870  1999  1999 D IndicatorGardenInputProperty: updateRotation() prv:-1 >> new:0
+11-26 18:41:25.870  1999  1999 D DeviceState: getDeviceResolutionPixelSize - currentDensity = 560 deviceDensity = 560 initialDisplaySizeFactor = 1440 currentDisplaySizeFactor = 1440 initialDisplayDensity = 560 proportionalDensity = 560 proportionalPixel = 75
+11-26 18:41:25.870  1115  3218 W NetlinkSocket: maximum read
+11-26 18:41:25.870  2680  2680 I RecentsView: onTaskRemoved() taskId : 3580
+11-26 18:41:25.870  1999  1999 D DeviceState: getDeviceResolutionPixelSize - currentDensity = 560 deviceDensity = 560 initialDisplaySizeFactor = 1440 currentDisplaySizeFactor = 1440 initialDisplayDensity = 560 proportionalDensity = 560 proportionalPixel = 34
+11-26 18:41:25.870  1999  1999 D DeviceState: getDeviceResolutionPixelSize - currentDensity = 560 deviceDensity = 560 initialDisplaySizeFactor = 1440 currentDisplaySizeFactor = 1440 initialDisplayDensity = 560 proportionalDensity = 560 proportionalPixel = 32
+11-26 18:41:25.871  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.871  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.872  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.873  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.873  2680  2739 I SPayUpdater: updateSpayHandler, show = false, defaultPage = false
+11-26 18:41:25.873  2680  2739 I LiveIconUpdateEventHandler: LiveIcon Init
+11-26 18:41:25.873  2680  2739 I LiveIconUpdateEventHandler: registerDateChangedReceiver
+11-26 18:41:25.874  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.875  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.876  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.878  1115  2161 D InputDispatcher: Focus entered window (0): 62ee612 com.sec.android.app.launcher/com.sec.android.app.launcher.activities.LauncherActivity
+11-26 18:41:25.878  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.878  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@899f3a0 fN = 157 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:25.879  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:25.879  2680  2680 I ViewRootImpl@635960b[LauncherActivity]: MSG_WINDOW_FOCUS_CHANGED 1 1
+11-26 18:41:25.879  2680  2680 I BaseActivity: addActivityFlags, flags : 8
+11-26 18:41:25.879  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.880  2680  2680 I InputMethodManager: startInputInner - mService.startInputOrWindowGainedFocus
+11-26 18:41:25.880  1115  2161 D InputMethodManagerService: mSecureKeypadEnabled = false
+11-26 18:41:25.880  1115  2161 V InputMethodManagerService: hideCurrentInputLocked : shouldHideSoftInput is false
+11-26 18:41:25.880  1115  2161 D InputMethodManagerService: DESKTOP MODE! : 2
+11-26 18:41:25.880  1115  2161 D InputMethodManagerService: NOT IN KNOX DESKTOP MODE!
+11-26 18:41:25.880  1115  2161 V InputMethodManagerService: getDisplayIdOfInputMethodWindowToBeAdded : 0
+11-26 18:41:25.881  1115  2161 D InputMethodManagerService: checkDisplayOfStartInputAndUpdateKeyboard display Id 0last 0
+11-26 18:41:25.881  1115  2161 D InputTransport: Input channel constructed: 'ClientS', fd=780
+11-26 18:41:25.881  1115  2161 D InputTransport: Input channel destroyed: 'ClientS', fd=780
+11-26 18:41:25.881  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.882  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.883  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.884  4404  4429 W id.diagmonagen: Reducing the number of considered missed Gc histogram windows from 447 to 100
+11-26 18:41:25.884  1115  2062 D MdnieScenarioControlService:  packageName : com.sec.android.app.launcher    className : com.android.launcher3.uioverrides.QuickstepLauncher
+11-26 18:41:25.884  1115  2062 V MdnieScenarioControlService: setUIMode from UI function(3)
+11-26 18:41:25.884  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.886  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.887  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.887  1115  2706 D SamsungAlarmManager: Cancel Alarm calling from uid:10045 pid :25726 / OP:PendingIntent{d988158: PendingIntentRecord{f5d920a com.google.android.gms/com.google.android.gms.tron broadcastIntent}}
+11-26 18:41:25.888  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.888  1115  2706 V SamsungAlarmManager: setLocked to kernel - W:332699878 / NW:332457384, now=332423272
+11-26 18:41:25.889  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.890  5198  5198 D InputMethodService: checkDisplayOfStartInputAndUpdateKeyboard display Id 0last 0
+11-26 18:41:25.890  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.890  1115  2161 I InputMethodManagerService: isAccessoryKeyboard 0
+11-26 18:41:25.891  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.891  1115  2617 I InputMethodManagerService: isAccessoryKeyboard 0
+11-26 18:41:25.891  1115  2617 I InputMethodManagerService: isAccessoryKeyboard 0
+11-26 18:41:25.892  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.893  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.894  1999  2252 D OpenGLRenderer: setSurface called with nullptr
+11-26 18:41:25.894  1999  2252 D OpenGLRenderer: setSurface() destroyed EGLSurface
+11-26 18:41:25.894  1999  2252 D OpenGLRenderer: destroyEglSurface
+11-26 18:41:25.894  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.894  2680  2680 I BadgeRenderer: Invalid count : 0
+11-26 18:41:25.894  2680  2680 I BadgeRenderer: Invalid count : 0
+11-26 18:41:25.895  1115  4555 I InputMethodManagerService: isAccessoryKeyboard 0
+11-26 18:41:25.895  1115  2617 W WindowManager: Failed looking up window session=Session{b0d9c3d 1999:u0a10010} callers=com.android.server.wm.WindowManagerService.windowForClientLocked:6303 com.android.server.wm.WindowManagerService.relayoutWindow:2462 com.android.server.wm.Session.relayout:242 
+11-26 18:41:25.895  1999  2081 I ViewRootImpl@93efde3[trunk]: 1) Force to draw a frame when frame become empty from non-empty
+11-26 18:41:25.895  1115  4555 I InputMethodManagerService: isAccessoryKeyboard 0
+11-26 18:41:25.896  1999  2081 I ViewRootImpl@93efde3[trunk]: Relayout returned: old=(0,0,1440,3040) new=(0,0,0,0) req=(1440,3040)8 dur=0 res=0x0 s={false 0} ch=true fn=5
+11-26 18:41:25.896   940  1546 I SurfaceFlinger: id=17430 Removed Surface(name=234d322 NavigationBar0)/@0x398363e - animation-leash of insets_animation#0 (116)
+11-26 18:41:25.896   940  1546 I SurfaceFlinger: id=17429 Removed Surface(name=13583cb StatusBar)/@0x336d7fd - animation-leash of insets_animation#0 (116)
+11-26 18:41:25.896  1999  2081 I ViewRootImpl@93efde3[trunk]: dispatchDetachedFromWindow
+11-26 18:41:25.896  2680  2741 W QuickstepModelDelegate: handleUpdate targets : 9
+11-26 18:41:25.897  1115  4553 W WindowManager: Failed looking up window session=Session{b0d9c3d 1999:u0a10010} callers=com.android.server.wm.WindowManagerService.windowForClientLocked:6303 com.android.server.wm.WindowManagerService.removeWindow:2243 com.android.server.wm.Session.remove:225 
+11-26 18:41:25.897  1999  2081 D InputTransport: Input channel destroyed: 'c045e4d', fd=186
+11-26 18:41:25.898  1115  1460 D SGM:GameManager: identifyGamePackage. com.sec.android.app.launcher, mCurrentUserId: 0, callerUserId: 0, callingMethodInfo: com.android.server.ssrm.fgapps.GameAppUtils.isGame(GameAppUtils.java:84)
+11-26 18:41:25.898  1115  1460 D SGM:PkgDataHelper: getGamePkgData(). com.sec.android.app.launcher
+11-26 18:41:25.899  1115  1115 I CocktailBarManagerServiceContainer: handleMessage: entry what = 5
+11-26 18:41:25.900  2680  5160 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@f87ab59 fN = 158 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:25.900  2680  5160 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:25.900   940  1017 I SurfaceFlinger: id=17425 Removed Splash Screen com.defaultcompany.trunk$_1999#0 (116)
+11-26 18:41:25.900  2680  2680 W SuggestedAppsViewImpl: pending predictedApps : 9, alpha: 0.0, overview: false
+11-26 18:41:25.901  8812  8812 I Utils   : HomePackage : com.sec.android.app.launcher, resumePackageName : com.sec.android.app.launcher
+11-26 18:41:25.902  1115  1460 D SGM:GameManager: noteResumeComponent(), received pkgName: com.sec.android.app.launcher, userId: 0
+11-26 18:41:25.902  1115  1795 D SGM:GameManager: onLooperPrepared(), msg: MSG_APP_RESUME, pkgName: com.sec.android.app.launcher, userid: 0
+11-26 18:41:25.902  1115  1795 D SGM:GameManager: handleResume().
+11-26 18:41:25.902  1115  1795 D SGM:GameManager: sendFocusOutConditionally() - mPrevNotiPkg: KILL_YOURSELF, userId: 0
+11-26 18:41:25.902  1115  1795 D SGM:GameManager:   handleResume(). pkgName: com.sec.android.app.launcher, userId: 0, isTunableApp: null
+11-26 18:41:25.902  1115  1795 D SGM:GameManager: notifyFocusInOut(). of pkg: com.sec.android.app.launcher, type: 4, isMinimized: false, isTunableApp: false, userId: 0
+11-26 18:41:25.902  1115  1795 D SGM:GameManager:   notifyFocusInOut(). do nothing. mKillNotiCount: 1
+11-26 18:41:25.902  1115  1795 D SGM:NetworkLimit: callRelease
+11-26 18:41:25.902  1115  1795 D SGM:SystemHelper: callReleaseBlock needReleaseBlock:false
+11-26 18:41:25.902  1115  1460 I GameSDK@LifeCycle: noteResumeComponent(): package name  : com.sec.android.app.launcher
+11-26 18:41:25.903  1115  1460 D SGM:GameManager: identifyGamePackage. com.sec.android.app.launcher, mCurrentUserId: 0, callerUserId: 0, callingMethodInfo: com.samsung.android.game.SemGameManager.isGamePackage(SemGameManager.java:104)
+11-26 18:41:25.903  1115  1460 D SGM:PkgDataHelper: getGamePkgData(). com.sec.android.app.launcher
+11-26 18:41:25.903  1115  1460 D SGM:SemGameManager: isGamePackage(), pkgName=com.sec.android.app.launcher, ret=false
+11-26 18:41:25.904  1115  1460 D PowerManagerService: [api] setScreenDimDurationOverrideFromWindowManagerInternal: timeoutMillis: 200000
+11-26 18:41:25.904  2680  2839 I RecentModel: onTaskStackChangedBackground
+11-26 18:41:25.905 30379 30391 I SAMSUNGWALLET: [Hint_ProcessStatusChange] invoke foreground activities changed - onProcessDied pid:18741 uid : 10737
+11-26 18:41:25.905  1115  1484 D BaseRestrictionMgr: Package: com.samsung.android.spay, userid: 0, hostingType: broadcast is allowed by freecess, caller is: com.sec.android.app.launcher
+11-26 18:41:25.905 30379 30871 I SAMSUNGWALLET: [ServiceTypeTable] isSupportOperator : VZW, US
+11-26 18:41:25.905  1115  3218 W NetlinkSocket: maximum read
+11-26 18:41:25.905 30379 30871 I SAMSUNGWALLET: [ServiceTypeTable] Upgrade - ServiceTypeTable - entryFromCountryIso - index is : 101, iso : US
+11-26 18:41:25.905  1115  3218 W NetlinkSocket: maximum read
+11-26 18:41:25.906  2680  2839 I RecentTasksList: getTaskKeys, numTasks :3 callback : com.android.quickstep.-$$Lambda$RecentsModel$k1Mm-BV64Bc89eJHYugywZmW_Js@fe6e7ff
+11-26 18:41:25.906  1115  1115 I Pageboost: package null
+11-26 18:41:25.906 30379 30871 I SAMSUNGWALLET: [ResetData] getSAResetDialogFlag : false
+11-26 18:41:25.906  3280  3280 E pageboostd: Received HALT command code 2
+11-26 18:41:25.906  1115  2706 D SamsungAlarmManager: setInexact (T:3/F:0/AC:false) 20221126T214125 now=332423290 - CU:10045/CP:25726/OP:PendingIntent{dc05b04: PendingIntentRecord{f5d920a com.google.android.gms/com.google.android.gms.tron broadcastIntent}}
+11-26 18:41:25.906  1115  2706 V SamsungAlarmManager: setLocked to kernel - W:332699878 / NW:332457384, now=332423290
+11-26 18:41:25.907 30379 30379 I SAMSUNGWALLET: [Hint_IntroHintService] onReceive() action=com.sec.android.app.launcher.intent.action.UPDATE_SPAY_HANDLER
+11-26 18:41:25.907 30379 30379 I SAMSUNGWALLET: [Hint_IntroHintService] home change, s home : false , default : false , gesture : false , s result : false , prev : false
+11-26 18:41:25.907  1115  4588 W ActivityManager: Receiver with filter android.content.IntentFilter@fba28ed already registered for pid 2680, callerPackage is com.sec.android.app.launcher
+11-26 18:41:25.909  2680  2739 I LiveIconUpdateEventHandler: cancelDateChangeAlarm
+11-26 18:41:25.909  1115  2714 D SamsungAlarmManager: Cancel Alarm calling from uid:10111 pid :2680 / OP:PendingIntent{f09d322: PendingIntentRecord{3cf71b3 com.sec.android.app.launcher broadcastIntent}}
+11-26 18:41:25.910  2680  2739 I LiveIconUpdateEventHandler: setDateChangeAlarm
+11-26 18:41:25.910  1115  1115 V SamsungAlarmManager: setLocked to kernel - W:332699878 / NW:332457384, now=332423294
+11-26 18:41:25.910  1115  1115 V SamsungAlarmManager: setLocked to kernel - W:332699878 / NW:332457384, now=332423294
+11-26 18:41:25.911   940   940 I Layer   : id=17425 Destroyed Splash Screen com.defaultcompany.trunk$_1999#0
+11-26 18:41:25.911   940   940 I Layer   : id=17430 Destroyed Surface(name=234d322 NavigationBar0)/@0x398363e - animation-leash of insets_animation#0
+11-26 18:41:25.911   940   940 I Layer   : id=17429 Destroyed Surface(name=13583cb StatusBar)/@0x336d7fd - animation-leash of insets_animation#0
+11-26 18:41:25.911 30379 30871 I SAMSUNGWALLET: [Hint_d] isHomePackageRunning topPkgName = com.sec.android.app.launcher, topClsName = com.android.launcher3.uioverrides.QuickstepLauncher, return true , se : true
+11-26 18:41:25.911  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@e3aa9cc fN = 159 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:25.912  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:25.912 30379 30379 I SAMSUNGWALLET: [ServiceTypeTable] isSupportOperator : VZW, US
+11-26 18:41:25.912 30379 30379 I SAMSUNGWALLET: [ServiceTypeTable] Upgrade - ServiceTypeTable - entryFromCountryIso - index is : 101, iso : US
+11-26 18:41:25.912 30379 30379 I SAMSUNGWALLET: [Hint_IntroHintService] Hint Status - already invisible, skip hide : [4000000] - 4000000
+11-26 18:41:25.913  1115  2714 D SamsungAlarmManager: setInexact (T:0/F:0/AC:false) 20221127T000000 now=332423296 - CU:10111/CP:2680/OP:PendingIntent{76a2370: PendingIntentRecord{3cf71b3 com.sec.android.app.launcher broadcastIntent}}
+11-26 18:41:25.913  1115  2714 V SamsungAlarmManager: setLocked to kernel - W:332699878 / NW:332457384, now=332423297
+11-26 18:41:25.913  2680  2739 I LiveIconUpdateEventHandler: cancelMinuteChangeAlarm
+11-26 18:41:25.913  1115  2714 D SamsungAlarmManager: Cancel Alarm calling from uid:10111 pid :2680 / OP:PendingIntent{79d66e9: PendingIntentRecord{495ff6e com.sec.android.app.launcher broadcastIntent}}
+11-26 18:41:25.916  2680  2739 I LiveIconUpdateEventHandler: setMinuteChangeAlarm
+11-26 18:41:25.916  1115  2161 D SamsungAlarmManager: setInexact (T:1/F:0/AC:false) 20221126T184200 now=332423300 - CU:10111/CP:2680/OP:PendingIntent{4c5760f: PendingIntentRecord{495ff6e com.sec.android.app.launcher broadcastIntent}}
+11-26 18:41:25.916  1115  2161 V SamsungAlarmManager: setLocked to kernel - W:332699878 / NW:332457384, now=332423300
+11-26 18:41:25.916  2680  2739 I LiveIconUpdateEventHandler: Initialized
+11-26 18:41:25.916  1115  2714 D ActivityTaskManager: getRecentPairTasks() maxNum :3 from 10111
+11-26 18:41:25.916  1115  2714 D RecentTaskItemController: getRecentPairTasksImpl() maxNum :3 from 10111
+11-26 18:41:25.917  2680  2739 I RecentTasksList: loadTasksInBackground() task id : 3580
+11-26 18:41:25.929  2680  5160 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@e7ea415 fN = 160 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:25.929  2680  5160 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:25.944  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@f28732a fN = 161 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:25.944  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:25.946  1115  1474 E Watchdog: !@Sync: 9081 heap: 95 / 112 [2022-11-26 18:41:25.946] sdogWay: softdog FD: 907
+11-26 18:41:25.961  2680  5160 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@3cc051b fN = 162 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:25.961  2680  5160 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:25.977  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@54e96b8 fN = 163 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:25.977  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:25.985  1115  2062 V MdnieScenarioControlService: mAclOffEnabled : false mAclPreviewState : false mAclCompensationState : false
+11-26 18:41:25.988  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.989  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.990  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.991  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.992  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.992  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.993  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.994  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.994  2680  5160 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@eb26c91 fN = 164 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:25.994  2680  5160 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:25.995  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.996  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.997  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.998  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:25.999  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.000  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.001  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.001  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.002  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.003  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.004  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.004  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.005  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.006  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.006  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.007  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.009  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.010  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.011  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.013  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@83297f6 fN = 165 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:26.013  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:26.013  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.014  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.015  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.016  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.017  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.017  5146  5433 D KnoxHelper: getActivityList callingUserId: 0, target user: 0
+11-26 18:41:26.018  2680  2741 W QuickstepModelDelegate: handleUpdate targets : 9
+11-26 18:41:26.023  2680  2680 W SuggestedAppsViewImpl: pending predictedApps : 9, alpha: 0.0, overview: false
+11-26 18:41:26.028  2680  5160 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@5b26664 fN = 166 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:26.028  2680  5160 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:26.044  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@d8040cd fN = 167 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:26.044  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:26.061  2680  5160 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@ee83d82 fN = 168 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:26.061  2680  5160 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:26.078  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@2bfc93 fN = 169 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:26.078  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:26.088  8812  8812 I Utils   : isCurrentUser current = 0, ownerId = 0
+11-26 18:41:26.088  8812  8812 I TrayVisibilityController: getComputedTrayVisible : keyguardState = 1
+11-26 18:41:26.088  8812  8812 I TrayVisibilityController: updateTrayVisible: State=1 visible=1 mCurrentVisible=1 specificMode=0
+11-26 18:41:26.088  8812  8812 I TrayStateController: onNotifyUpdateTray: state=0
+11-26 18:41:26.094  2680  5160 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@66184d0 fN = 170 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:26.094  2680  5160 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:26.111  2680  2680 W AppTransitionAnimatorImpl: onAnimationEnd - APP IN, Execution time for each frame : Start-(0)-0-(16)-0-(17)-0-(17)-0-(16)-1-(16)-1-(16)-0-(17)-0-(16)-1-(17)-0-(15)-1-(16)-0-(17)-0-(16)-1-(17)-0-(16)-0-(17)-0-(16)-0-(17)-0-(17)-0-(16)-0-End
+11-26 18:41:26.111  1115  2714 D WindowManager: app-onAnimationFinished(): mOuter=com.android.server.wm.RemoteAnimationController@36d642b
+11-26 18:41:26.111  1115  2714 D WindowManager: onAnimationFinished(): mPendingAnimations=1, caller=
+11-26 18:41:26.111  1115  2714 D WindowManager: onAnimationFinished(): mPendingAnimations=1
+11-26 18:41:26.111  1115  2714 D WindowManager: app-release(): mOuter=com.android.server.wm.RemoteAnimationController@36d642b
+11-26 18:41:26.111  1115  2714 D WindowManager: onAnimationFinished(): Notify animation finished:
+11-26 18:41:26.111  1115  2714 I WindowManager: Reparenting to original parent: Surface(name=DefaultTaskDisplayArea)/@0xdda5962, destroy=true, surface=Surface(name=Task=1)/@0xc822f5e
+11-26 18:41:26.112  2680  2680 I AppTransitionAnimatorImpl: resetContentView
+11-26 18:41:26.112  1115  2714 V WindowManager: Changing focus from null to Window{62ee612 u0 com.sec.android.app.launcher/com.sec.android.app.launcher.activities.LauncherActivity} displayId=0 Callers=com.android.server.wm.RootWindowContainer.updateFocusedWindowLocked:583 com.android.server.wm.WindowManagerService.updateFocusedWindowLocked:6479 com.android.server.wm.RootWindowContainer.performSurfacePlacementNoTrace:1061 com.android.server.wm.RootWindowContainer.performSurfacePlacement:959 
+11-26 18:41:26.112  1115  2714 D StatusBarManagerService: notifyRequestedSystemKey recent=false home=false
+11-26 18:41:26.112  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: t = android.view.SurfaceControl$Transaction@6dd1cc9 fN = 171 com.android.systemui.shared.system.ViewRootImplCompat.mergeWithNextTransaction:62 com.android.quickstep.util.SurfaceTransactionApplier.lambda$scheduleApply$0$SurfaceTransactionApplier:94 com.android.quickstep.util.-$$Lambda$SurfaceTransactionApplier$Xj9m0ayWHIr2xvQnKB4EJdxg8RU.accept:6 
+11-26 18:41:26.112  2680  5159 I ViewRootImpl@635960b[LauncherActivity]: mWNT: merge t to BBQ
+11-26 18:41:26.113  1115  2714 D WindowManager: 	container=Task{ed3f101 #1 type=home ?? U=0 visible=true mode=fullscreen translucent=false sz=1}
+11-26 18:41:26.113  1115  2714 I WindowManager: Reparenting to original parent: Surface(name=Leaf:0:1)/@0xdc370d7, destroy=true, surface=Surface(name=WallpaperWindowToken{d16ff53 token=android.os.Binder@fe69342})/@0x878856
+11-26 18:41:26.113  1115  2714 D WindowManager: 	wallpaper=WallpaperWindowToken{d16ff53 token=android.os.Binder@fe69342}
+11-26 18:41:26.114  1115  2714 I WindowManager: Finishing remote animation
+11-26 18:41:26.127   940   940 I Layer   : id=17426 removedFromDrawingState Surface(name=Task=1)/@0xc822f5e - animation-leash of app_transition#0 (113)
+11-26 18:41:26.127  2680  2680 W Launcher: onEnterAnimationComplete
+11-26 18:41:26.132   940  1016 I SurfaceFlinger: id=17426 Removed Surface(name=Task=1)/@0xc822f5e - animation-leash of app_transition#0 (113)
+11-26 18:41:26.132   940  3148 I SurfaceFlinger: id=17427 Removed Surface(name=Task=3580)/@0xca03bc8 - animation-leash of app_transition#0 (113)
+11-26 18:41:26.144   940   940 I Layer   : id=17428 removedFromDrawingState Surface(name=WallpaperWindowToken{d16ff53 token=android.os.Binder@fe69342})/@0x878856 - animation-leash of window_animation#0 (113)
+11-26 18:41:26.144   940   940 I SurfaceFlinger: id=17428 Removed Surface(name=WallpaperWindowToken{d16ff53 token=android.os.Binder@fe69342})/@0x878856 - animation-leash of window_animation#0 (113)
+11-26 18:41:26.144   940   940 I Layer   : id=17426 Destroyed Surface(name=Task=1)/@0xc822f5e - animation-leash of app_transition#0
+11-26 18:41:26.144   940   940 I Layer   : id=17427 Destroyed Surface(name=Task=3580)/@0xca03bc8 - animation-leash of app_transition#0
+11-26 18:41:26.144   940   940 I Layer   : id=17428 Destroyed Surface(name=WallpaperWindowToken{d16ff53 token=android.os.Binder@fe69342})/@0x878856 - animation-leash of window_animation#0
+11-26 18:41:26.183  1115  1880 W SemWifiTransportLayerUtils: getApplicationCategory - IOException com.defaultcompany.trunk
+11-26 18:41:26.183  1115  1880 W System.err: java.io.FileNotFoundException: https://play.google.com/store/apps/details?id=com.defaultcompany.trunk&hl=en
+11-26 18:41:26.183  1115  1880 W System.err: 	at com.android.okhttp.internal.huc.HttpURLConnectionImpl.getInputStream(HttpURLConnectionImpl.java:255)
+11-26 18:41:26.183  1115  1880 W System.err: 	at com.android.okhttp.internal.huc.DelegatingHttpsURLConnection.getInputStream(DelegatingHttpsURLConnection.java:211)
+11-26 18:41:26.183  1115  1880 W System.err: 	at com.android.okhttp.internal.huc.HttpsURLConnectionImpl.getInputStream(HttpsURLConnectionImpl.java:30)
+11-26 18:41:26.183  1115  1880 W System.err: 	at com.samsung.android.server.wifi.tcp.SemWifiTransportLayerUtils.getApplicationCategory(SemWifiTransportLayerUtils.java:104)
+11-26 18:41:26.183  1115  1880 W System.err: 	at com.samsung.android.server.wifi.tcp.SemWifiTransportLayerMonitor$TcpMonitorHandler.handleMessage(SemWifiTransportLayerMonitor.java:241)
+11-26 18:41:26.183  1115  1880 W System.err: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+11-26 18:41:26.183  1115  1880 W System.err: 	at android.os.Looper.loopOnce(Looper.java:226)
+11-26 18:41:26.183  1115  1880 W System.err: 	at android.os.Looper.loop(Looper.java:313)
+11-26 18:41:26.183  1115  1880 W System.err: 	at android.os.HandlerThread.run(HandlerThread.java:67)
+11-26 18:41:26.184  1115  1880 D SemWifiPackageInfo: isSkipCategory - skip:FAILED
+11-26 18:41:26.184  1115  1880 D SemWifiTransportLayerMonitor.TcpMonitorHandler: MSG_SAVE_PACKAGE_INFO
+11-26 18:41:26.184  1115  1880 D SemWifiTransportLayerFileManager: saveWifiPackageInfoToFile
+11-26 18:41:26.184  1115  1880 D SemWifiTransportLayerFileManager: writeWifiPackageInfoList
+11-26 18:41:26.286  1115  1460 W ActivityTaskManager: Activity top resumed state loss timeout for ActivityRecord{4e76e9b u0 com.defaultcompany.trunk/com.deepwaterooo.dwsdk.MainActivity t-1 f}}
+11-26 18:41:26.318  2680  2680 I QuickstepTransition: finishWaitingForResponse
+11-26 18:41:26.426   862 18760 I HYPER-HAL: [RequestManager.cpp]releaseLocked(): Released ID : 3592540
+11-26 18:41:26.640   862 18780 I HYPER-HAL: [RequestManager.cpp]releaseLocked(): Released ID : 658410
+11-26 18:41:26.735   862 18763 I HYPER-HAL: [RequestManager.cpp]releaseLocked(): Released ID : 642429
+11-26 18:41:26.816  1999  1999 D NetworkController.WifiSignalController: notifyListener: visible=true, enabled=true, connected=true, inetCondition=1, isDefault=true, receivedCR=true, receivedIC=-1, shouldForceHide=false, emptyConnected=false
+11-26 18:41:26.904  1115  7844 D SGM:GameManager: identifyGamePackage. com.sec.android.app.launcher, mCurrentUserId: 0, callerUserId: 0, callingMethodInfo: com.android.server.ssrm.SortingMachine.isGame(SortingMachine.java:162)
+11-26 18:41:26.904  1115  7844 D SGM:PkgDataHelper: getGamePkgData(). com.sec.android.app.launcher
+11-26 18:41:26.940  1115  1882 D SemWifiSwitchForIndividualAppsService: isPackageException - result:1, com.sec.android.app.launcher
+11-26 18:41:27.105  4427  5042 I SDHMS:C : SIOP:: AP:127(271,110) BAT:210(210,0) USB:216(216,0) CHG:218(218,0) PA:233(233,0) WIFI:207(207,0) BLK:0(0,0) SUBBAT:0(0,0) LRP:219(219,0) LRF:219(219) LRB:215(215) 
+11-26 18:41:27.330   853 10729 I sensors-hal: handle_sns_client_event:217, auto_rotation_event_2: mode:255, type:1:0/-0.575,0.053,9.782, ar:0
+11-26 18:41:27.331   853 10726 I sensors-hal: handle_sns_client_event:660, [0][39839] accel_sample [-0.564,  0.054,  9.769] 332424000478991
+11-26 18:41:27.348   862 18761 I HYPER-HAL: [RequestManager.cpp]releaseLocked(): Released ID : 9863475
+11-26 18:41:27.433   682   682 D io_stats: !@   8,0 r 2830786 108669112 w 2494722 109262404 d 0 0 f 0 0 iot 1841570 0 th 0 0 0 pt 0 inp 0 0 272588.250
+11-26 18:41:27.738   888   942 E ANDR-PERF-UTIL: Failed to update node /proc/18741/sched_boost with value 0
+11-26 18:41:27.738   888   942 E ANDR-PERF-OPTSHANDLER: can't reset task 18741
+11-26 18:41:27.738   888   942 E ANDR-PERF-RESOURCEQS: Failed to reset optimization [3, 32]
+11-26 18:41:27.808   862 18775 I HYPER-HAL: [RequestManager.cpp]releaseLocked(): Released ID : 1883770
+11-26 18:41:28.010  2680  2739 I QuickstepModelDelegate: Widget predictions updated
+11-26 18:41:28.013  2680  2741 I WidgetsPredictionUpdateTask: execute(), info: PendingAddWidgetInfo(id=-1 type=WIDGET container=# com.android.launcher3.logger.LauncherAtom$ContainerInfo@7ba6f targetComponent=ComponentInfo{com.tencent.mm/com.tencent.mm.plugin.appbrand.outerwidget.AppBrandOuterWidget} screen=-1 cell(-1,-1) span(4,2) minSpan(4,2) rank=0 rankOfList=-1 user=UserHandle{0} title=null hidden=0 screenType=0 componentName=ComponentInfo{com.tencent.mm/com.tencent.mm.plugin.appbrand.outerwidget.AppBrandOuterWidget}), info: PendingAddWidgetInfo(id=-1 type=WIDGET container=# com.android.launcher3.logger.LauncherAtom$ContainerInfo@7ba6f targetComponent=ComponentInfo{com.sec.android.app.clockpackage/com.sec.android.app.clockpackage.alarmwidget.ClockAlarmWidgetProvider} screen=-1 cell(-1,-1) span(2,1) minSpan(2,1) rank=0 rankOfList=-1 user=UserHandle{0} title=null hidden=0 screenType=0 componentName=ComponentInfo{com.sec.android.app.clockpackage/com.sec.android.app.clockpackage.alarmwidget.ClockAlarmWidgetProvider}), info: PendingAddWidgetInfo(id=-1 type=WIDGET container=# com.android.launcher3.logger.LauncherAtom$ContainerInfo@7ba6f targetComponent=ComponentInfo{com.sec.android.app.sbrowser/com.sec.android.app.sbrowser.search_widget.SearchWidgetProvider} screen=-1 cell(-1,-1) span(4,1) minSpan(1,1) rank=0 rankOfList=-1 user=UserHandle{0} title=null hidden=0 screenType=0 componentName=ComponentInfo{com.sec.android.app.sbrowser/com.sec.android.app.sbrowser.search_widget.SearchWidgetProvider}), info: PendingAddWidgetInfo(id=-1 type=WIDGET container=# com.android.launcher3.logger.LauncherAtom$ContainerInfo@7ba6f targetComponent=ComponentInfo{com.urbandroid.sleep/com.urbandroid.sleep.appwidget.GraphWidget} screen=-1 cell(-1,-1) span(4,2) minSpan(3,1) rank=0 rankOfList=-1 user=UserHandle{0} title=null hidden=0 screenType=0 componentName=ComponentInfo{com.urbandroid.sleep/com.urbandroid.sleep.appwidget.GraphWidget}), info: PendingAddWidgetInfo(id=-1 type=WIDGET container=# com.android.launcher3.logger.LauncherAtom$ContainerInfo@7ba6f targetComponent=ComponentInfo{com.google.android.apps.maps/com.google.android.apps.gmm.widget.SearchWidgetProvider} screen=-1 cell(-1,-1) span(3,2) minSpan(2,2) rank=0 rankOfList=-1 user=UserHandle{0} title=null hidden=0 screenType=0 componentName=ComponentInfo{com.google.android.apps.maps/com.google.android.apps.gmm.widget.SearchWidgetProvider}), info: PendingAddWidgetInfo(id=-1 type=WIDGET container=# com.android.launcher3.logger.LauncherAtom$ContainerInfo@7ba6f targetComponent=ComponentInfo{com.google.android.gm/com.google.android.gm.widget.GmailWidgetProvider} screen=-1 cell(-1,-1) span(3,2) minSpan(2,2) rank=0 rankOfList=-1 user=UserHandle{0} title=null hidden=0 screenType=0 componentName=ComponentInfo{com.google.android.gm/com.google.android.gm.widget.GmailWidgetProvider})
+11-26 18:41:28.308  1115  1876 I SemWifiServiceDetector: Traff. tracking resumed
+11-26 18:41:28.653  1115  1526 D PowerManagerService: UserActivityStateListenerState: 0
+11-26 18:41:28.724  1115  2678 I SemDvfsHyPerManager: acquire hyper - AMS_RESUME_TAIL/1115@19, type = -999
+11-26 18:41:28.724  1115  2678 I SemDvfsHyPerManager: acquire hyper - AMS_ACT_LAZY/1115@20, type = -999
+11-26 18:41:28.725  1115  2678 D ActivityManagerPerformance: AMP_acquire() TAIL
+11-26 18:41:28.725  1115  2678 D ActivityManagerPerformance: AMP_release() APP_SWITCH
+11-26 18:41:28.725   862   901 I HYPER-HAL: [RequestManager.cpp]acquire(): Acquired ID : 643564  [1115 / 19]    HINT : AMS_RESUME_TAIL    list : 
+11-26 18:41:28.726   862   901 I HYPER-HAL: [RequestManager.cpp]acquire(): Acquired ID : 644700  [1115 / 20]    HINT : AMS_ACT_LAZY    list : 
+11-26 18:41:28.729   862   901 I HYPER-HAL: [RequestManager.cpp]releaseLocked(): Released ID : 645837
+11-26 18:41:28.734  5138  5222 E TaskStackListenerAbstract: onTaskSnapshotChanged called by Binder.getCallingPid() 0 android.app.ITaskStackListener$Stub.onTransact:585 android.os.Binder.execTransactInternal:1220 android.os.Binder.execTransact:1179 <bottom of call stack> 
+11-26 18:41:28.736  1115  3232 D FreecessController: com.urbandroid.sleep(state: Initial -> Freezeable, Reason: uidIdle)
+11-26 18:41:28.763  1115  3181 I PkgPredictorService-NapClassifier: it's ready to run
+11-26 18:41:28.769  1115  3181 D ActivityTaskManager: startActivityAsUser: callingPid=1115, callingUid=1000, caller=com.android.server.wm.ActivityTaskManagerService.startActivityAsUser:1743 android.app.ContextImpl.startActivityAsUser:1144 com.android.server.ipm.nap.IpmNapPreloadController.launchProcessFromNap:436 com.android.server.ipm.nap.IpmNapPreloadController.preloadApp:194 com.android.server.ipm.nap.IpmNapPreloadController.handleProcessForegroundFinish:135 com.android.server.ipm.nap.IpmNapPreloadController.handleMessageEvent:344 com.android.server.ipm.PreloadController$MainHandler.handleMessage:204 
+11-26 18:41:28.771  1115  3181 I ActivityTaskManager: [SecIpm] intent received, starting preload launch:com.defaultcompany.trunk
+11-26 18:41:28.772  1115  1460 D CompatibilityChangeReporter: Compat change id reported: 135634846; UID 10737; state: DISABLED
+11-26 18:41:28.772  1115  1485 D CompatibilityChangeReporter: Compat change id reported: 143937733; UID 10737; state: DISABLED
+11-26 18:41:28.776   772   772 D Zygote  : Forked child process 18785
+11-26 18:41:28.776  1115  1485 I ActivityManager: Start proc 18785:com.defaultcompany.trunk/u0a737 for IpmLaunch {com.defaultcompany.trunk/com.deepwaterooo.dwsdk.MainActivity}
+11-26 18:41:28.776  1115  1485 D ActivityManager: [SecIpm] it's a ML_TYPE_EMPTYPROCESS protected process com.defaultcompany.trunk
+11-26 18:41:28.798 18785 18785 E ltcompany.trun: Not starting debugger since process cannot load the jdwp agent.
+11-26 18:41:28.800 18785 18785 E USNET   : USNET: appName: com.defaultcompany.trunk
+11-26 18:41:28.800 18785 18785 D ProcessState: Binder ioctl to enable oneway spam detection failed: Invalid argument
+11-26 18:41:28.803 18785 18785 D ActivityThread: setConscryptValidator
+11-26 18:41:28.804 18785 18785 D ActivityThread: setConscryptValidator - put
+11-26 18:41:28.807  1115  2714 I ActivityManager: DSS OFF for com.defaultcompany.trunk
+11-26 18:41:28.809  1115  2714 D ActivityManager: attachApplicationLocked() app=ProcessRecord{f6d9832 18785:com.defaultcompany.trunk/u0a737} app.isolatedEntryPoint=null instr2=null
+11-26 18:41:28.811  1115  1458 D NetworkPolicy: onUidStateChanged() uid: 10737, isForeground(false, 19)
+11-26 18:41:28.814 18785 18785 D ActivityThread: handleBindApplication()++ app=com.defaultcompany.trunk
+11-26 18:41:28.815 18785 18785 D CompatibilityChangeReporter: Compat change id reported: 171979766; UID 10737; state: DISABLED
+11-26 18:41:28.818  1115  1876 D SemNscXgbMsL1: Probability - Cloud gaming: [0.003235682]
+11-26 18:41:28.818  1115  1876 D SemNscXgbMsL1: Probability - Real time: [0.00851472]
+11-26 18:41:28.818  1115  1876 D SemNscXgbMsL1: Probability - Non real time: [0.9915245]
+11-26 18:41:28.818  1115  1876 D SemNscXgbMsL1: 1 sample inference time: 0.342084 msecs
+11-26 18:41:28.819  1115  1876 D SemNscXgbL2Rt: L2 RT 1 sample inference time: 0.386771 msecs
+11-26 18:41:28.819  1115  1876 D SemNscXgbL2Nrt: L2 NRT 1 sample inference time: 0.32151 msecs
+11-26 18:41:28.823 18785 18785 D ApplicationLoaders: Returning zygote-cached class loader: /system/framework/android.test.base.jar
+11-26 18:41:28.848 18785 18785 V GraphicsEnvironment: ANGLE Developer option for 'com.defaultcompany.trunk' set to: 'default'
+11-26 18:41:28.848 18785 18785 V GraphicsEnvironment: App is not on the allowlist for updatable production driver.
+11-26 18:41:28.850 18785 18785 D LoadedApk: LoadedApk::makeApplication() appContext.mOpPackageName=com.defaultcompany.trunk appContext.mBasePackageName=com.defaultcompany.trunk
+11-26 18:41:28.850 18785 18785 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-26 18:41:28.860 18785 18785 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-26 18:41:28.860 18785 18785 D ActivityThread: handleBindApplication() --
+11-26 18:41:29.028   862 18784 I HYPER-HAL: [RequestManager.cpp]releaseLocked(): Released ID : 643564
+11-26 18:41:29.250  1115  4496 E TaskPersister: File error accessing recents directory (directory doesn't exist?).
+11-26 18:41:29.322  1115  1876 D SemNscXgbMsL1: Probability - Cloud gaming: [0.003235682]
+11-26 18:41:29.323  1115  1876 D SemNscXgbMsL1: Probability - Real time: [0.00851472]
+11-26 18:41:29.324  1115  1876 D SemNscXgbMsL1: Probability - Non real time: [0.9915245]
+11-26 18:41:29.324  1115  1876 D SemNscXgbMsL1: 1 sample inference time: 2.177709 msecs
+11-26 18:41:29.327  1115  1876 D SemNscXgbL2Rt: L2 RT 1 sample inference time: 2.782864 msecs
+11-26 18:41:29.329  1115  1876 D SemNscXgbL2Nrt: L2 NRT 1 sample inference time: 2.026406 msecs
+11-26 18:41:29.332   853 10726 I sensors-hal: handle_sns_client_event:660, [0][39850] accel_sample [-0.565,  0.048,  9.772] 332426139239252
+11-26 18:41:29.435   682   682 D io_stats: !@   8,0 r 2830786 108669112 w 2494727 109262672 d 0 0 f 0 0 iot 1841580 0 th 0 0 0 pt 0 inp 0 0 272590.251
+11-26 18:41:29.736   862 18764 I HYPER-HAL: [RequestManager.cpp]releaseLocked(): Released ID : 9867918
+11-26 18:41:29.833  1115  1876 D SemNscXgbMsL1: Probability - Cloud gaming: [0.003235682]
+11-26 18:41:29.837  1115  1876 D SemNscXgbMsL1: Probability - Real time: [0.00851472]
+11-26 18:41:29.837  1115  1876 D SemNscXgbMsL1: Probability - Non real time: [0.9915245]
+11-26 18:41:29.838  1115  1876 D SemNscXgbMsL1: 1 sample inference time: 5.366094 msecs
+11-26 18:41:29.840  1115  1876 D SemNscXgbL2Rt: L2 RT 1 sample inference time: 2.487864 msecs
+11-26 18:41:29.843  1115  1876 D SemNscXgbL2Nrt: L2 NRT 1 sample inference time: 2.212968 msecs
+11-26 18:41:29.906  1999  1999 D NetworkController.WifiSignalController: notifyListener: visible=true, enabled=true, connected=true, inetCondition=1, isDefault=true, receivedCR=true, receivedIC=-1, shouldForceHide=false, emptyConnected=false
+11-26 18:41:30.345  1115  1876 D SemNscXgbMsL1: Probability - Cloud gaming: [0.003235682]
+11-26 18:41:30.346  1115  1876 D SemNscXgbMsL1: Probability - Real time: [0.00851472]
+11-26 18:41:30.347  1115  1876 D SemNscXgbMsL1: Probability - Non real time: [0.9915245]
+11-26 18:41:30.347  1115  1876 D SemNscXgbMsL1: 1 sample inference time: 2.394167 msecs
+11-26 18:41:30.351  1115  1876 D SemNscXgbL2Rt: L2 RT 1 sample inference time: 3.34724 msecs
+11-26 18:41:30.355  1115  1876 D SemNscXgbL2Nrt: L2 NRT 1 sample inference time: 4.102187 msecs
+11-26 18:41:30.743  1115  1955 I Pageboost: IoRecord pid : 18741
+11-26 18:41:30.744  1115  1955 W System.err: java.io.FileNotFoundException: /proc/18741/io_record_control: open failed: ENOENT (No such file or directory)
+11-26 18:41:30.745  1115  1955 W System.err: 	at libcore.io.IoBridge.open(IoBridge.java:575)
+11-26 18:41:30.745  1115  1955 W System.err: 	at java.io.FileOutputStream.<init>(FileOutputStream.java:236)
+11-26 18:41:30.745  1115  1955 W System.err: 	at java.io.FileOutputStream.<init>(FileOutputStream.java:186)
+11-26 18:41:30.745  1115  1955 W System.err: 	at java.io.FileWriter.<init>(FileWriter.java:90)
+11-26 18:41:30.745  1115  1955 W System.err: 	at com.android.server.am.Pageboost$IoRecord.write(Pageboost.java:1700)
+11-26 18:41:30.745  1115  1955 W System.err: 	at com.android.server.am.Pageboost$IoRecord.getResultFromKernel(Pageboost.java:1924)
+11-26 18:41:30.745  1115  1955 W System.err: 	at com.android.server.am.Pageboost$PageboostHandler.handleMessage(Pageboost.java:2451)
+11-26 18:41:30.745  1115  1955 W System.err: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+11-26 18:41:30.745  1115  1955 W System.err: 	at android.os.Looper.loopOnce(Looper.java:226)
+11-26 18:41:30.745  1115  1955 W System.err: 	at android.os.Looper.loop(Looper.java:313)
+11-26 18:41:30.745  1115  1955 W System.err: 	at android.os.HandlerThread.run(HandlerThread.java:67)
+11-26 18:41:30.745  1115  1955 W System.err: 	at com.android.server.ServiceThread.run(ServiceThread.java:44)
+11-26 18:41:30.745  1115  1955 W System.err: Caused by: android.system.ErrnoException: open failed: ENOENT (No such file or directory)
+11-26 18:41:30.745  1115  1955 W System.err: 	at libcore.io.Linux.open(Native Method)
+11-26 18:41:30.746  1115  1955 W System.err: 	at libcore.io.ForwardingOs.open(ForwardingOs.java:567)
+11-26 18:41:30.746  1115  1955 W System.err: 	at libcore.io.BlockGuardOs.open(BlockGuardOs.java:273)
+11-26 18:41:30.746  1115  1955 W System.err: 	at libcore.io.IoBridge.open(IoBridge.java:561)
+11-26 18:41:30.746  1115  1955 W System.err: 	... 11 more
+11-26 18:41:30.746  1115  1955 E Pageboost: StopRecording Failed
+11-26 18:41:30.747  1115  1955 E Pageboost: captureFinished fail
+11-26 18:41:30.763  1115  1955 I Pageboost: db update :com.defaultcompany.trunk ret 1
+11-26 18:41:30.857  1115  1876 D SemNscXgbMsL1: Probability - Cloud gaming: [0.003235682]
+11-26 18:41:30.858  1115  1876 D SemNscXgbMsL1: Probability - Real time: [0.00851472]
+11-26 18:41:30.858  1115  1876 D SemNscXgbMsL1: Probability - Non real time: [0.9915245]
+11-26 18:41:30.858  1115  1876 D SemNscXgbMsL1: 1 sample inference time: 1.335833 msecs
+11-26 18:41:30.860  1115  1876 D SemNscXgbL2Rt: L2 RT 1 sample inference time: 1.785365 msecs
+11-26 18:41:30.861  1115  1876 D SemNscXgbL2Nrt: L2 NRT 1 sample inference time: 1.340208 msecs
+11-26 18:41:31.291  1115  1494 D BatteryExternalStatsWorker: update stats : update-network-netlog (6)
+11-26 18:41:31.291  1115  1494 D BatteryExternalStatsWorker: WifiActivityEnergyInfo was updated
+11-26 18:41:31.305  1115  2714 D TelephonyManager: requestModemActivityInfo: Sending result to app: ModemActivityInfo{ mTimestamp=332428688 mSleepTimeMs=324894690 mIdleTimeMs=811315 mTxTimeMs[]=[887, 350, 5870, 15032, 62318] mRxTimeMs=6619189}
+11-26 18:41:31.305  1115  1494 D BatteryExternalStatsWorker: ModemActivityInfo was updated
+11-26 18:41:31.305  1115  1494 D BatteryExternalStatsWorker: done updateExternalStatsLocked
+11-26 18:41:31.312  1115  1876 I SemWifiServiceDetector: Traff. tracking suspended
+11-26 18:41:31.318   770  1826 D IptablesRestoreController: [iptables debug]iptables-restore execute *filter
+11-26 18:41:31.318   770  1826 D IptablesRestoreController: -nvx -L tetherctrl_counters
+11-26 18:41:31.318   770  1826 D IptablesRestoreController: COMMIT
+11-26 18:41:31.320   770  1826 D IptablesRestoreController: [iptables debug]iptables-restore execute done, res : 0
+11-26 18:41:31.320   770  1826 D IptablesRestoreController: [iptables debug]iptables-restore execute *filter
+11-26 18:41:31.320   770  1826 D IptablesRestoreController: -nvx -L tetherctrl_counters
+11-26 18:41:31.320   770  1826 D IptablesRestoreController: COMMIT
+11-26 18:41:31.321   770  1826 D IptablesRestoreController: [iptables debug]iptables-restore execute done, res : 0
+11-26 18:41:31.331   770  1826 D IptablesRestoreController: [iptables debug]iptables-restore execute *filter
+11-26 18:41:31.331   770  1826 D IptablesRestoreController: -nvx -L tetherctrl_counters
+11-26 18:41:31.331   770  1826 D IptablesRestoreController: COMMIT
+11-26 18:41:31.332   853 10726 I sensors-hal: handle_sns_client_event:660, [0][39861] accel_sample [-0.567,  0.052,  9.771] 332428278087898
+11-26 18:41:31.332   770  1826 D IptablesRestoreController: [iptables debug]iptables-restore execute done, res : 0
+11-26 18:41:31.332   770  1826 D IptablesRestoreController: [iptables debug]iptables-restore execute *filter
+11-26 18:41:31.332   770  1826 D IptablesRestoreController: -nvx -L tetherctrl_counters
+11-26 18:41:31.332   770  1826 D IptablesRestoreController: COMMIT
+11-26 18:41:31.333   770  1826 D IptablesRestoreController: [iptables debug]iptables-restore execute done, res : 0
+11-26 18:41:31.436   682   682 D io_stats: !@   8,0 r 2830786 108669112 w 2494841 109263496 d 0 0 f 0 0 iot 1841600 0 th 0 0 0 pt 0 inp 0 0 272592.252
+11-26 18:41:31.805  1115  7844 D SGM:GameManager: identifyGamePackage. com.sec.android.app.launcher, mCurrentUserId: 0, callerUserId: 0, callingMethodInfo: com.android.server.ssrm.SortingMachine.isGame(SortingMachine.java:162)
+11-26 18:41:31.805  1115  7844 D SGM:PkgDataHelper: getGamePkgData(). com.sec.android.app.launcher
+11-26 18:41:31.912  1115 18802 D WifiConnectivityMonitor.DnsPingerHandler: setCurrentLinkProperties: lp={InterfaceName: wlan0 LinkAddresses: [ fe80::147c:82ff:fe09:e448/64,192.168.1.203/24,2600:1700:e840:17a0:147c:82ff:fe09:e448/64,2600:1700:e840:17a0:2039:2677:86d0:2704/64 ] DnsAddresses: [ /2600:1700:e840:17a0::1,/192.168.1.254 ] Domains: attlocal.net MTU: 0 ServerAddress: /192.168.1.254 TcpBufferSizes: 524288,1048576,4194304,524288,1048576,4194304 Routes: [ fe80::/64 -> :: wlan0 mtu 0,2600:1700:e840:17a0::/64 -> :: wlan0 mtu 0,2600:1700:e840:17a0::/60 -> fe80::8a96:4eff:fe04:74a0 wlan0 mtu 0,::/0 -> fe80::8a96:4eff:fe04:74a0 wlan0 mtu 0,192.168.1.0/24 -> 0.0.0.0 wlan0 mtu 0,0.0.0.0/0 -> 192.168.1.254 wlan0 mtu 0 ]}
+11-26 18:41:32.222  1115 18803 D WifiConnectivityMonitor.DnsThread:  [|209] []
+11-26 18:41:32.223  1115  1886 D WifiConnectivityMonitor.NetworkStatsAnalyzer: DNS resultType : 0, responseTime : 209
+11-26 18:41:32.623  1999  2213 D TileLifecycleManager: Unbinding service Intent { cmp=com.samsung.android.kidsinstaller/.quickpanel.service.KidsTileService (has extras) } UserHandle{0}
+11-26 18:41:32.630  1115  2161 I ActivityManager: Changes in 10137 5 to 10, 8 to 0
+11-26 18:41:32.632  1115  1458 D NetworkPolicy: onUidStateChanged() uid: 10137, isForeground(false, 10)
+11-26 18:41:32.637  1115  4587 I ActivityManager: Killing 17308:com.samsung.gpuwatchapp/1000 (adj 999): empty #33
+11-26 18:41:32.645  1115  1486 I libprocessgroup: Successfully killed process cgroup uid 1000 pid 17308 in 5ms
+11-26 18:41:32.681   771   771 I Zygote  : Process 17308 exited due to signal 9 (Killed)
+11-26 18:41:32.690  1115  2714 I ActivityManager: Killing 17349:com.sec.spp.push/u0a70 (adj 999): empty #33
+11-26 18:41:32.697  1115  1486 I libprocessgroup: Successfully killed process cgroup uid 10070 pid 17349 in 5ms
+11-26 18:41:32.725   771   771 I Zygote  : Process 17349 exited due to signal 9 (Killed)
+11-26 18:41:32.838  1115  2714 D SamsungAlarmManager: Cancel Alarm calling from uid:10045 pid :25726 / OP:PendingIntent{78fca2e: PendingIntentRecord{ba1c02c com.google.android.gms/ startService}}
+11-26 18:41:32.840  1115  2714 V SamsungAlarmManager: setLocked to kernel - W:332699878 / NW:332457384, now=332430224
+11-26 18:41:32.855  1115  2714 D SamsungAlarmManager: Cancel Alarm calling from uid:10045 pid :19486 / OP:PendingIntent{56749cf: PendingIntentRecord{edc171 com.google.android.gms/ startService}}
+11-26 18:41:32.855  1115  2714 V SamsungAlarmManager: setLocked to kernel - W:332699878 / NW:332457384, now=332430239
+11-26 18:41:32.860  1115  2714 I ActivityManager: Killing 17437:com.samsung.android.app.watchmanager/u0a208 (adj 999): empty #33
+11-26 18:41:32.867  1115  1486 I libprocessgroup: Successfully killed process cgroup uid 10208 pid 17437 in 5ms
+11-26 18:41:32.900   771   771 I Zygote  : Process 17437 exited due to signal 9 (Killed)
+11-26 18:41:32.990  1999  1999 D NetworkController.WifiSignalController: notifyListener: visible=true, enabled=true, connected=true, inetCondition=1, isDefault=true, receivedCR=true, receivedIC=-1, shouldForceHide=false, emptyConnected=false
+11-26 18:41:33.017   940   940 I SurfaceFlinger: SFWD update time=272593834656221
+11-26 18:41:33.333   853 10726 I sensors-hal: handle_sns_client_event:660, [0][39872] accel_sample [-0.565,  0.048,  9.773] 332430416853939
+11-26 18:41:35.239  2036  2036 I wpa_supplicant: Heartbeat 27468
+11-26 18:41:35.334   853 10726 I sensors-hal: handle_sns_client_event:660, [0][39883] accel_sample [-0.562,  0.046,  9.766] 332432555562718
+11-26 18:41:35.612  1115  1886 D WifiConnectivityMonitor.NetworkStatsAnalyzer: Backhaul result - RSSI:-48, CE:25, PE:26, TI:34, PTI:35, TW:38, PTW:38, Tx:14, Rx:18, TxS:12, RxS:14, RESULT:true, IC:0, ICT:5, WC:0, WCT:5, R:1, RC:0, IE:0, EC:0
+11-26 18:41:37.445   682   682 D io_stats: !@   8,0 r 2830786 108669112 w 2494846 109263636 d 0 0 f 0 0 iot 1841610 0 th 0 0 0 pt 0 inp 0 0 272598.261
+11-26 18:41:37.701   853 10729 I sensors-hal: handle_sns_client_event:217, auto_rotation_event_2: mode:255, type:1:0/-0.565,0.038,9.754, ar:0
+11-26 18:41:37.701   853 10726 I sensors-hal: handle_sns_client_event:660, [0][39894] accel_sample [-0.567,  0.044,  9.772] 332434694312145
+11-26 18:41:38.746  1115  3232 D FreecessController: com.urbandroid.sleep(state: Freezeable -> Frozen, Reason: uidIdle)
+11-26 18:41:38.747  1115  3232 D FreecessController: FZ : com.urbandroid.sleep(29434)
+11-26 18:41:38.748  1115  3232 D FreecessController: FZ : com.urbandroid.sleep(0), reason: Bg
+11-26 18:41:38.748   770  1826 E TrafficController: FREECESS
+11-26 18:41:38.750  1115  3232 I PowerManagerService: [PWL] SetWakeLockEnableDisable uid = 10393 , disable= true
+11-26 18:41:38.750  1115  3232 I PowerManagerService: [PWL] can not change uid =  10393
+11-26 18:41:38.750  1115  3232 W LocationManagerService: onFreezeStateChanged, uid[10393]=true
+11-26 18:41:38.898  1115  2733 D ConnectivityService: requestNetwork for uid/pid:5023/17651 activeRequest: null callbackRequest: 3548 [NetworkRequest [ REQUEST id=3549, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 5023 RequestorUid: 5023 RequestorPkg: com.samsung.android.networkdiagnostic] ]] callback flags: 0 priority: 2147483647
+11-26 18:41:38.900  1115  1821 D ConnectivityService: NetworkReassignment :
+11-26 18:41:38.900  1115  1821 D ConnectivityService:   3549 : null → 161
+11-26 18:41:38.900  1115  1821 D ConnectivityService:    accepting network in place of null
+11-26 18:41:38.906  1115  1811 D WifiNetworkFactory: got request NetworkRequest [ REQUEST id=3549, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 5023 RequestorUid: 5023 RequestorPkg: com.samsung.android.networkdiagnostic] ]
+11-26 18:41:38.906  1115  1811 D UntrustedWifiNetworkFactory: got request NetworkRequest [ REQUEST id=3549, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 5023 RequestorUid: 5023 RequestorPkg: com.samsung.android.networkdiagnostic] ]
+11-26 18:41:38.907 17651 18806 I [ND]ConnectedWifiMeasurementWorker: androidx.work-2 | Start Work
+11-26 18:41:38.907  1115  1811 D OemPaidWifiNetworkFactory: got request NetworkRequest [ REQUEST id=3549, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 5023 RequestorUid: 5023 RequestorPkg: com.samsung.android.networkdiagnostic] ]
+11-26 18:41:38.914 17651 18806 W [ND]LocationUtilityImpl: androidx.work-2 | getLocationSingle: location time/provider condition is not satisfied
+11-26 18:41:38.926  1954  2001 I System.out: Broadcasting: Intent { act=com.samsung.android.intent.action.CELL_INFO_RES_V2 cmp=com.samsung.android.networkdiagnostic/.receiver.NetworkDiagnosticReceiver (has extras) }
+11-26 18:41:38.926  1115  2733 W ServiceManager: Permission failure: android.permission.HIGH_SAMPLING_RATE_SENSORS from uid=5023 pid=17651
+11-26 18:41:38.927   746  1666 I CASS_DEBUG: acquire_wake_lock lock=1 id='client-interface'
+11-26 18:41:38.927   746  1666 I CASS_DEBUG: release_wake_lock id='client-interface'
+11-26 18:41:38.929   746  1666 I CASS_DEBUG: acquire_wake_lock lock=1 id='client-interface'
+11-26 18:41:38.929   746  1666 I CASS_DEBUG: release_wake_lock id='client-interface'
+11-26 18:41:38.929  1115  2714 D SensorService: Calling batch handle==61 flags=0 rate=200000000 timeout== 0
+11-26 18:41:38.930   853   853 I sensors-hal: set_config:67, sample_period_ns is adjusted to 200000000 based on min/max delay_ns
+11-26 18:41:38.930   853   853 I sensors-hal: batch:336, android.sensor.pressure/61, period=200000000, max_latency=0 request completed
+11-26 18:41:38.930  1984  3997 I RILClient: processUnsolicited(): resp_id (11090), len(518)
+11-26 18:41:38.930  1984  3997 I RILClient: processUnsolicited(): resp_id (11038), len(177)
+11-26 18:41:38.931   853   853 I sensors-hal: activate:252, android.sensor.pressure/61 en=1
+11-26 18:41:38.931   853   853 I sensors-hal: get_qmi_debug_flag:241, support_qmi_debug : false
+11-26 18:41:38.937   853   853 I sensors-hal: activate:58, activate pressure
+11-26 18:41:38.937   853   853 I sensors-hal: activate:270, android.sensor.pressure/61 en=1 completed
+11-26 18:41:38.939 17651 17651 I [ND]NetworkDiagnosticReceiver: main | onReceive: com.samsung.android.intent.action.CELL_INFO_RES_V2
+11-26 18:41:38.939 17651 17651 I [ND]NetworkDiagnosticReceiver: main | onReceive: Bundle[mParcelledData.dataSize=760]
+11-26 18:41:38.939 17651 17651 I [ND]JobScheduleUtil: main | schedule
+11-26 18:41:38.939 17651 17651 I [ND]JobScheduleUtil: main | INTENT_FROM_CP_CELL_INFO_RES_V2
+11-26 18:41:38.939 17651 17651 I [ND]JobScheduleUtil: main | WIFI_CELL_INFO
+11-26 18:41:38.940  1954  2295 I System.out: Broadcast completed: result=0
+11-26 18:41:38.941   853 18810 I sensors-hal: handle_indication_realtime:466,  SCHED_FIFO(10) for qmi_cbk
+11-26 18:41:38.953  1115  1115 V SamsungAlarmManager: setLocked to kernel - W:332699878 / NW:332457384, now=332436337
+11-26 18:41:39.141   853 18810 I sensors-hal: handle_sns_std_sensor_event:86, [0] Pressure - 1016.17
+11-26 18:41:39.144  1115  2714 D SensorService: Calling activate off 61
+11-26 18:41:39.144   853   853 I sensors-hal: activate:252, android.sensor.pressure/61 en=0
+11-26 18:41:39.147  1115  2733 I WifiService: startScan uid=5023
+11-26 18:41:39.147   853   853 I sensors-hal: deactivate:301, disconnect qmi to disable sensor
+11-26 18:41:39.147   853   853 I sensors-hal: deactivate:67, deactivate pressure
+11-26 18:41:39.147   853   853 I sensors-hal: activate:270, android.sensor.pressure/61 en=0 completed
+11-26 18:41:39.207  1115  1815 D SamsungAlarmManager: setInexact (T:2/F:8/AC:false) 20221126T184154 now=332436591 - CU:1000/CP:1115/L:9321cf0:WificondScannerImpl Scan Timeout
+11-26 18:41:39.208  1115  1815 V SamsungAlarmManager: setLocked to kernel - W:332462840 / NW:332457384, now=332436592
+11-26 18:41:40.941   853 10726 I sensors-hal: handle_sns_client_event:660, [0][39905] accel_sample [-0.567,  0.043,  9.772] 332436832977559
+11-26 18:41:41.890  1115  2733 D WifiNl80211Manager: Scan result ready event
+11-26 18:41:41.890  1115  2733 D WifiNative: Scan result ready event
+11-26 18:41:41.891  1219  1988 I LOWI-9.0.0.63: [LOWI-Scan] lowi_close_record:Scan done in 332418997ms, 19 APs in scan results
+11-26 18:41:41.891  1115  1815 D SamsungAlarmManager: Cancel Alarm calling from uid:1000 pid :1115 / L:9321cf0
+11-26 18:41:41.892  1115  1815 V SamsungAlarmManager: setLocked to kernel - W:332699878 / NW:332457384, now=332439275
+11-26 18:41:41.920  1115  1484 D BaseRestrictionMgr: Package: com.tencent.mm, userid: 0, hostingType: broadcast is Restricted by policy: 4 caller is: android
+11-26 18:41:41.920  1115  1484 W BroadcastQueue: intent:Intent { act=android.net.wifi.SCAN_RESULTS flg=0x4000010 (has extras) } is skipped in RestrictedPackage to ProcessRecord{fe2556d 17701:com.tencent.mm:push/u0a287}
+11-26 18:41:41.921  1115  1484 W BroadcastQueue: Background execution not allowed: receiving Intent { act=android.net.wifi.SCAN_RESULTS flg=0x4000010 (has extras) } to com.vzw.hss.myverizon/com.vzw.mobilefirst.inStore.receiver.MFWifiScanReceiver
+11-26 18:41:42.004  1115  1868 V SemWifiScanPool: updateScanResult, scan:19 configKeys: 12 pool_bssid:17 pool_configKeys:12
+11-26 18:41:42.008  1115  2714 E AppOps  : evalMode() Foreground mode : uid - 10356, op - 1, capability - 0
+11-26 18:41:42.008  1115  2714 E AppOps  : evalMode() Foreground mode : uid - 10356, op - 0, capability - 0
+11-26 18:41:42.015  1115  2714 E AppOps  : evalMode() Foreground mode : uid - 10356, op - 1, capability - 0
+11-26 18:41:42.015  1954  2295 I LocationAccessPolicy: com.sohu.inputmethod.sogou is aware of fine but the app-ops permission is specifically denied.
+11-26 18:41:42.016  1954  2295 I LocationAccessPolicy: checkLocationPermission - callingUid: 10356, callingPid: 5198, resultForFine: DENIED_SOFT
+11-26 18:41:42.019  1115  2714 E AppOps  : evalMode() Foreground mode : uid - 10356, op - 1, capability - 0
+11-26 18:41:42.019  1115  2714 E AppOps  : evalMode() Foreground mode : uid - 10356, op - 0, capability - 0
+11-26 18:41:42.020  1115  2714 W WifiService: Permission violation - getScanResults not allowed for uid=10356, packageName=com.sohu.inputmethod.sogou, reason=java.lang.SecurityException: UID 10356 has no location permission
+11-26 18:41:42.038 17651 18365 I [ND]ConnectedWifiMeasurementWorker: RxCachedThreadScheduler-3 | End Work: Success {mOutputData=Data {}}
+11-26 18:41:42.039  1115  1884 D WifiConnectivityMonitor: MultiNetwork : false || false
+11-26 18:41:42.039  1115  1884 D WifiConnectivityMonitor: MultiNetwork legacy (1000) false
+11-26 18:41:42.039 17651 18123 I WM-WorkerWrapper: Worker result SUCCESS for Work [ id=d062c093-856e-4c42-9dd9-af192d96753d, tags={ Measurements, com.samsung.android.networkdiagnostic.core.background.measurement.ConnectedWifiMeasurementWorker } ]
+11-26 18:41:42.043  1115  1821 D ConnectivityService:  Removing from current network [161 WIFI], leaving 125 requests.
+11-26 18:41:42.044  1115  4555 V SamsungAlarmManager: setLocked to kernel - W:332699878 / NW:332457384, now=332439428
+11-26 18:41:42.044  1115  4555 D SamsungAlarmManager: setInexact (T:3/F:0/AC:false) 20221126T184519 now=332439428 - CU:1000/CP:1115/L:208166:*job.delay*
+11-26 18:41:42.044  1115  4555 V SamsungAlarmManager: setLocked to kernel - W:332699878 / NW:332457384, now=332439428
+11-26 18:41:42.262  1999  1999 D NetworkController.WifiSignalController: notifyListener: visible=true, enabled=true, connected=true, inetCondition=1, isDefault=true, receivedCR=true, receivedIC=-1, shouldForceHide=false, emptyConnected=false
+11-26 18:41:42.942   853 10726 I sensors-hal: handle_sns_client_event:660, [0][39916] accel_sample [-0.565,  0.048,  9.772] 332438971776465
+11-26 18:41:43.457   682   682 D io_stats: !@   8,0 r 2830786 108669112 w 2494896 109264028 d 0 0 f 0 0 iot 1841620 0 th 0 0 0 pt 0 inp 0 0 272604.273
+11-26 18:41:43.730   862 18740 I HYPER-HAL: [RequestManager.cpp]releaseLocked(): Released ID : 644700
+11-26 18:41:44.942   853 10726 I sensors-hal: handle_sns_client_event:660, [0][39927] accel_sample [-0.564,  0.041,  9.776] 332441110753028
+11-26 18:41:45.243  2036  2036 I wpa_supplicant: Heartbeat 27469
+11-26 18:41:45.359  1999  1999 D NetworkController.WifiSignalController: notifyListener: visible=true, enabled=true, connected=true, inetCondition=1, isDefault=true, receivedCR=true, receivedIC=-1, shouldForceHide=false, emptyConnected=false
+11-26 18:41:45.621  1115  1886 D WifiConnectivityMonitor.NetworkStatsAnalyzer: Backhaul result - RSSI:-48, CE:25, PE:25, TI:34, PTI:34, TW:37, PTW:38, Tx:2, Rx:2, TxS:0, RxS:0, RESULT:true, IC:0, ICT:5, WC:0, WCT:5, R:0, RC:0, IE:0, EC:0
+11-26 18:41:46.944   853 10726 I sensors-hal: handle_sns_client_event:660, [0][39938] accel_sample [-0.566,  0.049,  9.770] 332443249530788
+11-26 18:41:47.463   682   682 D io_stats: !@   8,0 r 2830786 108669112 w 2494917 109264240 d 0 0 f 0 0 iot 1841640 0 th 0 0 0 pt 0 inp 0 0 272608.279
+11-26 18:41:48.072   853 10729 I sensors-hal: handle_sns_client_event:217, auto_rotation_event_2: mode:255, type:1:0/-0.577,0.055,9.744, ar:0
+11-26 18:41:48.943   853 10726 I sensors-hal: handle_sns_client_event:660, [0][39949] accel_sample [-0.563,  0.048,  9.771] 332445388169642
+11-26 18:41:50.944   853 10726 I sensors-hal: handle_sns_client_event:660, [0][39960] accel_sample [-0.565,  0.037,  9.768] 332447526758392
+11-26 18:41:51.601  1999  1999 D NetworkController.WifiSignalController: notifyListener: visible=true, enabled=true, connected=true, inetCondition=1, isDefault=true, receivedCR=true, receivedIC=-1, shouldForceHide=false, emptyConnected=false
+11-26 18:41:52.752  1115  1867 D SemCellularStateManager: onSignalStrengthsChanged: mCellularSignalLevel=1
+11-26 18:41:52.753  1115  3218 W NetlinkSocket: maximum read
+11-26 18:41:52.753  3697  3741 I EPDG -- SIM0 [SMARTCELLULAR]: onSignalStrengthsChanged: SignalStrength:{mCdma=Invalid,mGsm=Invalid,mWcdma=Invalid,mTdscdma=Invalid,mLte=CellSignalStrengthLte: rssi=-77 rsrp=-111 rsrq=-15 rssnr=6 cqiTableIndex=2147483647 cqi=2147483647 ta=2147483647 level=1 parametersUseForLevel=0,mNr=Invalid,SignalBarInfo{ lteLevel=3 },rat=14,primary=CellSignalStrengthLte}
+11-26 18:41:52.753  1999  2213 D MobileStatusTracker(0/8): onSignalStrengthsChanged signalStrength=SignalStrength:{mCdma=Invalid,mGsm=Invalid,mWcdma=Invalid,mTdscdma=Invalid,mLte=CellSignalStrengthLte: rssi=-77 rsrp=-111 rsrq=-15 rssnr=6 cqiTableIndex=2147483647 cqi=2147483647 ta=2147483647 level=1 parametersUseForLevel=0,mNr=Invalid,SignalBarInfo{ lteLevel=3 },rat=14,primary=CellSignalStrengthLte} level=3
+11-26 18:41:52.754  3697  3771 I EPDG -- SIM0 [SMARTCELLULAR]: lastLteRSRP is -113 currentLteRSRP is -111 lastLteRSRQ is -15 currentLteRSRQ is -15 lastLteSNR is 3 currentLteSNR is 6
+11-26 18:41:52.754  1999  2213 D CscParser: OMC path : /product/omc/VZW/conf/customer.xml
+11-26 18:41:52.754  1115  3218 W NetlinkSocket: maximum read
+11-26 18:41:52.754  1999  2213 I CscParser: getCustomerPath : omc customer file can read
+11-26 18:41:52.754  1999  2213 E CscParser: update(): xml file exist
+11-26 18:41:52.764  1999  2213 D NetworkController.MobileSignalController(0/8): notifyListener: enabled=true, connected=true, dataConnected=false, networkType=LTE (4G_VZW), emergencyOnly=false, roaming=false, isDefault=false, fiveGAvailable=false, mmWave=false, showDisabledDataIcon=false, voWifiConnected=false, dataActivity=, simState=LOADED, cardOperator=VZW, simCardActivated=0
+11-26 18:41:52.765  1999  2213 D NetworkController: SignalStrength from intent slotId=0
+11-26 18:41:52.942   853 10726 I sensors-hal: handle_sns_client_event:660, [0][39971] accel_sample [-0.569,  0.038,  9.772] 332449665383705
+11-26 18:41:54.034  1115  3218 W NetlinkSocket: maximum read
+11-26 18:41:54.035  1115  3218 W NetlinkSocket: maximum read
+11-26 18:41:54.035  1999  2213 D MobileStatusTracker(0/8): onSignalStrengthsChanged signalStrength=SignalStrength:{mCdma=Invalid,mGsm=Invalid,mWcdma=Invalid,mTdscdma=Invalid,mLte=CellSignalStrengthLte: rssi=-75 rsrp=-112 rsrq=-15 rssnr=6 cqiTableIndex=2147483647 cqi=2147483647 ta=2147483647 level=1 parametersUseForLevel=0,mNr=Invalid,SignalBarInfo{ lteLevel=3 },rat=14,primary=CellSignalStrengthLte} level=3
+11-26 18:41:54.035  1999  2213 D CscParser: OMC path : /product/omc/VZW/conf/customer.xml
+11-26 18:41:54.035  3697  3741 I EPDG -- SIM0 [SMARTCELLULAR]: onSignalStrengthsChanged: SignalStrength:{mCdma=Invalid,mGsm=Invalid,mWcdma=Invalid,mTdscdma=Invalid,mLte=CellSignalStrengthLte: rssi=-75 rsrp=-112 rsrq=-15 rssnr=6 cqiTableIndex=2147483647 cqi=2147483647 ta=2147483647 level=1 parametersUseForLevel=0,mNr=Invalid,SignalBarInfo{ lteLevel=3 },rat=14,primary=CellSignalStrengthLte}
+11-26 18:41:54.036  1999  2213 I CscParser: getCustomerPath : omc customer file can read
+11-26 18:41:54.036  3697  3771 I EPDG -- SIM0 [SMARTCELLULAR]: lastLteRSRP is -111 currentLteRSRP is -112 lastLteRSRQ is -15 currentLteRSRQ is -15 lastLteSNR is 6 currentLteSNR is 6
+11-26 18:41:54.036  1999  2213 E CscParser: update(): xml file exist
+11-26 18:41:54.036  1115  1867 D SemCellularStateManager: onSignalStrengthsChanged: mCellularSignalLevel=1
+11-26 18:41:54.047  1999  2213 D NetworkController: SignalStrength from intent slotId=0
+11-26 18:41:54.941   853 10726 I sensors-hal: handle_sns_client_event:660, [0][39982] accel_sample [-0.562,  0.051,  9.764] 332451803935944
+11-26 18:41:55.245  2036  2036 I wpa_supplicant: Heartbeat 27470
+11-26 18:41:55.313  1115  1867 D SemCellularStateManager: onSignalStrengthsChanged: mCellularSignalLevel=1
+11-26 18:41:55.314  1115  3218 W NetlinkSocket: maximum read
+11-26 18:41:55.315  1999  2213 D MobileStatusTracker(0/8): onSignalStrengthsChanged signalStrength=SignalStrength:{mCdma=Invalid,mGsm=Invalid,mWcdma=Invalid,mTdscdma=Invalid,mLte=CellSignalStrengthLte: rssi=-77 rsrp=-111 rsrq=-15 rssnr=5 cqiTableIndex=2147483647 cqi=2147483647 ta=2147483647 level=1 parametersUseForLevel=0,mNr=Invalid,SignalBarInfo{ lteLevel=3 },rat=14,primary=CellSignalStrengthLte} level=3
+11-26 18:41:55.315  1999  2213 D CscParser: OMC path : /product/omc/VZW/conf/customer.xml
+11-26 18:41:55.315  1115  3218 W NetlinkSocket: maximum read
+11-26 18:41:55.315  1999  2213 I CscParser: getCustomerPath : omc customer file can read
+11-26 18:41:55.316  1999  2213 E CscParser: update(): xml file exist
+11-26 18:41:55.323  3697  3741 I EPDG -- SIM0 [SMARTCELLULAR]: onSignalStrengthsChanged: SignalStrength:{mCdma=Invalid,mGsm=Invalid,mWcdma=Invalid,mTdscdma=Invalid,mLte=CellSignalStrengthLte: rssi=-77 rsrp=-111 rsrq=-15 rssnr=5 cqiTableIndex=2147483647 cqi=2147483647 ta=2147483647 level=1 parametersUseForLevel=0,mNr=Invalid,SignalBarInfo{ lteLevel=3 },rat=14,primary=CellSignalStrengthLte}
+11-26 18:41:55.324  3697  3771 I EPDG -- SIM0 [SMARTCELLULAR]: lastLteRSRP is -112 currentLteRSRP is -111 lastLteRSRQ is -15 currentLteRSRQ is -15 lastLteSNR is 6 currentLteSNR is 5
+11-26 18:41:55.330  1999  2213 D NetworkController: SignalStrength from intent slotId=0
+11-26 18:41:55.630  1115  1886 D WifiConnectivityMonitor.NetworkStatsAnalyzer: Backhaul result - RSSI:-49, CE:25, PE:25, TI:34, PTI:34, TW:1, PTW:37, Tx:1, Rx:1, TxS:0, RxS:0, RESULT:true, IC:0, ICT:5, WC:0, WCT:5, R:0, RC:0, IE:0, EC:0
+11-26 18:41:55.958  1115  1474 E Watchdog: !@Sync: 9082 heap: 105 / 112 [2022-11-26 18:41:55.958] sdogWay: softdog FD: 905
+11-26 18:41:56.254   743   743 E audit   : type=1400 audit(1669516916.249:23870): avc:  denied  { kill } for  pid=0 comm="swapper/3" capability=5  scontext=u:r:kernel:s0 tcontext=u:r:kernel:s0 tclass=capability permissive=0 SEPF_SM-G975U1_12_0001 audit_filtered
+11-26 18:41:56.944   853 10726 I sensors-hal: handle_sns_client_event:660, [0][39993] accel_sample [-0.561,  0.055,  9.773] 332453942569226
+11-26 18:41:57.118  4427  5042 I SDHMS:C : SIOP:: AP:131(227,110) BAT:211(211,0) USB:216(216,0) CHG:217(217,0) PA:234(234,0) WIFI:206(206,0) BLK:0(0,0) SUBBAT:0(0,0) LRP:216(216,0) LRF:216(216) LRB:212(212) 
+11-26 18:41:57.481   682   682 D io_stats: !@   8,0 r 2830786 108669112 w 2494962 109264436 d 0 0 f 0 0 iot 1841650 0 th 0 0 0 pt 0 inp 0 0 272618.297
+11-26 18:41:58.442   853 10729 I sensors-hal: handle_sns_client_event:217, auto_rotation_event_2: mode:255, type:1:0/-0.579,0.017,9.761, ar:0
+11-26 18:41:58.881  1115 18813 D WifiConnectivityMonitor.DnsPingerHandler: setCurrentLinkProperties: lp={InterfaceName: wlan0 LinkAddresses: [ fe80::147c:82ff:fe09:e448/64,192.168.1.203/24,2600:1700:e840:17a0:147c:82ff:fe09:e448/64,2600:1700:e840:17a0:2039:2677:86d0:2704/64 ] DnsAddresses: [ /2600:1700:e840:17a0::1,/192.168.1.254 ] Domains: attlocal.net MTU: 0 ServerAddress: /192.168.1.254 TcpBufferSizes: 524288,1048576,4194304,524288,1048576,4194304 Routes: [ fe80::/64 -> :: wlan0 mtu 0,2600:1700:e840:17a0::/64 -> :: wlan0 mtu 0,2600:1700:e840:17a0::/60 -> fe80::8a96:4eff:fe04:74a0 wlan0 mtu 0,::/0 -> fe80::8a96:4eff:fe04:74a0 wlan0 mtu 0,192.168.1.0/24 -> 0.0.0.0 wlan0 mtu 0,0.0.0.0/0 -> 192.168.1.254 wlan0 mtu 0 ]}
+11-26 18:41:58.943   853 10726 I sensors-hal: handle_sns_client_event:660, [0][40004] accel_sample [-0.565,  0.045,  9.762] 332456081228965
+11-26 18:41:59.184  1115  1837 D DeviceStorageMonitorService: check() STORAGE TOTAL > 64G
+11-26 18:41:59.189  1115  1837 W DeviceStorageMonitorService: updateBroadcasts(/data) oldLevel:0, newLevel:0, seq:1
+11-26 18:41:59.190   633   664 E vold    : getUsedF2fsFileNode -> Cannot Get Used FileNode Number (errno=25 Inappropriate ioctl for device)
+11-26 18:41:59.191  1115  1837 D DeviceStorageMonitorService: Cannot get USED FILE NODE NUMBER!!!
+11-26 18:41:59.191  1115  1837 D DeviceStorageMonitorService: Available File Node Number is [-1]
+11-26 18:41:59.191  1115  1837 W DeviceStorageMonitorService: updateBroadcasts_filenode(/data) fn_oldLevel:0, fn_newLevel:0, seq:1
+11-26 18:41:59.199  1115 18814 D WifiConnectivityMonitor.DnsThread:  [|215] []
+11-26 18:41:59.200  1115  1886 D WifiConnectivityMonitor.NetworkStatsAnalyzer: DNS resultType : 0, responseTime : 215
+11-26 18:42:00.000  1115  1748 D SamsungAlarmManager: Expired : 8
+11-26 18:42:00.001  1115  1748 V SamsungAlarmManager: Sending to uid : 1000 L=772868c:TIME_TICK alarm=Alarm{9d41458 type 3 origWhen 332457384 whenElapsed 332457384 android}
+11-26 18:42:00.002  1115  1748 D SamsungAlarmManager: setExact (T:3/F:9/AC:false) 20221126T184300 now=332457386 - CU:1000/CP:1115/L:772868c:TIME_TICK
+11-26 18:42:00.003  1115  1748 V SamsungAlarmManager: setLocked to kernel - W:332699878 / NW:332458181, now=332457386
+11-26 18:42:00.005  1999  2710 D QSClockBellTower: onReceive(android.intent.action.TIME_TICK) mTimeZoneString:null
+11-26 18:42:00.005  1999  1999 D KeyguardUpdateMonitor: received broadcast android.intent.action.TIME_TICK
+11-26 18:42:00.006  1115  1748 V SamsungAlarmManager: setLocked to kernel - W:332699878 / NW:332458181, now=332457390
+11-26 18:42:00.007  1115  1115 I EyeComfortSolutionService: action  :  android.intent.action.TIME_TICK
+11-26 18:42:00.008  1999  1999 D QSClockBellTower: He is ready to ring the bell. (((QSClockBellSound - TimeText:6:42, TimeContentDescription:6:42 PM, DateText:Sat, November 26, ShortDateText:Sat, Nov 26, Demofalse)))
+11-26 18:42:00.008  1115  2066 I EyeComfortSolutionService: BLF Adaptive Mode Enable : false , targetIndex : [0 + 11] = 6000.0
+11-26 18:42:00.009  1115  2066 I SemMdnieManagerService: setNightModeStep : 11
+11-26 18:42:00.009  1115  2066 I SemMdnieManagerService: setNightMode : false - 11 - true - false
+11-26 18:42:00.009  1999  1999 D QSClockHomeIndicatorView: Home Indicator status_bar_clock notifyTimeChanged(QSClockBellSound - TimeText:6:42, TimeContentDescription:6:42 PM, DateText:Sat, November 26, ShortDateText:Sat, Nov 26, Demofalse) ClockVisibleByPolicy:true, ClockVisibleByUser:true, visible?true, parent:android.widget.LinearLayout{d2d8cb3 V.E...... ......ID 0,0-103,110 #7f0b0472 app:id/left_clock_container}
+11-26 18:42:00.009  1999  1999 D QSClockBellTower: Everyone heard the bell. run(currentTime:1669516920006,   getTime():Sat Nov 26 18:42:00 PST 2022,   getTimeZone():libcore.util.ZoneInfo[mDstSavings=3600000,mUseDst=true,mDelegate=[id="America/Los_Angeles",mRawOffset=-28800000,mEarliestRawOffset=-28378000,transitions=186]])
+11-26 18:42:00.009  1999  1999 D KeyguardUpdateMonitor: handleTimeUpdate
+11-26 18:42:00.010  1999  1999 D FaceWidgetPagesController: onTimeChanged()
+11-26 18:42:00.018  1115  2066 I SemMdnieManagerService: setNightMode : false - 11
+11-26 18:42:00.033  1999  1999 D QS      : setQSExpansion 0.0 -157.325
+11-26 18:42:00.035  1999  1999 D QS      : setQSExpansion 0.0 -157.325
+11-26 18:42:00.035  1999  1999 V SecQSFragmentAnimatorBase: setQsExpansionPosition 0.0
+11-26 18:42:00.035  1999  1999 V QsExpandAnimator: setQsExpansionPosition 0.0 0
+11-26 18:42:00.035  1999  1999 D QS      : setQSExpansion 0.0 -157.325
+11-26 18:42:00.037  1999  1999 D IndicatorGardenInputProperty: updateRotation() prv:-1 >> new:0
+11-26 18:42:00.037  1999  1999 D DeviceState: getDeviceResolutionPixelSize - currentDensity = 560 deviceDensity = 560 initialDisplaySizeFactor = 1440 currentDisplaySizeFactor = 1440 initialDisplayDensity = 560 proportionalDensity = 560 proportionalPixel = 75
+11-26 18:42:00.037  1999  1999 D DeviceState: getDeviceResolutionPixelSize - currentDensity = 560 deviceDensity = 560 initialDisplaySizeFactor = 1440 currentDisplaySizeFactor = 1440 initialDisplayDensity = 560 proportionalDensity = 560 proportionalPixel = 34
+11-26 18:42:00.037  1999  1999 D DeviceState: getDeviceResolutionPixelSize - currentDensity = 560 deviceDensity = 560 initialDisplaySizeFactor = 1440 currentDisplaySizeFactor = 1440 initialDisplayDensity = 560 proportionalDensity = 560 proportionalPixel = 32
+11-26 18:42:00.043  1999  1999 V QsExpandAnimator: updateAnimators
+11-26 18:42:00.043  1999  1999 V QsExpandAnimator: clearAnimationState 
+11-26 18:42:00.044  1999  1999 V QsExpandAnimator: setQsExpansionPosition 0.0 0
+11-26 18:42:00.434  1115  3218 W NetlinkSocket: maximum read
+11-26 18:42:00.435  1999  2213 D MobileStatusTracker(0/8): onSignalStrengthsChanged signalStrength=SignalStrength:{mCdma=Invalid,mGsm=Invalid,mWcdma=Invalid,mTdscdma=Invalid,mLte=CellSignalStrengthLte: rssi=-77 rsrp=-112 rsrq=-16 rssnr=3 cqiTableIndex=2147483647 cqi=2147483647 ta=2147483647 level=1 parametersUseForLevel=0,mNr=Invalid,SignalBarInfo{ lteLevel=3 },rat=14,primary=CellSignalStrengthLte} level=3
+11-26 18:42:00.435  1115  1867 D SemCellularStateManager: onSignalStrengthsChanged: mCellularSignalLevel=1
+11-26 18:42:00.435  1999  2213 D CscParser: OMC path : /product/omc/VZW/conf/customer.xml
+11-26 18:42:00.436  1115  3218 W NetlinkSocket: maximum read
+11-26 18:42:00.436  1999  2213 I CscParser: getCustomerPath : omc customer file can read
+11-26 18:42:00.436  1999  2213 E CscParser: update(): xml file exist
+11-26 18:42:00.443  3697  3741 I EPDG -- SIM0 [SMARTCELLULAR]: onSignalStrengthsChanged: SignalStrength:{mCdma=Invalid,mGsm=Invalid,mWcdma=Invalid,mTdscdma=Invalid,mLte=CellSignalStrengthLte: rssi=-77 rsrp=-112 rsrq=-16 rssnr=3 cqiTableIndex=2147483647 cqi=2147483647 ta=2147483647 level=1 parametersUseForLevel=0,mNr=Invalid,SignalBarInfo{ lteLevel=3 },rat=14,primary=CellSignalStrengthLte}
+11-26 18:42:00.444  3697  3771 I EPDG -- SIM0 [SMARTCELLULAR]: lastLteRSRP is -111 currentLteRSRP is -112 lastLteRSRQ is -15 currentLteRSRQ is -16 lastLteSNR is 5 currentLteSNR is 3
+11-26 18:42:00.450  1999  2213 D NetworkController: SignalStrength from intent slotId=0
+11-26 18:42:00.799  1115  1748 D SamsungAlarmManager: Expired : 8
+11-26 18:42:00.800  1115  1748 V SamsungAlarmManager: Sending to uid : 1000 L=4ad7921:DetectMovementSPListener alarm=Alarm{da21e04 type 3 origWhen 332458181 whenElapsed 332458181 android}
+11-26 18:42:00.801  1115  2318 D SLocation: SPManager - SP is not support Q OS upgrade model!
+11-26 18:42:00.803  1115  1748 V SamsungAlarmManager: setLocked to kernel - W:332699878 / NW:332482947, now=332458187
+11-26 18:42:00.805  1115  2318 D SamsungAlarmManager: setExact (T:3/F:9/AC:false) 20221126T184300 now=332458189 - CU:1000/CP:1115/L:4ad7921:DetectMovementSPListener
+11-26 18:42:00.805  1115  2318 V SamsungAlarmManager: setLocked to kernel - W:332699878 / NW:332482947, now=332458189
+11-26 18:42:00.942   853 10726 I sensors-hal: handle_sns_client_event:660, [0][40015] accel_sample [-0.566,  0.052,  9.774] 332458219917142
+11-26 18:42:00.976  1999  1999 D NetworkController.WifiSignalController: notifyListener: visible=true, enabled=true, connected=true, inetCondition=1, isDefault=true, receivedCR=true, receivedIC=-1, shouldForceHide=false, emptyConnected=false
+11-26 18:42:03.491   682   682 D io_stats: !@   8,0 r 2830786 108669112 w 2494966 109264472 d 0 0 f 0 0 iot 1841690 0 th 0 0 0 pt 0 inp 0 0 272624.307
+11-26 18:42:04.029  1999  1999 D NetworkController.WifiSignalController: notifyListener: visible=true, enabled=true, connected=true, inetCondition=1, isDefault=true, receivedCR=true, receivedIC=-1, shouldForceHide=false, emptyConnected=false
+11-26 18:42:04.067   940   940 I SurfaceFlinger: SFWD update time=272624884232511
+11-26 18:42:04.944   853 10726 I sensors-hal: handle_sns_client_event:660, [0][40026] accel_sample [-0.565,  0.051,  9.762] 332460358564538
+11-26 18:42:05.251  2036  2036 I wpa_supplicant: Heartbeat 27471
+11-26 18:42:05.539   770   797 W Netd    : No subsystem found in netlink event
+11-26 18:42:05.543  3697  3697 I EPDG -- SIM0 [EpdgIntfCont]: Not Mobile Interface. Ignoring Event
+11-26 18:42:05.543  3697  3697 I EPDG -- SIM0 [EpdgIntfCont]: Not Mobile Interface. Ignoring Event
+11-26 18:42:05.543  3697  3742 I EPDG -- SIM0 [EpdgNetworkMgmtObserver]: EpdgAddressUpdated: address: Suppressed iface: SuppressedmFqdnRetryCount : 0
+11-26 18:42:05.543  3697  3742 I EPDG -- SIM0 [EpdgNetworkMgmtObserver]: EpdgAddressUpdated: address: Suppressed iface: SuppressedmFqdnRetryCount : 0
+11-26 18:42:05.544  2317  2337 D NetlinkTracker/wlan0: addressUpdated: 2600:1700:e840:17a0:147c:82ff:fe09:e448/64 on wlan0 flags 256 scope 0
+11-26 18:42:05.545  2317  2337 D NetlinkTracker/wlan0: addressUpdated: 2600:1700:e840:17a0:2039:2677:86d0:2704/64 on wlan0 flags 1 scope 0
+11-26 18:42:05.550  1115  1867 D SemCellularStateManager: onSignalStrengthsChanged: mCellularSignalLevel=1
+11-26 18:42:05.552  1115  3218 W NetlinkSocket: maximum read
+11-26 18:42:05.553  1115  3218 W NetlinkSocket: maximum read
+11-26 18:42:05.554  3697  3741 I EPDG -- SIM0 [SMARTCELLULAR]: onSignalStrengthsChanged: SignalStrength:{mCdma=Invalid,mGsm=Invalid,mWcdma=Invalid,mTdscdma=Invalid,mLte=CellSignalStrengthLte: rssi=-77 rsrp=-113 rsrq=-15 rssnr=6 cqiTableIndex=2147483647 cqi=2147483647 ta=2147483647 level=1 parametersUseForLevel=0,mNr=Invalid,SignalBarInfo{ lteLevel=3 },rat=14,primary=CellSignalStrengthLte}
+11-26 18:42:05.554  1999  2213 D MobileStatusTracker(0/8): onSignalStrengthsChanged signalStrength=SignalStrength:{mCdma=Invalid,mGsm=Invalid,mWcdma=Invalid,mTdscdma=Invalid,mLte=CellSignalStrengthLte: rssi=-77 rsrp=-113 rsrq=-15 rssnr=6 cqiTableIndex=2147483647 cqi=2147483647 ta=2147483647 level=1 parametersUseForLevel=0,mNr=Invalid,SignalBarInfo{ lteLevel=3 },rat=14,primary=CellSignalStrengthLte} level=3
+11-26 18:42:05.554  3697  3771 I EPDG -- SIM0 [SMARTCELLULAR]: lastLteRSRP is -112 currentLteRSRP is -113 lastLteRSRQ is -16 currentLteRSRQ is -15 lastLteSNR is 3 currentLteSNR is 6
+11-26 18:42:05.555  1999  2213 D CscParser: OMC path : /product/omc/VZW/conf/customer.xml
+11-26 18:42:05.555  1999  2213 I CscParser: getCustomerPath : omc customer file can read
+11-26 18:42:05.555  1999  2213 E CscParser: update(): xml file exist
+11-26 18:42:05.566  1999  2213 D NetworkController: SignalStrength from intent slotId=0
+11-26 18:42:05.568   859   859 D WifiHAL : Setting APF program, halHandle = 0xb400006f069cd6d0
+11-26 18:42:05.568   859   859 I WifiHAL : createRequest: APF set program request
+11-26 18:42:05.590   859   859 I WifiHAL : Done!
+11-26 18:42:05.628  1115  1174 I system_server: Background young concurrent copying GC freed 426845(17MB) AllocSpace objects, 200(5468KB) LOS objects, 20% free, 89MB/112MB, paused 381us,368us total 100.006ms
+11-26 18:42:05.635  1115  1886 D WifiConnectivityMonitor.NetworkStatsAnalyzer: Backhaul result - RSSI:-47, CE:25, PE:25, TI:34, PTI:34, TW:0, PTW:1, Tx:6, Rx:7, TxS:0, RxS:0, RESULT:true, IC:0, ICT:5, WC:0, WCT:5, R:0, RC:0, IE:0, EC:0
+11-26 18:42:05.638  1115  1178 W System  : A resource failed to call close. 
+11-26 18:42:05.638  1115  1178 W System  : A resource failed to call close. 
+11-26 18:42:05.638  1115  1178 W System  : A resource failed to call close. 
+11-26 18:42:05.638  1115  1178 W System  : A resource failed to call close. 
+11-26 18:42:05.638  1115  1178 W System  : A resource failed to call end. 
+11-26 18:42:05.640  1115  1178 W System  : A resource failed to call close. 
+11-26 18:42:05.641  1115  1178 W System  : A resource failed to call release. 
+11-26 18:42:06.942   853 10726 I sensors-hal: handle_sns_client_event:660, [0][40037] accel_sample [-0.567,  0.047,  9.773] 332462497210424
+11-26 18:42:07.129  1999  1999 D NetworkController.WifiSignalController: notifyListener: visible=true, enabled=true, connected=true, inetCondition=1, isDefault=true, receivedCR=true, receivedIC=-1, shouldForceHide=false, emptyConnected=false
+11-26 18:42:07.499   682   682 D io_stats: !@   8,0 r 2830786 108669112 w 2494974 109264512 d 0 0 f 0 0 iot 1841700 0 th 0 0 0 pt 0 inp 0 0 272628.315
+11-26 18:42:08.119  1115  1867 D SemCellularStateManager: onSignalStrengthsChanged: mCellularSignalLevel=1
+11-26 18:42:08.120  1115  3218 W NetlinkSocket: maximum read
+11-26 18:42:08.120  3697  3741 I EPDG -- SIM0 [SMARTCELLULAR]: onSignalStrengthsChanged: SignalStrength:{mCdma=Invalid,mGsm=Invalid,mWcdma=Invalid,mTdscdma=Invalid,mLte=CellSignalStrengthLte: rssi=-79 rsrp=-112 rsrq=-15 rssnr=4 cqiTableIndex=2147483647 cqi=2147483647 ta=2147483647 level=1 parametersUseForLevel=0,mNr=Invalid,SignalBarInfo{ lteLevel=2 },rat=14,primary=CellSignalStrengthLte}
+11-26 18:42:08.121  1115  3218 W NetlinkSocket: maximum read
+11-26 18:42:08.121  3697  3771 I EPDG -- SIM0 [SMARTCELLULAR]: lastLteRSRP is -113 currentLteRSRP is -112 lastLteRSRQ is -15 currentLteRSRQ is -15 lastLteSNR is 6 currentLteSNR is 4
+11-26 18:42:08.121  1999  2213 D MobileStatusTracker(0/8): onSignalStrengthsChanged signalStrength=SignalStrength:{mCdma=Invalid,mGsm=Invalid,mWcdma=Invalid,mTdscdma=Invalid,mLte=CellSignalStrengthLte: rssi=-79 rsrp=-112 rsrq=-15 rssnr=4 cqiTableIndex=2147483647 cqi=2147483647 ta=2147483647 level=1 parametersUseForLevel=0,mNr=Invalid,SignalBarInfo{ lteLevel=2 },rat=14,primary=CellSignalStrengthLte} level=2
+11-26 18:42:08.121  1999  2213 D CscParser: OMC path : /product/omc/VZW/conf/customer.xml
+11-26 18:42:08.122  1999  2213 I CscParser: getCustomerPath : omc customer file can read
+11-26 18:42:08.122  1999  2213 E CscParser: update(): xml file exist
+11-26 18:42:08.132  1999  2213 D NetworkController.MobileSignalController(0/8): notifyListener: enabled=true, connected=true, dataConnected=false, networkType=LTE (4G_VZW), emergencyOnly=false, roaming=false, isDefault=false, fiveGAvailable=false, mmWave=false, showDisabledDataIcon=false, voWifiConnected=false, dataActivity=, simState=LOADED, cardOperator=VZW, simCardActivated=0
+11-26 18:42:08.133  1999  2213 D NetworkController: SignalStrength from intent slotId=0
+11-26 18:42:08.812   853 10726 I sensors-hal: handle_sns_client_event:660, [0][40048] accel_sample [-0.567,  0.047,  9.764] 332464635932090
+11-26 18:42:08.812   853 10729 I sensors-hal: handle_sns_client_event:217, auto_rotation_event_2: mode:255, type:1:0/-0.553,0.045,9.739, ar:0
+11-26 18:42:10.239  1999  1999 D NetworkController.WifiSignalController: notifyListener: visible=true, enabled=true, connected=true, inetCondition=1, isDefault=true, receivedCR=true, receivedIC=-1, shouldForceHide=false, emptyConnected=false
+11-26 18:42:10.942   853 10726 I sensors-hal: handle_sns_client_event:660, [0][40059] accel_sample [-0.573,  0.038,  9.768] 332466774588340
+11-26 18:42:12.007  1115  1852 D UsbStatsMonitor: 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 17703855194138
+11-26 18:42:12.944   853 10726 I sensors-hal: handle_sns_client_event:660, [0][40070] accel_sample [-0.566,  0.048,  9.763] 332468913327299
+11-26 18:42:14.942   853 10726 I sensors-hal: handle_sns_client_event:660, [0][40081] accel_sample [-0.569,  0.041,  9.768] 332471051972299
+11-26 18:42:14.985   940  3148 I SurfaceFlinger: [SEC_SF_EFFECTS] [capture x2 ]: captureDisplay(): size 1440 x 3040, raSourceCrop [0 0 1440 3040] 1440 x 3040
+11-26 18:42:15.029  1115  9961 D system_server: mAFPC_Read - w = 1440, h = 3040, s = 32, f = 4, s_size = 17899520, luminance = 178, count = 1091, captureOrientation = 0
+11-26 18:42:15.253  2036  2036 I wpa_supplicant: Heartbeat 27472
+11-26 18:42:15.643  1115  1886 D WifiConnectivityMonitor.NetworkStatsAnalyzer: Backhaul result - RSSI:-48, CE:25, PE:25, TI:34, PTI:34, TW:0, PTW:0, Tx:0, Rx:0, TxS:0, RxS:0, RESULT:true, IC:0, ICT:5, WC:0, WCT:5, R:0, RC:0, IE:0, EC:0
+11-26 18:42:16.942   853 10726 I sensors-hal: handle_sns_client_event:660, [0][40092] accel_sample [-0.569,  0.048,  9.765] 332473190676726
+11-26 18:42:17.513   682   682 D io_stats: !@   8,0 r 2830786 108669112 w 2494979 109264540 d 0 0 f 0 0 iot 1841700 0 th 0 0 0 pt 0 inp 0 0 272638.329

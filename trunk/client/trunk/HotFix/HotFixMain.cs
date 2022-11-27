@@ -54,5 +54,6 @@ namespace HotFix {
             // ViewManager.SettingsView.Hide();
             // Hide();
         }
+
     }
 }

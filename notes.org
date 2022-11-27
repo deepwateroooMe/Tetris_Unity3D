@@ -267,3 +267,812 @@ public class UnityPlayer extends FrameLayout implements com.unity3d.player.a.a {
   
 [[./pic/notes_20221125_094643.png]]
 - 在有泛型的情况下，代码很可能会报错，因为泛型T只有在执行的时候才知道自己的类型，属于动态的，所以静态编译会直接跳过这句代码，在运行的时候就会报错：尝试JIT的error.
+
+* 安卓SDK unity交互原理简单案例表述
+** unity调用csharp, 普通方法(不带参数)
+- 安卓SDK端定义一个类,unity C#端通过固定的模式调用这个类,就可以了
+- java
+#+BEGIN_SRC java
+public class AdPlatformSDK {
+    public static AdPlatformSDK sInstance;
+
+    public static AdPlatformSDK getInstance(Context context) {
+        if (sInstance == null) {
+            synchronized (AdPlatformSDK.class) {
+                if (sInstance == null) 
+                    sInstance = new AdPlatformSDK(context);
+            }
+        }
+        return sInstance;
+    }
+
+    private AdPlatformSDK(Context context) {
+        MMKV.initialize(context); 
+    }
+}
+#+END_SRC
+- c#端的代码
+#+BEGIN_SRC csharp
+public class SDKMgr {
+    private AndroidJavaObject _mAdplatormSDK;
+    private AndroidJavaObject _unityPlayer;
+
+    public void Init() {
+        var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+        _unityPlayer = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+        var jc = new AndroidJavaClass("com.yc.adplatform.AdPlatformSDK");
+        _mAdplatormSDK = jc.CallStatic<AndroidJavaObject>("getInstance", _unityPlayer);
+        // 这里的getInstance代表上面java代码中public static AdPlatformSDK getInstance(Context context)中的方法名字_unityPlayer 这个代表是参数Context 
+    }
+}
+#+END_SRC
+**  如何传递接口参数:
+- 两端都分别定义完全相同的接口类(这个接口类中所申明的APIs都将成为两端互相调用的公用方法,作为桥梁沟通),两端都会有各自的实现
+- java
+#+BEGIN_SRC java
+package com.yc.adplatform.ad.core;
+
+public interface InitCallback {
+
+    void onSuccess();  
+    void onFailure();
+    void onAdInitSuccess(); 
+    void onAdInitFailure(); 
+}
+#+END_SRC
+- C#接口
+#+BEGIN_SRC csharp
+// 和上面的java对应 也就是重写
+public interface IUnityInitCallback {
+
+    void onSuccess(); 
+    void onFailure();
+    void onAdInitSuccess(); 
+    void onAdInitFailure(); 
+}
+#+END_SRC
+- Unity端的接口类
+#+BEGIN_SRC csharp
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class UnityInitCallback : AndroidJavaProxy {
+
+    private readonly IUnityInitCallback listener;
+
+// 这里最底层,一定是继承自安卓SDK端的接口,从而实现 安卓SDK端相关事件的向unity传递的注册监听与回调
+    public UnityInitCallback(IUnityInitCallback listener)
+        : base("com.bytedance.sdk.openadsdk.AdPlatformSDK$InitCallback") { // <<<<<<<<<<<<<<<<<<<< 
+        this.listener = listener;
+    }
+    
+    public void onSuccess() { // PostTask: 自定义的静态方法,多线程环境下,将待执行任务发布到任务链表
+        InterfaceMgr.PostTask(() =>  this.listener.onSuccess());
+    }
+    public void onFailure() {
+        InterfaceMgr.PostTask(() => this.listener.onFailure());
+    }
+    public void onAdInitSuccess() { // 广告初始化成功 
+        InterfaceMgr.PostTask(() => this.listener.onAdInitSuccess());
+    }
+    public void onAdInitFailure() { // 广告初始化失嵊
+        InterfaceMgr.PostTask(() => this.listener.onAdInitFailure());
+    }
+}
+#+END_SRC
+- 接口管理器
+#+BEGIN_SRC csharp
+public class InterfaceMgr: MonoBehaviour {
+
+    private static InterfaceMgrinstance;
+
+    // The thread safe task queue: 数据结构本身并不是多线程安全的,说它安全是因为在访问的时候上锁了
+    private static List<Action> postTasks = new List<Action>(); // <<<<<<<<<<<<<<<<<<<< 
+    private static List<Action> executing = new List<Action>(); // The executing buffer.
+
+    private static InterfaceMgrInstance {
+        get {
+            CheckInstance();
+            return instance;
+        }
+    }
+// 用这个链表,可能就是为了上面提供给其它类一个公用调用方法
+    public static void PostTask(Action task) { // Work thread post a task to the main thread.
+        lock (postTasks) { // <<<<<<<<<<<<<<<<<<<< 
+            postTasks.Add(task);
+        }
+    }
+    
+    [RuntimeInitializeOnLoadMethod]
+    private static void CheckInstance() { // Start to run this InterfaceMgr.
+        if (instance == null && Application.isPlaying) {
+            var go = new GameObject("InterfaceMgr", typeof(InterfaceMgr));
+            GameObject.DontDestroyOnLoad(go);
+            instance = go.GetComponent<InterfaceMgr>();
+        }
+    }
+    private void Awake() {
+        GameObject.DontDestroyOnLoad(this);
+    }
+    private void OnDestroy() {
+        postTasks.Clear(); // 这里是防,资源泄露
+        executing.Clear();
+        instance = null;
+    }
+    private void Update() { // 感觉这里用个链表postTasks好浪费
+        lock (postTasks) { // 锁
+            if (postTasks.Count > 0) {
+                for (int i = 0; i < postTasks.Count; ++i) 
+                    executing.Add(postTasks[i]);
+                postTasks.Clear();
+            }
+        }
+        for (int i = 0; i < executing.Count; ++i) {
+            var task = executing[i];
+            try {
+                task();
+            } catch (Exception e) {
+                Debug.LogError(e.Message, this);
+            }
+        }
+        executing.Clear();
+    }
+}
+#+END_SRC
+- 接口的具体实现转为对象 看代码使其可以使用new
+#+BEGIN_SRC csharp
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+// 要把这里想明白:是unity C#的类,但它的作用功能是想要回调给安卓SDK,调用通知它[(为它注册设制几类不同事件的回调监听)]相关的监听
+public class InitCallbackListener : IUnityInitCallback {
+
+    private Action _InitFailurCall;
+    private Action _InitSuccesscall;
+    private Action _FailureCall;
+    private Action _SuccessCall;
+
+    public InitCallbackListener (Action InitFailurCall=null, Action InitSuccesscall=null, Action FailureCall =null, Action SuccessCall=null) {
+        _InitFailurCall = InitFailurCall;
+        _InitSuccesscall = InitSuccesscall;
+        _FailureCall = FailureCall;
+        _SuccessCall = SuccessCall;
+    }
+
+    public void onAdInitFailure() {
+        _InitFailurCall?.Invoke();
+        Debug.LogError("SDK初始化失败");
+    }
+    public void onAdInitSuccess() {
+        _InitSuccesscall?.Invoke();
+        Debug.LogError("SDK初始化成功");
+    }
+    public void onFailure() {
+        _FailureCall?.Invoke();
+        Debug.LogError("初始化失败");
+    }
+    public void onSuccess() {
+        _SuccessCall?.Invoke();
+        Debug.LogError("初始化成功");
+    }
+}
+#+END_SRC
+- 那么我们调用下面这个java也就是安卓代码
+- java代码
+#+BEGIN_SRC java
+  public void init(final Context context, String appId, final InitCallback initCallback) {}
+#+END_SRC
+- C#
+#+BEGIN_SRC csharp
+InitCallbackListener initCallbackListener = new InitCallbackListener();
+_mAdplatormSDK.Call("init", _unityPlayer, _appId, initCallbackListener);
+// 参数可以自己设置
+#+END_SRC
+- 其他的参数传递就比较简单了
+
+* 以前工作中的一个SDK与unity游戏交互的主要逻辑梳理
+- 不同于网络上绝大多数的安卓SDK与游戏的交互,以前公司里是做了一个中介SDK,负责将公司封装的公司个性化安卓SDK与unity游戏端进行交互
+- 下面前两个文件是安卓SDK端的定义,中介SDK,公司原始SDK比较简单,可以后看.之后的文件是游戏端对中介SDK提供接口的对接衔接,把这些弄懂
+** SquarePandaSDK.java: 这是个静态成员和静态方法类
+   #+BEGIN_SRC java
+// 这个类是提供的公用方法,可以供unity游戏端调用SDK中的实现
+public class SquarePandaSDK {
+    public static final String TAG = "SquarePandaSDK"; 
+    public static final String UnityGameobjectName = "SquarePanda"; // <<<<<<<<<< 要这个是作什么用的呢?
+
+    public SquarePandaSDK() {}
+
+// 定义了这个静态方法,在本类中也被多次用到,用于调用 unity,实现了SDK 对游戏端的调用或说事件通知
+    public static void SendUnityMessage(String methodName, String parameter) {
+        UnityPlayer.UnitySendMessage("SquarePanda", methodName, parameter != null ? parameter : "");
+    }
+    public static void GetBatteryStatus() {
+        BluetoothUtil.getBatteryStatus(0L);
+    }
+    public static void KeepAppAlive() {
+        Util.keepAppAlive();
+    }
+    public static boolean IsInternetConnected() {
+        return NetworkUtil.checkInternetConnection(SquarePandaUnityActivity.mUnityPlayer.getContext());
+    }
+    public static void UploadFileWithName(String data, String name) {
+        PlayerDO player = PlayerUtil.getSelectedPlayer(SquarePandaUnityActivity.instance);
+        if(player == null) {
+            return;
+        } else {
+            String n = (new StringBuilder()).append(player.getId()).append("_").append(name).append(".json").toString();
+            byte d[] = data.getBytes();
+            NetworkUtil.uploadFile(SquarePandaUnityActivity.instance, new ApiCallListener() {
+                    public void onResponse(Object o) {
+                    }
+                    public void onFailure(Object o) {
+                    }
+                }
+                , d, n);
+            return;
+        }
+    }
+    public static void DownloadFileWithName(String name) {
+        PlayerDO player = PlayerUtil.getSelectedPlayer(SquarePandaUnityActivity.instance);
+        if(player == null) {
+            return;
+        } else {
+            String n = (new StringBuilder()).append(player.getId()).append("_").append(name).append(".json").toString();
+            NetworkUtil.downloadFile(SquarePandaUnityActivity.instance, new ApiCallListener() {
+                    public void onResponse(Object o) {
+                        ResponseBody r = (ResponseBody)o;
+                        try
+                        {
+                            byte b[] = r.bytes();
+                            String retrieved = new String(b);
+                            SquarePandaSDK.SendUnityMessage("_onLoadFileSuccess", retrieved);
+                        }
+                        catch(IOException e)
+                        {
+                            e.printStackTrace();
+                            SquarePandaSDK.SendUnityMessage("_onLoadFileFail", "");
+                        }
+                    }
+                    public void onFailure(Object o) {
+                        SquarePandaSDK.SendUnityMessage("_onLoadFileFail", "");
+                    }
+                }
+                , n);
+            return;
+        }
+    }
+    public static void Init() {
+        PlayerUtil.startSplashScreenActivity(SquarePandaUnityActivity.instance);
+    }
+    public static void StartSplashScreenActivity() {
+        PlayerUtil.startSplashScreenActivity(SquarePandaUnityActivity.instance);
+    }
+    public static void StartGameActivity() {}
+    public static boolean IsLoggedIn() {
+        ParentInfoDO info = PlayerUtil.getParentInfo(SquarePandaUnityActivity.instance);
+        return info != null;
+    }
+    public static void GetProfileURL() {
+        String url = PlayerUtil.getSelectedPlayer(SquarePandaUnityActivity.instance).getProfileURL();
+        SendUnityMessage("profileURLResponse", url);
+    }
+    public static void Terms() {
+        PlayerUtil.showTermsNconditions(SquarePandaUnityActivity.instance);
+    }
+    public static void Privacy() {
+        PlayerUtil.showPrivacyPolicy(SquarePandaUnityActivity.instance);
+    }
+    public static void Credits() {
+        PlayerUtil.showCredits(SquarePandaUnityActivity.instance);
+    }
+    public static void StartParentalCheckActivity() {
+        PlayerUtil.startParentalCheckActivity(SquarePandaUnityActivity.instance, 0);
+    }
+    public static void Logout() {
+        PlayerUtil.logoutUser(SquarePandaUnityActivity.instance);
+    }
+    public static String GetSelectedPlayer() {
+        return PlayerUtil.getSelectedPlayer(SquarePandaUnityActivity.instance).toString();
+    }
+    public static void ShowAlertWarning(String title, String msg, String btnText, String methodName) {
+        Util.showAlertWarning(SquarePandaUnityActivity.mUnityPlayer.getContext(), title, msg, btnText,
+                              new android.view.View.OnClickListener(methodName) {
+                                  final String val$methodName; 
+                                  public void onClick(View v) {
+                                      SquarePandaSDK.SendUnityMessage(methodName, "");
+                                  }
+// 这里好像是我自己整的,当时没太搞明白是怎么回事                                  
+                                      {
+                                          //private OnClickListener init(String s) { // <<<<<<<<<<<<<<<<<<<< 应该是这行 是 不需要 添加的,我自己弄的
+                                          methodName = s;
+                                          super();
+                                      }
+                              }
+            );
+    }
+    public static void ShowAlert(String title, String msg, String btnText1, String btnText2, String methodName1, String methodName2) {
+        Util.showAlert(SquarePandaUnityActivity.mUnityPlayer.getContext(), title, msg, Text1, Text2, new android.view.View.OnClickListener(methodName1) {
+                final String val$methodName1;
+                public void onClick(View v) {
+                    SquarePandaSDK.SendUnityMessage(methodName1, "");
+                }
+                    {
+                        super();
+                        methodName1 = s;
+                    }
+            }, new android.view.View.OnClickListener(methodName2) {
+                    final String val$methodName2;
+                    public void onClick(View v) {
+                        SquarePandaSDK.SendUnityMessage(methodName2, "");
+                    }
+                        {
+                            methodName2 = s;
+                            super();
+                        }
+                });
+    }
+}
+   #+END_SRC
+** SquarePandaUnityActivity.java
+   #+BEGIN_SRC java
+// 这个类折解得很细,比网络上其它安卓SDK与unity的交互写得理深入更底层和细节一点儿
+public class SquarePandaUnityActivity
+    extends BluetoothBaseActivity { // <<<<<<<<<<<<<<<<<<<< AppCompatActivity
+// public abstract class BluetoothBaseActivity extends AppCompatActivity // <<<<<<<<<<<<<<<<<<<< 
+//     implements BluetoothCharacteristicListener, LoginListener, DialogInterface.OnDismissListener, PlaysetConnectionListener {
+    
+    public static final String TAG = "SPUnityActivity";
+
+    private static BluetoothBaseActivity _instance; // <<<<<<<<<< 相当于是,安卓SDK端的实例 reference
+
+    public static UnityPlayer mUnityPlayer; // <<<<<<<<<<<<<<<<<<<< mUnityPlayer UnityPlayerActivity
+    public static SquarePandaUnityActivity instance; // <<<<<<<<<< 相当于是,unity游戏端的实例 reference
+
+    private boolean _isScreenLocked;
+    private boolean _fromBackground;
+
+    public SquarePandaUnityActivity() {
+        _isScreenLocked = false;
+        _fromBackground = false;
+    }
+    protected void onCreate(Bundle savedInstanceState) {
+        _isScreenLocked = false;
+        requestWindowFeature(1);
+        super.onCreate(savedInstanceState);
+        if (mUnityPlayer == null) {
+            getWindow().setFormat(2);
+            mUnityPlayer = new UnityPlayer(this); // <<<<<<<<<< 
+            instance = this;
+        } else {
+            ((ViewGroup)mUnityPlayer.getParent()).removeView(mUnityPlayer);
+            UnityPlayer.currentActivity = this;
+            instance = (SquarePandaUnityActivity)UnityPlayer.currentActivity;
+        }
+        setContentView(mUnityPlayer); // <<<<<<<<<< 就是,游戏界面在安卓端的实现,就是这个样子的了 ?
+        mUnityPlayer.requestFocus();
+    }
+    protected void onDestroy() {
+        mUnityPlayer.quit(); // <<<<<<<<<< 
+        super.onDestroy();
+    }
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == 1005)
+            SquarePandaSDK.SendUnityMessage("UnlockPermissionResponse", "1");
+        else if (resultCode == 1007)
+            SquarePandaSDK.SendUnityMessage("UnlockPermissionResponse", "0");
+    }
+    protected void onSuccessLogoutEvent() {
+        SquarePandaSDK.SendUnityMessage("SuccessLogout", "1");
+    }
+    protected void onPause() {
+        super.onPause();
+        mUnityPlayer.pause();
+    }
+    protected void onResume() {
+        super.onResume();
+        mUnityPlayer.resume();
+        if(!_isScreenLocked) {
+            if(_fromBackground) {
+                if(SquarePandaSDK.IsLoggedIn())
+                    PlayerUtil.startSelectPlayerActivity(instance, true, 1);
+                _fromBackground = false;
+            }
+        } else {
+            _isScreenLocked = false;
+        }
+    }
+    public void gamePaused(boolean b) {
+        SquarePandaSDK.SendUnityMessage("_onSDKScreenOpen", "");
+        _isScreenLocked = b;
+        _fromBackground = true;
+    }
+    public void onConfigurationChanged(Configuration newConfig) { // 自己的项目中只涉及到横竖屏的切换,暂时还不想涉及语言的变更
+        super.onConfigurationChanged(newConfig);
+        mUnityPlayer.configurationChanged(newConfig);
+    }
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        mUnityPlayer.windowFocusChanged(hasFocus);
+    }
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if(event.getAction() == 2)
+            return mUnityPlayer.injectEvent(event);
+        else
+            return super.dispatchKeyEvent(event);
+    }
+
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        return mUnityPlayer.injectEvent(event);
+    }
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        return mUnityPlayer.injectEvent(event);
+    }
+    public boolean onTouchEvent(MotionEvent event) {
+        return mUnityPlayer.injectEvent(event);
+    }
+    public boolean onGenericMotionEvent(MotionEvent event) {
+        return mUnityPlayer.injectEvent(event);
+    }
+    public void batteryLevel(String s) {
+        SquarePandaSDK.SendUnityMessage("_onBatteryLevel", s);
+    }
+    public void availableServices() {}
+    protected void didNavigatesToMainMenu() { // 为什么会需要使用这个方法 ?
+        SquarePandaSDK.SendUnityMessage("_onSDKScreenClose", "");
+    }
+    public void didFinishSdkUserConfiguration() {
+        SquarePandaSDK.SendUnityMessage("OnZPadFinishSDKUserConfig", "");
+    }
+    public void didfinishSDKscreenflow() {
+        SquarePandaSDK.SendUnityMessage("_onSDKReady", "");
+    }
+    public void didSelectedChild(PlayerDO player) { // 这里,我大概可以改装一个 onUserLogin之类的回调给游戏端
+        PlayerUtil.setSelectedPlayer(instance, player);
+        SquarePandaSDK.SendUnityMessage("_onProfileSelected", "");
+        SquarePandaSDK.SendUnityMessage("_onSDKScreenClose", "");
+    }
+}
+   #+END_SRC
+** 游戏端SquarePanda.cs: 它充当游戏端的公用API方法,通过内部对ISDK分平台的不同实现,调用 SDK
+   #+BEGIN_SRC csharp
+public class SquarePanda : MonoBehaviour { // 单例模式接口
+
+    // The sdk calls.
+    private ISDK _sdkCalls;
+    private static readonly string GO_NAME = "SquarePanda";
+    private static SquarePanda _instance;
+
+    // Gets the instance.
+    public static SquarePanda Instance {
+        get {
+            if (_instance == null) {
+                _instance = FindObjectOfType<SquarePanda>();
+                if (_instance == null)
+                    new GameObject().AddComponent<SquarePanda>();
+            }
+            return _instance;
+        }
+    }
+    // paused is true when the user has oppened one of the square panda screens while in the game screen
+    public bool _paused = false;
+    // init
+    void Awake() {
+        if (_instance != null)
+            Destroy(gameObject);
+        _instance = this;
+        gameObject.name = GO_NAME;
+        DontDestroyOnLoad(gameObject);
+        #if UNITY_EDITOR
+            _sdkCalls = new EditorSDK();
+        #elif UNITY_ANDROID
+            _sdkCalls = new AndroidSDK();
+        #elif UNITY_IOS
+            _sdkCalls = new IOSSDK();
+        #endif
+            Debug.Log("[SP SDK] Init()");
+        _sdkCalls.Init(); // <<<<<<<<<<<<<<<<<<<< 这里需要一个初始化
+        _onSDKScreenOpen(); // 是说,当游戏开始的时候,首先打开SDK
+    }
+    void OnDestroy() {
+        _instance = null;
+    }
+    // this gets called when an sdk screen is closed
+    // will set _paused to false if it wasnt already paused
+    private void _onSDKScreenClose() {
+        #if UNITY_EDITOR
+            return;
+        #endif
+            _paused = false;
+        Debug.Log("sdk is unpausing"); // <<<<<<<<<< 这什么 破烂日志
+        if (unpause != null)
+            unpause();
+    }
+    // called when an sdkscreen is opened
+    // sets _paused to true
+    public void _onSDKScreenOpen() { // 当打开了SDK,要求游戏端暂停
+        #if UNITY_EDITOR
+            return;
+        #endif
+            _paused = true;
+        if (pause != null)
+            pause();
+    }
+    // squarepanda update loop. Updates leds with a minimum wait time between updates.
+    // if editor will allow for user to input letter, places random letter in tray
+    void Update() { // <<<<<<<<<<<<<<<<<<<< 游戏端的生命周期调用, 方便游戏里的调试
+        #if UNITY_EDITOR
+            if (Input.anyKeyDown)
+            {
+                if (Input.GetKey(KeyCode.Backspace))
+                {
+                    _lastKeyPressed = "";
+                    int index = Random.Range(0, 8);
+                    SpawnLetterPressed(index);
+                } else if (Input.inputString != "")
+                {
+                    _lastKeyPressed = Input.inputString.ToUpper();
+                    int index = Random.Range(0, 8);
+                    SpawnLetterPressed(index);
+                }
+            }
+        #endif
+    }
+    
+    #region _events
+        // Occurs when the board charaters are updated.
+        public event UnityAction<string[]> OnCharactersUpdated;
+
+    // logs the battery level
+    // <param name="level">Level.</param>
+    private void _onBatteryLevel(string level) {
+        Debug.Log(level);
+    }
+    // called in response to getting unlock permissions
+    // <param name="result">Result.</param>
+    private void UnlockPermissionResponse(string result) {
+        // 1 success
+        // 0 fail
+        // -1 canceled
+        if (unlockCallback != null) {
+            unlockCallback(result == "1");
+            unlockCallback = null;
+        }
+    }
+    // callback action for when a new player is selected
+    public UnityAction profileSelected;
+    // callback from the sdk wrapper that a profile is selected
+    private void _onProfileSelected() {
+        if (profileSelected != null)
+            profileSelected();
+    }
+    // The unlock callback.
+    public UnityAction<bool> unlockCallback;
+    // Occurs when sdk screen is oppened.
+    public event UnityAction pause;
+    // Occurs when sdkscreen is closed.
+    public event UnityAction unpause;
+    // called when sdk is ready
+    private void _onSDKReady() {
+        _onSDKScreenClose();
+        if (OnPlaysetConnected != null)
+            OnPlaysetConnected("");
+    }
+    // call this when you want to bring up the parental lock screen. pass it a callback for the response
+// 忘记细节了,这里大概是一个父母可以锁屏的功能      
+    public void spGetUnlockPermission(UnityAction<bool> callback) {
+        if (unlockCallback != null)
+            return;
+        unlockCallback = callback;
+        Debug.Log("[SP SDK] spGetUnlockPermission()");
+        _sdkCalls.GetUnlockPermission();
+    }
+    // opens manage playset screen: 游戏中可以开启的设置功能,相当于自己的游戏界面中有个settings按钮方便用户打开登出或是调音量之类的
+    public void spManagePlayset() {
+        _onSDKScreenOpen();
+        Debug.Log("[SP SDK] spManagePlayset()");
+        _sdkCalls.ManagePlayset();
+    }
+    // shows the login screen
+    public void spShowLogin() {
+        Debug.Log("[SP SDK] spShowLogin()");
+        _sdkCalls.ShowLogin();
+    }
+    // gets if a player is selected
+    public bool spIsChildSelected() {
+        Debug.Log("[SP SDK] spIsChildSelected()");
+        return _sdkCalls.IsChildSelected();
+    }
+    // shows the credits page that you provided
+    public void spShowCredits() {
+        //            _onSDKScreenOpen ();
+        Debug.Log("[SP SDK] spShowCredits()");
+        _sdkCalls.Credits();
+    }
+    // calls the triggerUpdateOverAir
+    public void spTriggerUpdateOverAir() {
+        Debug.Log("[SP SDK] spTriggerUpdateOverAir()");
+        _sdkCalls.TriggerUpdateOverTheAir();
+    }
+    // shows the terms and conditions page
+    public void spShowTerms() {
+        //            _onSDKScreenOpen ();
+        Debug.Log("[SP SDK] spShowTerms()");
+        _sdkCalls.Terms();
+    }
+    // shows the privacy policy page
+    public void spShowPrivacy() {
+        //            _onSDKScreenOpen ();
+        Debug.Log("[SP SDK] spShowPrivacy()");
+        _sdkCalls.Privacy();
+    }
+    // returns if the user is logged in
+    public bool spIsLoggedIn() {
+        Debug.Log("[SP SDK] spIsUserLoggedIn()");
+        return _sdkCalls.IsUserLoggedIn();
+    }
+    // logs the user out. This will always show the parent lock screen and log out if successful
+    public void spLogout() {
+        #if UNITY_ANDROID
+            Debug.Log("[SP SDK] spLogOut()");
+        _sdkCalls.Logout();
+        #else
+            spGetUnlockPermission (logoutCallback);
+        #endif
+            }
+    // the logout callback
+    private void logoutCallback(bool b) {
+        if (b) {
+            _onSDKScreenOpen();
+            _sdkCalls.Logout();
+        }
+    }
+
+    // Called when the user successfully logs out. Only used On android
+    public void SuccessLogout() {
+        _onSDKScreenOpen();
+    }
+    // gets the url of the profile picture image used for the child profile
+    // <returns>the url for the image to be loaded</returns>
+    public void spGetProfileURL(UnityAction<string> response) {
+        urlResponse = response;
+        Debug.Log("[SP SDK] spGetProfileURL()");
+        _sdkCalls.GetProfileURL();
+    }
+    // the url response action callback
+    UnityAction<string> urlResponse;
+    // called when the url is recieved
+    // <param name="url">URL.</param>
+    private void profileURLResponse(string url) {
+        if (urlResponse != null) {
+            urlResponse(url);
+            urlResponse = null;
+        }
+    }
+    // uploads a settings object specified by the game. Saves this on a per child basis
+    // <param name="obj">the object containing settings information</param>
+    // <param name="fileName">a unique name for your game</param>
+    public void spUploadUserSettings(object obj, string fileName) {
+        string data = JsonUtility.ToJson(obj);
+        Debug.Log("[SP SDK] spUploadUserSettings()");
+        _sdkCalls.UploadFileWithName(data, fileName);
+    }
+    // called when a json string is recieved from the server
+    UnityAction<string> jsonResponse;
+    // called when trying to get a json string from the server but failed
+    UnityAction jsonFail;
+    // downlaods user settings from the server based on current selected player. sends a response in the form of a json string to be parsed
+    // <param name="fileName">a unique name for your game</param>
+    // <param name="response">the response callback</param>
+    // <param name="response">the error callback, use to reset to default</param>
+    public void spDownloadUserSettings(string fileName, UnityAction<string> response, UnityAction error) {
+        jsonResponse = response;
+        jsonFail = error;
+        _sdkCalls.DownloadFileWithName(fileName);
+    }
+    // called if file loaded
+    // <param name="response">Response.</param>
+    public void _onLoadFileSuccess(string response) {
+        if (jsonResponse != null) {
+            jsonResponse(response);
+            jsonResponse = null;
+            jsonFail = null;
+            return;
+        }
+    }
+    // called if file failed to load
+    public void _onLoadFileFail() {
+        if (jsonFail != null) {
+            jsonFail();
+            jsonResponse = null;
+            jsonFail = null;
+            return;
+        }
+    }
+    
+#if UNITY_EDITOR
+    // the last key pressed in editor
+    string _lastKeyPressed = "";
+
+    // in editor, allows developer to use keyboard in place of the playset, places the letter typed in a random slot, backspace removes a letter form random spot
+    private void SpawnLetterPressed(int index) {
+        boardChars[index] = _lastKeyPressed;
+        if (OnCharactersUpdated != null)
+            OnCharactersUpdated(boardChars);
+    }
+    #endif
+}
+   #+END_SRC
+** 游戏端ISDK.cs: 定义一个公用接口的目的,是方便ios和安卓等不同平台的实现分平台管理 
+   #+BEGIN_SRC csharp
+public interface ISDK {
+
+    void Init ();
+    void ShowLogin ();
+    void TriggerUpdateOverTheAir ();
+    void Credits ();
+    void Terms ();
+    void Privacy ();
+    void Logout ();
+    void GetUnlockPermission ();
+    bool IsUserLoggedIn ();
+    void GetProfileURL();
+    void UploadFileWithName (string data, string name);
+    void DownloadFileWithName (string name);
+}
+   #+END_SRC
+** 游戏端对ISDK接口的实现,是充当桥梁在实现里调用了中介SDK中所定义过的SDK的具体实现方法,从而实现游戏端调用安卓SDK   
+      #+BEGIN_SRC csharp
+public class AndroidSDK: ISDK { // 游戏端对接口方法的实现,其实现是调用中介SDK中所定义过的类中的具体实现
+
+    private AndroidJavaClass _javaClassVariable = null;
+    private AndroidJavaClass _androidSDK {
+        get {
+            if (_javaClassVariable == null)
+                _javaClassVariable = new AndroidJavaClass("com.squarepanda.SquarePandaSDK"); // <<<<<<<<<< 中介SDK中所定义的具体实现的方法类
+            return _javaClassVariable;
+        }
+    }
+    public void Init () {
+        _androidSDK.CallStatic ("Init");
+    }
+    public void ShowLogin () {
+        _androidSDK.CallStatic ("StartSplashScreenActivity");
+    }
+    public void TriggerUpdateOverTheAir () {
+        _androidSDK.CallStatic ("TriggerUpdateOverTheAir");
+    }
+    public void Credits () {
+        _androidSDK.CallStatic ("Credits");
+    }
+    public void Terms () {
+        _androidSDK.CallStatic ("Terms");
+    }
+    public void Privacy () {
+        _androidSDK.CallStatic ("Privacy");
+    }
+    public void Logout () {
+        _androidSDK.CallStatic ("Logout");
+    }
+    public void GetUnlockPermission() {
+        _androidSDK.CallStatic ("StartParentalCheckActivity");
+    }
+    public bool IsUserLoggedIn () {
+        return _androidSDK.CallStatic<bool>("IsLoggedIn");
+    }
+    public void UploadFileWithName (string data, string name){
+        _androidSDK.CallStatic ("UploadFileWithName", data, name);
+    } 
+    public void DownloadFileWithName (string name){
+        // TODO needs implementation
+        _androidSDK.CallStatic ("DownloadFileWithName", name);
+    }
+    public void GetProfileURL() {
+        _androidSDK.CallStatic ("GetProfileURL");
+    }
+    public AndroidSDK () {}
+}
+      #+END_SRC
