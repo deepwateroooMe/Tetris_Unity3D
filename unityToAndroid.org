@@ -2,35 +2,122 @@
 #+title: Unity Export 导出到Android Studio再打包大致过程
 #+author: deepwaterooo 
 
+* 安卓导.jar .aar进unity几个细巧点
+** 项目的build.grale
+   #+BEGIN_SRC groovy
+plugins {
+    id 'com.android.library' // <<<<<<<<<<<<<<<<<<<< 可以直接把app 改成早类库就可以了,不同再导一个
+}
+android {
+    namespace 'com.deepwaterooo.dwsdk' // <<<<<<<<<<<<<<<<<<<< 这个需要
+    compileSdk 32
+    defaultConfig {
+        minSdk 25
+        targetSdk 32
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+dependencies {
+    compileOnly files('libs\\classes.jar') // <<<<<<<<<<<<<<<<<<<< compileOnly Unity里的这些类是分Mono il2cpp的,要区分
+    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation 'com.google.android.material:material:1.7.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.4'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
+}
+   #+END_SRC
+** 修改AndroidMainfest.xml
+   #+begin_SRC xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.deepwaterooo.dwsdk">
+          <!-- 上面的包裹名称 -->
+  <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE" />
+  <application>
+    <!-- 这下面原本是application里的,都 不要了       -->
+    <!-- android:allowBackup="true" -->
+    <!-- android:dataExtractionRules="@xml/data_extraction_rules" -->
+    <!-- android:fullBackupContent="@xml/backup_rules" -->
+    <!-- android:icon="@mipmap/ic_launcher" -->
+    <!-- android:label="@string/app_name" -->
+    <!-- android:roundIcon="@mipmap/ic_launcher_round" -->
+    <!-- android:supportsRtl="true" -->
+    <!-- android:theme="@style/Theme.MyApplication" -->
+    <!-- tools:targetApi="31"> -->
+
+    <!-- 这个类的名字要写全,不写全有可能会出现找不到类 -->
+    <activity
+        android:name="com.deepwaterooo.dwsdk.MainActivity" 
+        android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+      <!-- <meta-data -->
+      <!--     android:name="android.app.lib_name" -->
+      <!--     android:value="" /> -->
+      <!-- 将上面缺省的,改成下面的, 这里的原理还没有弄懂,为什么一定要这么写 -->
+      <meta-data
+          android:name="unityplayer.UnityActivity"
+          android:value="true" />
+    </activity>
+  </application>
+</manifest>
+   #+END_SRC
+** 导文件(打.jar包给unity用)
+- 最后–选择菜单栏 *Build -> Make Moudle* ’你的项目名’，build完成后会在项目中创建一个build文件夹，在 *build/intermediates/aar_main_jar/debug/* 选择 *classes.jar* 包，用解压软件打开，删除里面unity3d文件夹，避免在unity发布时重复。
+- 然后重新打成是.jar包,导入unity中; 将 *AndroidMainfest.xml* 也导入unity。
+- 如果导入的是 aar，有以下几点需要注意： *这个需要自己打一次测试一下*
+  - 删除 unity_classes.jar 冲突文件，在 aar 的 lib 里
+  - 删除包根目录下面的 Android 配置文件（先复制一份出来）
+  - 删除 aar 跟目下的 classes.jar 里面的 BuildConfig.class 文件
+
+* some commands use as reference for later debugging 
+  #+BEGIN_SRC shell
+jar cvf classes.jar -C classes/ .
+
+jar cvf deepwaterooo_activity.jar -C classes/ .       
+
+cp deepwaterooo_activity.jar /mnt/f/unityProjects/dwsdkTest/Assets/Plugins/Android 
+
+jar cvf com.android.support.support-compat-26.1.0.aar -C com.android.support.support-compat-26.1.0/ .
+
+# gf 首先检查是否crash掉了 
+grep -nE "FATAL EXCEPTION:" log1.log
+
+# lst 抓取最后一个
+tac log1.log | awk '!flag; /FATAL EXCEPTION: main/{flag = 1};' | tac > cur.log
+
+# tl 抓取从某个时间点开始的
+tac log1.log | awk '!flag; /:00/{flag = 1};' | tac > cur.log
+
+grep -nE "com.unity3d.player|UnityPlayerActivity|GameApplication" cur.log > tmp.log
+
+grep -nE "com.unity3d.player | UnityPlayerActivity" cur.log
+
+grep -nE "com.defaultcompany.trunk | UnityPlayerActivity" cur.log
+  #+END_SRC
+
 * 导出的unity项目文件大致是这样的
 - 大致过程记一下,用作参考,原理还没有吃透,细节又比较多,容易忘记.作个笔记记一下,给自己用作参考
    
 [[./pic/unityToAndroid_20221123_222322.png]]
 - 下面是2019年的版本可以打出两个文件夹,一个主工程,一个类库的导出包,2017年我用的版本打不出来,还需要想得再深一点多点儿,到可以按照这个笔记过程打包才行
 - 原始自己参考的项目是用2017版本的,当时没有吃透这里面的构建关系,当时以为只能用2017的unity和2017的Visual Studio才能开发.现在知道2019的版本能够导出自己可以调试的Android Studio项目,而unity 2017版本的导出来自己还仍不知道该如何从Android Studio打包,那么就暂时先用2019的版本,先试图打出在安卓设备上可运行的包,才能move on.
-* Android创建、unity导入
-** 首先新建一个Android项目 
-    
-[[./pic/unityToAndroid_20221123_222542.png]]
-- 包名Package name跟unity的包名设置成一致，unity包名一般是 *com.unity3d.player* 。包名不一致的话，我试过也可以实现，但是在调用的时候要指明包，容易混淆，可能还有其他的一些问题，个人也不是很清楚。推荐保持一致，避免麻烦。Android项目名Name等随意。
-** 将unity项目以Module的方式导入Android
-    
-[[./pic/unityToAndroid_20221123_222637.png]]
-
-** 选择unityLibrary导入。点击Finish
-
-[[./pic/unityToAndroid_20221123_222720.png]]
-** 导入之后，为Android添加unityLibrary的引用
-- 左上角File——>Project Structure...
-- 选择Dependencies  ——>  app ，然后点击右边这个加号 + ，选择第三个Moudule Dependency
-  
-[[./pic/unityToAndroid_20221123_220755.png]]
-- 勾选刚刚导入的unity，点击OK。再点击上图的OK。
-
-** 配置 Android 以及 unity 的 build.gradle 文件
-- 将SDK配置成当前Android版本可以运行。Android 以及unity的SDK确保要一样，不然会报错，比如这个minsdk。Build无误就算是导入完成了！
-
-- 这里作些简单的版本修改适配自己的手机,到项目可以构建成功为止.
 
 * Android  启动运行 unity
 ** 在unity的AndroidMainfest.xml文件
@@ -284,22 +371,3 @@ Application.persistentDataPath  /storage/emulated/0/Android/data/package nam
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 #+END_SRC 
 
-* some commands use as reference for later debugging 
-  #+BEGIN_SRC shell
-# gf 首先检查是否crash掉了 gf
-grep -nE "FATAL EXCEPTION:" log1.log
-
-# lst 抓取最后一个
-tac log1.log | awk '!flag; /FATAL EXCEPTION: main/{flag = 1};' | tac > cur.log
-
-# tl 抓取从某个时间点开始的
-tac log1.log | awk '!flag; /:00/{flag = 1};' | tac > cur.log
-
-grep -nE "com.unity3d.player|UnityPlayerActivity|GameApplication" cur.log > tmp.log
-
-grep -nE "com.unity3d.player | UnityPlayerActivity" cur.log
-
-grep -nE "com.defaultcompany.trunk | UnityPlayerActivity" cur.log
-  #+END_SRC
-  
-[[./pic/unityToAndroid_20221125_172601.png]]

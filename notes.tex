@@ -1,4 +1,4 @@
-% Created 2022-11-26 Sat 15:39
+% Created 2022-11-27 Sun 08:30
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -604,14 +604,13 @@ _mAdplatormSDK.Call("init", _unityPlayer, _appId, initCallbackListener);
 \item 其他的参数传递就比较简单了
 \end{itemize}
 
-\section{以前工作中的一个SDK与unity游戏交互的主要逻辑梳理}
-\label{sec-6}
+\textasciitilde{}* 以前工作中的一个SDK与unity游戏交互的主要逻辑梳理
 \begin{itemize}
 \item 不同于网络上绝大多数的安卓SDK与游戏的交互,以前公司里是做了一个中介SDK,负责将公司封装的公司个性化安卓SDK与unity游戏端进行交互
 \item 下面前两个文件是安卓SDK端的定义,中介SDK,公司原始SDK比较简单,可以后看.之后的文件是游戏端对中介SDK提供接口的对接衔接,把这些弄懂
 \end{itemize}
-\subsection{SquarePandaSDK.java}
-\label{sec-6-1}
+\subsection{SquarePandaSDK.java: 这是个静态成员和静态方法类}
+\label{sec-5-3}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{java}
 // 这个类是提供的公用方法,可以供unity游戏端调用SDK中的实现
 public class SquarePandaSDK {
@@ -620,6 +619,7 @@ public class SquarePandaSDK {
 
     public SquarePandaSDK() {}
 
+// 定义了这个静态方法,在本类中也被多次用到,用于调用 unity,实现了SDK 对游戏端的调用或说事件通知
     public static void SendUnityMessage(String methodName, String parameter) {
         UnityPlayer.UnitySendMessage("SquarePanda", methodName, parameter != null ? parameter : "");
     }
@@ -751,7 +751,7 @@ public class SquarePandaSDK {
 }
 \end{minted}
 \subsection{SquarePandaUnityActivity.java}
-\label{sec-6-2}
+\label{sec-5-4}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{java}
 // 这个类折解得很细,比网络上其它安卓SDK与unity的交互写得理深入更底层和细节一点儿
 public class SquarePandaUnityActivity
@@ -872,8 +872,8 @@ public class SquarePandaUnityActivity
     }
 }
 \end{minted}
-\subsection{游戏端SquarePanda.cs}
-\label{sec-6-3}
+\subsection{游戏端SquarePanda.cs: 它充当游戏端的公用API方法,通过内部对ISDK分平台的不同实现,调用 SDK}
+\label{sec-5-5}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 public class SquarePanda : MonoBehaviour { // 单例模式接口
 
@@ -1143,7 +1143,7 @@ public class SquarePanda : MonoBehaviour { // 单例模式接口
 }
 \end{minted}
 \subsection{游戏端ISDK.cs: 定义一个公用接口的目的,是方便ios和安卓等不同平台的实现分平台管理}
-\label{sec-6-4}
+\label{sec-5-6}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 public interface ISDK {
 
@@ -1162,7 +1162,7 @@ public interface ISDK {
 }
 \end{minted}
 \subsection{游戏端对ISDK接口的实现,是充当桥梁在实现里调用了中介SDK中所定义过的SDK的具体实现方法,从而实现游戏端调用安卓SDK}
-\label{sec-6-5}
+\label{sec-5-7}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 public class AndroidSDK: ISDK { // 游戏端对接口方法的实现,其实现是调用中介SDK中所定义过的类中的具体实现
 
@@ -1213,6 +1213,58 @@ public class AndroidSDK: ISDK { // 游戏端对接口方法的实现,其实现�
     }
     public AndroidSDK () {}
 }
+\end{minted}
+\subsection{Assets\Plugins\Android\AnddroidManifest.xml}
+\label{sec-5-8}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.unity3d.player"
+          android:installLocation="preferExternal"
+          android:theme="@android:style/Theme.NoTitleBar"
+          android:versionCode="11"
+          android:versionName="1.1"
+          xmlns:tools="http://schemas.android.com/tools">
+  <!-- 注意上面的包裹名称 com.unity3d.player -->
+
+  <!-- 这个,这里也是可以设置的 -->
+  <!-- Set target sdk version to Lollipop to prevent issues with Marshmallow's runtime permissions. -->
+  <uses-sdk android:minSdkVersion="25" android:targetSdkVersion="31"/>
+
+  <supports-screens android:smallScreens="false"
+                    android:normalScreens="false"
+                    android:largeScreens="true"
+                    android:xlargeScreens="true"
+                    android:requiresSmallestWidthDp="600" />
+  <!-- 权限许可等 -->
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /> 
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+  <uses-permission android:name="android.permission.NFC" />
+
+  <!-- activity的名称这里写的是全名 -->
+  <application
+      android:allowBackup="true"
+      android:label="安卓"
+      android:supportsRtl="true">
+    <activity android:name="com.deepwaterooo.DWUnityActivity"
+              android:launchMode="singleTask"
+			  android:label="@string/app_name"
+			  android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale">
+        <meta-data
+            android:name="unityplayer.UnityActivity"
+            android:value="true"/>
+        <meta-data android:name="com.deepwaterooo.DWUnityActivity" android:value="true" />
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN"/>
+            <category android:name="android.intent.category.LAUNCHER"/>
+        </intent-filter>
+    </activity>
+    <!-- 没有搞明白上面两个meta-data是作什么用的,为什么需要,否则找不到类吗? -->
+  </application>
+</manifest>
 \end{minted}
 % Emacs 27.2 (Org mode 8.2.7c)
 \end{document}

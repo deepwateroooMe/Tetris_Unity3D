@@ -473,7 +473,7 @@ _mAdplatormSDK.Call("init", _unityPlayer, _appId, initCallbackListener);
 #+END_SRC
 - 其他的参数传递就比较简单了
 
-* 以前工作中的一个SDK与unity游戏交互的主要逻辑梳理
+~* 以前工作中的一个SDK与unity游戏交互的主要逻辑梳理
 - 不同于网络上绝大多数的安卓SDK与游戏的交互,以前公司里是做了一个中介SDK,负责将公司封装的公司个性化安卓SDK与unity游戏端进行交互
 - 下面前两个文件是安卓SDK端的定义,中介SDK,公司原始SDK比较简单,可以后看.之后的文件是游戏端对中介SDK提供接口的对接衔接,把这些弄懂
 ** SquarePandaSDK.java: 这是个静态成员和静态方法类
@@ -1076,3 +1076,54 @@ public class AndroidSDK: ISDK { // 游戏端对接口方法的实现,其实现�
     public AndroidSDK () {}
 }
       #+END_SRC
+** AnddroidManifest.xml: 是游戏端安卓平台配置的Assets\Plugins\Android
+   #+begin_SRC xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.unity3d.player"
+          android:installLocation="preferExternal"
+          android:theme="@android:style/Theme.NoTitleBar"
+          android:versionCode="11"
+          android:versionName="1.1"
+          xmlns:tools="http://schemas.android.com/tools">
+  <!-- 注意上面的包裹名称 com.unity3d.player -->
+
+  <!-- 这个,这里也是可以设置的 -->
+  <!-- Set target sdk version to Lollipop to prevent issues with Marshmallow's runtime permissions. -->
+  <uses-sdk android:minSdkVersion="25" android:targetSdkVersion="31"/>
+
+  <supports-screens android:smallScreens="false"
+                    android:normalScreens="false"
+                    android:largeScreens="true"
+                    android:xlargeScreens="true"
+                    android:requiresSmallestWidthDp="600" />
+  <!-- 权限许可等 -->
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /> 
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+  <uses-permission android:name="android.permission.NFC" />
+
+  <!-- activity的名称这里写的是全名 -->
+  <application
+      android:allowBackup="true"
+      android:label="安卓"
+      android:supportsRtl="true">
+    <activity android:name="com.deepwaterooo.DWUnityActivity"
+              android:launchMode="singleTask"
+			  android:label="@string/app_name"
+			  android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale">
+        <meta-data
+            android:name="unityplayer.UnityActivity"
+            android:value="true"/>
+        <meta-data android:name="com.deepwaterooo.DWUnityActivity" android:value="true" />
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN"/>
+            <category android:name="android.intent.category.LAUNCHER"/>
+        </intent-filter>
+    </activity>
+    <!-- 没有搞明白上面两个meta-data是作什么用的,为什么需要,否则找不到类吗? -->
+  </application>
+</manifest>
+   #+END_SRC

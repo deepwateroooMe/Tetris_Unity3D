@@ -1,4 +1,4 @@
-% Created 2022-11-26 Sat 17:49
+% Created 2022-12-01 Thu 21:38
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -33,8 +33,127 @@
 \tableofcontents
 
 
-\section{导出的unity项目文件大致是这样的}
+\section{安卓导.jar .aar进unity几个细巧点}
 \label{sec-1}
+\subsection{项目的build.grale}
+\label{sec-1-1}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{groovy}
+plugins {
+    id 'com.android.library' // <<<<<<<<<<<<<<<<<<<< 可以直接把app 改成早类库就可以了,不同再导一个
+}
+android {
+    namespace 'com.deepwaterooo.dwsdk' // <<<<<<<<<<<<<<<<<<<< 这个需要
+    compileSdk 32
+    defaultConfig {
+        minSdk 25
+        targetSdk 32
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+dependencies {
+    compileOnly files('libs\\classes.jar') // <<<<<<<<<<<<<<<<<<<< compileOnly Unity里的这些类是分Mono il2cpp的,要区分
+    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation 'com.google.android.material:material:1.7.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.4'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
+}
+\end{minted}
+\subsection{修改AndroidMainfest.xml}
+\label{sec-1-2}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.deepwaterooo.dwsdk">
+          <!-- 上面的包裹名称 -->
+  <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE" />
+  <application>
+    <!-- 这下面原本是application里的,都 不要了       -->
+    <!-- android:allowBackup="true" -->
+    <!-- android:dataExtractionRules="@xml/data_extraction_rules" -->
+    <!-- android:fullBackupContent="@xml/backup_rules" -->
+    <!-- android:icon="@mipmap/ic_launcher" -->
+    <!-- android:label="@string/app_name" -->
+    <!-- android:roundIcon="@mipmap/ic_launcher_round" -->
+    <!-- android:supportsRtl="true" -->
+    <!-- android:theme="@style/Theme.MyApplication" -->
+    <!-- tools:targetApi="31"> -->
+
+    <!-- 这个类的名字要写全,不写全有可能会出现找不到类 -->
+    <activity
+        android:name="com.deepwaterooo.dwsdk.MainActivity" 
+        android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+      <!-- <meta-data -->
+      <!--     android:name="android.app.lib_name" -->
+      <!--     android:value="" /> -->
+      <!-- 将上面缺省的,改成下面的, 这里的原理还没有弄懂,为什么一定要这么写 -->
+      <meta-data
+          android:name="unityplayer.UnityActivity"
+          android:value="true" />
+    </activity>
+  </application>
+</manifest>
+\end{minted}
+\subsection{导文件(打.jar包给unity用)}
+\label{sec-1-3}
+\begin{itemize}
+\item 最后–选择菜单栏 \textbf{Build -> Make Moudle} ’你的项目名’，build完成后会在项目中创建一个build文件夹，在 \textbf{build/intermediates/aar\_main\_jar/debug/} 选择 \textbf{classes.jar} 包，用解压软件打开，删除里面unity3d文件夹，避免在unity发布时重复。
+\item 然后重新打成是.jar包,导入unity中; 将 \textbf{AndroidMainfest.xml} 也导入unity。
+\item 如果导入的是 aar，有以下几点需要注意： \textbf{这个需要自己打一次测试一下}
+\begin{itemize}
+\item 删除 unity\_classes.jar 冲突文件，在 aar 的 lib 里
+\item 删除包根目录下面的 Android 配置文件（先复制一份出来）
+\item 删除 aar 跟目下的 classes.jar 里面的 BuildConfig.class 文件
+\end{itemize}
+\end{itemize}
+
+\section{some commands use as reference for later debugging}
+\label{sec-2}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{shell}
+jar cvf classes.jar -C classes/ .
+
+jar cvf deepwaterooo_activity.jar -C classes/ .       
+
+cp deepwaterooo_activity.jar /mnt/f/unityProjects/dwsdkTest/Assets/Plugins/Android 
+
+jar cvf com.android.support.support-compat-26.1.0.aar -C com.android.support.support-compat-26.1.0/ .
+
+# gf 首先检查是否crash掉了 
+grep -nE "FATAL EXCEPTION:" log1.log
+
+# lst 抓取最后一个
+tac log1.log | awk '!flag; /FATAL EXCEPTION: main/{flag = 1};' | tac > cur.log
+
+# tl 抓取从某个时间点开始的
+tac log1.log | awk '!flag; /:00/{flag = 1};' | tac > cur.log
+
+grep -nE "com.unity3d.player|UnityPlayerActivity|GameApplication" cur.log > tmp.log
+
+grep -nE "com.unity3d.player | UnityPlayerActivity" cur.log
+
+grep -nE "com.defaultcompany.trunk | UnityPlayerActivity" cur.log
+\end{minted}
+
+\section{导出的unity项目文件大致是这样的}
+\label{sec-3}
 \begin{itemize}
 \item 大致过程记一下,用作参考,原理还没有吃透,细节又比较多,容易忘记.作个笔记记一下,给自己用作参考
 \end{itemize}
@@ -44,48 +163,11 @@
 \item 下面是2019年的版本可以打出两个文件夹,一个主工程,一个类库的导出包,2017年我用的版本打不出来,还需要想得再深一点多点儿,到可以按照这个笔记过程打包才行
 \item 原始自己参考的项目是用2017版本的,当时没有吃透这里面的构建关系,当时以为只能用2017的unity和2017的Visual Studio才能开发.现在知道2019的版本能够导出自己可以调试的Android Studio项目,而unity 2017版本的导出来自己还仍不知道该如何从Android Studio打包,那么就暂时先用2019的版本,先试图打出在安卓设备上可运行的包,才能move on.
 \end{itemize}
-\section{Android创建、unity导入}
-\label{sec-2}
-\subsection{首先新建一个Android项目}
-\label{sec-2-1}
-
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_222542.png}
-\begin{itemize}
-\item 包名Package name跟unity的包名设置成一致，unity包名一般是 \textbf{com.unity3d.player} 。包名不一致的话，我试过也可以实现，但是在调用的时候要指明包，容易混淆，可能还有其他的一些问题，个人也不是很清楚。推荐保持一致，避免麻烦。Android项目名Name等随意。
-\end{itemize}
-\subsection{将unity项目以Module的方式导入Android}
-\label{sec-2-2}
-
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_222637.png}
-
-\subsection{选择unityLibrary导入。点击Finish}
-\label{sec-2-3}
-
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_222720.png}
-\subsection{导入之后，为Android添加unityLibrary的引用}
-\label{sec-2-4}
-\begin{itemize}
-\item 左上角File——>Project Structure\ldots{}
-\item 选择Dependencies  ——>  app ，然后点击右边这个加号 + ，选择第三个Moudule Dependency
-\end{itemize}
-
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_220755.png}
-\begin{itemize}
-\item 勾选刚刚导入的unity，点击OK。再点击上图的OK。
-\end{itemize}
-
-\subsection{配置 Android 以及 unity 的 build.gradle 文件}
-\label{sec-2-5}
-\begin{itemize}
-\item 将SDK配置成当前Android版本可以运行。Android 以及unity的SDK确保要一样，不然会报错，比如这个minsdk。Build无误就算是导入完成了！
-
-\item 这里作些简单的版本修改适配自己的手机,到项目可以构建成功为止.
-\end{itemize}
 
 \section{Android  启动运行 unity}
-\label{sec-3}
+\label{sec-4}
 \subsection{在unity的AndroidMainfest.xml文件}
-\label{sec-3-1}
+\label{sec-4-1}
 \begin{itemize}
 \item 把<intent-filter>-->删掉或者注释掉，留着的话，当我们把程序运行到手机或者模拟机上时会有两个图标。
 \item 其次是在<activity>里加入这行代码，实现多线程，避免在从unity返回Android时也将Android界面也结束了。
@@ -96,7 +178,7 @@ android:process=":raadidcard"
 
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_223227.png}
 \subsection{在app的AndroidMainfest.xml文件里，在图中位置加入这两行代码：}
-\label{sec-3-2}
+\label{sec-4-2}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
 xmlns:tools="http://schemas.android.com/tools"
 
@@ -142,7 +224,7 @@ tools:replace="android:icon,android:theme,android:allowBackup"
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_223757.png}
 
 \subsection{在app的build.gradle里加入这行代码。}
-\label{sec-3-3}
+\label{sec-4-3}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
 ndk {
     abiFilters 'armeabi-v7a'
@@ -151,7 +233,7 @@ ndk {
 
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_223842.png}
 \subsection{在app的main->res->values->strings.xml里加入这行代码}
-\label{sec-3-4}
+\label{sec-4-4}
 \begin{itemize}
 \item 都还没有去想,这句话能起到什么作用,应该是关系不大,或是可以跳过绕过的小细节
 \begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
@@ -164,7 +246,7 @@ ndk {
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_225409.png}
 
 \subsection{点击按钮启动unity(画蛇添足)}
-\label{sec-3-5}
+\label{sec-4-5}
 \begin{itemize}
 \item 感觉这个连接过程对于自己的项目就是画蛇添足.可是如何既能避开这一步,又能两者很好的平滑交互呢? 对于现在的自己,是个问题和挑战
 \item 在主工程的activity\_main.xml 文件里添加一个按钮。MainActivity.java 里加入启动事件，如果在这里layout标红的话，就把鼠标移到layout下面，建立一个layout就行，我分析是主工程的问题，这个影响不大
@@ -197,7 +279,7 @@ btn.setOnClickListener(new View.OnClickListener() {
 
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_223852.png}
 \subsection{在build.gradle中申明包裹类名称}
-\label{sec-3-6}
+\label{sec-4-6}
 \begin{itemize}
 \item 说是现在在AndroidManifest.xml里申明包裹名称已经过时了,要在配置文件里申明,于是我在这里申明的:
 \end{itemize}
@@ -210,12 +292,12 @@ android {
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221124_090438.png}
 
 \section{启动运行}
-\label{sec-4}
+\label{sec-5}
 
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_225517.png}
 
 \section{Android Studio 类库中重复类的修复}
-\label{sec-5}
+\label{sec-6}
 
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221124_221720.png}
 \begin{itemize}
@@ -246,7 +328,7 @@ jar cvf classes.jar -C classes/ .
 \end{minted}
 
 \section{安卓Android Studio库包中有依赖的库包的解决方案 7.2.2}
-\label{sec-6}
+\label{sec-7}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{tex}
 Direct local .aar file dependencies are not supported when building an AAR.
 \end{minted}
@@ -254,7 +336,7 @@ Direct local .aar file dependencies are not supported when building an AAR.
 \item 在高版本的AndroidStudio并且使用了版本的gradle出现了上述问题可以按着如下引用
 \end{itemize}
 \subsection{比较好一点的,是如下:在项目的根目录的build.gradle里申明类库unityLibrary的依赖的文件路径就可找到}
-\label{sec-6-1}
+\label{sec-7-1}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
 allprojects {
   buildscript {
@@ -285,20 +367,20 @@ task clean(type: Delete) {
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221125_144439.png}
 
 \subsection{下面的只是一种解决方案,可能还不是很好}
-\label{sec-6-2}
+\label{sec-7-2}
 \subsection{在你工程根目录下新建一个文件夹 \textbf{unitylibs} ，将你的aar文件放入，然后在该目录下新建一个build.gradle文件}
-\label{sec-6-3}
+\label{sec-7-3}
 
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221124_161335.png}
 \subsection{在settings.gradle 导入该工程}
-\label{sec-6-4}
+\label{sec-7-4}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
 include ':unitylibs
 \end{minted}
 
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221124_161424.png}
 \subsection{在你需要依赖的工程里面的build.gradle中增加依赖}
-\label{sec-6-5}
+\label{sec-7-5}
 \begin{itemize}
 \item // 这里需要注意的是，unitylibs是你aar库所在文件夹
 \begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
@@ -313,7 +395,7 @@ implementation project(path: ':unitylibs')
 \end{itemize}
 
 \section{那么现在就是说:安卓SDK与unity的交互与打包基本没有问题了}
-\label{sec-7}
+\label{sec-8}
 \begin{itemize}
 \item This PC\HEYAN's S10+\Internal storage\Android\data\com.defaultcompany.trunk\files
 \end{itemize}
@@ -326,7 +408,7 @@ implementation project(path: ':unitylibs')
 \item 相比之下,安卓SDK的实现极其简单,可以放在后面
 \end{itemize}
 \subsection{FATAL EXCEPTION: main}
-\label{sec-7-1}
+\label{sec-8-1}
 
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221124_101807.png}
 \begin{itemize}
@@ -343,7 +425,7 @@ implementation project(path: ':unitylibs')
 }
 \end{minted}
 \subsection{类库包里的错误的修复问题}
-\label{sec-7-2}
+\label{sec-8-2}
 \begin{itemize}
 \item 现在还不是很懂,或是还没有经历狠好地锻炼怎么改类库包里的错误,晚点儿再理会这些
 \end{itemize}
@@ -354,7 +436,7 @@ implementation project(path: ':unitylibs')
 \end{itemize}
 
 \section{安卓设备上资源包的存放位置,以及是否本地存放有需要的资源包}
-\label{sec-8}
+\label{sec-9}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{text}
 This PC\HEYAN's S10+\Internal storage\Android\data\com.defaultcompany.trunk\files
 \end{minted}
@@ -392,26 +474,5 @@ Application.persistentDataPath  /storage/emulated/0/Android/data/package nam
 \begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 \end{minted}
-
-\section{some commands use as reference for later debugging}
-\label{sec-9}
-\begin{minted}[fontsize=\scriptsize,linenos=false]{shell}
-# gf 首先检查是否crash掉了 gf
-grep -nE "FATAL EXCEPTION:" log1.log
-
-# lst 抓取最后一个
-tac log1.log | awk '!flag; /FATAL EXCEPTION: main/{flag = 1};' | tac > cur.log
-
-# tl 抓取从某个时间点开始的
-tac log1.log | awk '!flag; /:00/{flag = 1};' | tac > cur.log
-
-grep -nE "com.unity3d.player|UnityPlayerActivity|GameApplication" cur.log > tmp.log
-
-grep -nE "com.unity3d.player | UnityPlayerActivity" cur.log
-
-grep -nE "com.defaultcompany.trunk | UnityPlayerActivity" cur.log
-\end{minted}
-
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221125_172601.png}
 % Emacs 27.2 (Org mode 8.2.7c)
 \end{document}
