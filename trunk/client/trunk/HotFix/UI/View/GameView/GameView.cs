@@ -521,8 +521,7 @@ namespace HotFix.UI {
 
 #region pausePanel Button Handlers
         // MidMenuView 里的5 个按钮, 以及的瑨延伸的3个按钮的点击回调
-        void OnClickSavButton() { // SAVE GAME
-
+        void OnClickSavButton() { // SAVE GAME: 这个回调怎么会是空的呢?
         }
         void SaveGame(SaveGameEventInfo info) {
             Debug.Log(TAG + ": SaveGame()");
@@ -537,6 +536,10 @@ namespace HotFix.UI {
                 cleanUpGameBroad();
                 ViewModel.hasSavedGameAlready = false;
                 EventManager.Instance.FireEvent("stopgame"); // move rotateCanvas disable
+// // 同时,这里设置,进入安卓SDK主界面
+//                 AndroidJavaClass jc = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+//                 AndroidJavaObject jo = jc.GetStatic<AndroidJavaObject>("currentActivity");
+                
             }
         }
         public void onYesToSaveGame() {

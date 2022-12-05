@@ -3,6 +3,7 @@ using UnityEngine;
 using Framework.ResMgr;
 using Framework.Util;
 using System.Json;
+using deepwaterooo.tetris3d;
 //using cn.sharesdk.unity3d;
 //using cn.sharesdk.unity3d;
 //using cn.sharesdk.unity3d;
@@ -46,21 +47,22 @@ namespace Framework.Core {
 // google, hotmail, LinkedIn facebook etc        
         //public ShareSDK ShareSDK { // 这只是一个微信登录的 单微信 第三方接入的库
         //    get;
-        //    private set;
+        //    private set; 
         //}
-        void Awake() {
-            Debug.Log(TAG + " Awake()");
+        // void Awake() {
+        void Start() {
+            Debug.Log(TAG + " Start()");
             _instance = this;
-            menu = GameObject.Find("menu");
+            // menu = GameObject.Find("menu");
+            menu = GameObject.Find("MenuViewPanel");
             Debug.Log(TAG + " (menu != null): " + (menu != null));
-            menu.SetActive(false);
 // 这里相当于是自己实现了射线检测，是否点击中某个UI上控件的按钮，比如最开始第一屏的“开始游戏”等。＝＝＞　去追到这个按钮的回调过程            
 // 这里有点儿没有弄明白，这个的启动过程和起作用的过程细节是什么样的？？？
             ScreenRaycaster = GameObject.Find("Gestures").GetComponent<ScreenRaycaster>();
-
             DontDestroyOnLoad(gameObject);
             // InitializeClientConfig();
             //InitializeSDKs(); // 可是这里仍然只是多一步登录的步骤,并不该影响热更新域的加载,这是可能会涉及到一点儿服务端的授权许可热更新域的加载?
+            menu.SetActive(false);
             CoroutineHelper.StartCoroutine(Initialize());
 #region TestSamples
             // FingerEventTemp.Instance.RegisterGestureEvents();

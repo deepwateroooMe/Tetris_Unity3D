@@ -42,6 +42,8 @@ namespace HotFix {
             GloData.Instance.camRot.Value = Quaternion.Euler(new Vector3(490.708f, -251.184f, -539.973f));
             GloData.Instance.gameMode.Value = 1;
             GameView.nextTetrominoSpawnPos = new Vector3(2.0f, Model.gridHeight - 1f, 2.0f);
+// TODO: BUG: 这里不知道为什么,menuview出现了            
+            ViewManager.GameView.Reveal();
             // offerGameLoadChoice();
             // ViewManager.SettingsView.Hide();
         }
@@ -54,6 +56,5 @@ namespace HotFix {
             // ViewManager.SettingsView.Hide();
             // Hide();
         }
-
     }
 }

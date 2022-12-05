@@ -43,14 +43,15 @@ namespace HotFix.UI {
                         AudioManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
                         ModelMono.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
 
-                        // if (Application.platform == RuntimePlatform.Android) {
-                        //     Debug.Log(TAG + " CreateBaseUI() 0 VolumeManager.Instance.gameObject.transform.SetParent()");
-                        //     VolumeManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
-                        // }
-// #if UNITY_ANDROID //&& !UNITY_EDITOR
-//                         Debug.Log(TAG + " CreateBaseUI() VolumeManager.Instance.gameObject.transform.SetParent()");
-//                         VolumeManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
-// #endif                        
+                        if (Application.platform == RuntimePlatform.Android) {
+                            Debug.Log(TAG + " CreateBaseUI() 0 VolumeManager.Instance.gameObject.transform.SetParent()");
+                            VolumeManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
+                        }
+#if UNITY_ANDROID //&& !UNITY_EDITOR
+                        Debug.Log(TAG + " CreateBaseUI() VolumeManager.Instance.gameObject.transform.SetParent()");
+                        VolumeManager.Instance.gameObject.transform.SetParent(managersRoot.transform, false);
+#endif                        
+
                         var viewRect = viewRoot.AddComponent<RectTransform>();
                         viewRect.SetParent(UI2DRoot.transform, false);
                         viewRect.sizeDelta = new Vector2(0, 0);
@@ -59,7 +60,7 @@ namespace HotFix.UI {
                         viewRect.pivot = new Vector2(0.5f, 0.5f);
 
                         // GloData.Instance.gameMode.Value = -1; 
-                        ShowStartPanel(); // 这里不要它再显示什么
+                        // ShowStartPanel(); // 这里不要它再显示什么
                     }, EAssetBundleUnloadLevel.Never);
             ResourceHelper
                 .LoadCloneAsyn(

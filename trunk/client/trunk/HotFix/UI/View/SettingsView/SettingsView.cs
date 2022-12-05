@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Framework.Core;
+﻿using deepwaterooo.tetris3d;
 using Framework.MVVM;
 using HotFix.Control;
 using UnityEngine;
@@ -12,6 +8,7 @@ namespace HotFix.UI {
 
     public class SettingsView : UnityGuiView {
         private const string TAG = "SettingsView";
+
         public override string BundleName { get { return "ui/view/settingsview"; } }
         public override string AssetName { get { return "SettingsView"; } }
         public override string ViewName { get { return "SettingsView"; } }
@@ -25,59 +22,58 @@ namespace HotFix.UI {
         Button adsBtn; // ads free
         Button lotBtn; // LOGOUT
         Button setBtn; // user account profiles settings or what ?
-
         GameObject sndPanel;
         Button sndOn;
         Button sndOff;
-        // Slider sndSdr;
-        ExtendedSlider sndSdr;
-
+        Slider sndSdr;
+        // ExtendedSlider sndSdr;
         int maxVol, curVol;
         
         protected override void OnInitialize() {
             base.OnInitialize();
-
             lgiBtn = GameObject.FindChildByName("lgiBtn").GetComponent<Button>();
             lgiBtn.onClick.AddListener(OnClickLgiButton);
-
             creBtn = GameObject.FindChildByName("creBtn").GetComponent<Button>();
             creBtn.onClick.AddListener(OnClickCreButton);
-
             ratBtn = GameObject.FindChildByName("ratBtn").GetComponent<Button>();
             ratBtn.onClick.AddListener(OnClickRatButton);
-
             sunBtn = GameObject.FindChildByName("sunBtn").GetComponent<Button>();
             sunBtn.onClick.AddListener(OnClickSunButton);
-
             adsBtn = GameObject.FindChildByName("adsBtn").GetComponent<Button>();
             adsBtn.onClick.AddListener(OnClickAdsButton);
-
             lotBtn = GameObject.FindChildByName("lotBtn").GetComponent<Button>();
             lotBtn.onClick.AddListener(OnClickLotButton);
-
             setBtn = GameObject.FindChildByName("setBtn").GetComponent<Button>();
             setBtn.onClick.AddListener(OnClickSetButton);
-
             sndPanel = GameObject.FindChildByName("soundPanel");
             sndOn = GameObject.FindChildByName("sndOn").GetComponent<Button>();
             sndOn.onClick.AddListener(onClickSoundOnButton);
             sndOff = GameObject.FindChildByName("sndOff").GetComponent<Button>();
             sndOff.onClick.AddListener(onClickSoundOffButton);
-            sndSdr = GameObject.FindChildByName("volSdr").GetComponent<ExtendedSlider>(); // 这个滑动条有一些相关的事件需要处理
-// 所以最简单的办法,实现一个安卓SDK,将此界面同样地(实际上是音量控制安卓原生相关功能模块移植到SDK中去,这里不再保留)定义在安卓中,调用安卓中的Activity来显示或调控音量.那么如果这样,就涉及到热更新域(或者大一点儿Unity,但热更新域比起普通游戏unity里会更难一点儿)与安卓SDK的相互调用与传值,需要一个真心强大的安卓SDK(或是说安卓SDK与热更新域的相互调用),活宝妹也狠强大,爱表哥,爱生活!!!
-// // TODO:现在的问题就是:以不写SDK的形式加入,无法转化到安卓平台测试这个prototype;所以还是接个比较完整的安卓SDK会比较方便
-            maxVol = VolumeManager.getMaxVolume();
-            Debug.Log(TAG + " OnInitialize() maxVol: " + maxVol);
-            curVol = VolumeManager.getCurrentVolume();
-            Debug.Log(TAG + " OnInitialize() curVol: " + curVol);
-            VolumeManager.setVolume(50);
-
-// slider 拖拽事件的监听回调
-            sndSdr.DragStart.AddListener(OnSliderBeginDrag);
-            sndSdr.DragStop.AddListener(OnSliderEndDrag);
-            sndSdr.PointerDown.AddListener(OnSliderClick);
+            // sndSdr = GameObject.FindChildByName("volSdr").GetComponent<ExtendedSlider>(); // 这个滑动条有一些相关的事件需要处理
+            sndSdr = GameObject.FindChildByName("volSdr").GetComponent<Slider>(); // 这个滑动条有一些相关的事件需要处理
+            
+            // maxVol = VolumeManager.getMaxVolume();
+            // Debug.Log(TAG + " OnInitialize() maxVol: " + maxVol);
+            // curVol = VolumeManager.getCurrentVolume();
+            // Debug.Log(TAG + " OnInitialize() curVol: " + curVol);
+            // VolumeManager.setVolume(50);
+// 这里现想的两种方法: 
+            // 主界面与安卓SDK全放入热更新域中:不知道是否会有我没有想到的障碍,需要测试一下,现先试着测这第二种方法
+                // 先不用包装,直接 call MainActivity 里的方法: 直接全部放在热更新域里,是调不通的
+            // 游戏主界面与安卓SDK主界面各占一部分: 问题是,游戏过程中会有多个想要重入主界面的调用,两个界面交互共同显示的主界面除了第一次显示之外其它任何时候调用感觉都不太方便
+                // 重入的时候就是调用主界面,再测一下这个
+            
+            // maxVol = Deepwaterooo.Instance.getMaxVolume();
+            // Debug.Log(TAG + " OnInitialize() maxVol: " + maxVol);
+            // curVol = Deepwaterooo.Instance.getCurrentVolume();
+            // Debug.Log(TAG + " OnInitialize() curVol: " + curVol);
+            // Deepwaterooo.Instance.setVolume(50);
+// // slider 拖拽事件的监听回调
+//             sndSdr.DragStart.AddListener(OnSliderBeginDrag);
+//             sndSdr.DragStop.AddListener(OnSliderEndDrag);
+//             sndSdr.PointerDown.AddListener(OnSliderClick);
         }
-
         void OnClickLgiButton() { // LOGIN
             ViewManager.LoginView.Reveal();
             ViewManager.MenuView.Hide();
@@ -88,6 +84,7 @@ namespace HotFix.UI {
         void OnClickRatButton() {
         }
         void OnClickSunButton() {
+            Debug.Log(TAG + " OnClickSunButton: Sound()");
             sndPanel.SetActive(true);
         }
         void OnClickAdsButton() {
@@ -97,37 +94,23 @@ namespace HotFix.UI {
         void OnClickSetButton() {
         }
         void onClickSoundOnButton() {
+            Debug.Log(TAG + " onClickSoundOnButton()");
+            // VolumeManager.Instance.setVolume(-1);
             sndPanel.SetActive(false);
         }
         void onClickSoundOffButton() {
+            Debug.Log(TAG + " onClickSoundOffButton()");
+            // VolumeManager.Instance.setVolume(0);
             sndPanel.SetActive(false);
         }
-        void OnSliderBeginDrag(float value)
-            {
-                Debug.Log("开始拖拽：" + value);
-            }
-
-        void OnSliderClick(float value)
-            {
-                Debug.Log("点击：" + value);
-            }
-
-        void OnSliderEndDrag(float value)
-            {
-                Debug.Log("结束拖拽：" + value);
-            }
-        // public ExtendedEvent DragStart;
-        // public ExtendedEvent DragStop;
-        // public ExtendedEvent PointerDown;
-        // public void OnBeginDrag(PointerEventData eventData) {
-        //     DragStart.Invoke(m_Value);
+        // void OnSliderBeginDrag(float value) {
+        //     Debug.Log("开始拖拽：" + value);
         // }
-        // public void OnEndDrag(PointerEventData eventData) {
-        //     DragStop.Invoke(m_Value);
+        // void OnSliderClick(float value) {
+        //     Debug.Log("点击：" + value);
         // }
-        // public override void OnPointerDown(PointerEventData eventData) {
-        //     base.OnPointerDown(eventData);
-        //     PointerDown.Invoke(m_Value);
+        // void OnSliderEndDrag(float value) {
+        //     Debug.Log("结束拖拽：" + value);
         // }
     }
 }

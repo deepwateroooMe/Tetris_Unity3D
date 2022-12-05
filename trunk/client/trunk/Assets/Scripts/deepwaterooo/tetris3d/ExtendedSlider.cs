@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using deepwaterooo.tetris3d.events;
 using UnityEngine.EventSystems;
 
-namespace HotFix.Control {
+namespace deepwaterooo.tetris3d {
+
     public class ExtendedSlider : UnityEngine.UI.Slider, IBeginDragHandler, IEndDragHandler {
         // private const string TAG = "ExtendedSlider";
 
