@@ -2,6 +2,226 @@
 #+title: Unity Export 导出到Android Studio再打包大致过程
 #+author: deepwaterooo 
 
+* UnityPlayerActivity中onDestroy()时mUnityPlayer会杀死整个进程的问题[爱表哥,爱生活]
+   
+[[./pic/unityToAndroid_20221208_092915.png]]
+- 这里它就把想要启动的安卓MainActivity的视图也给销毁了
+** 相关部分的源码:
+*** UnityPlayerActivity
+     #+BEGIN_SRC cpp
+protected void onDestroy() {
+    this.mUnityPlayer.quit(); // <<<<<<<<<<<<<<<<<<<< 
+    super.onDestroy();
+}
+     #+END_SRC
+*** UnityPlayer
+     #+BEGIN_SRC cpp
+    protected void kill() {
+        Process.killProcess(Process.myPid()); // <<<<<<<<<< 这是就把整个进程给杀死了
+    }
+    public void quit() {
+        GoogleVrProxy var1;
+        if ((var1 = GoogleVrApi.b()) != null) {
+            GoogleVrApi.a();
+            var1.b();
+        }
+
+        this.p = true;
+        if (!this.e.e()) {
+            this.pause();
+        }
+
+        this.a.a();
+
+        try {
+            this.a.join(4000L);
+        } catch (InterruptedException var2) {
+            this.a.interrupt();
+        }
+
+        if (this.g != null) {
+            this.m.unregisterReceiver(this.g);
+        }
+
+        this.g = null;
+        if (com.unity3d.player.l.c()) {
+            this.removeAllViews();
+        }
+
+        this.kill(); // <<<<<<<<<<<<<<<<<<<< 
+        g();
+    }
+     #+END_SRC
+
+** 解决办法: 网上搜索到几种解决方法,及其相关后续可能存在的问题
+*** 自定义 UnityPlayer,绕过杀进程的部分
+- https://gameinstitute.qq.com/community/detail/129065
+     #+BEGIN_SRC java
+/**
+ * 主要是重写父类的｛@link UnityPlayer#kill｝方法，因为父类的做法太粗暴了，让Activity自己去finish即可
+ */
+public class MyUnityPlayer extends UnityPlayer {
+
+    public MyUnityPlayer(ContextWrapper contextWrapper) {
+        super(contextWrapper);
+    }
+    // * 不执行父类方法
+    @Override
+    protected void kill() {
+        // super.kill();
+    }
+}
+     #+END_SRC
+- Activity中这样使用: 
+#+BEGIN_SRC java
+protected UnityPlayer mUnityPlayer;
+
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    requestWindowFeature(Window.FEATURE_NO_TITLE);
+    super.onCreate(savedInstanceState);
+
+    ActivityManager.putActivity(this);
+    getWindow().setFormat(PixelFormat.RGBX_8888); // This makes xperia play happy
+
+    // mUnityPlayer = new UnityPlayer(this); 
+    mUnityPlayer = new MyUnityPlayer(this); // <<<<<<<<<<<<<<<<<<<< 
+    setContentView(mUnityPlayer);
+    mUnityPlayer.requestFocus();
+}
+#+END_SRC
+*** 因为还没有如此实现,不知道还会有哪些后续的问题
+- *Note: 然而最近在使用上面重写后又出现问题了，会导致Unity的界面无法正常显示，就没有用了！*
+- 我因为还没有如此实现,不知道还会有哪些后续的问题
+- 其它网友提到过的还存在的问题包括: *[这些,需要用自己的游戏来验证一下]*
+  - 项目中最近在做一个 AR 扫行标（银行 Logo）抽奖的活动，动画模型依托 Unity 环境来展现的。Android 集成 Unity 很简单（比 iOS 方便太多），但是在使用过程中还是需要到一点小麻烦。
+  - 需求中要求扫描页面可以反复进出，在 @Override protected void onDestroy () 生命周期的回调方法中需要调用 mUnityPlayer.quit(); 来达到退出 Unity 的目的。但是发现 mUnityPlayer.quit(); 方法会杀死当前进程，
+  - 不调用 mUnityPlayer.quit(); 方法，控制台中又会提示一个服务没有被清理，会发生内存泄漏，
+  - 网上的做法是集成 UnityPlayer 写一个新类，重写掉 kill() 方法，不杀死进程，但是 *实验了之后发现没有效果，依然会有内存泄漏的提示，虽然大部分机型可以正常使用，但是测试中小米和其他品牌的部分机型在反复进出几次 Unity 程序后，会闪退* 。 *[感觉这里的问题没有追查到底,是资源完全没能释放,还是部分释放了?对于出问题的手机型号,没有提供或作进一步的征查资源释放过程中的问题.如果我能拿到日志,会想到分析得再彻底一点儿]*
+- *自己的项目暂时只实现到这里,会留意是否会有后续问题,再考虑是否游戏端活动放独立进程*
+*** 与上面第一种方法同理,接上面的(继上面两步之后),别人还使用过的方法包括:
+- 原理同样是绕过unity游戏端的桥接类UnityPlayerActivity UnityPlayer中杀掉进程的这一步,只是是通过调用安卓端实现的方法来结束unity游戏端活动
+- 在unity中调用android接口返回上级activity
+#+BEGIN_SRC csharp
+private static void BackToShelfFromAndroid() {
+    using (AndroidJavaClass jc = new AndroidJavaClass("com.dps.core.UnityInterface")) {
+        jc.CallStatic("backToShelf");
+    }
+}
+#+END_SRC
+- 实现android接口：
+#+BEGIN_SRC java
+public static void backToShelf() {
+    Log.i("unity","finish unityPlayer ");
+    UnityPlayer.currentActivity.finish(); // 这里就是正常安卓活动的finish()方法
+}
+#+END_SRC
+*** 另一种: 特制结束游戏端活动广播;调用安卓端活动以借其发送结束游戏端活动广播;安卓端特制类专门负责接收广播,并结束游戏端活动,感觉很绕,性能?
+- 再看最后一个游戏端放独立进程的作比较,就会发现这里安卓端的发送广播与接收广播都是很绕的自找麻烦的浪费性能的过节,这里应该完全可以不用多一步广播的定义,注册发送与接收 
+- 创建一个UnityReaderActivity继承UnityPlayerActivity，在此注册一个广播接收，接收到广播后finish此UnityReaderActivity。在onPause中用super.onDestroy()替换掉super.onPause()。
+#+BEGIN_SRC java
+// 这个类只做一件事: 专门负责接收游戏端发送过来,要求结束游戏端活动的广播,接收后结束游戏端活动(绕过游戏端的杀进程)
+public class UnityReaderActivity extends UnityPlayerActivity {
+    // 自身的引用
+    private BroadcastReceiver receiver;
+ 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        registBroadcast();
+    }
+ 
+    // Pause Unity
+    @Override
+    protected void onPause() {
+        if (receiver != null) {
+            unregisterReceiver(receiver);
+        }
+        // super.onPause();
+        super.onDestroy(); // <<<<<<<<<<<<<<<<<<<< 此处是关键: 生命周期调用的错位,仍然感觉狠粗暴,不优雅
+    }
+  
+    private void registBroadcast() {
+        receiver = new FinishUnityBroadcast();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("finishunity");
+        registerReceiver(receiver, filter);
+    }
+ 
+    class FinishUnityBroadcast extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            finish();
+        }
+    }
+}
+#+END_SRC
+- 使用时调用UnityReaderActivity ，在AndroidManifest.xml中注册UnityReaderActivity
+#+begin_SRC xml
+<activity
+    android:name=".UnityReaderActivity"
+    android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale|layoutDirection"
+    android:hardwareAccelerated="true"
+    android:label="@string/app_name"
+    android:launchMode="singleTask"
+    android:screenOrientation="portrait"
+    android:windowSoftInputMode="adjustResize" >
+  <meta-data
+      android:name="unityplayer.UnityActivity"
+      android:value="true" />
+</activity>
+#+END_SRC
+- 在unity中调用android接口发送广播结束UnityReaderActivity返回上级activity
+  - unity调用android接口：
+#+BEGIN_SRC csharp
+private static void BackToShelfFromAndroid() {
+    using (AndroidJavaClass jc = new AndroidJavaClass("com.dps.core.UnityInterface")) {
+        jc.CallStatic("backToShelf");
+    }
+}
+#+END_SRC
+  - 实现android接口：
+  #+BEGIN_SRC java
+public static void backToShelf() {
+    Log.i("unity","finish unityPlayer ");
+    mContext.sendBroadcast(new Intent("finishunity"));
+}
+  #+END_SRC
+
+*** 把UnityPlayerActivity放在独立的进程,也会带来后续多进程数据交互相关的问题?
+- https://www.cxyzjd.com/article/weixin_42123296/112024546 
+- 首先，把UnityPlayer所在的Activity放到一个新的进程里: 加入android:process=”:unity”
+#+begin_SRC xml
+<activity
+    android:name=".UnityPlayerActivity"
+    android:label="@string/app_name"
+    android:launchMode="singleTask" 
+    android:screenOrientation="landscape"
+
+    android:process=":unity"
+
+    android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+    android:name="unityplayer.UnityActivity"
+    android:value="true" />
+#+END_SRC
+- 接下来，按照下面步骤进行：[这可以尝试作为另一种方法的实现,不是加法,是或者]
+  - 第一步，在activity里定义一个unityFinish方法。
+  - 第二步，在unity脚本中调用activity里定义好的unityFinish方法。(如不知道怎么调用请移步到：Android 与 Unity 的交互) *[同上面的安卓端的广播定义注册发送与接收相比,省性能了]*
+  - 第三步，activity的unityFinish方法里处理一些结束操作，最后调用Activity的finish()。 *[可以成功绕过那个杀死自己进程的步骤]*
+  - 第四步，在activity的destroy方法里调用UnityPlayer的quit()。 *[在必要需要的进候,仍然进行了必要的资源释放,只是不知道能否在有限制时间里清理干净,还是说会自动延迟,或是程序员给足它时间清理干净呢?]*
+- 这样你需要进行结束要处理的事情放到了自己定义的方法里进行了处理，处理完后调用Activity的finish()，这样activity开始走自己结束的方法，在Activity的的destroy方法里调用super.onDestroy()之前调用mUnityPlayer.quit()，这个时候会先走UnityPlayer的quit()处理后事，这样即使把自己的宿主进程kill了，用户也感知不到了。
+- 缺点: *后面的四个步骤感觉逻辑还比较清淅,可是感觉作者可能也没能理解透彻,步骤有多余*,当游戏端活动处于独立的进程,那杀进程就杀呀,它反正是在独立的进程,死了那个游戏端活动的进程,不影响其它安卓端进程呀,它的前后两部分其实应该可以独立到两种不同的实现方法里去的,而不是同时处理两种方法???
+- 独立进程可能带来的问题: https://www.jianshu.com/p/046590c1e6b3
+#+begin_SRC xml
+<activity
+    android:name="cn.com.global_vision_ar.UnityPlayerActivity"
+    android:screenOrientation="portrait"
+    android:process=":unityAR"
+</activity>
+#+END_SRC
+- 这个办法解决了闪退问题，但是还没有结束，UnityPlayerActivity 中需要接收 AR 程序的回调方法，如：public void getGift() ，在这个方法中请求后台接口，发起抽奖。Unity 程序改成用新进程启动后，发起抽奖接口时，发生了会话丢失的情况（抽奖是需要登录的，后台会话是基于 Cookie 中的 JessionId）。我猜是因为不在同一个进程，Cookie 没有同步，导致送到后台的 JessionId 不一致（不是登录成功后返回的 JessionId）。
+- 解决办法是使用 Broadcast 跨进程通信，把抽奖的请求写在主进程，要抽奖时发起广播进行抽奖，抽奖结束后得到抽奖结果的数据，再通过广播的方式把数据传回 UnityPlayerActivity，使用 UnityPlayer.UnitySendMessage 方法通知 Unity 程序。
+
 * 安卓导.jar .aar进unity几个细巧点
 ** 项目的build.grale
    #+BEGIN_SRC groovy
@@ -316,34 +536,6 @@ implementation project(path: ':unitylibs')
 - 当然如果你有很多aar库，那么你需要在根目录创建一个LocalRepo目录，然后将你不同的aar库放在不同文件夹下。在setting.gradle分别导入
 - 下面它是这么说的,可是我都把它们放在同一个类库里,看不行的话再移.为什么每个包都需要一个单独的类库呢?解偶多个不同包之间的依赖性?加载时的内存性能影响等?
 
-* 那么现在就是说:安卓SDK与unity的交互与打包基本没有问题了
-- This PC\HEYAN's S10+\Internal storage\Android\data\com.defaultcompany.trunk\files
-  
-[[./pic/unityToAndroid_20221125_171932.png]]
-
-- 但对自己更大的挑战是:为什么unity里一个空物件挂载到热更新的过程,我打包之后在安卓手机上运行不出来,仍需要时间debug这个过程(呵呵,前面昨天还是前天已经想到问题的原因,不到因为探讨其它的想法,直到今天傍晚刚才整个过程才理通.不过目前仍是用unity直接到包,还有许多其它的细节小问题需要解决)
-- 过程中遇到过,还会遇到很多不懂的问题,比如同样的某些android studio里加android:exported="true"各种标签等,如果只用unity打包,该如何实现呢?两套不同的打包机制都得弄明白.但都是这么一个学习的过程,不会被轻易挫败.
-- 相比之下,安卓SDK的实现极其简单,可以放在后面
-** FATAL EXCEPTION: main
-   
-[[./pic/unityToAndroid_20221124_101807.png]]
-- 这个没有再出现了,根据这里改的:https://forum.unity.com/threads/android-crashes-after-update-project-to-unity-2020-3-9f.1126979/
-- 但是游戏的界面仍然是渲染不出来,还在找原因 
-#+BEGIN_SRC java
-@Override protected void onDestroy () {
-    Log.d(TAG, "onDestroy() ");
-    // mUnityPlayer.destroy();
-    mUnityPlayer.removeAllViews();
-    mUnityPlayer.quit();
-    super.onDestroy();
-}
-#+END_SRC 
-** 类库包里的错误的修复问题
-- 现在还不是很懂,或是还没有经历狠好地锻炼怎么改类库包里的错误,晚点儿再理会这些
-  
-[[./pic/unityToAndroid_20221124_163004.png]]
-- 先只把这些有错误的类库包不连上
-
 * 安卓设备上资源包的存放位置,以及是否本地存放有需要的资源包
   #+BEGIN_SRC text
 This PC\HEYAN's S10+\Internal storage\Android\data\com.defaultcompany.trunk\files
@@ -376,4 +568,33 @@ Application.persistentDataPath  /storage/emulated/0/Android/data/package nam
 #+begin_SRC xml
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 #+END_SRC 
+
+* 那么现在就是说:安卓SDK与unity的交互与打包基本没有问题了
+- This PC\HEYAN's S10+\Internal storage\Android\data\com.defaultcompany.trunk\files
+  
+[[./pic/unityToAndroid_20221125_171932.png]]
+
+- 但对自己更大的挑战是:为什么unity里一个空物件挂载到热更新的过程,我打包之后在安卓手机上运行不出来,仍需要时间debug这个过程(呵呵,前面昨天还是前天已经想到问题的原因,不到因为探讨其它的想法,直到今天傍晚刚才整个过程才理通.不过目前仍是用unity直接到包,还有许多其它的细节小问题需要解决)
+- 过程中遇到过,还会遇到很多不懂的问题,比如同样的某些android studio里加android:exported="true"各种标签等,如果只用unity打包,该如何实现呢?两套不同的打包机制都得弄明白.但都是这么一个学习的过程,不会被轻易挫败.
+- 相比之下,安卓SDK的实现极其简单,可以放在后面
+** FATAL EXCEPTION: main
+   
+[[./pic/unityToAndroid_20221124_101807.png]]
+- 这个没有再出现了,根据这里改的:https://forum.unity.com/threads/android-crashes-after-update-project-to-unity-2020-3-9f.1126979/
+- 但是游戏的界面仍然是渲染不出来,还在找原因 
+#+BEGIN_SRC java
+@Override protected void onDestroy () {
+    Log.d(TAG, "onDestroy() ");
+    // mUnityPlayer.destroy();
+    mUnityPlayer.removeAllViews();
+    mUnityPlayer.quit();
+    super.onDestroy();
+}
+#+END_SRC 
+** 类库包里的错误的修复问题
+- 现在还不是很懂,或是还没有经历狠好地锻炼怎么改类库包里的错误,晚点儿再理会这些
+  
+[[./pic/unityToAndroid_20221124_163004.png]]
+- 先只把这些有错误的类库包不连上
+
 

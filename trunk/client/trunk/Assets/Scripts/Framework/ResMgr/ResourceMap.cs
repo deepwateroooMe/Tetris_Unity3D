@@ -76,17 +76,19 @@ namespace Framework.ResMgr {
         }
         // 分析只读路径bundleList
         void FillResourceList() {
+            Debug.Log(TAG + " FillResourceList()");
             // Debug.Log("FillResourceList");
             string text = FileHelp.ReadString("AssetBundleList.txt");
             Debug.Log("ResourceList:  " + text);
             if (!string.IsNullOrEmpty(text)) {
 // 把文件中的所有:一个一个的资源包都解析(若是最新资源包)或是作好需要下载更新的标记 ?               
                 AnalysisResourceList(text, EAssetBunbleSourceType.Primary);
+                Debug.Log(TAG + " FillResourceList() text: " + text);
             }
         }
         // 分析可读写路径bundleList
         void FillHotFixList() {
-            // Debug.Log("FillHotFixList");
+            Debug.Log("FillHotFixList");
             // string text = File.ReadAllText(ResourceConstant.AssetBundleCacheRoot + "/HotFixList.txt");
 // 从可作热更新的资源包列表里读出相关(下载的)资源?            
             string text = FileHelp.ReadString("HotFixList.txt");

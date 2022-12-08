@@ -1,4 +1,4 @@
-% Created 2022-12-06 Tue 20:45
+% Created 2022-12-08 Thu 10:47
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -33,10 +33,270 @@
 \tableofcontents
 
 
-\section{安卓导.jar .aar进unity几个细巧点}
+\section{UnityPlayerActivity中onDestroy()时mUnityPlayer会杀死整个进程的问题[爱表哥,爱生活]}
 \label{sec-1}
-\subsection{项目的build.grale}
+
+\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221208_092915.png}
+\begin{itemize}
+\item 这里它就把想要启动的安卓MainActivity的视图也给销毁了
+\end{itemize}
+\subsection{相关部分的源码:}
 \label{sec-1-1}
+\subsubsection{UnityPlayerActivity}
+\label{sec-1-1-1}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{cpp}
+protected void onDestroy() {
+    this.mUnityPlayer.quit(); // <<<<<<<<<<<<<<<<<<<< 
+    super.onDestroy();
+}
+\end{minted}
+\subsubsection{UnityPlayer}
+\label{sec-1-1-2}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{cpp}
+    protected void kill() {
+        Process.killProcess(Process.myPid()); // <<<<<<<<<< 这是就把整个进程给杀死了
+    }
+    public void quit() {
+        GoogleVrProxy var1;
+        if ((var1 = GoogleVrApi.b()) != null) {
+            GoogleVrApi.a();
+            var1.b();
+        }
+
+        this.p = true;
+        if (!this.e.e()) {
+            this.pause();
+        }
+
+        this.a.a();
+
+        try {
+            this.a.join(4000L);
+        } catch (InterruptedException var2) {
+            this.a.interrupt();
+        }
+
+        if (this.g != null) {
+            this.m.unregisterReceiver(this.g);
+        }
+
+        this.g = null;
+        if (com.unity3d.player.l.c()) {
+            this.removeAllViews();
+        }
+
+        this.kill(); // <<<<<<<<<<<<<<<<<<<< 
+        g();
+    }
+\end{minted}
+
+\subsection{解决办法: 网上搜索到几种解决方法,及其相关后续可能存在的问题}
+\label{sec-1-2}
+\subsubsection{自定义 UnityPlayer,绕过杀进程的部分}
+\label{sec-1-2-1}
+\begin{itemize}
+\item \url{https://gameinstitute.qq.com/community/detail/129065}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{java}
+/**
+ * 主要是重写父类的｛@link UnityPlayer#kill｝方法，因为父类的做法太粗暴了，让Activity自己去finish即可
+ */
+public class MyUnityPlayer extends UnityPlayer {
+
+    public MyUnityPlayer(ContextWrapper contextWrapper) {
+        super(contextWrapper);
+    }
+    // * 不执行父类方法
+    @Override
+    protected void kill() {
+        // super.kill();
+    }
+}
+\end{minted}
+\item Activity中这样使用:
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{java}
+protected UnityPlayer mUnityPlayer;
+
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    requestWindowFeature(Window.FEATURE_NO_TITLE);
+    super.onCreate(savedInstanceState);
+
+    ActivityManager.putActivity(this);
+    getWindow().setFormat(PixelFormat.RGBX_8888); // This makes xperia play happy
+
+    // mUnityPlayer = new UnityPlayer(this); 
+    mUnityPlayer = new MyUnityPlayer(this); // <<<<<<<<<<<<<<<<<<<< 
+    setContentView(mUnityPlayer);
+    mUnityPlayer.requestFocus();
+}
+\end{minted}
+\subsubsection{因为还没有如此实现,不知道还会有哪些后续的问题}
+\label{sec-1-2-2}
+\begin{itemize}
+\item \textbf{Note: 然而最近在使用上面重写后又出现问题了，会导致Unity的界面无法正常显示，就没有用了！}
+\item 我因为还没有如此实现,不知道还会有哪些后续的问题
+\item 其它网友提到过的还存在的问题包括: \textbf{[这些,需要用自己的游戏来验证一下]}
+\begin{itemize}
+\item 项目中最近在做一个 AR 扫行标（银行 Logo）抽奖的活动，动画模型依托 Unity 环境来展现的。Android 集成 Unity 很简单（比 iOS 方便太多），但是在使用过程中还是需要到一点小麻烦。
+\item 需求中要求扫描页面可以反复进出，在 @Override protected void onDestroy () 生命周期的回调方法中需要调用 mUnityPlayer.quit(); 来达到退出 Unity 的目的。但是发现 mUnityPlayer.quit(); 方法会杀死当前进程，
+\item 不调用 mUnityPlayer.quit(); 方法，控制台中又会提示一个服务没有被清理，会发生内存泄漏，
+\item 网上的做法是集成 UnityPlayer 写一个新类，重写掉 kill() 方法，不杀死进程，但是 \textbf{实验了之后发现没有效果，依然会有内存泄漏的提示，虽然大部分机型可以正常使用，但是测试中小米和其他品牌的部分机型在反复进出几次 Unity 程序后，会闪退} 。
+\end{itemize}
+\item \textbf{自己的项目暂时只实现到这里,会留意是否会有后续问题,再考虑是否游戏端活动放独立进程}
+\end{itemize}
+\subsubsection{与上面第一种方法同理,接上面的(继上面两步之后),别人还使用过的方法包括:}
+\label{sec-1-2-3}
+\begin{itemize}
+\item 原理同样是绕过unity游戏端的桥接类UnityPlayerActivity UnityPlayer中杀掉进程的这一步,只是是通过调用安卓端实现的方法来结束unity游戏端活动
+\item 在unity中调用android接口返回上级activity
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+private static void BackToShelfFromAndroid() {
+    using (AndroidJavaClass jc = new AndroidJavaClass("com.dps.core.UnityInterface")) {
+        jc.CallStatic("backToShelf");
+    }
+}
+\end{minted}
+\begin{itemize}
+\item 实现android接口：
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{java}
+public static void backToShelf() {
+    Log.i("unity","finish unityPlayer ");
+    UnityPlayer.currentActivity.finish(); // 这里就是正常安卓活动的finish()方法
+}
+\end{minted}
+\subsubsection{另一种: 特制结束游戏端活动广播;调用安卓端活动以借其发送结束游戏端活动广播;安卓端特制类专门负责接收广播,并结束游戏端活动,感觉很绕,性能?}
+\label{sec-1-2-4}
+\begin{itemize}
+\item 再看最后一个游戏端放独立进程的作比较,就会发现这里安卓端的发送广播与接收广播都是很绕的自找麻烦的浪费性能的过节,这里应该完全可以不用多一步广播的定义,注册发送与接收
+\item 创建一个UnityReaderActivity继承UnityPlayerActivity，在此注册一个广播接收，接收到广播后finish此UnityReaderActivity。在onPause中用super.onDestroy()替换掉super.onPause()。
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{java}
+// 这个类只做一件事: 专门负责接收游戏端发送过来,要求结束游戏端活动的广播,接收后结束游戏端活动(绕过游戏端的杀进程)
+public class UnityReaderActivity extends UnityPlayerActivity {
+    // 自身的引用
+    private BroadcastReceiver receiver;
+ 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        registBroadcast();
+    }
+ 
+    // Pause Unity
+    @Override
+    protected void onPause() {
+        if (receiver != null) {
+            unregisterReceiver(receiver);
+        }
+        // super.onPause();
+        super.onDestroy(); // <<<<<<<<<<<<<<<<<<<< 此处是关键: 生命周期调用的错位,仍然感觉狠粗暴,不优雅
+    }
+  
+    private void registBroadcast() {
+        receiver = new FinishUnityBroadcast();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("finishunity");
+        registerReceiver(receiver, filter);
+    }
+ 
+    class FinishUnityBroadcast extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            finish();
+        }
+    }
+}
+\end{minted}
+\begin{itemize}
+\item 使用时调用UnityReaderActivity ，在AndroidManifest.xml中注册UnityReaderActivity
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
+<activity
+    android:name=".UnityReaderActivity"
+    android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale|layoutDirection"
+    android:hardwareAccelerated="true"
+    android:label="@string/app_name"
+    android:launchMode="singleTask"
+    android:screenOrientation="portrait"
+    android:windowSoftInputMode="adjustResize" >
+  <meta-data
+      android:name="unityplayer.UnityActivity"
+      android:value="true" />
+</activity>
+\end{minted}
+\begin{itemize}
+\item 在unity中调用android接口发送广播结束UnityReaderActivity返回上级activity
+\begin{itemize}
+\item unity调用android接口：
+\end{itemize}
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+private static void BackToShelfFromAndroid() {
+    using (AndroidJavaClass jc = new AndroidJavaClass("com.dps.core.UnityInterface")) {
+        jc.CallStatic("backToShelf");
+    }
+}
+\end{minted}
+\begin{itemize}
+\item 实现android接口：
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{java}
+public static void backToShelf() {
+    Log.i("unity","finish unityPlayer ");
+    mContext.sendBroadcast(new Intent("finishunity"));
+}
+\end{minted}
+
+\subsubsection{把UnityPlayerActivity放在独立的进程,也会带来后续多进程数据交互相关的问题?}
+\label{sec-1-2-5}
+\begin{itemize}
+\item \url{https://www.cxyzjd.com/article/weixin_42123296/112024546}
+\item 首先，把UnityPlayer所在的Activity放到一个新的进程里: 加入android:process=”:unity”
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
+<activity
+    android:name=".UnityPlayerActivity"
+    android:label="@string/app_name"
+    android:launchMode="singleTask" 
+    android:screenOrientation="landscape"
+
+    android:process=":unity"
+
+    android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+    android:name="unityplayer.UnityActivity"
+    android:value="true" />
+\end{minted}
+\begin{itemize}
+\item 接下来，按照下面步骤进行：[这可以尝试作为另一种方法的实现,不是加法,是或者]
+\begin{itemize}
+\item 第一步，在activity里定义一个unityFinish方法。
+\item 第二步，在unity脚本中调用activity里定义好的unityFinish方法。(如不知道怎么调用请移步到：Android 与 Unity 的交互) \textbf{[同上面的安卓端的广播定义注册发送与接收相比,省性能了]}
+\item 第三步，activity的unityFinish方法里处理一些结束操作，最后调用Activity的finish()。 \textbf{[可以成功绕过那个杀死自己进程的步骤]}
+\item 第四步，在activity的destroy方法里调用UnityPlayer的quit()。 \textbf{[在必要需要的进候,仍然进行了必要的资源释放,只是不知道能否在有限制时间里清理干净,还是说会自动延迟,或是程序员给足它时间清理干净呢?]}
+\end{itemize}
+\item 这样你需要进行结束要处理的事情放到了自己定义的方法里进行了处理，处理完后调用Activity的finish()，这样activity开始走自己结束的方法，在Activity的的destroy方法里调用super.onDestroy()之前调用mUnityPlayer.quit()，这个时候会先走UnityPlayer的quit()处理后事，这样即使把自己的宿主进程kill了，用户也感知不到了。
+\item 缺点: \textbf{后面的四个步骤感觉逻辑还比较清淅,可是感觉作者可能也没能理解透彻,步骤有多余},当游戏端活动处于独立的进程,那杀进程就杀呀,它反正是在独立的进程,死了那个游戏端活动的进程,不影响其它安卓端进程呀,它的前后两部分其实应该可以独立到两种不同的实现方法里去的,而不是同时处理两种方法???
+\item 独立进程可能带来的问题: \url{https://www.jianshu.com/p/046590c1e6b3}
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
+<activity
+    android:name="cn.com.global_vision_ar.UnityPlayerActivity"
+    android:screenOrientation="portrait"
+    android:process=":unityAR"
+</activity>
+\end{minted}
+\begin{itemize}
+\item 这个办法解决了闪退问题，但是还没有结束，UnityPlayerActivity 中需要接收 AR 程序的回调方法，如：public void getGift() ，在这个方法中请求后台接口，发起抽奖。Unity 程序改成用新进程启动后，发起抽奖接口时，发生了会话丢失的情况（抽奖是需要登录的，后台会话是基于 Cookie 中的 JessionId）。我猜是因为不在同一个进程，Cookie 没有同步，导致送到后台的 JessionId 不一致（不是登录成功后返回的 JessionId）。
+\item 解决办法是使用 Broadcast 跨进程通信，把抽奖的请求写在主进程，要抽奖时发起广播进行抽奖，抽奖结束后得到抽奖结果的数据，再通过广播的方式把数据传回 UnityPlayerActivity，使用 UnityPlayer.UnitySendMessage 方法通知 Unity 程序。
+\end{itemize}
+
+\section{安卓导.jar .aar进unity几个细巧点}
+\label{sec-2}
+\subsection{项目的build.grale}
+\label{sec-2-1}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{groovy}
 plugins {
     id 'com.android.library' // <<<<<<<<<<<<<<<<<<<< 可以直接把app 改成早类库就可以了,不同再导一个
@@ -73,7 +333,7 @@ dependencies {
 }
 \end{minted}
 \subsection{修改AndroidMainfest.xml}
-\label{sec-1-2}
+\label{sec-2-2}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -113,7 +373,7 @@ dependencies {
 </manifest>
 \end{minted}
 \subsection{导文件(打.jar包给unity用)}
-\label{sec-1-3}
+\label{sec-2-3}
 \begin{itemize}
 \item 最后–选择菜单栏 \textbf{Build -> Make Moudle} ’你的项目名’，build完成后会在项目中创建一个build文件夹，在 \textbf{build/intermediates/aar\_main\_jar/debug/} 选择 \textbf{classes.jar} 包，用解压软件打开，删除里面unity3d文件夹，避免在unity发布时重复。
 \item 然后重新打成是.jar包,导入unity中; 将 \textbf{AndroidMainfest.xml} 也导入unity。
@@ -126,7 +386,7 @@ dependencies {
 \end{itemize}
 
 \section{some commands use as reference for later debugging}
-\label{sec-2}
+\label{sec-3}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{shell}
 jar cvf classes.jar -C classes/ .
 
@@ -159,7 +419,7 @@ grep -nE "com.defaultcompany.trunk | UnityPlayerActivity" cur.log
 \end{minted}
 
 \section{导出的unity项目文件大致是这样的}
-\label{sec-3}
+\label{sec-4}
 \begin{itemize}
 \item 大致过程记一下,用作参考,原理还没有吃透,细节又比较多,容易忘记.作个笔记记一下,给自己用作参考
 \end{itemize}
@@ -171,9 +431,9 @@ grep -nE "com.defaultcompany.trunk | UnityPlayerActivity" cur.log
 \end{itemize}
 
 \section{Android  启动运行 unity}
-\label{sec-4}
+\label{sec-5}
 \subsection{在unity的AndroidMainfest.xml文件}
-\label{sec-4-1}
+\label{sec-5-1}
 \begin{itemize}
 \item 把<intent-filter>-->删掉或者注释掉，留着的话，当我们把程序运行到手机或者模拟机上时会有两个图标。
 \item 其次是在<activity>里加入这行代码，实现多线程，避免在从unity返回Android时也将Android界面也结束了。
@@ -184,7 +444,7 @@ android:process=":raadidcard"
 
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_223227.png}
 \subsection{在app的AndroidMainfest.xml文件里，在图中位置加入这两行代码：}
-\label{sec-4-2}
+\label{sec-5-2}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
 xmlns:tools="http://schemas.android.com/tools"
 
@@ -230,7 +490,7 @@ tools:replace="android:icon,android:theme,android:allowBackup"
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_223757.png}
 
 \subsection{在app的build.gradle里加入这行代码。}
-\label{sec-4-3}
+\label{sec-5-3}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
 ndk {
     abiFilters 'armeabi-v7a'
@@ -239,7 +499,7 @@ ndk {
 
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_223842.png}
 \subsection{在app的main->res->values->strings.xml里加入这行代码}
-\label{sec-4-4}
+\label{sec-5-4}
 \begin{itemize}
 \item 都还没有去想,这句话能起到什么作用,应该是关系不大,或是可以跳过绕过的小细节
 \begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
@@ -252,7 +512,7 @@ ndk {
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_225409.png}
 
 \subsection{点击按钮启动unity(画蛇添足)}
-\label{sec-4-5}
+\label{sec-5-5}
 \begin{itemize}
 \item 感觉这个连接过程对于自己的项目就是画蛇添足.可是如何既能避开这一步,又能两者很好的平滑交互呢? 对于现在的自己,是个问题和挑战
 \item 在主工程的activity\_main.xml 文件里添加一个按钮。MainActivity.java 里加入启动事件，如果在这里layout标红的话，就把鼠标移到layout下面，建立一个layout就行，我分析是主工程的问题，这个影响不大
@@ -285,7 +545,7 @@ btn.setOnClickListener(new View.OnClickListener() {
 
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_223852.png}
 \subsection{在build.gradle中申明包裹类名称}
-\label{sec-4-6}
+\label{sec-5-6}
 \begin{itemize}
 \item 说是现在在AndroidManifest.xml里申明包裹名称已经过时了,要在配置文件里申明,于是我在这里申明的:
 \end{itemize}
@@ -298,12 +558,12 @@ android {
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221124_090438.png}
 
 \section{启动运行}
-\label{sec-5}
+\label{sec-6}
 
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221123_225517.png}
 
 \section{Android Studio 类库中重复类的修复}
-\label{sec-6}
+\label{sec-7}
 
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221124_221720.png}
 \begin{itemize}
@@ -334,7 +594,7 @@ jar cvf classes.jar -C classes/ .
 \end{minted}
 
 \section{安卓Android Studio库包中有依赖的库包的解决方案 7.2.2}
-\label{sec-7}
+\label{sec-8}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{tex}
 Direct local .aar file dependencies are not supported when building an AAR.
 \end{minted}
@@ -342,7 +602,7 @@ Direct local .aar file dependencies are not supported when building an AAR.
 \item 在高版本的AndroidStudio并且使用了版本的gradle出现了上述问题可以按着如下引用
 \end{itemize}
 \subsection{比较好一点的,是如下:在项目的根目录的build.gradle里申明类库unityLibrary的依赖的文件路径就可找到}
-\label{sec-7-1}
+\label{sec-8-1}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
 allprojects {
   buildscript {
@@ -373,20 +633,20 @@ task clean(type: Delete) {
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221125_144439.png}
 
 \subsection{下面的只是一种解决方案,可能还不是很好}
-\label{sec-7-2}
+\label{sec-8-2}
 \subsection{在你工程根目录下新建一个文件夹 \textbf{unitylibs} ，将你的aar文件放入，然后在该目录下新建一个build.gradle文件}
-\label{sec-7-3}
+\label{sec-8-3}
 
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221124_161335.png}
 \subsection{在settings.gradle 导入该工程}
-\label{sec-7-4}
+\label{sec-8-4}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
 include ':unitylibs
 \end{minted}
 
 \includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221124_161424.png}
 \subsection{在你需要依赖的工程里面的build.gradle中增加依赖}
-\label{sec-7-5}
+\label{sec-8-5}
 \begin{itemize}
 \item // 这里需要注意的是，unitylibs是你aar库所在文件夹
 \begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
@@ -398,47 +658,6 @@ implementation project(path: ':unitylibs')
 \begin{itemize}
 \item 当然如果你有很多aar库，那么你需要在根目录创建一个LocalRepo目录，然后将你不同的aar库放在不同文件夹下。在setting.gradle分别导入
 \item 下面它是这么说的,可是我都把它们放在同一个类库里,看不行的话再移.为什么每个包都需要一个单独的类库呢?解偶多个不同包之间的依赖性?加载时的内存性能影响等?
-\end{itemize}
-
-\section{那么现在就是说:安卓SDK与unity的交互与打包基本没有问题了}
-\label{sec-8}
-\begin{itemize}
-\item This PC\HEYAN's S10+\Internal storage\Android\data\com.defaultcompany.trunk\files
-\end{itemize}
-
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221125_171932.png}
-
-\begin{itemize}
-\item 但对自己更大的挑战是:为什么unity里一个空物件挂载到热更新的过程,我打包之后在安卓手机上运行不出来,仍需要时间debug这个过程(呵呵,前面昨天还是前天已经想到问题的原因,不到因为探讨其它的想法,直到今天傍晚刚才整个过程才理通.不过目前仍是用unity直接到包,还有许多其它的细节小问题需要解决)
-\item 过程中遇到过,还会遇到很多不懂的问题,比如同样的某些android studio里加android:exported="true"各种标签等,如果只用unity打包,该如何实现呢?两套不同的打包机制都得弄明白.但都是这么一个学习的过程,不会被轻易挫败.
-\item 相比之下,安卓SDK的实现极其简单,可以放在后面
-\end{itemize}
-\subsection{FATAL EXCEPTION: main}
-\label{sec-8-1}
-
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221124_101807.png}
-\begin{itemize}
-\item 这个没有再出现了,根据这里改的:\url{https://forum.unity.com/threads/android-crashes-after-update-project-to-unity-2020-3-9f.1126979/}
-\item 但是游戏的界面仍然是渲染不出来,还在找原因
-\end{itemize}
-\begin{minted}[fontsize=\scriptsize,linenos=false]{java}
-@Override protected void onDestroy () {
-    Log.d(TAG, "onDestroy() ");
-    // mUnityPlayer.destroy();
-    mUnityPlayer.removeAllViews();
-    mUnityPlayer.quit();
-    super.onDestroy();
-}
-\end{minted}
-\subsection{类库包里的错误的修复问题}
-\label{sec-8-2}
-\begin{itemize}
-\item 现在还不是很懂,或是还没有经历狠好地锻炼怎么改类库包里的错误,晚点儿再理会这些
-\end{itemize}
-
-\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221124_163004.png}
-\begin{itemize}
-\item 先只把这些有错误的类库包不连上
 \end{itemize}
 
 \section{安卓设备上资源包的存放位置,以及是否本地存放有需要的资源包}
@@ -480,5 +699,46 @@ Application.persistentDataPath  /storage/emulated/0/Android/data/package nam
 \begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 \end{minted}
+
+\section{那么现在就是说:安卓SDK与unity的交互与打包基本没有问题了}
+\label{sec-10}
+\begin{itemize}
+\item This PC\HEYAN's S10+\Internal storage\Android\data\com.defaultcompany.trunk\files
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221125_171932.png}
+
+\begin{itemize}
+\item 但对自己更大的挑战是:为什么unity里一个空物件挂载到热更新的过程,我打包之后在安卓手机上运行不出来,仍需要时间debug这个过程(呵呵,前面昨天还是前天已经想到问题的原因,不到因为探讨其它的想法,直到今天傍晚刚才整个过程才理通.不过目前仍是用unity直接到包,还有许多其它的细节小问题需要解决)
+\item 过程中遇到过,还会遇到很多不懂的问题,比如同样的某些android studio里加android:exported="true"各种标签等,如果只用unity打包,该如何实现呢?两套不同的打包机制都得弄明白.但都是这么一个学习的过程,不会被轻易挫败.
+\item 相比之下,安卓SDK的实现极其简单,可以放在后面
+\end{itemize}
+\subsection{FATAL EXCEPTION: main}
+\label{sec-10-1}
+
+\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221124_101807.png}
+\begin{itemize}
+\item 这个没有再出现了,根据这里改的:\url{https://forum.unity.com/threads/android-crashes-after-update-project-to-unity-2020-3-9f.1126979/}
+\item 但是游戏的界面仍然是渲染不出来,还在找原因
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{java}
+@Override protected void onDestroy () {
+    Log.d(TAG, "onDestroy() ");
+    // mUnityPlayer.destroy();
+    mUnityPlayer.removeAllViews();
+    mUnityPlayer.quit();
+    super.onDestroy();
+}
+\end{minted}
+\subsection{类库包里的错误的修复问题}
+\label{sec-10-2}
+\begin{itemize}
+\item 现在还不是很懂,或是还没有经历狠好地锻炼怎么改类库包里的错误,晚点儿再理会这些
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/unityToAndroid_20221124_163004.png}
+\begin{itemize}
+\item 先只把这些有错误的类库包不连上
+\end{itemize}
 % Emacs 27.2 (Org mode 8.2.7c)
 \end{document}

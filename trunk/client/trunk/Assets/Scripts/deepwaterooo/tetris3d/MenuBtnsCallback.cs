@@ -67,17 +67,18 @@ namespace deepwaterooo.tetris3d {
             // gameObject.SetActive(false);
 
 // 设置回调,调用各种方法都没有问题
-            androidSDK = new AndroidJavaClass("com.deepwaterooo.dwsdk.DWSDK");
+            androidSDK = new AndroidJavaClass("com.deepwaterooo.DWSDK");
             // jo = jc.GetStatic<AndroidJavaObject>("mActivity");
-// // 源项目没有使用接口的方式,暂时还不考虑,等把这些基础逻辑弄通,理解比较好一点儿之后再去连通            
-//             AsrEventCallback asrEventCallback = new AsrEventCallback();
-//             asrEventCallback.setMenuBtnsCallbackGameObject(this.gameObject); // <<<<<<<<<< 这里过会儿还可以再简写一下
-//             // 设置语音识别回调函数接口
-//             jo.Call("setCallback", asrEventCallback); // 这里回调是可以设置成功的,
+// 源项目没有使用接口的方式,暂时还不考虑,等把这些基础逻辑弄通,理解比较好一点儿之后再去连通            
+            AsrEventCallback asrEventCallback = new AsrEventCallback();
+            asrEventCallback.setMenuBtnsCallbackGameObject(this.gameObject); // <<<<<<<<<< 这里过会儿还可以再简写一下
+            // 设置语音识别回调函数接口
+            androidSDK.CallStatic("setCallback", asrEventCallback); // 这里回调是可以设置成功的,
 
             androidSDK.CallStatic<int>("add", 20, 7);
-            // jo.Call<int>("getMaxVolume");
-            // jo.Call("setCurrentVolume", 5);
+            androidSDK.CallStatic<int>("getCurrentVolume");
+            androidSDK.CallStatic<int>("getMaxVolume");
+            androidSDK.Call("setCurrentVolume", 5);
 
             // ga.HotFix.startEducational(); // 还是进入热更新
             // gameObject.SetActive(false);
