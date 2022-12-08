@@ -16,8 +16,10 @@ namespace HotFix.Control {
             Debug.Log(TAG + " val: " + val);
             Debug.Log(TAG + " type: " + type);
             if (type == "max")
+                // go.GetComponent<MenuBtnsCallback>().maxVol = val;
                 VolumeManager.Instance.maxVol.Value = val;
             else 
+                // go.GetComponent<MenuBtnsCallback>().curVol = val;
                 VolumeManager.Instance.curVol.Value = val;
         }
         public void Speechcontent(int content) {
