@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.deepwaterooo.dwsdk"
+          android:installLocation="preferExternal"
+	      android:theme="@android:style/Theme.NoTitleBar"
+          android:versionCode="1"
+          android:versionName="1.0"
+          xmlns:tools="http://schemas.android.com/tools"
+          >
+  <!-- package="com.unity3d.player" -->
+
+  <!-- 说是7.0之后,设置系统音量需要权限 -->
+  <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+  
+  <uses-sdk
+      android:minSdkVersion="25"
+      android:targetSdkVersion="25" />
+  
+  <!-- tools:replace="android:icon,android:theme,android:allowBackup" -->
+  <application
+      android:label="@string/app_name"
+	  android:allowBackup="true"
+      android:usesCleartextTraffic="true"
+      tools:replace="android:allowBackup">
+
+    <!-- // 这个测试是: 游戏界面常驻一个返回按钮(settings),用来返回安卓SDK; 先把它当作主界面,因为内可嵌套游戏界面     -->
+    <activity android:name="com.deepwaterooo.DWUnityActivity"
+              android:launchMode="singleTask"
+              android:exported="true"
+              android:process=":raadidcard"
+            >
+      <!--这里记得加入这个参数，不然会报错 下面一行,模仿补的-->
+	  <meta-data android:name="android.app.lib_name" android:value="unity" />
+      <meta-data android:name="com.deepwaterooo.DWUnityActivity" android:value="true"/>
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
+    <!-- Caused by: android.content.ActivityNotFoundException: Unable to find explicit activity class {com.defaultcompany.trunk/com.deepwaterooo.DWSDK}; have you declared this activity in your AndroidManifest.xml? -->
+    <activity android:name="com.deepwaterooo.DWSDK"></activity>
+  </application>
+</manifest>

@@ -95,12 +95,12 @@ namespace HotFix.UI {
         }
         void onClickSoundOnButton() {
             Debug.Log(TAG + " onClickSoundOnButton()");
-            // VolumeManager.Instance.setVolume(-1);
+            VolumeManager.Instance.setVolume(-1);
             sndPanel.SetActive(false);
         }
         void onClickSoundOffButton() {
             Debug.Log(TAG + " onClickSoundOffButton()");
-            // VolumeManager.Instance.setVolume(0);
+            VolumeManager.Instance.setVolume(0);
             sndPanel.SetActive(false);
         }
         // void OnSliderBeginDrag(float value) {

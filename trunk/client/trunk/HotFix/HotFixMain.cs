@@ -10,6 +10,7 @@ namespace HotFix {
 
         public static void Start() {
             Debug.Log("InitializeTypeDatas");
+
             // 热更新资源包中加载数据,反序列化:从资源包里反序列化地加载各种类型数据(若有预设,这些与预设中的元件部件类型等一一对应)
             TypeDataManager.InitializeTypeDatas();
 
@@ -32,6 +33,7 @@ namespace HotFix {
             GameView.nextTetrominoSpawnPos = new Vector3(2.0f, Model.gridHeight - 1f, 2.0f);
             // ViewManager.SettingsView.Hide();
         }
+
         public static void startClassical() {
             Debug.Log(TAG + " startClassical()");
             GloData.Instance.saveGamePathFolderName = "classic/level";
@@ -42,8 +44,11 @@ namespace HotFix {
             GloData.Instance.camRot.Value = Quaternion.Euler(new Vector3(490.708f, -251.184f, -539.973f));
             GloData.Instance.gameMode.Value = 1;
             GameView.nextTetrominoSpawnPos = new Vector3(2.0f, Model.gridHeight - 1f, 2.0f);
-// TODO: BUG: 这里不知道为什么,menuview出现了            
+
+// // TODO: BUG: 这里不知道为什么,menuview出现了: 因为某个变量的值的变化引起的            
             ViewManager.GameView.Reveal();
+            // ViewManager.SettingsView.Reveal();
+
             // offerGameLoadChoice();
             // ViewManager.SettingsView.Hide();
         }

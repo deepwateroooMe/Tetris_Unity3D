@@ -1,4 +1,4 @@
-% Created 2022-12-01 Thu 21:38
+% Created 2022-12-06 Tue 20:45
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -133,6 +133,12 @@ jar cvf classes.jar -C classes/ .
 jar cvf deepwaterooo_activity.jar -C classes/ .       
 
 cp deepwaterooo_activity.jar /mnt/f/unityProjects/dwsdkTest/Assets/Plugins/Android 
+
+zip -r dwsdk-debug.zip ./*
+
+cp dwsdk-debug.aar /mnt/f/tetris3D/trunk/client/trunk/Assets/Plugins/Android/
+
+cp deepwaterooo_activity.jar /mnt/f/tetris3D/trunk/client/trunk/Assets/Plugins/Android/
 
 jar cvf com.android.support.support-compat-26.1.0.aar -C com.android.support.support-compat-26.1.0/ .
 

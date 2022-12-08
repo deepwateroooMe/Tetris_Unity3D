@@ -6,6 +6,7 @@ using System;
 using UnityEngine.Networking;
 using System.Collections;
 using UnityEngine.SceneManagement;
+using TMPro;
 //using TMPro;
 
 namespace Framework.ResMgr {
@@ -195,17 +196,17 @@ namespace Framework.ResMgr {
             var asset = AssetBundle.LoadAsset<T>(n[n.Length - 1]);
             return asset;
         }
-        //public TMP_FontAsset LoadTMP_FontAsset(string assetName, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {
-        //    TryReadyAssetBundle(unloadLevel);
-        //    if (AssetBundle == null) {
-        //        DebugHelper.LogError("LoadAsset " + typeof(TMP_FontAsset).Name + " " + Name + " " + assetName + " return null", true);
-        //        return null;
-        //    }
-        //    var name = string.IsNullOrEmpty(assetName) ? Name : assetName;
-        //    var n = name.Split('/');
-        //    var asset = AssetBundle.LoadAsset<TMP_FontAsset>(n[n.Length - 1]);
-        //    return asset;
-        //}
+        public TMP_FontAsset LoadTMP_FontAsset(string assetName, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {
+           TryReadyAssetBundle(unloadLevel);
+           if (AssetBundle == null) {
+               DebugHelper.LogError("LoadAsset " + typeof(TMP_FontAsset).Name + " " + Name + " " + assetName + " return null", true);
+               return null;
+           }
+           var name = string.IsNullOrEmpty(assetName) ? Name : assetName;
+           var n = name.Split('/');
+           var asset = AssetBundle.LoadAsset<TMP_FontAsset>(n[n.Length - 1]);
+           return asset;
+        }
         public Font LoadFont(string assetName, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) {
             TryReadyAssetBundle(unloadLevel);
             if (AssetBundle == null) {

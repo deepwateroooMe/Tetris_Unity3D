@@ -17,11 +17,11 @@ namespace HotFix {
                                        EAssetBundleUnloadLevel.ChangeSceneOver) {
             return Loader.LoadAsset<T>(bundleName, assetName, unloadLevel);
         }
-        //public override TMP_FontAsset LoadTMP_FontAsset(string bundleName, string assetName, 
-        //                                                EAssetBundleUnloadLevel unloadLevel = 
-        //                                                EAssetBundleUnloadLevel.ChangeSceneOver) {
-        //    return Loader.LoadTMP_FontAsset(bundleName, assetName, unloadLevel);
-        //}
+        public override TMP_FontAsset LoadTMP_FontAsset(string bundleName, string assetName, 
+                                                       EAssetBundleUnloadLevel unloadLevel = 
+                                                       EAssetBundleUnloadLevel.ChangeSceneOver) {
+           return Loader.LoadTMP_FontAsset(bundleName, assetName, unloadLevel);
+        }
         public override Font LoadFont(string bundleName, string assetName, 
                                       EAssetBundleUnloadLevel unloadLevel = 
                                       EAssetBundleUnloadLevel.ChangeSceneOver) {
@@ -84,11 +84,11 @@ namespace HotFix {
                                               EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
             Loader.LoadAssetAsyn<T>(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
         }
-        //public override void LoadTMP_FontAssetAsyn(string bundleName, string assetName, Action<TMP_FontAsset> onSuccess, 
-        //                                           EAssetBundleUnloadLevel unloadLevel = 
-        //                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
-        //    Loader.LoadTMP_FontAssetAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
-        //}
+        public override void LoadTMP_FontAssetAsyn(string bundleName, string assetName, Action<TMP_FontAsset> onSuccess, 
+                                                  EAssetBundleUnloadLevel unloadLevel = 
+                                                  EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
+           Loader.LoadTMP_FontAssetAsyn(bundleName, assetName, onSuccess, unloadLevel, isForceInterruptLoad);
+        }
         public override void LoadFontAsyn(string bundleName, string assetName, Action<Font> onSuccess, 
                                           EAssetBundleUnloadLevel unloadLevel = 
                                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) {
@@ -156,8 +156,5 @@ namespace HotFix {
         public override void LoadTexture2DAsyn(string name, Action<Texture2D> onSuccess, Action onFail, bool needCache) {
             Loader.LoadTexture2DAsyn(name, onSuccess, onFail, needCache);
         }
-
-		public override void LoadTMP_FontAssetAsyn(string bundleName, string assetName, Action<TMP_FontAsset> onSuccess, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) => throw new NotImplementedException();
-		public override TMP_FontAsset LoadTMP_FontAsset(string bundleName, string assetName, EAssetBundleUnloadLevel unloadLevel = EAssetBundleUnloadLevel.ChangeSceneOver) => throw new NotImplementedException();
 	}
 }

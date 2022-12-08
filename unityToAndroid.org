@@ -94,6 +94,12 @@ jar cvf deepwaterooo_activity.jar -C classes/ .
 
 cp deepwaterooo_activity.jar /mnt/f/unityProjects/dwsdkTest/Assets/Plugins/Android 
 
+zip -r dwsdk-debug.zip ./*
+
+cp dwsdk-debug.aar /mnt/f/tetris3D/trunk/client/trunk/Assets/Plugins/Android/
+
+cp deepwaterooo_activity.jar /mnt/f/tetris3D/trunk/client/trunk/Assets/Plugins/Android/
+
 jar cvf com.android.support.support-compat-26.1.0.aar -C com.android.support.support-compat-26.1.0/ .
 
 # gf 首先检查是否crash掉了 

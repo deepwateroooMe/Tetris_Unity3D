@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using UnityEngine;
 //using TMPro;
 
@@ -10,9 +11,9 @@ namespace Framework.ResMgr {
         T LoadAsset<T>(string bundleName, string assetName, 
                        EAssetBundleUnloadLevel unloadLevel = 
                        EAssetBundleUnloadLevel.ChangeSceneOver) where T : UnityEngine.Object;
-        //TMP_FontAsset LoadTMP_FontAsset(string bundleName, string assetName, 
-        //                                EAssetBundleUnloadLevel unloadLevel = 
-        //                                EAssetBundleUnloadLevel.ChangeSceneOver);
+        TMP_FontAsset LoadTMP_FontAsset(string bundleName, string assetName, 
+                                       EAssetBundleUnloadLevel unloadLevel = 
+                                       EAssetBundleUnloadLevel.ChangeSceneOver);
         Font LoadFont(string bundleName, string assetName, 
                       EAssetBundleUnloadLevel unloadLevel = 
                       EAssetBundleUnloadLevel.ChangeSceneOver);
@@ -52,9 +53,9 @@ namespace Framework.ResMgr {
         void LoadAssetAsyn<T>(string bundleName, string assetName, Action<T> onSuccess, 
                               EAssetBundleUnloadLevel unloadLevel = 
                               EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false) where T : UnityEngine.Object;
-        //void LoadTMP_FontAssetAsyn(string bundleName, string assetName, Action<TMP_FontAsset> onSuccess, 
-        //                           EAssetBundleUnloadLevel unloadLevel = 
-        //                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+        void LoadTMP_FontAssetAsyn(string bundleName, string assetName, Action<TMP_FontAsset> onSuccess, 
+                                  EAssetBundleUnloadLevel unloadLevel = 
+                                  EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
         void LoadFontAsyn(string bundleName, string assetName, Action<Font> onSuccess, 
                           EAssetBundleUnloadLevel unloadLevel = 
                           EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
