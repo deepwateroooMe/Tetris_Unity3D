@@ -5,6 +5,10 @@ using UnityEngine.UI;
 
 namespace deepwaterooo.tetris3d {
 
+// 因为这个控件只在游戏启动的时候使用一次,晚些时候如果优化,甚至可以去掉这部分
+// 因为除了那个settingsBtn按钮,其它是可以全部都放进热更新域中去的
+// settingBtn像是一个显示和调用安卓SDK的toggle按钮,需要常驻,放GameApplication中去
+    
     public class MenuBtnsCallback : SingletonMono<MenuBtnsCallback> {
         private const string TAG = "MenuBtnsCallback";
 

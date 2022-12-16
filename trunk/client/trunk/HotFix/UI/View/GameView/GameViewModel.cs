@@ -180,7 +180,8 @@ namespace HotFix.UI {
             // if (GloData.Instance.gameMode.Value == 0 && GloData.Instance.isChallengeMode) // 想把这个数据的实初始化尽可能地早做
             modelArraysInitiation();
 
-            this.ParentViewModel = (MenuViewModel)ViewManager.MenuView.BindingContext; // 父视图模型: 菜单视图模型
+// 这行,会也菜单视图给带出来.....            
+            // this.ParentViewModel = (MenuViewModel)ViewManager.MenuView.BindingContext; // 父视图模型: 菜单视图模型
             gameMode = GloData.Instance.gameMode.Value; // 可能会miss掉最初的值
             GloData.Instance.gameMode.OnValueChanged += onGameModeChanged;
             GloData.Instance.gridSize.OnValueChanged += onGridSizeChanged;
