@@ -16,13 +16,14 @@ using UnityEngine.Events;
 namespace DWater {
 
 // 源项目包装得太多了,分两个不同的文件夹来包装的,一个是SDK向游戏端传,一个是游戏端调用安卓SDK,这里暂时不深入去看这些了    
-    public class Deepwaterooo : MonoBehaviour {
+    public class Deepwaterooo : MonoBehaviour { // 感觉这个脚本也是需要加到某个控件上的
         private const string TAG = "Deepwaterooo";
         private static readonly string GO_NAME = "Deepwaterooo"; 
 
         private static Deepwaterooo _instance; // 游戏应用全局单例模式
         public static Deepwaterooo Instance {
             get {
+                Debug.Log(TAG + " Instance get");
                 if (_instance == null) {
                     _instance = FindObjectOfType<Deepwaterooo>();
                     if (_instance == null)

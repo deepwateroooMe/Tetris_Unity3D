@@ -30,6 +30,7 @@ namespace DWater {
         }
 // 暂时试一下:　把下面一二三个相互调用的地主连通,测试好
         public void InitializeDW() { // 初始化公司SDK: 方便游戏开始的时候初始化
+            Debug.Log(TAG + " InitializeDW()");
             _dw = DWInterface.Instance; // 这里就指向了桥接层,要求进行必要的SDK的初始化相关工作
 // 注册几个事件完成的回调, 连接了安卓SDK桥接层,游戏的最底层,和游戏的相对底层游戏公用接口层
             // _dw.OnUserLogin += onUserLogin;
@@ -46,42 +47,42 @@ namespace DWater {
 #region API
         // This must be called first to initialize the plugin.
         public void Initialize() {
-            Debug.Log("[Deepwaterooo] Initialize()"); // 全改成DWUpper
+            Debug.Log("[DWUpper] Initialize()"); // 全改成DWUpper
             if (!_isInitialized) {
                 _isInitialized = true;
-                Debug.Log("[Deepwaterooo] initialized");
+                Debug.Log("[DWUpper] initialized");
             }
         }
         
         // Shows the child chooser and playset selection menus.
         public void DisplaySplash() {
-            Debug.Log("[Deepwaterooo] DisplaySplash()");
+            Debug.Log("[DWUpper] DisplaySplash()");
             _dw.dwShowLogin();
 // #if UNITY_EDITOR
 //             // OnDidGetProfileURL(instance._mockData.childInfo.profileImageUrlString);
 // #endif
         }
         public bool IsInitialized() {
-            Debug.Log("[Deepwaterooo] IsInitialized()");
+            Debug.Log("[DWUpper] IsInitialized()");
             return _dw != null;
             // return _dw != null && sql != null; // 两个非空,数据库也非空
         }
 #endregion
 #region CallBacks
         private void OnDefaultLoginModeSuccesswithProfile(string message) { // 不是很明白这里说的是什么意思
-            Debug.Log("[Deepwaterooo] OnDefaultLoginModeSuccesswithProfile: " + message);
+            Debug.Log("[DWUpper] OnDefaultLoginModeSuccesswithProfile: " + message);
             if (onLoginSuccess != null) {
                 onLoginSuccess(message);
             }
         }
         private void OnSuccessLogout(string message) {
-            Debug.Log("[Deepwaterooo] OnSuccessLogout: " + message);
+            Debug.Log("[DWUpper] OnSuccessLogout: " + message);
             if (onSuccessLogoutEvent != null) {
                 onSuccessLogoutEvent(message);
             }
         }
         private void OnFinishSDKFlow(string message) { // [OnZPadFinishSDKFlow, ==>　OnZPadConnected] 前 ==>　后
-            Debug.Log("[Deepwaterooo] OnZPadFinishSDKFlow: " + message);
+            Debug.Log("[DWUpper] OnZPadFinishSDKFlow: " + message);
             if (onFinishSDKFlowEvent != null) 
                 onFinishSDKFlowEvent(message);
         }

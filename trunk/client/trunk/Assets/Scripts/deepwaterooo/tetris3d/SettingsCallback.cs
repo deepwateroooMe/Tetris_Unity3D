@@ -49,27 +49,6 @@ public class SettingsCallback : MonoBehaviour {
         sndOff.onClick.AddListener(onClickSoundOffButton);
         sndSdr = gameObject.FindChildByName("volSdr").GetComponent<ExtendedSlider>(); // 这个滑动条有一些相关的事件需要处理
         // sndSdr = gameObject.FindChildByName("volSdr").GetComponent<Slider>(); // 这个滑动条有一些相关的事件需要处理
-            
-        // maxVol = VolumeManager.getMaxVolume();
-        // Debug.Log(TAG + " OnInitialize() maxVol: " + maxVol);
-        // curVol = VolumeManager.getCurrentVolume();
-        // Debug.Log(TAG + " OnInitialize() curVol: " + curVol);
-        // VolumeManager.setVolume(50);
-// 这里现想的两种方法: 
-        // 主界面与安卓SDK全放入热更新域中:不知道是否会有我没有想到的障碍,需要测试一下,现先试着测这第二种方法
-        // 先不用包装,直接 call MainActivity 里的方法: 直接全部放在热更新域里,是调不通的
-        // 游戏主界面与安卓SDK主界面各占一部分: 问题是,游戏过程中会有多个想要重入主界面的调用,两个界面交互共同显示的主界面除了第一次显示之外其它任何时候调用感觉都不太方便
-        // 重入的时候就是调用主界面,再测一下这个
-            
-        // maxVol = Deepwaterooo.Instance.getMaxVolume();
-        // Debug.Log(TAG + " OnInitialize() maxVol: " + maxVol);
-        // curVol = Deepwaterooo.Instance.getCurrentVolume();
-        // Debug.Log(TAG + " OnInitialize() curVol: " + curVol);
-        // Deepwaterooo.Instance.setVolume(50);
-// // slider 拖拽事件的监听回调
-//             sndSdr.DragStart.AddListener(OnSliderBeginDrag);
-//             sndSdr.DragStop.AddListener(OnSliderEndDrag);
-//             sndSdr.PointerDown.AddListener(OnSliderClick);
     }
 
 // 测试调用安卓SDK: 显示splash Screen. 所以游戏端,最好是调用游戏的底端接口,而非直接与安卓SDK交互
@@ -97,7 +76,7 @@ public class SettingsCallback : MonoBehaviour {
 // 这里,游戏的暂停与恢复,稍微涉及一点儿安卓SDK与游戏两端的相互通知交接,尽量让这个相互调用的过程,两端的界面都平滑流畅.尽量不出现不必要的背景屏
     void OnClickSetButton() { // 设置完成,恢复游戏.这里可能要稍微复杂一点儿 ?
         Debug.Log(TAG + " OnClickSetButton()");
-        // gameObject.SetActive(false); // 这部分逻辑交由桥接层去处理
+        gameObject.SetActive(false); // 这部分逻辑交由桥接层去处理
 // 怎么去通知热更新域里的游戏,继续呢?> 所以,安卓SDK中DWUnityActivity里关于 gamePause, gameResume的管理逻辑,要搞清楚
 // 所以仍然最好是往下走,到DWSDK DWUnityActivity,以实现两端的相互通知
         
