@@ -55,7 +55,7 @@ namespace DWater {
         }
         
         // Shows the child chooser and playset selection menus.
-        public void DisplaySplash() {
+        public void DisplaySplash() { // <<<<<<<<<<<<<<<<<<<< 
             Debug.Log("[DWUpper] DisplaySplash()");
             _dw.dwShowLogin();
 // #if UNITY_EDITOR

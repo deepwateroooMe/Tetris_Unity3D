@@ -25,6 +25,7 @@ namespace DWater {
 // 这个方法: 显示 SplashScreen, 可以用来测试这个调用的流程.现在把这些都想清楚了,其实很简单,直接相到调用就可以了,几乎可以不用再测试
 // 游戏 调用 安卓SDK
         public void ShowLogin () { // ShowSplash()
+            Debug.Log(TAG + " ShowLogin()");
             _androidSDK.CallStatic("StartSplashScreenActivity");
         }
         // public static void StartSplashScreenActivity() { // 这些是.jar中的桥接调用,写这里不对

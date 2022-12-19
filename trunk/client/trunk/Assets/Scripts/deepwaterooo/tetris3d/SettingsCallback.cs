@@ -1,4 +1,5 @@
 ﻿using deepwaterooo.tetris3d;
+using DWater;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -54,7 +55,8 @@ public class SettingsCallback : MonoBehaviour {
 // 测试调用安卓SDK: 显示splash Screen. 所以游戏端,最好是调用游戏的底端接口,而非直接与安卓SDK交互
     void OnClickLgiButton() { // LOGIN
         Debug.Log(TAG + " OnClickLgiButton()");
-
+// 这里想调一个SDK中的方法,测试一下
+        DWUpper.instance.DisplaySplash(); // 调用游戏的相对底层所提供给游戏的公用APIs
         // ViewManager.LoginView.Reveal();
         // ViewManager.MenuView.Hide();
     }

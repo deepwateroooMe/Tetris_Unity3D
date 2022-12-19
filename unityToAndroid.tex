@@ -1,4 +1,4 @@
-% Created 2022-12-08 Thu 10:47
+% Created 2022-12-18 Sun 20:28
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -141,7 +141,7 @@ protected void onCreate(Bundle savedInstanceState) {
 \item 项目中最近在做一个 AR 扫行标（银行 Logo）抽奖的活动，动画模型依托 Unity 环境来展现的。Android 集成 Unity 很简单（比 iOS 方便太多），但是在使用过程中还是需要到一点小麻烦。
 \item 需求中要求扫描页面可以反复进出，在 @Override protected void onDestroy () 生命周期的回调方法中需要调用 mUnityPlayer.quit(); 来达到退出 Unity 的目的。但是发现 mUnityPlayer.quit(); 方法会杀死当前进程，
 \item 不调用 mUnityPlayer.quit(); 方法，控制台中又会提示一个服务没有被清理，会发生内存泄漏，
-\item 网上的做法是集成 UnityPlayer 写一个新类，重写掉 kill() 方法，不杀死进程，但是 \textbf{实验了之后发现没有效果，依然会有内存泄漏的提示，虽然大部分机型可以正常使用，但是测试中小米和其他品牌的部分机型在反复进出几次 Unity 程序后，会闪退} 。
+\item 网上的做法是集成 UnityPlayer 写一个新类，重写掉 kill() 方法，不杀死进程，但是 \textbf{实验了之后发现没有效果，依然会有内存泄漏的提示，虽然大部分机型可以正常使用，但是测试中小米和其他品牌的部分机型在反复进出几次 Unity 程序后，会闪退} 。 \textbf{[感觉这里的问题没有追查到底,是资源完全没能释放,还是部分释放了?对于出问题的手机型号,没有提供或作进一步的征查资源释放过程中的问题.如果我能拿到日志,会想到分析得再彻底一点儿]}
 \end{itemize}
 \item \textbf{自己的项目暂时只实现到这里,会留意是否会有后续问题,再考虑是否游戏端活动放独立进程}
 \end{itemize}
@@ -389,6 +389,11 @@ dependencies {
 \label{sec-3}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{shell}
 jar cvf classes.jar -C classes/ .
+
+#　java 8 的打包工具地址
+/mnt/c/Program\ Files/java/jdk1.8.0_351/bin/jar.exe cvf classes.jar -C classes/ . 
+
+cp classes.jar /mnt/f/tetris3D/trunk/client/trunk/Assets/deepwaterooo/Plugins/Android 
 
 jar cvf deepwaterooo_activity.jar -C classes/ .       
 

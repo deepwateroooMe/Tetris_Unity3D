@@ -110,8 +110,8 @@ namespace DWater {
 #if UNITY_ANDROID
             Debug.Log("[DW SDK] spLogOut()");
             _sdkCalls.Logout(); // 从安卓SDK 里去登出.游戏端用unity 第三方库登出与安卓SDK端安卓第三方库登出,有哪上结性能差异?
-#else
-            spGetUnlockPermission (logoutCallback); // 感觉像是iOS
+// #else
+//             spGetUnlockPermission (logoutCallback); // 感觉像是iOS
 #endif
         }
         // the logout callback: 这里是iOS端吗 ?

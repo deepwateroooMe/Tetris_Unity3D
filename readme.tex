@@ -1,4 +1,4 @@
-% Created 2022-12-07 Wed 20:17
+% Created 2022-12-18 Sun 23:03
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -33,8 +33,71 @@
 \tableofcontents
 
 
-\section{SDK flow的基本流程设计:}
+\section{安卓SDK integration into unity games}
 \label{sec-1}
+\begin{itemize}
+\item 在整合安卓SDK .aar .jar之前我曾经有几个小测试项目都可以在unity中internally 构建和运行成功
+\item 今天主要解决了安卓SDK .aar .jar整合入unity游戏之后,unity中internally构建的问题,过程中出现过无数的bug,但是现可以成功构建
+\item 在整合安卓SDK .aar .jar之后，可以成功构建.apk,但运行时会出现找不到启动类，感觉为我的.jar包打得不够理想，reference的类好像没有包括进去
+\item 解决过之前找不到启动类的问题,可是这里整合了安卓SDK之后又有点儿不同
+\item 计划按照以下的思路来debug解决这个问题:
+\begin{itemize}
+\item 1.反编译生成的.apk文件,查找相关的启动类是否被成功打入包,能否被正确读取(如果不能有效解决,会试下面的第2种方法)
+\item 2.将源参考项目的老旧构建版本更新到与自己现项目v7-25.0.0 同步,并构建.在重构更新源项目并打包运行的过程中,试图找出自己项目中可能存在或是缺失的部分
+\item 再按上面两条不同途径得出的经验来把这个接通
+\end{itemize}
+\item 今天构建项目构建了一天,就在体会昨天找不类可能是因为安卓包没有真正包括进去,今天
+\end{itemize}
+\subsection{按照源旧参考项目的写法,它的视图是用 filament渲染的,这里的原理我还没有机会学习,没有弄懂}
+\label{sec-1-1}
+\begin{itemize}
+\item 当我把配置按源项目写成是:
+\begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
+<activity android:name="com.deepwaterooo.DWUnityActivity"
+          android:launchMode="singleTask"
+          android:label="@string/app_name"
+          android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale"
+          android:exported="true">
+  <!--这里记得加入这个参数，不然会报错 下面一行,模仿补的-->
+  <meta-data android:name="android.app.lib_name" android:value="unity" />
+  <meta-data android:name="com.deepwaterooo.DWUnityActivity" android:value="true"/>
+  <intent-filter>
+    <action android:name="android.intent.action.MAIN" />
+    <category android:name="android.intent.category.LAUNCHER" />
+  </intent-filter>
+</activity>
+\end{minted}
+\item 接下来就一定会找不到类：
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221218_220636.png}
+\subsection{按照自己后来参考的写法,有点儿像先前的项目,再去看安卓SDK的调用}
+\label{sec-1-2}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
+<activity android:name="com.unity3d.player.UnityPlayerActivity"
+          android:launchMode="singleTask"
+          android:label="@string/app_name"
+          android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale"
+          android:exported="true">
+  <!--这里记得加入这个参数，不然会报错 下面一行,模仿补的-->
+  <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
+  <intent-filter>
+    <action android:name="android.intent.action.MAIN" />
+    <category android:name="android.intent.category.LAUNCHER" />
+  </intent-filter>
+</activity>
+\end{minted}
+\begin{itemize}
+\item 这样的话,游戏端可以正常运行,去检查安卓SDK 的调用情况日志等,现在是找不到我安卓.aar包中的类
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221218_230256.png}
+\begin{itemize}
+\item 到今天晚上能够再次把这些构建好了,明天就可以看进这个问题了.爱表哥,爱生活,一定要嫁给偶亲爱的表哥!!!
+\end{itemize}
+
+\section{SDK flow的基本流程设计:}
+\label{sec-2}
 \begin{itemize}
 \item 在这里起参考作用的是这个链接:\url{https://blog.csdn.net/u014361280/article/details/91888091}
 \begin{itemize}
@@ -56,7 +119,7 @@
 \end{itemize}
 
 \section{游戏基本场景设计}
-\label{sec-2}
+\label{sec-3}
 \begin{itemize}
 \item 安卓SDK 设计: 这个项目可以略去SDK的设计与实现,因为加入一个SDK,将不得不需要将主菜单界面移出热更新域,放在unity程序域里,会改变现有的游戏架构(绝大部分((99.99\%的游戏逻辑都放在热更新域里可以随时热更新)): 程序的逻辑只有一个热更新域的入口,且只进不出.会不会造成什么问题,可能还有20\%感觉还没有想透,但是有一个安卓SDK是很方便,也很帮忙的,很想要实现一下
 \end{itemize}
@@ -284,7 +347,7 @@
 \end{itemize}
 m
 \section{大致进展计划}
-\label{sec-3}
+\label{sec-4}
 \begin{itemize}
 \item 不管是什么方法,适配原源码也好,基本也解决了现热更新程序域里的所有编译错误,现在就是解决运行游戏过程中可能会遇到的所有问题,让游戏在热更新框架下能够顺利运行起来
 \begin{itemize}
@@ -383,7 +446,7 @@ public class Enemy {
 \end{itemize}
 
 \section{进展过程与基本问题}
-\label{sec-4}
+\label{sec-5}
 \begin{itemize}
 \item 框架基本算是已经搭建起来了(除了 \textbf{还没有热更新的服务器以} 及 \textbf{还不是很理解如何打资源包},程序代码包相对简单很多);
 \item 游戏服务器打算暂时不着手处理,因为主要是 \textbf{想要深入理解ILRuntime+MVVM这个热更新框架}
@@ -397,7 +460,7 @@ public class Enemy {
 \end{itemize}
 
 \section{把原理弄懂}
-\label{sec-5}
+\label{sec-6}
 \begin{itemize}
 \item \textbf{热更新的服务器是自己目前的难点} ，但可以放置再决定最终是想要如何解决（用还是不用）；
 \item 使用unity 2017 .NET framework v3.5的热更新流程（除了场景的加载还没有去试图理解，没有太花时间在上面，因为目前的项目还不会用到）到今天下午可以完全自己实现完整了，没有任何的问题
@@ -425,9 +488,9 @@ public class Enemy {
 \end{itemize}
 
 \section{几种不同热更新模式的探讨}
-\label{sec-6}
+\label{sec-7}
 \subsection{HybridCLR——划时代的Unity原生C\#热更新技术: IL2CPP与热更新}
-\label{sec-6-1}
+\label{sec-7-1}
 
 \includegraphics[width=.9\linewidth]{./pic/readme_20220930_082537.png}
 
@@ -442,7 +505,7 @@ public class Enemy {
 
 
 \section{环境弄得比较好的包括：}
-\label{sec-7}
+\label{sec-8}
 \begin{itemize}
 \item 电脑的配置有限，文件稍微大一点儿的时候已经不太好处理了；所以不得不分割成多个小文件
 \item 几年过去了，ILRuntime已经不是最新最前沿的热更新技术，成为别人更新技术的一个子模块，所以还是自己再搜索找一下有没有更方便的热更新实现方法（若是不得，我就在自己游戏里实现　ILRuntime + MVVM实现视图等的更新）
@@ -456,9 +519,9 @@ public class Enemy {
 \end{itemize}
 -　能够把程序源码读得比较懂，也并不代表把所有相关的原理就全部弄懂了；不是说还有多在的挑战，而是说要不断寻找更为有效的学习方法，快速掌握所有涉及到的相关原理；在理解得更为深入掌握了基本原理的基础上再去读源码，会不会更为有效事半功倍呢？这是一颗永远不屈服的心，爱表哥，爱生活！！！
 \section{ILRuntime 库的系统再深入理解}
-\label{sec-8}
+\label{sec-9}
 \subsection{ILRuntime基本原理}
-\label{sec-8-1}
+\label{sec-9-1}
 \begin{itemize}
 \item ILRuntime借助Mono.Cecil库来读取DLL的PE信息，以及当中类型的所有信息，最终得到方法的IL汇编码，然后通过内置的IL解译执行虚拟机来执行DLL中的代码。IL解释器代码在ILIntepreter.cs，通过Opcode来逐语句执行机器码，解释器的代码有四千多行。
 \end{itemize}
@@ -466,11 +529,11 @@ public class Enemy {
 \includegraphics[width=.9\linewidth]{./pic/readme_20220926_094936.png}
 
 \subsection{ILRuntime热更流程}
-\label{sec-8-2}
+\label{sec-9-2}
 
 \includegraphics[width=.9\linewidth]{./pic/readme_20220926_095022.png}
 \subsection{ILRuntime主要限制}
-\label{sec-8-3}
+\label{sec-9-3}
 
 \includegraphics[width=.9\linewidth]{./pic/readme_20220926_095555.png}
 \begin{itemize}
@@ -594,7 +657,7 @@ JsonTestClass obj = JsonMapper.ToObject<JsonTestClass>(json);
 \end{itemize}
 
 \subsection{ILRuntime启动调试}
-\label{sec-8-4}
+\label{sec-9-4}
 \begin{itemize}
 \item ILRuntime建议全局只创建一个AppDomain，在函数入口添加代码启动调试服务
 \end{itemize}
@@ -607,7 +670,7 @@ appdomain.DebugService.StartDebugService(56000)
 \item 如果使用VS2015的话需要Visual Studio 2015 Update3以上版本
 \end{itemize}
 \subsection{线上项目和资料}
-\label{sec-8-5}
+\label{sec-9-5}
 \begin{itemize}
 \item 掌趣很多项目都是使用ILRuntime开发，并上线运营，比如：真红之刃，境·界 灵压对决，全民奇迹2，龙族世界，热血足球
 \item 初音未来:梦幻歌姬 使用补丁方式：\url{https://github.com/wuxiongbin/XIL}
@@ -615,22 +678,22 @@ appdomain.DebugService.StartDebugService(56000)
 \item Unity实现c\#热更新方案探究(三): \url{https://zhuanlan.zhihu.com/p/37375372}
 \end{itemize}
 \section{remember necessary positoins}
-\label{sec-9}
+\label{sec-10}
 
 \includegraphics[width=.9\linewidth]{./pic/readme_20220930_204953.png}
 
 
 
 \section{ILRuntime的研究}
-\label{sec-10}
+\label{sec-11}
 \begin{itemize}
 \item 借助网络上别人源码分析的步骤，自己（大项目中，以前的小项目源码内容大多已经狠熟悉的小项目里找找源码的不算）找一找学习一下追溯源码的过程，去理解整个过程的关键步骤与原理、
 \item \url{https://www.igiven.com/unity-2019-09-02-ilruntime/}
 \end{itemize}
 \subsection{工程运行的入口}
-\label{sec-10-1}
+\label{sec-11-1}
 \subsubsection{HotFixILRunTime}
-\label{sec-10-1-1}
+\label{sec-11-1-1}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 public class HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain {
     public static ILRuntime.Runtime.Enviorment.AppDomain appDomain;
@@ -658,7 +721,7 @@ public class HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain {
 \item unity工程在执行的时候，会构建一个默认的appDomain，Assembly.Load，其实就是在这个程序域上加载Dll,所以相关的实质和前面一个部分相差不大，这就是c\#热更新在unity中的应用(IOS不包括)。
 \end{itemize}
 \subsubsection{LoadAssembly(System.IO.Stream stream, System.IO.Stream symbol, ISymbolReaderProvider symbolReader)}
-\label{sec-10-1-2}
+\label{sec-11-1-2}
 \begin{itemize}
 \item 基于WWW的方式加载AssetBundle或者DLL/PDB后，接下来是将其封入到MemoryStream中，将dll和pdb的bytes都存入到内存流中后，执行其内部实现的LoadAssembly方法。
 \end{itemize}
@@ -706,7 +769,7 @@ public void LoadAssembly(System.IO.Stream stream, System.IO.Stream symbol, ISymb
 }
 \end{minted}
 \subsubsection{ReadModule(stream)}
-\label{sec-10-1-3}
+\label{sec-11-1-3}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 public static ModuleDefinition ReadModule(Stream stream, ReaderParameters parameters) {
     CheckStream(stream);
@@ -720,7 +783,7 @@ public static ModuleDefinition ReadModule(Stream stream, ReaderParameters parame
 \end{minted}
 \begin{enumerate}
 \item ReadImageFrom()
-\label{sec-10-1-3-1}
+\label{sec-11-1-3-1}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 public static Image ReadImageFrom(Stream stream) {
     try {
@@ -734,7 +797,7 @@ public static Image ReadImageFrom(Stream stream) {
 \end{minted}
 \begin{enumerate}
 \item ImageReader最终来自BinaryReader:
-\label{sec-10-1-3-1-1}
+\label{sec-11-1-3-1-1}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 namespace Mono.Cecil.PE {
     sealed class ImageReader : BinaryStreamReader {
@@ -797,7 +860,7 @@ public class BinaryReader : IDisposable {
 }
 \end{minted}
 \item 接下来的ReadImage操作：
-\label{sec-10-1-3-1-2}
+\label{sec-11-1-3-1-2}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 void ReadImage() {
     if (BaseStream.Length < 128)
@@ -846,13 +909,13 @@ void ReadImage() {
 }
 \end{minted}
 \item 最终得到方法的IL汇编码
-\label{sec-10-1-3-1-3}
+\label{sec-11-1-3-1-3}
 \begin{itemize}
 \item 让我们分拆来看看这几个读取函数的实现
 \end{itemize}
 \begin{enumerate}
 \item 1）ReadOptionalHeaders(out subsystem, out dll\_characteristics)
-\label{sec-10-1-3-1-3-1}
+\label{sec-11-1-3-1-3-1}
 \begin{itemize}
 \item 主要读取PE的相关信息，不做过多解释，可以参看源码阅读理解；
 \end{itemize}
@@ -938,7 +1001,7 @@ void ReadOptionalHeaders(out ushort subsystem, out ushort dll_characteristics) {
 }
 \end{minted}
 \item 2）ReadSections(sections)
-\label{sec-10-1-3-1-3-2}
+\label{sec-11-1-3-1-3-2}
 \begin{itemize}
 \item 读取分块数据
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
@@ -995,7 +1058,7 @@ void ReadSectionData(Section section) {
 \end{minted}
 \end{itemize}
 \item 3) ReadCLIHeader()：基本简单就读完了
-\label{sec-10-1-3-1-3-3}
+\label{sec-11-1-3-1-3-3}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 void ReadCLIHeader()　{
     MoveTo(cli);
@@ -1024,7 +1087,7 @@ void ReadCLIHeader()　{
 }
 \end{minted}
 \item 4）ReadMetadata()
-\label{sec-10-1-3-1-3-4}
+\label{sec-11-1-3-1-3-4}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 void ReadMetadata()　{
     MoveTo(metadata);
@@ -1090,7 +1153,7 @@ void ReadMetadataStream(Section section) {
 \end{itemize}
 \begin{enumerate}
 \item ReadTableHeap()
-\label{sec-10-1-3-1-3-4-1}
+\label{sec-11-1-3-1-3-4-1}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 void ReadTableHeap() {
     var heap = image.TableHeap;
@@ -1130,7 +1193,7 @@ void ReadTableHeap() {
 \end{minted}
 -初始化heap中的Table后，进行一次Compute，获取size:
 \item ComputeTableInformations()
-\label{sec-10-1-3-1-3-4-2}
+\label{sec-11-1-3-1-3-4-2}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 void ComputeTableInformations() {
     uint offset = (uint)BaseStream.Position - image.MetadataSection.PointerToRawData; // header
@@ -1176,7 +1239,7 @@ void ComputeTableInformations() {
 \end{enumerate}
 \end{enumerate}
 \item CreateModule操作:
-\label{sec-10-1-3-2}
+\label{sec-11-1-3-2}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 public static ModuleDefinition ReadModule(Stream stream, ReaderParameters parameters) {
     CheckStream(stream);
@@ -1190,7 +1253,7 @@ public static ModuleDefinition ReadModule(Stream stream, ReaderParameters parame
 \end{minted}
 \begin{enumerate}
 \item CreateModuleFrom(Image image, ReaderParameters parameters)
-\label{sec-10-1-3-2-1}
+\label{sec-11-1-3-2-1}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 public static ModuleDefinition CreateModuleFrom(Image image, ReaderParameters parameters) {
 
@@ -1242,9 +1305,9 @@ protected override void ReadModule() {
 \end{enumerate}
 
 \section{热更新资源加载的过程}
-\label{sec-11}
+\label{sec-12}
 \subsection{AssetBundleList.txt}
-\label{sec-11-1}
+\label{sec-12-1}
 \begin{itemize}
 \item 就是列举了所有资源包(包括热更新程序资源包和真正的材质等的资源包)的列表
 \item 每一行列举了一个资源包的名称以及细节等等

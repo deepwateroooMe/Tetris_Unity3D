@@ -11,6 +11,47 @@
   - 1.反编译生成的.apk文件,查找相关的启动类是否被成功打入包,能否被正确读取(如果不能有效解决,会试下面的第2种方法)
   - 2.将源参考项目的老旧构建版本更新到与自己现项目v7-25.0.0 同步,并构建.在重构更新源项目并打包运行的过程中,试图找出自己项目中可能存在或是缺失的部分
   - 再按上面两条不同途径得出的经验来把这个接通
+- 今天构建项目构建了一天,就在体会昨天找不类可能是因为安卓包没有真正包括进去,今天
+** 按照源旧参考项目的写法,它的视图是用 filament渲染的,这里的原理我还没有机会学习,没有弄懂
+- 当我把配置按源项目写成是:
+  #+begin_SRC xml
+<activity android:name="com.deepwaterooo.DWUnityActivity"
+          android:launchMode="singleTask"
+          android:label="@string/app_name"
+          android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale"
+          android:exported="true">
+  <!--这里记得加入这个参数，不然会报错 下面一行,模仿补的-->
+  <meta-data android:name="android.app.lib_name" android:value="unity" />
+  <meta-data android:name="com.deepwaterooo.DWUnityActivity" android:value="true"/>
+  <intent-filter>
+    <action android:name="android.intent.action.MAIN" />
+    <category android:name="android.intent.category.LAUNCHER" />
+  </intent-filter>
+</activity>
+  #+END_SRC
+- 接下来就一定会找不到类：
+  
+[[./pic/readme_20221218_220636.png]]
+** 按照自己后来参考的写法,有点儿像先前的项目,再去看安卓SDK的调用 
+#+begin_SRC xml
+<activity android:name="com.unity3d.player.UnityPlayerActivity"
+          android:launchMode="singleTask"
+          android:label="@string/app_name"
+          android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale"
+          android:exported="true">
+  <!--这里记得加入这个参数，不然会报错 下面一行,模仿补的-->
+  <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
+  <intent-filter>
+    <action android:name="android.intent.action.MAIN" />
+    <category android:name="android.intent.category.LAUNCHER" />
+  </intent-filter>
+</activity>
+#+END_SRC
+- 这样的话,游戏端可以正常运行,去检查安卓SDK 的调用情况日志等,现在是找不到我安卓.aar包中的类
+  
+[[./pic/readme_20221218_230256.png]]
+- 到今天晚上能够再次把这些构建好了,明天就可以看进这个问题了.爱表哥,爱生活,一定要嫁给偶亲爱的表哥!!!
+
 * SDK flow的基本流程设计:
 - 在这里起参考作用的是这个链接:https://blog.csdn.net/u014361280/article/details/91888091
   - 把里面的几种方法想透,也有试过导出游戏工程在安卓中构建,但是因为一个自己还不是很能理解的bug (就是说运行时,它找不到AOT的相关编译码,有试用mono导和用il2cpp导,都出现同样的bug).后来把这里面的思路想透,直接实现在unity引擎中打.apk包,运行出上面的效果,实现运行出来,感觉很开心.

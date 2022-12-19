@@ -310,6 +310,11 @@ dependencies {
   #+BEGIN_SRC shell
 jar cvf classes.jar -C classes/ .
 
+#　java 8 的打包工具地址
+/mnt/c/Program\ Files/java/jdk1.8.0_351/bin/jar.exe cvf classes.jar -C classes/ . 
+
+cp classes.jar /mnt/f/tetris3D/trunk/client/trunk/Assets/deepwaterooo/Plugins/Android 
+
 jar cvf deepwaterooo_activity.jar -C classes/ .       
 
 cp deepwaterooo_activity.jar /mnt/f/unityProjects/dwsdkTest/Assets/Plugins/Android 
