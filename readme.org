@@ -51,6 +51,143 @@
   
 [[./pic/readme_20221218_230256.png]]
 - 到今天晚上能够再次把这些构建好了,明天就可以看进这个问题了.爱表哥,爱生活,一定要嫁给偶亲爱的表哥!!!
+- Mono 包的话:
+  
+[[./pic/readme_20221220_151236.png]]
+#+BEGIN_SRC tex
+D MainActivity: StartSplashScreenActivity() 
+E Unity   : AndroidJavaException: java.lang.NoClassDefFoundError: Failed resolution of: Lcom/deepwaterooo/sdk/activities/BaseActivity;
+E Unity   : java.lang.NoClassDefFoundError: Failed resolution of: Lcom/deepwaterooo/sdk/activities/BaseActivity;
+E Unity   : 	at java.lang.Class.classForName(Native Method)
+E Unity   : 	at java.lang.Class.forName(Class.java:454)
+E Unity   : 	at java.lang.Class.forName(Class.java:379)
+E Unity   : 	at com.unity3d.player.UnityPlayer.nativeRender(Native Method)
+E Unity   : 	at com.unity3d.player.UnityPlayer.c(Unknown Source:0)
+E Unity   : 	at com.unity3d.player.UnityPlayer$e$2.queueIdle(Unknown Source:72)
+E Unity   : 	at android.os.MessageQueue.next(MessageQueue.java:404)
+E Unity   : 	at android.os.Looper.loopOnce(Looper.java:186)
+E Unity   : 	at android.os.Looper.loop(Looper.java:313)
+E Unity   : 	at com.unity3d.player.UnityPlayer$e.run(Unknown Source:32)
+E Unity   : Caused by: java.lang.ClassNotFoundException: com.deepwaterooo.sdk.activities.BaseActivity
+E Unity   : 	... 10 more
+E Unity   :   at UnityEngine.AndroidJNISafe.CheckException () [0x00000] in <filename unknown>:0 
+E Unity   :   at UnityEngine.AndroidJNISafe.CallStaticVoidMethod (IntPtr clazz, IntPtr method
+E Unity   : NullReferenceException: Object reference not set to an instance of an object
+E Unity   :   at GestureRecognizerTS`1[T].CanBegin (.T gesture, IFingerList touches) [0x00000] in <filename unknown>:0 
+E Unity   :   at LongPressRecognizer.CanBegin (.LongPressGesture gesture, IFingerList touches) [0x00000] in <filename unknown>:0 
+E Unity   :   at GestureRecognizerTS`1[T].UpdateExclusive () [0x00000] in <filename unknown>:0 
+E Unity   :   at GestureRecognizerTS`1[T].Update () [0x00000] in <filename unknown>:0 
+E Unity   :  
+E Unity   : (Filename:  Line: -1)
+  #+END_SRC
+- IL2CPP 包
+  
+[[./pic/readme_20221220_151607.png]]
+#+BEGIN_SRC tex
+D MainActivity: StartSplashScreenActivity() 
+E Unity   : AndroidJavaException: java.lang.NoClassDefFoundError: Failed resolution of: Lcom/deepwaterooo/sdk/activities/BaseActivity;
+E Unity   : java.lang.NoClassDefFoundError: Failed resolution of: Lcom/deepwaterooo/sdk/activities/BaseActivity;
+E Unity   : 	at java.lang.Class.classForName(Native Method)
+E Unity   : 	at java.lang.Class.forName(Class.java:454)
+E Unity   : 	at java.lang.Class.forName(Class.java:379)
+E Unity   : 	at com.unity3d.player.UnityPlayer.nativeRender(Native Method)
+E Unity   : 	at com.unity3d.player.UnityPlayer.c(Unknown Source:0)
+E Unity   : 	at com.unity3d.player.UnityPlayer$e$2.queueIdle(Unknown Source:72)
+E Unity   : 	at android.os.MessageQueue.next(MessageQueue.java:404)
+E Unity   : 	at android.os.Looper.loopOnce(Looper.java:186)
+E Unity   : 	at android.os.Looper.loop(Looper.java:313)
+E Unity   : 	at com.unity3d.player.UnityPlayer$e.run(Unknown Source:32)
+E Unity   : Caused by: java.lang.ClassNotFoundException: com.deepwaterooo.sdk.activities.BaseActivity
+E Unity   : 	... 10 more
+E Unity   :   at UnityEngine.AndroidJNISafe.CheckException () [0x00000] in <filename unknown>:0 
+E Unity   :   at UnityEngine.AndroidJNISafe.CallStaticVoidMethod (IntPtr clazz, IntPtr method
+E Unity   : NullReferenceException: A null value was found where an object instance was required.
+E Unity   :   at GestureRecognizerTS`1[T].CanBegin (.T gesture, IFingerList touches) [0x00000] in <filename unknown>:0 
+E Unity   :   at LongPressRecognizer.CanBegin (.LongPressGesture gesture, IFingerList touches) [0x00000] in <filename unknown>:0 
+E Unity   :   at GestureRecognizerTS`1[T].UpdateExclusive () [0x00000] in <filename unknown>:0 
+E Unity   :   at GestureRecognizerTS`1[T].Update () [0x00000] in <filename unknown>:0 
+E Unity   :  
+E Unity   : (Filename: currently not available on il2cpp Line: -1)
+#+END_SRC
+- 在unity中构建,除了上面有限的日志,就再不知道是为什么了
+- 以前17年工作的时候完全不懂怎么把游戏项目倒出到安卓构建,虽然最近一个月左右又稍微练习了一下,可是游戏中构建仍是我的首选.但当出错的时候,源参考项目太复杂,涉及filament安卓平台渲染引擎,和postprocess后期处理,很多细节自己仍然还不够明白.所以从游戏端构建,拿到上面的出错日志无法突破不知道怎么解决的时候,
+- 就不得不硬着头皮导出到安卓构建,试了半下午,现在导出的项目终于可以连通了,是通知配置AndroidManifest.xml文件来实现的:
+  #+begin_SRC xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.deepwaterooo.dwsdk"
+          xmlns:tools="http://schemas.android.com/tools"
+          android:theme="@android:style/Theme.NoTitleBar"
+          android:versionCode="1"
+          android:versionName="1.0"
+          android:installLocation="preferExternal">
+  <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="26" />
+
+  <supports-screens
+      android:smallScreens="false"
+      android:normalScreens="false"
+      android:largeScreens="false"
+      android:xlargeScreens="true"
+      android:anyDensity="true"/>
+
+  <!-- <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" /> -->
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+  <!-- android:process=":raadidcard" -->
+  <!-- android:usesCleartextTraffic="true" -->
+  <application
+      android:label="@string/app_name"
+      android:theme="@style/Theme.AppCompat.DayNight"
+      android:allowBackup="true"
+      android:isGame="false"
+      tools:replace="android:allowBackup"
+      android:largeHeap="true"
+      android:icon="@mipmap/app_icon">
+    <!-- <activity -->
+    <!--     android:label="@string/app_name" -->
+    <!--     android:screenOrientation="fullSensor" -->
+    <!--     android:launchMode="singleTask" -->
+    <!--     android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale|layoutDirection|density" -->
+    <!--     android:hardwareAccelerated="false" -->
+    <!--     android:name="com.deepwaterooo.dwsdk.UnityPlayerActivity" -->
+    <!--     android:exported="true"> -->
+    <!--   <meta-data android:name="unityplayer.UnityActivity" android:value="true" /> -->
+    <!--   <intent-filter> -->
+    <!--     <action android:name="android.intent.action.MAIN" /> -->
+    <!--     <category android:name="android.intent.category.LAUNCHER" /> -->
+    <!--   </intent-filter> -->
+    <!-- </activity> -->
+    <!-- android:launchMode="singleTask" -->
+    <activity android:name="com.deepwaterooo.DWUnityActivity"
+              android:label="@string/app_name"
+              android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale"
+              android:exported="true">
+      <meta-data android:name="com.deepwaterooo.DWUnityActivity" android:value="true"/>
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
+    <!-- <meta-data android:name="android.app.lib_name" android:value="unity" /> -->
+    <!-- <activity android:name="com.deepwaterooo.DWSDK"></activity> -->
+    <meta-data android:name="unity.build-id" android:value="6ccd546d-e136-4162-ac70-396c442a26ae" />
+    <meta-data android:name="unity.splash-mode" android:value="0" />
+    <meta-data android:name="unity.splash-enable" android:value="True" />
+  </application>
+  <uses-feature android:glEsVersion="0x00020000" />
+  <uses-feature android:name="android.hardware.gamepad" />
+  <uses-feature android:name="android.hardware.vulkan" android:required="false" />
+  <!-- <uses-permission android:name="android.permission.INTERNET" /> -->
+  <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+  <uses-feature android:name="android.hardware.touchscreen.multitouch" android:required="false" />
+  <uses-feature android:name="android.hardware.touchscreen.multitouch.distinct" android:required="false" />
+</manifest>
+  #+END_SRC
+- 现在终于可以再往前一小步,在可以找到各种类的情况下,去debug两端(游戏与安卓SDK)交互过程中可能存在的问题了,终于终于又往前一小步![爱表哥,爱生活,一定要嫁给偶亲爱的表哥!!!]
 
 * SDK flow的基本流程设计:
 - 在这里起参考作用的是这个链接:https://blog.csdn.net/u014361280/article/details/91888091
