@@ -19,28 +19,23 @@
 	  android:allowBackup="true"
       android:usesCleartextTraffic="true"
       tools:replace="android:allowBackup">
-    <!-- // 这个测试是: 游戏界面常驻一个返回按钮(settings),用来返回安卓SDK; 先把它当作主界面,因为内可嵌套游戏界面     -->
-<!-- 不明白下面说的是什么,暂时不要 -->
-    <!-- android:process=":raadidcard" -->
+<!--     <!-\- android:process=":raadidcard" -\-> -->
     <activity android:name="com.unity3d.player.UnityPlayerActivity"
               android:launchMode="singleTask"
               android:label="@string/app_name"
               android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale"
               android:exported="true">
-      <!--这里记得加入这个参数，不然会报错 下面一行,模仿补的-->
 	  <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
-    <!-- <!-\- 把上面的先试着再改一下:改成游戏端默认的 com.unity3d.player.UnityPlayerActivity -\-> -->
     <!-- <activity android:name="com.deepwaterooo.DWUnityActivity" -->
     <!--           android:launchMode="singleTask" -->
     <!--           android:label="@string/app_name" -->
     <!--           android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale" -->
     <!--           android:exported="true"> -->
-    <!--   <!-\-这里记得加入这个参数，不然会报错 下面一行,模仿补的-\-> -->
 	<!--   <meta-data android:name="android.app.lib_name" android:value="unity" /> -->
     <!--   <meta-data android:name="com.deepwaterooo.DWUnityActivity" android:value="true"/> -->
     <!--   <intent-filter> -->

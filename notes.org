@@ -882,7 +882,6 @@ public class AndroidSDK: ISDK { // 游戏端对接口方法的实现,其实现�
 
 
 
-
 * Unity 编译 Android 的原理解析和 apk 打包分析
 - 最近由于想在Scene的脚本组件中，调用Android的Activity的相关接口，就需要弄明白Scene和Activity的实际对应关系，并对Unity调用Android的部分原理进行了研究。
 - 本文主要探讨Scene和Activity之间的关系，以及Unity打包apk和Android studio打包apk的差别在什么地方？找到这种差别之后，可以怎么运用起来？
@@ -1149,3 +1148,28 @@ public class UnityPlayer extends FrameLayout implements com.unity3d.player.a.a {
 [[./pic/notes_20221125_094643.png]]
 - 在有泛型的情况下，代码很可能会报错，因为泛型T只有在执行的时候才知道自己的类型，属于动态的，所以静态编译会直接跳过这句代码，在运行的时候就会报错：尝试JIT的error.
 
+* 一个SDK的整合步骤，再消化理解一下
+- 把SDK文件放到游戏安卓主工程的libs下
+  
+[[./pic/notes_20221220_153025.png]]
+- 安卓主工程中的build.gradle的修改,主要是添加必要的依赖包
+  
+[[./pic/notes_20221220_153107.png]]
+- 把游戏的主启动活动申明清楚
+  
+[[./pic/notes_20221220_153212.png]]
+- 还需要游戏ID ?
+  
+[[./pic/notes_20221220_153240.png]]
+- 同一个公司同一套SDK,类似游戏的背景图片修改
+  
+[[./pic/notes_20221220_153320.png]]
+- 是production, 还是debug呢?
+  
+[[./pic/notes_20221220_153405.png]]
+- 其它单个某公司SDK相关的
+  
+[[./pic/notes_20221220_153542.png]]
+* 安卓基本支持库结构
+  
+[[./pic/notes_20221220_223427.png]]
