@@ -1,0 +1,128 @@
+<linker>
+  <assembly fullname="System">
+    <namespace fullname="System.Collections" preserve="all"/>
+    <namespace fullname="System.Collections.Generic" preserve="all"/>
+    <type fullname="System.ComponentModel.TypeDescriptor" preserve="all"/>
+    <type fullname="System.ComponentModel.TypeConverter" preserve="all"/>
+    <type fullname="System.ComponentModel.StringConverter" preserve="all"/>
+    <type fullname="System.ComponentModel.BooleanConverter" preserve="all"/>
+    <type fullname="System.ComponentModel.EnumConverter" preserve="all"/>
+    <type fullname="System.ComponentModel.Int64Converter" preserve="all"/>
+    <type fullname="System.ComponentModel.Int32Converter" preserve="all"/>
+    <type fullname="System.ComponentModel.UInt32Converter" preserve="all"/>
+    <type fullname="System.ComponentModel.Int16Converter" preserve="all"/>
+    <type fullname="System.ComponentModel.ArrayConverter" preserve="all"/>
+    <type fullname="System.ComponentModel.CollectionConverter" preserve="all"/>
+    <type fullname="System.ComponentModel.DecimalConverter" preserve="all"/>
+    <type fullname="System.ComponentModel.SingleConverter" preserve="all"/>
+    <type fullname="System.ComponentModel.DoubleConverter" preserve="all"/>
+    <type fullname="System.Net.HttpWebRequest" preserve="all"/>
+    <type fullname="System.Net.CookieContainer" preserve="all"/>
+    <type fullname="System.Net.WebRequest" preserve="all"/>
+    <type fullname="System.Net.HttpWebResponse" preserve="all"/>
+  </assembly>
+  <assembly fullname="System.Core">
+    <type fullname="System.Linq.Enumerable" preserve="all"/>
+  </assembly>
+  <assembly fullname="mscorlib">
+    <namespace fullname="System" preserve="all"/>
+    <type fullname="System.GC" preserve="all"/>
+    <type fullname="System.Text.StringBuilder" preserve="all"/>
+    <type fullname="System.Array" preserve="all"/>
+    <type fullname="System.Runtime.InteropServices" preserve="all"/>
+    <type fullname="System.Runtime.CompilerServices" preserve="all"/>
+  </assembly>
+
+  <assembly fullname="Assembly-CSharp">
+    <namespace fullname="System.Json" preserve="all"/>
+  </assembly>
+
+
+  <assembly fullname="Assembly-CSharp-firstpass">
+    <type fullname="ScreenRaycaster" preserve="all"/>
+  </assembly>
+
+  <assembly fullname="UnityEngine.ParticlesLegacyModule">
+    <type fullname="UnityEngine.ParticleRenderMode" preserve="all"/>
+    <type fullname="UnityEngine.ParticleAnimator" preserve="all"/>
+    <type fullname="UnityEngine.ParticleEmitter" preserve="all"/>
+    <type fullname="UnityEngine.ParticleRenderer" preserve="all"/>
+    <type fullname="UnityEngine.Particle" preserve="all"/>
+  </assembly>
+
+  <assembly fullname="UnityEngine.UnityWebRequestWWWModule">
+    <type fullname="UnityEngine.WWW" preserve="all"/>
+  </assembly>
+
+  <assembly fullname="UnityEngine.UIModule">
+    <type fullname="UnityEngine.RenderMode" preserve="all"/>
+    <type fullname="UnityEngine.Canvas" preserve="all"/>
+  </assembly>
+
+  <assembly fullname="UnityEngine.AudioModule">
+    <type fullname="UnityEngine.AudioSource" preserve="all"/>
+    <type fullname="UnityEngine.AudioListener" preserve="all"/>
+    <type fullname="UnityEngine.Microphone" preserve="all"/>
+  </assembly>
+
+  <assembly fullname="UnityEngine.TextRenderingModule">
+    <type fullname="UnityEngine.Font" preserve="all"/>
+  </assembly>
+
+  <assembly fullname="UnityEngine.AnimationModule">
+    <type fullname="UnityEngine.RuntimeAnimatorController" preserve="all"/>
+    <type fullname="UnityEngine.AnimatorOverrideController" preserve="all"/>
+    <type fullname="UnityEngine.AnimationClip" preserve="all"/>
+    <type fullname="UnityEngine.Animator" preserve="all"/>
+    <type fullname="UnityEngine.AnimatorStateInfo" preserve="all"/>
+  </assembly>
+
+  <assembly fullname="UnityEngine.PhysicsModule">
+    <type fullname="UnityEngine.RaycastHit" preserve="all"/>
+    <type fullname="UnityEngine.MeshCollider" preserve="all"/>
+    <type fullname="UnityEngine.Physics" preserve="all"/>
+    <type fullname="UnityEngine.Collider" preserve="all"/>
+    <type fullname="UnityEngine.BoxCollider" preserve="all"/>
+    <type fullname="UnityEngine.CapsuleCollider" preserve="all"/>
+    <type fullname="UnityEngine.SphereCollider" preserve="all"/>
+  </assembly>
+
+  <assembly fullname="UnityEngine.CoreModule">
+    <namespace fullname="UnityEngine.Events" preserve="all"/>
+    <type fullname="UnityEngine.Events.UnityAction" preserve="all"/>
+    <type fullname="UnityEngine.QualitySettings" preserve="all"/>
+    <type fullname="UnityEngine.Application" preserve="all"/>
+    <type fullname="UnityEngine.RenderTexture" preserve="all"/>
+    <type fullname="UnityEngine.SkinnedMeshRenderer" preserve="all"/>
+    <type fullname="UnityEngine.Shader" preserve="all"/>
+    <type fullname="UnityEngine.LineRenderer" preserve="all"/>
+    <type fullname="UnityEngine.Object" preserve="all"/>
+    <type fullname="UnityEngine.Quaternion" preserve="all"/>
+    <type fullname="UnityEngine.Color32" preserve="all"/>
+    <type fullname="UnityEngine.Color" preserve="all"/>
+    <type fullname="UnityEngine.Sprite" preserve="all"/>
+    <type fullname="UnityEngine.RenderSettings" preserve="all"/>
+    <type fullname="UnityEngine.Time" preserve="all"/>
+    <type fullname="UnityEngine.RuntimePlatform" preserve="all"/>
+    <type fullname="UnityEngine.AndroidJavaClass" preserve="all"/>
+    <type fullname="UnityEngine.Vector3" preserve="all"/>
+    <type fullname="UnityEngine.Vector2" preserve="all"/>
+    <type fullname="UnityEngine.GameObject" preserve="all"/>
+    <type fullname="UnityEngine.Material" preserve="all"/>
+    <type fullname="UnityEngine.Projector" preserve="all"/>
+    <type fullname="UnityEngine.StaticBatchingUtility" preserve="all"/>
+    <type fullname="UnityEngine.Transform" preserve="all"/>
+    <type fullname="UnityEngine.GameObject" preserve="all"/>
+    <type fullname="UnityEngine.LayerMask" preserve="all"/>
+    <type fullname="UnityEngine.PlayerPrefs" preserve="all"/>
+    <type fullname="UnityEngine.Camera" preserve="all"/>
+  </assembly>
+
+  <assembly fullname="UnityEngine.UI">
+    <namespace fullname="UnityEngine.EventSystems" preserve="all"/>
+    <namespace fullname="UnityEngine.UI" preserve="all"/>
+    <type fullname="UnityEngine.UI.LayoutGroup" preserve="all"/>
+    <type fullname="UnityEngine.UI.GridLayoutGroup" preserve="all"/>
+  </assembly>
+
+</linker>

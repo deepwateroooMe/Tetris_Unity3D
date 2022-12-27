@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="squarepanda_sdk_version" translatable="false">0.0.1</string>
+    <string name="squarepanda_config_version" translatable="false">1.0.0</string>
+    <string name="game_activity">com.deepwaterooo.DWUnityActivity</string>
+    <string name="gameID">58084220ed22e354295492db</string>
+    <string name="Enable_Production">false</string>
+</resources>

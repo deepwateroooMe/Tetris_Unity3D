@@ -1,4 +1,4 @@
-% Created 2022-12-20 Tue 21:53
+% Created 2022-12-26 Mon 20:36
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -1298,37 +1298,43 @@ public class UnityPlayer extends FrameLayout implements com.unity3d.player.a.a {
 \section{一个SDK的整合步骤，再消化理解一下}
 \label{sec-6}
 \begin{itemize}
-\item 把SDK文件放到游戏安卓主工程的libs下
+\item 一.把SDK文件放到游戏安卓主工程的libs下
 \end{itemize}
 
 \includegraphics[width=.9\linewidth]{./pic/notes_20221220_153025.png}
 \begin{itemize}
-\item 安卓主工程中的build.gradle的修改,主要是添加必要的依赖包
+\item 二.安卓主工程中的build.gradle的修改,主要是添加必要的依赖包
 \end{itemize}
 
 \includegraphics[width=.9\linewidth]{./pic/notes_20221220_153107.png}
 \begin{itemize}
-\item 把游戏的主启动活动申明清楚
-\end{itemize}
+\item 三.把游戏的主启动活动申明清楚: 这里好像还没有弄明白是在哪里申明
 
 \includegraphics[width=.9\linewidth]{./pic/notes_20221220_153212.png}
 \begin{itemize}
-\item 还需要游戏ID ?
+\item 如果是在.aar SDK中的字符串申明会报错?
+\end{itemize}
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/notes_20221226_151633.png}
+　
+\begin{itemize}
+\item 四.还需要游戏ID ?
 \end{itemize}
 
 \includegraphics[width=.9\linewidth]{./pic/notes_20221220_153240.png}
 \begin{itemize}
-\item 同一个公司同一套SDK,类似游戏的背景图片修改
+\item 五.同一个公司同一套SDK,类似游戏的背景图片修改
 \end{itemize}
 
 \includegraphics[width=.9\linewidth]{./pic/notes_20221220_153320.png}
 \begin{itemize}
-\item 是production, 还是debug呢?
+\item 六.是production, 还是debug呢?
 \end{itemize}
 
 \includegraphics[width=.9\linewidth]{./pic/notes_20221220_153405.png}
 \begin{itemize}
-\item 其它单个某公司SDK相关的
+\item 七.其它单个某公司SDK相关的
 \end{itemize}
 
 \includegraphics[width=.9\linewidth]{./pic/notes_20221220_153542.png}
@@ -1336,5 +1342,315 @@ public class UnityPlayer extends FrameLayout implements com.unity3d.player.a.a {
 \label{sec-7}
 
 \includegraphics[width=.9\linewidth]{./pic/notes_20221220_223427.png}
+
+\section{构建纪录: 安卓SDK integration into unity games}
+\label{sec-8}
+\begin{itemize}
+\item 将所有的包裹都转成了androidX,倒出Mono在Android Studio中构建,(IL2CPP我刚才测好像是不行),其它细节修改:主要是为了解决安卓12启动黑并的问题
+\begin{itemize}
+\item 参考:\url{https://blog.csdn.net/m0_73817060/article/details/127112566}
+\end{itemize}
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/notes_20221226_202949.png}
+\begin{itemize}
+\item 我照它说的在方法最头第一行加了下面的
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{tex}
+getstatic android/os/Build$VERSION/SDK_INT I
+bipush 31
+if_icmplt 5
+return
+\end{minted}
+\begin{itemize}
+\item 源码后来变成了: UnityPlayer.class
+\begin{minted}[fontsize=\scriptsize,linenos=false]{java}
+protected void addPhoneCallListener() {
+    if (VERSION.SDK_INT < 31) {
+        this.i = true;
+        this.k.listen(this.j, 32);
+    }
+}
+\end{minted}
+\item \url{https://www.jianshu.com/p/2ce130a96b25}
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/notes_20221226_203239.png}
+\begin{itemize}
+\item build.gradle:
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{groovy}
+implementation 'androidx.work:work-runtime:2.7.1'
+\end{minted}
+\begin{itemize}
+\item AndroidManifest.xml
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
+<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+\end{minted}
+\begin{itemize}
+\item 完整的文件被我变成了是:
+\begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.deepwaterooo.tetris"
+          xmlns:tools="http://schemas.android.com/tools"
+          android:theme="@android:style/Theme.NoTitleBar"
+          android:versionCode="1"
+          android:versionName="1.0">
+  <!-- package="com.unity3d.UnityPlayerActivity" -->
+
+  <uses-sdk android:minSdkVersion="26"
+            android:targetSdkVersion="31" />
+
+  
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+  <uses-permission android:name="android.permission.NFC" />
+  <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>  
+
+  <application
+      android:label="@string/app_name"
+      android:theme="@style/Theme.AppCompat.DayNight"
+      android:allowBackup="true"
+      tools:replace="android:allowBackup"
+      android:isGame="false"
+      android:largeHeap="true"
+      android:process=":raadidcard"
+      android:icon="@mipmap/app_icon">
+
+    <activity android:name="com.deepwaterooo.DWUnityActivity"
+              android:label="@string/app_name"
+              android:launchMode="singleTask"
+              android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale"
+              android:exported="true">
+      <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
+    <!-- <meta-data android:name="android.app.lib_name" android:value="unity" /> -->
+    <!-- <meta-data android:name="com.deepwaterooo.DWUnityActivity" android:value="true" /> -->
+    <activity android:name="com.deepwaterooo.DWSDK"></activity>
+
+    <meta-data android:name="unity.build-id" android:value="6f3b9a05-74e8-4906-ab7d-f9abb9791268" />
+    <meta-data android:name="unity.splash-mode" android:value="0" />
+    <meta-data android:name="unity.splash-enable" android:value="True" />
+  </application>
+  <uses-feature android:glEsVersion="0x00020000" />
+  <uses-feature android:name="android.hardware.gamepad" />
+  <!-- <uses-feature android:name="android.hardware.vulkan" android:required="false" /> -->
+  <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+  <uses-feature android:name="android.hardware.touchscreen.multitouch" android:required="false" />
+  <uses-feature android:name="android.hardware.touchscreen.multitouch.distinct" android:required="false" />
+</manifest>
+\end{minted}
+
+\item 在整合安卓SDK .aar .jar之前我曾经有几个小测试项目都可以在unity中internally 构建和运行成功
+\item 今天主要解决了安卓SDK .aar .jar整合入unity游戏之后,unity中internally构建的问题,过程中出现过无数的bug,但是现可以成功构建
+\item 在整合安卓SDK .aar .jar之后，可以成功构建.apk,但运行时会出现找不到启动类，感觉为我的.jar包打得不够理想，reference的类好像没有包括进去
+\item 解决过之前找不到启动类的问题,可是这里整合了安卓SDK之后又有点儿不同
+\item 计划按照以下的思路来debug解决这个问题:
+\begin{itemize}
+\item 1.反编译生成的.apk文件,查找相关的启动类是否被成功打入包,能否被正确读取(如果不能有效解决,会试下面的第2种方法)
+\item 2.将源参考项目的老旧构建版本更新到与自己现项目v7-25.0.0 同步,并构建.在重构更新源项目并打包运行的过程中,试图找出自己项目中可能存在或是缺失的部分
+\item 再按上面两条不同途径得出的经验来把这个接通
+\end{itemize}
+\item 今天构建项目构建了一天,就在体会昨天找不类可能是因为安卓包没有真正包括进去,今天
+\end{itemize}
+\subsection{按照源旧参考项目的写法,它的视图是用 filament渲染的,这里的原理我还没有机会学习,没有弄懂}
+\label{sec-8-1}
+\begin{itemize}
+\item 当我把配置按源项目写成是:
+\begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
+<activity android:name="com.deepwaterooo.DWUnityActivity"
+          android:launchMode="singleTask"
+          android:label="@string/app_name"
+          android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale"
+          android:exported="true">
+  <!--这里记得加入这个参数，不然会报错 下面一行,模仿补的-->
+  <meta-data android:name="android.app.lib_name" android:value="unity" />
+  <meta-data android:name="com.deepwaterooo.DWUnityActivity" android:value="true"/>
+  <intent-filter>
+    <action android:name="android.intent.action.MAIN" />
+    <category android:name="android.intent.category.LAUNCHER" />
+  </intent-filter>
+</activity>
+\end{minted}
+\item 接下来就一定会找不到类：
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221218_220636.png}
+\subsection{按照自己后来参考的写法,有点儿像先前的项目,再去看安卓SDK的调用}
+\label{sec-8-2}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
+<activity android:name="com.unity3d.player.UnityPlayerActivity"
+          android:launchMode="singleTask"
+          android:label="@string/app_name"
+          android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale"
+          android:exported="true">
+  <!--这里记得加入这个参数，不然会报错 下面一行,模仿补的-->
+  <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
+  <intent-filter>
+    <action android:name="android.intent.action.MAIN" />
+    <category android:name="android.intent.category.LAUNCHER" />
+  </intent-filter>
+</activity>
+\end{minted}
+\begin{itemize}
+\item 这样的话,游戏端可以正常运行,去检查安卓SDK 的调用情况日志等,现在是找不到我安卓.aar包中的类
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221218_230256.png}
+\begin{itemize}
+\item 到今天晚上能够再次把这些构建好了,明天就可以看进这个问题了.爱表哥,爱生活,一定要嫁给偶亲爱的表哥!!!
+\item Mono 包的话:
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221220_151236.png}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{tex}
+D MainActivity: StartSplashScreenActivity() 
+E Unity   : AndroidJavaException: java.lang.NoClassDefFoundError: Failed resolution of: Lcom/deepwaterooo/sdk/activities/BaseActivity;
+E Unity   : java.lang.NoClassDefFoundError: Failed resolution of: Lcom/deepwaterooo/sdk/activities/BaseActivity;
+E Unity   : 	at java.lang.Class.classForName(Native Method)
+E Unity   : 	at java.lang.Class.forName(Class.java:454)
+E Unity   : 	at java.lang.Class.forName(Class.java:379)
+E Unity   : 	at com.unity3d.player.UnityPlayer.nativeRender(Native Method)
+E Unity   : 	at com.unity3d.player.UnityPlayer.c(Unknown Source:0)
+E Unity   : 	at com.unity3d.player.UnityPlayer$e$2.queueIdle(Unknown Source:72)
+E Unity   : 	at android.os.MessageQueue.next(MessageQueue.java:404)
+E Unity   : 	at android.os.Looper.loopOnce(Looper.java:186)
+E Unity   : 	at android.os.Looper.loop(Looper.java:313)
+E Unity   : 	at com.unity3d.player.UnityPlayer$e.run(Unknown Source:32)
+E Unity   : Caused by: java.lang.ClassNotFoundException: com.deepwaterooo.sdk.activities.BaseActivity
+E Unity   : 	... 10 more
+E Unity   :   at UnityEngine.AndroidJNISafe.CheckException () [0x00000] in <filename unknown>:0 
+E Unity   :   at UnityEngine.AndroidJNISafe.CallStaticVoidMethod (IntPtr clazz, IntPtr method
+E Unity   : NullReferenceException: Object reference not set to an instance of an object
+E Unity   :   at GestureRecognizerTS`1[T].CanBegin (.T gesture, IFingerList touches) [0x00000] in <filename unknown>:0 
+E Unity   :   at LongPressRecognizer.CanBegin (.LongPressGesture gesture, IFingerList touches) [0x00000] in <filename unknown>:0 
+E Unity   :   at GestureRecognizerTS`1[T].UpdateExclusive () [0x00000] in <filename unknown>:0 
+E Unity   :   at GestureRecognizerTS`1[T].Update () [0x00000] in <filename unknown>:0 
+E Unity   :  
+E Unity   : (Filename:  Line: -1)
+\end{minted}
+\begin{itemize}
+\item IL2CPP 包
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20221220_151607.png}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{tex}
+D MainActivity: StartSplashScreenActivity() 
+E Unity   : AndroidJavaException: java.lang.NoClassDefFoundError: Failed resolution of: Lcom/deepwaterooo/sdk/activities/BaseActivity;
+E Unity   : java.lang.NoClassDefFoundError: Failed resolution of: Lcom/deepwaterooo/sdk/activities/BaseActivity;
+E Unity   : 	at java.lang.Class.classForName(Native Method)
+E Unity   : 	at java.lang.Class.forName(Class.java:454)
+E Unity   : 	at java.lang.Class.forName(Class.java:379)
+E Unity   : 	at com.unity3d.player.UnityPlayer.nativeRender(Native Method)
+E Unity   : 	at com.unity3d.player.UnityPlayer.c(Unknown Source:0)
+E Unity   : 	at com.unity3d.player.UnityPlayer$e$2.queueIdle(Unknown Source:72)
+E Unity   : 	at android.os.MessageQueue.next(MessageQueue.java:404)
+E Unity   : 	at android.os.Looper.loopOnce(Looper.java:186)
+E Unity   : 	at android.os.Looper.loop(Looper.java:313)
+E Unity   : 	at com.unity3d.player.UnityPlayer$e.run(Unknown Source:32)
+E Unity   : Caused by: java.lang.ClassNotFoundException: com.deepwaterooo.sdk.activities.BaseActivity
+E Unity   : 	... 10 more
+E Unity   :   at UnityEngine.AndroidJNISafe.CheckException () [0x00000] in <filename unknown>:0 
+E Unity   :   at UnityEngine.AndroidJNISafe.CallStaticVoidMethod (IntPtr clazz, IntPtr method
+E Unity   : NullReferenceException: A null value was found where an object instance was required.
+E Unity   :   at GestureRecognizerTS`1[T].CanBegin (.T gesture, IFingerList touches) [0x00000] in <filename unknown>:0 
+E Unity   :   at LongPressRecognizer.CanBegin (.LongPressGesture gesture, IFingerList touches) [0x00000] in <filename unknown>:0 
+E Unity   :   at GestureRecognizerTS`1[T].UpdateExclusive () [0x00000] in <filename unknown>:0 
+E Unity   :   at GestureRecognizerTS`1[T].Update () [0x00000] in <filename unknown>:0 
+E Unity   :  
+E Unity   : (Filename: currently not available on il2cpp Line: -1)
+\end{minted}
+\begin{itemize}
+\item 在unity中构建,除了上面有限的日志,就再不知道是为什么了
+\item 以前17年工作的时候完全不懂怎么把游戏项目倒出到安卓构建,虽然最近一个月左右又稍微练习了一下,可是游戏中构建仍是我的首选.但当出错的时候,源参考项目太复杂,涉及filament安卓平台渲染引擎,和postprocess后期处理,很多细节自己仍然还不够明白.所以从游戏端构建,拿到上面的出错日志无法突破不知道怎么解决的时候,
+\item 就不得不硬着头皮导出到安卓构建,试了半下午,现在导出的项目终于可以连通了,是通知配置AndroidManifest.xml文件来实现的:
+\begin{minted}[fontsize=\scriptsize,linenos=false]{xml}
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.deepwaterooo.dwsdk"
+          xmlns:tools="http://schemas.android.com/tools"
+          android:theme="@android:style/Theme.NoTitleBar"
+          android:versionCode="1"
+          android:versionName="1.0"
+          android:installLocation="preferExternal">
+  <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="26" />
+
+  <supports-screens
+      android:smallScreens="false"
+      android:normalScreens="false"
+      android:largeScreens="false"
+      android:xlargeScreens="true"
+      android:anyDensity="true"/>
+
+  <!-- <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" /> -->
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+  <!-- android:process=":raadidcard" -->
+  <!-- android:usesCleartextTraffic="true" -->
+  <application
+      android:label="@string/app_name"
+      android:theme="@style/Theme.AppCompat.DayNight"
+      android:allowBackup="true"
+      android:isGame="false"
+      tools:replace="android:allowBackup"
+      android:largeHeap="true"
+      android:icon="@mipmap/app_icon">
+    <!-- <activity -->
+    <!--     android:label="@string/app_name" -->
+    <!--     android:screenOrientation="fullSensor" -->
+    <!--     android:launchMode="singleTask" -->
+    <!--     android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale|layoutDirection|density" -->
+    <!--     android:hardwareAccelerated="false" -->
+    <!--     android:name="com.deepwaterooo.dwsdk.UnityPlayerActivity" -->
+    <!--     android:exported="true"> -->
+    <!--   <meta-data android:name="unityplayer.UnityActivity" android:value="true" /> -->
+    <!--   <intent-filter> -->
+    <!--     <action android:name="android.intent.action.MAIN" /> -->
+    <!--     <category android:name="android.intent.category.LAUNCHER" /> -->
+    <!--   </intent-filter> -->
+    <!-- </activity> -->
+    <!-- android:launchMode="singleTask" -->
+    <activity android:name="com.deepwaterooo.DWUnityActivity"
+              android:label="@string/app_name"
+              android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale"
+              android:exported="true">
+      <meta-data android:name="com.deepwaterooo.DWUnityActivity" android:value="true"/>
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
+    <!-- <meta-data android:name="android.app.lib_name" android:value="unity" /> -->
+    <!-- <activity android:name="com.deepwaterooo.DWSDK"></activity> -->
+    <meta-data android:name="unity.build-id" android:value="6ccd546d-e136-4162-ac70-396c442a26ae" />
+    <meta-data android:name="unity.splash-mode" android:value="0" />
+    <meta-data android:name="unity.splash-enable" android:value="True" />
+  </application>
+  <uses-feature android:glEsVersion="0x00020000" />
+  <uses-feature android:name="android.hardware.gamepad" />
+  <uses-feature android:name="android.hardware.vulkan" android:required="false" />
+  <!-- <uses-permission android:name="android.permission.INTERNET" /> -->
+  <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+  <uses-feature android:name="android.hardware.touchscreen.multitouch" android:required="false" />
+  <uses-feature android:name="android.hardware.touchscreen.multitouch.distinct" android:required="false" />
+</manifest>
+\end{minted}
+\item 现在终于可以再往前一小步,在可以找到各种类的情况下,去debug两端(游戏与安卓SDK)交互过程中可能存在的问题了,终于终于又往前一小步![爱表哥,爱生活,一定要嫁给偶亲爱的表哥!!!]
+\end{itemize}
 % Emacs 27.2 (Org mode 8.2.7c)
 \end{document}

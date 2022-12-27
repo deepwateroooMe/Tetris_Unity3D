@@ -1,4 +1,4 @@
-% Created 2022-12-20 Tue 21:54
+% Created 2022-12-22 Thu 22:01
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -388,6 +388,9 @@ dependencies {
 \section{some commands use as reference for later debugging}
 \label{sec-3}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{shell}
+# kill emulator
+adb -s emulator-5554 emu kill   
+
 jar cvf classes.jar -C classes/ .
 
 #　java 8 的打包工具地址

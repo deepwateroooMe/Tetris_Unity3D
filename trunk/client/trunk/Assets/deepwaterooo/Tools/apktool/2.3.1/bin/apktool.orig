@@ -1,2 +1,0 @@
-#!/bin/bash
-exec java  -jar /usr/local/Cellar/apktool/2.2.1/libexec/apktool_2.2.1.jar "$@"

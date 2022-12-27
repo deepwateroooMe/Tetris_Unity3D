@@ -308,6 +308,9 @@ dependencies {
 
 * some commands use as reference for later debugging 
   #+BEGIN_SRC shell
+# kill emulator
+adb -s emulator-5554 emu kill   
+
 jar cvf classes.jar -C classes/ .
 
 #　java 8 的打包工具地址
