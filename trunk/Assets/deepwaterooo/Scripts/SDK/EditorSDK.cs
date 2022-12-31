@@ -12,6 +12,14 @@ namespace DWater {
         public void sendMsg(string s) {
             Debug.Log(TAG + " SendMsg()");
         }
+
+        public void registerVolumeReceiver() {
+            Debug.Log(TAG + " registerVolumeReceiver()");
+        }
+        public void unregisterVolumeReceiver() {
+            Debug.Log(TAG + " unregisterVolumeReceiver()");
+        }
+
         public void ManagePlayers () {
             Debug.Log(TAG + " ManagePlayers()");
         }

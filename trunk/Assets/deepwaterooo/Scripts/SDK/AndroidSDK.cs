@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using deepwaterooo.tetris3d;
+using UnityEngine;
 
 namespace DWater {
     public class AndroidSDK : ISDK {
@@ -15,12 +16,24 @@ namespace DWater {
                 return _javaClassVariable;
             }
         }
-
 // 公用方法:全部是unity 调用安卓SDK 中的方法        
         public void Init() {
             Debug.Log(TAG + " Init()");
             _androidSDK.CallStatic("Init");
         }
+        public void VolumeCallbackInit(VoiceVolumnChangedIntereface callback) {
+            Debug.Log(TAG + " VolumeCallbackInit()");
+            _androidSDK.Call("VolumeCallbackInit", callback);
+        }
+        public void registerVolumeReceiver() {
+            Debug.Log(TAG + " registerVolumeReceiver()");
+            _androidSDK.Call("registerVolumeReceiver");
+        }
+        public void unregisterVolumeReceiver() {
+            Debug.Log(TAG + " unregisterVolumeReceiver()");
+            _androidSDK.Call("unregisterVolumeReceiver");
+        }
+        
         public void ManagePlayers () {
             _androidSDK.CallStatic ("ManagePlayers");
         }

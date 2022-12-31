@@ -313,10 +313,12 @@ adb -s emulator-5554 emu kill
 
 jar cvf classes.jar -C classes/ .
 
+cp classes.jar /mnt/f/unityExportToAndroid/tetris/app/libs/
+
+cp classes.jar /mnt/f/tetris3D/trunk/Assets/deepwaterooo/Plugins/Android 
+
 #　java 8 的打包工具地址
 /mnt/c/Program\ Files/java/jdk1.8.0_351/bin/jar.exe cvf classes.jar -C classes/ . 
-
-cp classes.jar /mnt/f/tetris3D/trunk/client/trunk/Assets/deepwaterooo/Plugins/Android 
 
 jar cvf deepwaterooo_activity.jar -C classes/ .       
 
