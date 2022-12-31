@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.deepwaterooo.Scripts;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -63,8 +64,33 @@ namespace DWater {
 #endif
             Debug.Log("[Deepwaterooo] Init()");
             _sdkCalls.Init(); // <<<<<<<<<<<<<<<<<<<< 这里需要一个初始化: SplashScreen可以在SDK中定制
+
+// TODO: 测试unity游戏端向安卓SDK发送 或 接收广播, 游戏端的广播代理 也需要 初始化
+            Debug.Log(TAG + "initBroadcast  ===============================");
+            UnityBroadcastReceiver.instance.initBroadcast();
         }
-        // This must be called first to initialize the plugin.
+        //public BindableProperty<int> curVol = new BindableProperty<int>();
+// 游戏向安卓发广播方法样例: 也是可以发广播的!!!
+        public void SendBroadcastWithArgs() {
+            Debug.Log(TAG + " SendBroadcastWithArgs()");
+            SendBroadcastWithArgs("selfDefineReceiver", Application.identifier, "com.unity3d.player.UABroadcastReceiver");
+        }
+        void SendBroadcastWithArgs(string actionName, string packageName, string broadcastName) {
+            Debug.Log(TAG + " SendBroadcastWithArgs() actionName: " + actionName + " packageName: " + packageName + " broadcastName: " + broadcastName);
+            AndroidJavaObject intentObject = new AndroidJavaObject("android.content.Intent", actionName);
+            intentObject.Call<AndroidJavaObject>("putExtra", "enable", false);
+            intentObject.Call<AndroidJavaObject>("putExtra", "enable2", true);
+            intentObject.Call<AndroidJavaObject>("putExtra", "mystring", "mystring args");
+            double[] data = { 4.3f, 45, -78, 10000, 89 };
+            intentObject.Call<AndroidJavaObject>("putExtra", "datas", data);
+            AndroidJavaObject componentNameJO = new AndroidJavaObject("android.content.ComponentName", packageName, broadcastName);
+            intentObject.Call<AndroidJavaObject>("setComponent", componentNameJO);
+            AndroidJavaClass unity = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+            AndroidJavaObject context = unity.GetStatic<AndroidJavaObject>("currentActivity").Call<AndroidJavaObject>("getApplicationContext");
+            context.Call("sendBroadcast", intentObject);
+        }
+
+// This must be called first to initialize the plugin.
         public void Initialize() {
             Debug.Log("[Deepwterooo] Initialize()");
             if (!_isInitialized) {

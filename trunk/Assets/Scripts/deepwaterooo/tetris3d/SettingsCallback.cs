@@ -9,12 +9,6 @@ using UnityEngine.UI;
 public class SettingsCallback : MonoBehaviour {
     private const string TAG = "SettingsCallback";
 
-    // public string BundleName { get { return "ui/view/settingsview"; } }
-    // public string AssetName { get { return "SettingsView"; } }
-    // public string ViewName { get { return "SettingsView"; } }
-    // public string ViewModelTypeName { get { return typeof(SettingsViewModel).FullName; } }
-    // public SettingsViewModel ViewModel { get { return (SettingsViewModel)BindingContext; } }
-
     Button lgiBtn; // LOGIN
     Button creBtn; // CREDIT
     Button ratBtn; // RATE GAME
@@ -29,7 +23,7 @@ public class SettingsCallback : MonoBehaviour {
     // ExtendedSlider sndSdr;
     Text sndTxt;
     int maxVol = 0, curVol = 0, preVol = -1;
-
+    
     public void Start() {
         lgiBtn = gameObject.FindChildByName("lgiBtn").GetComponent<Button>();
         lgiBtn.onClick.AddListener(OnClickLgiButton);
@@ -56,17 +50,22 @@ public class SettingsCallback : MonoBehaviour {
         sndSdr = gameObject.FindChildByName("volSdr").GetComponent<Slider>(); // 这个滑动条有一些相关的事件需要处理
         sndTxt = gameObject.FindChildByName("sndTxt").GetComponent<Text>();
 
-// 在这里对安卓的调用与回调作必要的初始化: 下面一句设置得不对
-        VoiceVolumnWrapper.Instance.Init(SetVolumnListener); // 测这里有没有连通　// <<<<<<<<<<<<<<<<<<<< 
+// 在这里对安卓的调用与回调作必要的初始化:
+        // // 安卓SDK接收到手机安卓系统广播后回传回来的 接口回调: It works! But try another way of receiving broadcast from Unity side
+        // VoiceVolumnWrapper.Instance.Init(SetVolumnListener); // <<<<<<<<<<<<<<<<<<<<
+        
         InitSlider();
     }
-    void SetVolumnListener(int value) { 
-        Debug.Log(TAG + " SetVolumnListener() value: " + value);
-        if (curVol != 0) preVol = curVol;
-        curVol = value;
-        SetSliderValue(value);
-        SetTextValue(value);
-    }
+// TODO: 哪里没有设置好,实时运行时,当用户触屏拖动slider,居然拖不动,需要可以从游戏直接从UI上设置音量
+
+// // 安卓SDK收到手机音量改变了的安卓系统广播,之后的回调,以接口的形式回传回来的,能运行得通
+//     void SetVolumnListener(int value) { 
+//         Debug.Log(TAG + " SetVolumnListener() value: " + value);
+//         if (curVol != 0) preVol = curVol;
+//         curVol = value;
+//         SetSliderValue(value);
+//         SetTextValue(value);
+//     }
     void SetSliderValue(int value) {
         sndSdr.value = value;
     }
@@ -126,13 +125,11 @@ public class SettingsCallback : MonoBehaviour {
     }
     void onClickSoundOnButton() { // 设置的是静音前最后一次的值
         Debug.Log(TAG + " onClickSoundOnButton()");
-        // VolumeManager.Instance.setVolume(-1);
         SetMusicVoiceVolumn(preVol);
         sndPanel.SetActive(false);
     }
     void onClickSoundOffButton() {
         Debug.Log(TAG + " onClickSoundOffButton()");
-        // VolumeManager.Instance.setVolume(0);
         if (curVol != 0)
             preVol = curVol;
         SetMusicVoiceVolumn(0);

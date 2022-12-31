@@ -1,0 +1,440 @@
+#+latex_class: cn-article
+#+title: Tetris 3D Reference
+#+author: deepwaterooo
+#+options: ^:nil
+
+* TODO 
+- 相对简单地重构一下主游戏界面视图与视图模型的偶合,清除所有编译错误后先试图让游戏运行起来,再一一解决运行过程中可能会出现或是需要优化的问题
+- 现在是两套序列化反序列化的机制,JSON BINARYFORMATER,先重构,让游戏运行起来一下,再重构精减代码
+- 简单的预设和游戏界面没有实现(等哪天状态不是很好的时候才再去做那些unity界面)
+ 
+** 游戏内更新的途径
+- 手游在实现这块时需要注意的几点：
+   - 游戏发布出一定要提供游戏内更新的途径。即使是删掉测试，保不准这期间需要进行资源或者BUG修复更新。很多玩家并不知道如何更新，而且Android手机应用分发平台多样，分发平台本身也不会跟官方同步更新（特别是小的分发平台）。
+  - 更新功能要提供强制更新、非强制更新配置化选项，并指定哪些版本可以不强更，哪些版本必须强更。
+  - 当游戏提供非强制更新功能之后，现网一定会存在多个版本。如果需要针对不同版本做不同的更新，例如配置文件A针对1.0.0.1修改了一项，针对1.0.0.2修改了另一项，2个版本需要分别更新对应的修改，需要自己实现更新策略IIPS不提供这个功能。当需要复杂的更新策略，推荐自己编写更新服务器和客户端逻辑，不使用iips组件（其实自己实现也很简单）。
+
+*** 热更新 Reference
+- unity实现应用内更新 by implementing android SDK methods
+  - https://blog.csdn.net/qq_33347809/article/details/83784975
+- [Unity]基于IL代码注入的Lua补丁方案
+  - https://www.jianshu.com/p/4bef7f66aefd
+  - GitHub 源码： https://github.com/rayosu/UnityDllInjector   UnityDllInjector
+  - (翻译) 《C# to IL》第一章 IL入门
+    - https://www.cnblogs.com/Jax/archive/2009/05/29/1491523.html
+
+** ShaderS基础知识总结
+- Unity3d中Shader的一些关于矩阵变换的基本信息
+  - https://blog.csdn.net/yutyliu/article/details/56013807
+- shader内置函数
+  - https://blog.csdn.net/qingshui37/article/details/51476404
+*** 基本变换
+- 在Unity中，每个物体都有一个坐标系，就是自身坐标系，各个物体之间相互独立。
+- 所有的物体都处在一个统一的空间里，这个空间就是世界空间，也有一个世界坐标系。
+- 把一个3D物体渲染到2D的屏幕上的基本流程以及每个变换对应的矩阵
+
+  - 因为物体的顶点坐标是基于自身坐标系的，所以渲染时，最先的变换是 模型空间——>世界空间，对应矩阵：_Object2World
+  - 物体要渲染到相机平面上实际上，是相机的可视区域内有哪些物体，也就是物体处于相机坐标系的本地坐标（localPosition）处于哪个位置。这个变换是 世界空间——>相机空间，对应矩阵：UNITY_MATRIX_V
+  - 此刻获取到了物体处于相机空间的位置，要把相机空间的所有信息都渲染到2维图片上，此刻需要进行投影变换，透视相机投影变换的目的是为了把视锥体转换为立方体，转换后，视锥体近平面的右上角点变成立方体前平面的中心，把视锥体较小的部分放大，较大的部分缩小，形成最终的立方体。变换后的x坐标范围是[-1, 1]，y坐标范围是[-1, 1]，z坐标范围是[0, 1]（OpenGL不同，z值范围是[-1, 1]），这个变换是 相机空间——>投影空间，对应矩阵：UNITY_MATRIX_P
+  - 通过UNITY_MATRIX_MVP 这个矩阵，可以把物体的顶点位置从模型自身坐标系转换到投影空间。
+  - 对投影矩阵感兴趣的，可以自己搜索一下，整个推导过程需要一定的数学基础，理解就行。
+
+*** 顶点转换函数
+**** float4 UnityObjectToClipPos(float3 pos)
+- Transforms a point from object space to the camera’s clip space in homogeneous coordinates. This is the equivalent of mul(UNITY_MATRIX_MVP, float4(pos, 1.0)), and should be used in its place.
+- homogeneous coordinates：齐次坐标
+- 等价于：mul(UNITY_MATRIX_MVP, float4(pos, 1.0)),
+**** float3 UnityObjectToViewPos(float3 pos)
+- Transforms a point from object space to view space. This is the equivalent of mul(UNITY_MATRIX_MV, float4(pos, 1.0)).xyz, and should be used in its place.
+- 等价于：mul(UNITY_MATRIX_MV, float4(pos, 1.0)).
+
+*** Forwardrendering helper functions in UnityCG.cginc
+- These functions are only useful when using forward rendering(ForwardBase or ForwardAdd pass types).
+- 仅用于前向渲染
+|--------------------------------------+--------------------------------------------------------------------------------------------|
+| Function:                            | Description:                                                                               |
+|--------------------------------------+--------------------------------------------------------------------------------------------|
+| float3 WorldSpaceLightDir (float4 v) | Computes world space direction (not normalized) to light,                                  |
+|                                      | given object space vertex position.                                                        |
+|                                      | 参数是object space下的顶点坐标，取得world space下指向光源的方向                            |
+|--------------------------------------+--------------------------------------------------------------------------------------------|
+| float3 ObjSpaceLightDir (float4 v)   | Computes object space direction (not normalized) to light,                                 |
+|                                      | given object space vertex position.                                                        |
+|                                      | 参数是object space下的顶点坐标，取得object space下指向光源的方向                           |
+|--------------------------------------+--------------------------------------------------------------------------------------------|
+| float3 Shade4PointLights (...)       | Computes illumination from four point lights, with light data tightly packed into vectors. |
+|                                      | Forward rendering uses this to compute per-vertex lighting.                                |
+|                                      | 正向渲染中，最多有4个点光源会以逐顶点渲染的方式被计算。                                    |
+|--------------------------------------+--------------------------------------------------------------------------------------------|
+
+**** mul（UNITY_MATRIX_MVP,v）跟ComputeScreenPos的区别
+一个是model position->projection position 投影坐标
+一个是projection position->screen position...屏幕坐标
+投影坐标系->屏幕坐标系这是最简单的。2D坐标变换。也不多说。
+使用例子：
+  #+BEGIN_SRC csharp
+o.position = mul(UNITY_MATRIX_MVP, v.vertex);
+o.proj0 = ComputeScreenPos(o.position);
+COMPUTE_EYEDEPTH(o.proj0.z);
+  #+END_SRC
+
+* Reference
+** Save Game progress 
+- How to Save and Load Your Players' Progress in Unity 2014
+  - https://gamedevelopment.tutsplus.com/tutorials/how-to-save-and-load-your-players-progress-in-unity--cms-20934
+- FireBase数据库 保存数据 游戏得分排行榜等
+  - https://firebase.google.com/docs/database/unity/save-data?hl=zh-cn
+- 轻量级 Unity3D-小规模初始化数据的存储和读取
+  - https://blog.csdn.net/wuyt2008/article/details/60955491
+- 适用于 Unity 的 AWS 移动开发工具包入门  ====》》》不知道这个是做什么用的？？？？
+  - https://docs.aws.amazon.com/zh_cn/mobile/sdkforunity/developerguide/getting-started-unity.html
+- 数据存储开发指南 · Unity 2019
+  - https://leancloud.cn/docs/unity_guide.html
+** Unity LineRender
+- Unity 几种画线方式 GL(Graphics Library) matrix etc
+  - https://blog.csdn.net/ldy597321444/article/details/78031284
+- Unity3D点击绘制二维模型线和三维模型线
+  - https://blog.csdn.net/zxy13826134783/article/details/80114727
+- Edge Detection via Shader not Image Effect
+  - https://forum.unity.com/threads/edge-detection-via-shader-not-image-effect.368922/
+- Image Effect: Edge Detect Normals Colours [rel]
+  - https://forum.unity.com/threads/image-effect-edge-detect-normals-colours-rel.310280/?_ga=2.193847467.70482378.1568958437-524766537.1568434661
+
+** FireBase数据库
+- 在 Unity 中开始使用 Firebase 身份验证
+  - https://firebase.google.com/docs/auth/unity/start?hl=zh-cn
+  - github: https://github.com/google/mechahamster
+- 将 Firebase 添加到您的 Unity 项目
+  - https://firebase.google.com/docs/unity/setup?hl=zh-cn
+** Shader
+- Shader学习：描边Outline初步
+  - https://zhuanlan.zhihu.com/p/55337247
+
+** Admob广告
+- Admob + Firebase Get Started in Android Studio
+  - https://firebase.google.com/docs/admob/android/quick-start
+- Android Google AdMob 广告接入示例
+  - https://github.com/googleads/googleads-mobile-android-examples
+- Android Firebase接入（四）-- AdMob广告
+  - https://blog.csdn.net/AlpinistWang/article/details/87438367
+  #+BEGIN_SRC csharp
+public class MainActivity extends Activity {
+    private InterstitialAd interstitialAd;
+    @Override
+        protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        showInterstitialAd();
+    }
+    private void showInterstitialAd(){
+        interstitialAd = new InterstitialAd(this);
+        interstitialAd.setAdUnitId("你的插屏广告id"));
+    interstitialAd.loadAd(new AdRequest.Builder().build());
+    interstitialAd.setAdListener(new AdListener(){
+            @Override
+            public void onAdLoaded() {
+                super.onAdLoaded();
+                if (interstitialAd.isLoaded()) {
+                    interstitialAd.show();
+                }
+            }
+        });
+}
+  #+END_SRC
+  - 笔者推荐将showInterstitialAd放在BaseActivity中，然后在继承了BaseActivity的页面中直接调用即可展示广告。加载横幅广告和激励视频广告是类似的。
+
+** Edge Detection
+- Outline Shader 有资源，手把手地教 using unity 原始为2018.3.3f1 好好学习一下
+  - https://roystan.net/articles/outline-shader.html
+  - UnityOutlineShader-skeleton.zip
+  - github: https://github.com/IronWarrior/UnityOutlineShader
+- CommandBuffer与ImageEffect实践-----Outline
+  - https://www.wonderm.cc/2019/05/26/CommandBufferAndImageEffect-Outline/
+- CommandBuffer_01 标记特殊区域
+  - https://www.wonderm.cc/2019/03/04/CommandBuffer-01/
+
+- 关于Unity Shader的一些心得体会~ GitHub
+  - Sjm-Shader-Collection/Volume 09 EdgeDetection详解边缘检测/Script/
+- https://github.com/swordjoinmagic/Sjm-Shader-Collection
+  - https://github.com/swordjoinmagic/Sjm-Shader-Collection/blob/master/Volume%2009%20EdgeDetection%E8%AF%A6%E8%A7%A3%E8%BE%B9%E7%BC%98%E6%A3%80%E6%B5%8B/Script/BulletTimeStartWithEdgeDetection.cs
+  - 目标物体的边缘检测
+- Unity3D 卡通渲染 基于退化四边形的实时描边 - L-灵刃
+  - https://www.w3xue.com/exp/article/20199/53598.html
+  - GitHub: https://github.com/L-LingRen/UnitySimpleCartoonLine 下载
+- 【Unity Shaders】法线纹理（Normal Mapping）的实现细节
+  - https://blog.csdn.net/candycat1992/article/details/41605257
+- Sobel边缘检测算法
+  - https://blog.csdn.net/tianhai110/article/details/5663756
+- unity3d shader之Roberts,Sobel,Canny 三种边缘检测方法
+  - http://www.voidcn.com/article/p-mqllafvg-xt.html
+- Unity Shader-边缘检测效果（基于颜色，基于深度法线，边缘流光效果，转场效果）
+  - https://gameinstitute.qq.com/community/detail/128772
+- Unity Shader学习笔记（26）边缘检测（深度和法线纹理）
+  - https://gameinstitute.qq.com/community/detail/121022
+- 彻底理解数字图像处理中的卷积-以Sobel算子为例
+  - https://my.oschina.net/freeblues/blog/727561
+- shader实现屏幕处理效果——边缘检测
+  - https://www.jianshu.com/p/fa7cea5f6a72
+- Unity3D开发之边缘检测Sobel算子的一些个人观点
+  - https://blog.csdn.net/qq_33994566/article/details/79180058
+** Mesh
+- Runtime Mesh Manipulation With Unity
+  - https://www.raywenderlich.com/5128-runtime-mesh-manipulation-with-unity
+** Unity PostProcessing
+- Unity PostProcessing Stack v2源码分析系列
+  - https://blog.csdn.net/wolf96/article/details/82796174
+- MMD联动Unity学习笔记 Vol.5.1 Post Processing Stack v2
+  - https://www.bilibili.com/read/cv2780283/
+  - 和一个小视频可以参考学习一下
+* Reference
+** Admob广告
+- Android Google AdMob 广告接入示例
+  - https://github.com/googleads/googleads-mobile-android-examples
+- Android Firebase接入（四）-- AdMob广告
+  - https://blog.csdn.net/AlpinistWang/article/details/87438367
+  #+BEGIN_SRC csharp
+public class MainActivity extends Activity {
+    private InterstitialAd interstitialAd;
+    @Override
+        protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        showInterstitialAd();
+    }
+    private void showInterstitialAd(){
+        interstitialAd = new InterstitialAd(this);
+        interstitialAd.setAdUnitId("你的插屏广告id"));
+    interstitialAd.loadAd(new AdRequest.Builder().build());
+    interstitialAd.setAdListener(new AdListener(){
+            @Override
+            public void onAdLoaded() {
+                super.onAdLoaded();
+                if (interstitialAd.isLoaded()) {
+                    interstitialAd.show();
+                }
+            }
+        });
+}
+  #+END_SRC
+  - 笔者推荐将showInterstitialAd放在BaseActivity中，然后在继承了BaseActivity的页面中直接调用即可展示广告。加载横幅广告和激励视频广告是类似的。
+** Edge Detection
+- 关于Unity Shader的一些心得体会~ GitHub
+  - Sjm-Shader-Collection/Volume 09 EdgeDetection详解边缘检测/Script/
+- https://github.com/swordjoinmagic/Sjm-Shader-Collection
+  - https://github.com/swordjoinmagic/Sjm-Shader-Collection/blob/master/Volume%2009%20EdgeDetection%E8%AF%A6%E8%A7%A3%E8%BE%B9%E7%BC%98%E6%A3%80%E6%B5%8B/Script/BulletTimeStartWithEdgeDetection.cs
+  - 目标物体的边缘检测
+- Unity3D 卡通渲染 基于退化四边形的实时描边 - L-灵刃
+  - https://www.w3xue.com/exp/article/20199/53598.html
+  - GitHub: https://github.com/L-LingRen/UnitySimpleCartoonLine 下载
+- 【Unity Shaders】法线纹理（Normal Mapping）的实现细节
+  - https://blog.csdn.net/candycat1992/article/details/41605257
+- Sobel边缘检测算法
+  - https://blog.csdn.net/tianhai110/article/details/5663756
+- unity3d shader之Roberts,Sobel,Canny 三种边缘检测方法
+  - http://www.voidcn.com/article/p-mqllafvg-xt.html
+- Unity Shader-边缘检测效果（基于颜色，基于深度法线，边缘流光效果，转场效果）
+  - https://gameinstitute.qq.com/community/detail/128772
+- Unity Shader学习笔记（26）边缘检测（深度和法线纹理）
+  - https://gameinstitute.qq.com/community/detail/121022
+- 彻底理解数字图像处理中的卷积-以Sobel算子为例
+  - https://my.oschina.net/freeblues/blog/727561
+- shader实现屏幕处理效果——边缘检测
+  - https://www.jianshu.com/p/fa7cea5f6a72
+- Unity3D开发之边缘检测Sobel算子的一些个人观点
+  - https://blog.csdn.net/qq_33994566/article/details/79180058
+** 摄像机跟随
+- Unity中Camera摄像头控制详解 （有视频）解释比较彻底清晰
+  - https://www.cnblogs.com/machine/p/unity.html
+** canvas 上模型旋转
+- Unity3D物体在UI界面的显示 
+  - https://www.cnblogs.com/chinarbolg/p/9601376.html
+- Unity3D】实现物体或UI的旋转显示  UIRotate.unitypackage
+  - https://blog.csdn.net/q764424567/article/details/81318030
+** concurrent
+- 用Semaphore实现对象池
+  - https://donald-draper.iteye.com/blog/2360817
+  #+BEGIN_SRC java
+package juc.latch;  
+import java.util.concurrent.Semaphore;  
+import java.util.concurrent.locks.Lock;  
+import java.util.concurrent.locks.ReentrantLock;  
+/** 
+ * 信号量实现的对象池 
+ * @author donald 
+ * 2017年3月6日 
+ * 下午9:43:06 
+ * @param <T> 
+ */
+public class ObjectCache<T> {  
+
+    // 对象工厂  
+    public interface ObjectFactory<T> {  
+        T makeObject();  
+    }  
+
+    // 将对象封装节点中，放到一个先进先出的队列中，即对象池  
+    class Node {  
+        T obj;  
+        Node next;  
+    }
+    
+    final int capacity; // 线程次容量  
+    final ObjectFactory<T> factory;  
+    final Lock lock = new ReentrantLock(); // 保证对象获取，释放的线程安全  
+    final Semaphore semaphore; // 信号量  
+    private Node head;  
+    private Node tail;
+    
+    public ObjectCache(int capacity, ObjectFactory<T> factory) {  
+        this.capacity = capacity;  
+        this.factory = factory;  
+        this.semaphore = new Semaphore(this.capacity);  
+        this.head = null;  
+        this.tail = null;  
+    }  
+
+    /** 
+     * 从对象池中，获取对象 
+     * @return 
+     * @throws InterruptedException 
+     */  
+    public T getObject() throws InterruptedException {  
+        semaphore.acquire();  
+        return getObjectFromPool();  
+    }
+    
+    /** 
+     * 线程安全地从对象池获取对象 
+     * @return 
+     */  
+    private T getObjectFromPool() {  
+        lock.lock();  
+        try {  
+            if (head == null) {  
+                return factory.makeObject();  
+            } else {  
+                Node ret = head;  
+                head = head.next;  
+                if (head == null)  
+                tail = null;  
+                ret.next = null;//  help GC  
+                return ret.obj;  
+            }  
+        } finally {  
+            lock.unlock();  
+        }  
+    }  
+    /** 
+     * 线程安全地，将对象放回对象池 
+     * @param t 
+     */  
+    private void putBackObjectToPool(T t) {  
+        lock.lock();  
+        try {  
+            Node node = new Node();  
+            node.obj = t;  
+            if (tail == null) {  
+                head = tail = node;  
+            } else {  
+                tail.next = node;  
+                tail = node;  
+            }  
+        } finally {  
+            lock.unlock();  
+        }  
+    }  
+    /** 
+     * 将对象放回对象池 
+     * @param t 
+     */  
+    public void putBackObject(T t) {  
+        putBackObjectToPool(t);  
+        semaphore.release();  
+    }  
+}  
+  #+END_SRC
+- Object pool pattern
+  - https://en.wikipedia.org/wiki/Object_pool_pattern
+  #+BEGIN_SRC java
+namespace DesignPattern.Objectpool  {
+
+    // The PooledObject class is the type that is expensive or slow to instantiate,
+    // or that has limited availability, so is to be held in the object pool.
+    public class PooledObject {
+        DateTime _createdAt = DateTime.Now;
+        public DateTime CreatedAt {
+            get { return _createdAt; }
+        }
+        public string TempData { get; set; }
+    }
+
+    // The Pool class is the most important class in the object pool design pattern. It controls access to the
+    // pooled objects, maintaining a list of available objects and a collection of objects that have already been
+    // requested from the pool and are still in use. The pool also ensures that objects that have been released
+    // are returned to a suitable state, ready for the next time they are requested. 
+    public static class Pool {
+        private static List<PooledObject> _available = new List<PooledObject>();
+        private static List<PooledObject> _inUse = new List<PooledObject>();
+        public static PooledObject GetObject() {
+            lock(_available) {
+                if (_available.Count != 0) {
+                    PooledObject po = _available[0];
+                    _inUse.Add(po);
+                    _available.RemoveAt(0);
+                    return po;
+                } else {
+                    PooledObject po = new PooledObject();
+                    _inUse.Add(po);
+                    return po;
+                }
+            }
+        }
+        public static void ReleaseObject(PooledObject po) {
+            CleanUp(po);
+            lock (_available) {
+                _available.Add(po);
+                _inUse.Remove(po);
+            }
+        }
+        private static void CleanUp(PooledObject po) {
+            po.TempData = null;
+        }
+    }
+}
+  #+END_SRC
+
+- Sun‘刺眼的博客: 随笔分类 - Unity3D、C#
+  - https://www.cnblogs.com/android-blogs/category/879304.html
+- Unity协程（Coroutine）原理深入剖析
+  - https://dsqiu.iteye.com/blog/2029701
+- Unity3d IEnumerator 协程的理解
+  - https://blog.csdn.net/jasonwang18/article/details/55519165
+- 关于对象池的一些分析
+  - https://droidyue.com/blog/2016/12/12/dive-into-object-pool/
+
+** Ð­³Ì Coroutine
+- http://dsqiu.iteye.com/blog/2029701
+- http://dsqiu.iteye.com/blog/2049743
+
+** tetris 3d specific
+- https://www.youtube.com/watch?v=UZSotPFf0ug with tutorial, Maya Unity
+- above 2d tutorial http://noobtuts.com/unity/2d-tetris-game
+- commands http://users.csc.calpoly.edu/~zwood/teaching/csc471/finalproj24/gzipkin/
+- 3 other resources: 
+  - http://subject.manew.com/source/index.html
+  - http://jingyan.baidu.com/article/4e5b3e195bde8991901e243a.html
+  - http://www.cnblogs.com/bitzhuwei/p/unity3d-tank-sniper.html
+** buttons
+- https://forum.unity3d.com/threads/touch-and-hold-a-button-on-new-ui.266065/
+- https://stackoverflow.com/questions/38198745/how-to-detect-left-mouse-click-but-not-when-the-click-occur-on-a-ui-button-compo
+** 3d games
+- https://www.youtube.com/watch?v=_oEUJ_sirC8 with vedio downloaded
+
+* 本地热更新服务器的搭建与配置 
+  
+[[./pic/readme_20221002_153856.png]]
+
+* 调游戏里的相机
+- 这里应该就是一个三维空间下的距阵的逆运算,如果自己能够找到计算出各们控件对就的位置信息,就不用自己浪费好几个小时在视图看不见的情况下死命地调
+- 又或者是否可以写出合适的脚本,将这个特定位置视角下的场景给照出来(目前就只能用相机当镜子照一照)
+- 很烦这一步,不喜欢调相机,可是这一步不浪费几个小时,至少把游戏场景给搭起来,接下来的游戏逻辑,MVVM的框架设计就没法继续,所以还是上午再浪费一两个小时,哪怕弄得丑,也赶快把这个游戏场景调到肉眼可见,可以运行.....
