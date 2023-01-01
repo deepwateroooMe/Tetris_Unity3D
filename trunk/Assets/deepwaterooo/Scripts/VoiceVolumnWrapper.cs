@@ -16,7 +16,7 @@ namespace deepwaterooo.tetris3d {
         public void Init(Action<int> VoiceVolumnChangedListener) {
 #if UNITY_EDITOR
 #else 
-            MAndroidJavaObject.Call("VolumeCallbackInit", new VoiceVolumnChangedIntereface(VoiceVolumnChangedListener)); 
+            MAndroidJavaObject.Call("VolumeCallbackInit", new VoiceVolumnChangedIntereface(VoiceVolumnChangedListener)); // 初始化:设置监听事件
             registerVolumeReceiver();
 #endif
         }

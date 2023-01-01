@@ -1,4 +1,5 @@
 ﻿using Assets.deepwaterooo.Scripts;
+using Framework.MVVM;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -66,10 +67,11 @@ namespace DWater {
             _sdkCalls.Init(); // <<<<<<<<<<<<<<<<<<<< 这里需要一个初始化: SplashScreen可以在SDK中定制
 
 // TODO: 测试unity游戏端向安卓SDK发送 或 接收广播, 游戏端的广播代理 也需要 初始化
+            curVol.Value = 0;
             Debug.Log(TAG + "initBroadcast  ===============================");
-            UnityBroadcastReceiver.instance.initBroadcast();
+            UnityBroadcastReceiver.instance.initBroadcast(); // 广播接收器的初始化
         }
-        //public BindableProperty<int> curVol = new BindableProperty<int>();
+        public BindableProperty<int> curVol = new BindableProperty<int>();
 // 游戏向安卓发广播方法样例: 也是可以发广播的!!!
         public void SendBroadcastWithArgs() {
             Debug.Log(TAG + " SendBroadcastWithArgs()");

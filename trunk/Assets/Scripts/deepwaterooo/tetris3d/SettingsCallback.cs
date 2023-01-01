@@ -1,5 +1,5 @@
 ﻿using deepwaterooo.tetris3d;
-using DeepwateroooWang;
+using DWater;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,7 +20,6 @@ public class SettingsCallback : MonoBehaviour {
     Button sndOn;
     Button sndOff;
     Slider sndSdr;
-    // ExtendedSlider sndSdr;
     Text sndTxt;
     int maxVol = 0, curVol = 0, preVol = -1;
     
@@ -46,26 +45,30 @@ public class SettingsCallback : MonoBehaviour {
         sndOff = gameObject.FindChildByName("sndOff").GetComponent<Button>();
         sndOff.onClick.AddListener(onClickSoundOffButton);
 
-        // sndSdr = gameObject.FindChildByName("volSdr").GetComponent<ExtendedSlider>(); // 这个滑动条有一些相关的事件需要处理
         sndSdr = gameObject.FindChildByName("volSdr").GetComponent<Slider>(); // 这个滑动条有一些相关的事件需要处理
         sndTxt = gameObject.FindChildByName("sndTxt").GetComponent<Text>();
 
-// 在这里对安卓的调用与回调作必要的初始化:
-        // // 安卓SDK接收到手机安卓系统广播后回传回来的 接口回调: It works! But try another way of receiving broadcast from Unity side
-        // VoiceVolumnWrapper.Instance.Init(SetVolumnListener); // <<<<<<<<<<<<<<<<<<<<
-        
+        // 在这里对安卓的调用与回调作必要的初始化:
+
+        // // 这里的迫切需要是:　方便源码的统一化管理与移植,所以不要弄得太复杂        
+        // // 对自己项目的需要,即便为源码的维护和移植方便,想在游戏端接收安卓广播,但是因为音量变化广播不带现音量数据,仍需要回安卓平台去读数据,效率太低,暂时还是用这个方法,把它完善一下
+        // 下面的两种方式,都是可行行得通的,基本是属于换汤不换药,基本原理一致,实现上的小细节上的不同
+        VoiceVolumnWrapper.Instance.Init(SetVolumnListener); // <<<<<<<<<<<<<<<<<<<< 注册安卓广播回调接口 
+        // Deepwaterooo.Instance.curVol.OnValueChanged += SetVolumnListener;
+
         InitSlider();
     }
 // TODO: 哪里没有设置好,实时运行时,当用户触屏拖动slider,居然拖不动,需要可以从游戏直接从UI上设置音量
 
-// // 安卓SDK收到手机音量改变了的安卓系统广播,之后的回调,以接口的形式回传回来的,能运行得通
-//     void SetVolumnListener(int value) { 
-//         Debug.Log(TAG + " SetVolumnListener() value: " + value);
-//         if (curVol != 0) preVol = curVol;
-//         curVol = value;
-//         SetSliderValue(value);
-//         SetTextValue(value);
-//     }
+// 安卓SDK收到手机音量改变了的安卓系统广播,之后的回调,以接口的形式回传回来的,能运行得通
+    // void SetVolumnListener(int value) { // 接口方法的回调
+    void SetVolumnListener(int pre, int value) { 
+        Debug.Log(TAG + " SetVolumnListener() value: " + value);
+        if (curVol != 0) preVol = curVol;
+        curVol = value;
+        SetSliderValue(value);
+        SetTextValue(value);
+    }
     void SetSliderValue(int value) {
         sndSdr.value = value;
     }
@@ -98,10 +101,10 @@ public class SettingsCallback : MonoBehaviour {
         // 设置当前值
         // sndSdr.value = VoiceVolumnWrapper.Instance.GetMusicVoiceCurrentValue();
         sndSdr.value = GetMusicVoiceCurrentValue();
-        // 设置 Slider 监听事件
-        sndSdr.onValueChanged.AddListener((value) => {
-            Debug.Log(TAG + " value: " + value);
-            // VoiceVolumnWrapper.Instance.SetMusicVoiceVolumn((int)value);
+        // 设置 Slider 监听事件: 这里应该是把拖动等事件的回调都写好了(可能是被我拖得太多了,手机反应不过来)
+        sndSdr.onValueChanged.AddListener((value) => { // 当UI的值变化的时候,是会去配置硬件的值的
+            Debug.Log(TAG + " sndSdr.onValueChanged() value: " + value);
+            SetTextValue((int)value); // 先配置UI,让用户感觉应用反应灵活; 硬件的反馈晚点儿仍会同步到UI
             SetMusicVoiceVolumn((int)value);
         });
         // 设置 Text 
@@ -142,7 +145,7 @@ public class SettingsCallback : MonoBehaviour {
 // // 这里想调一个SDK中的方法,测试一下: 这个调用太弱了，怎么也得调个别的
 //         Deepwaterooo.instance.DisplaySplash(); // 调用游戏的相对底层所提供给游戏的公用APIs
 // 这里试着调用 ManagePlayerActivity画面,只作测试用,到时修会调用 登录界面
-        Deepwaterooo.instance.OpenManagePlayers(); // 这里调不通是因为我无法登录成功,拿不到用户数据,所以不通无所谓,两边能够互相切换就可以了
+        //Deepwaterooo.Instance.OpenManagePlayers(); // 这里调不通是因为我无法登录成功,拿不到用户数据,所以不通无所谓,两边能够互相切换就可以了
         // ViewManager.LoginView.Reveal();
         // ViewManager.MenuView.Hide();
     }
@@ -152,7 +155,10 @@ public class SettingsCallback : MonoBehaviour {
     }
     void OnClickSunButton() {
         Debug.Log(TAG + " OnClickSunButton: Sound()");
-        sndPanel.SetActive(true);
+        if (!sndPanel.activeSelf)
+            sndPanel.SetActive(true);
+        else 
+            sndPanel.SetActive(false);
     }
     void OnClickAdsButton() {
     }
@@ -167,6 +173,5 @@ public class SettingsCallback : MonoBehaviour {
         gameObject.SetActive(false); // 这部分逻辑交由桥接层去处理
 // 怎么去通知热更新域里的游戏,继续呢?> 所以,安卓SDK中DWUnityActivity里关于 gamePause, gameResume的管理逻辑,要搞清楚
 // 所以仍然最好是往下走,到DWSDK DWUnityActivity,以实现两端的相互通知
-        
     }
 }
