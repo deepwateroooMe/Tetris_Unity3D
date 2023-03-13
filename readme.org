@@ -2,6 +2,20 @@
 #+title: Unity Android SDK/NDK 俄罗斯方块砖3D小游戏
 #+author: deepwaterooo 
 
+* ET-EUI 服务器＋ ET-Network-Module 非ET 框架客户端的网络模块 + Unity ILRuntime ＋ MVVM 热更新程序域逻辑：项目链接
+- 前两天测试过：ET-Network-Module 客户端可以与ET-EUI 服务器通信成功；
+- 现链接 ET-Network-Module 客户端的网络模块与客户端ILRuntime 热更新程序域逻辑。【初步版本先这样，网络模块的功能比较少：主要是方便下载热更新程序域的热更新资源包；顺便要求用户必须注册登录而已。不带其它网络模块功能】
+- 现只把游戏的客户端还原回所有的主要逻辑，全部整合入ILRuntime 热更新程序域。Unity 域只保留了网络通信模块与游戏入口类。
+
+
+
+
+
+
+
+
+[ 亲爱的表哥，活宝妹一定要嫁的亲爱的表哥！！！活宝妹就是一定要嫁给亲爱的表哥！！！]
+
 * SDK flow的基本流程设计:
 - 在这里起参考作用的是这个链接:https://blog.csdn.net/u014361280/article/details/91888091
   - 把里面的几种方法想透,也有试过导出游戏工程在安卓中构建,但是因为一个自己还不是很能理解的bug (就是说运行时,它找不到AOT的相关编译码,有试用mono导和用il2cpp导,都出现同样的bug).后来把这里面的思路想透,直接实现在unity引擎中打.apk包,运行出上面的效果,实现运行出来,感觉很开心.

@@ -25,7 +25,7 @@ namespace Framework.ResMgr {
         }
 
         // ResourceList初始化成功，委托
-        public Action OnInitializeSuccess;
+        public Action OnInitializeSuccess; 
         
         // Assetbundle资源包集合: 资源包字典,资源包管理器
         // Key: AssetBundleName
@@ -59,17 +59,18 @@ namespace Framework.ResMgr {
         // 初始化
         void Initialize() {
             CheckResourcePathExist();　// 资源路径是否存在，不存在则创建
-            if (ResourceConstant.CacheAssetBundle) {　// 默认是缓存资源的
+            if (ResourceConstant.CacheAssetBundle) {　// 默认是缓存资源的: 说的是什么意思呢 ?
                 FillResourceList();
                 FillHotFixList();
             }
-            DownLoadServerResourceList();
+            DownLoadServerResourceList();　// <<<<<<<<<<<<<<<<<<<< 这里负责从服务器下载热更新资源
         }
         // 校验
         void CheckResourcePathExist() {
             if (!Directory.Exists(ResourceConstant.AssetBundleCacheRoot)) {
                 Directory.CreateDirectory(ResourceConstant.AssetBundleCacheRoot);
             }
+// 热更新资源列表 空文件 : 如果没有,要建一个.晚点儿md5 比对出来,需要更新的资源包相关信息,会加进这个文件            
             if (!File.Exists(ResourceConstant.AssetBundleCacheRoot + "/HotFixList.txt")) {
                 File.Create(ResourceConstant.AssetBundleCacheRoot + "/HotFixList.txt").Close();
             }
@@ -77,7 +78,6 @@ namespace Framework.ResMgr {
         // 分析只读路径bundleList
         void FillResourceList() {
             Debug.Log(TAG + " FillResourceList()");
-            // Debug.Log("FillResourceList");
             string text = FileHelp.ReadString("AssetBundleList.txt");
             Debug.Log("ResourceList:  " + text);
             if (!string.IsNullOrEmpty(text)) {
@@ -100,8 +100,7 @@ namespace Framework.ResMgr {
         // 从资源服务器下载bundleList
         void DownLoadServerResourceList() {
             Debug.Log(TAG + " DownLoadServerResourceList() (!GameApplication.Instance.useLocal): " + (!GameApplication.Instance.useLocal));
-            if (!GameApplication.Instance.useLocal) { // 如果有热更新服务器可供热更新的话
-                // Debug.Log("DownLoadServerResourceList");
+            if (!GameApplication.Instance.useLocal) { // 如果不使用本地资源：有热更新服务器可供热更新的话
                 string url = Path.Combine(ResourceConstant.RemoteAssetBundleUrl, "AssetBundleList.txt");
                 url = url + "?timestamp=" + DateTime.Now.ToString();
                 Debug.Log("Server AssetBundleURL: " + url);
@@ -131,13 +130,13 @@ namespace Framework.ResMgr {
         void AnalysisResourceList(string text, EAssetBunbleSourceType type) {
             string[] fileInfos = text.Split('\n'); // 以行为单位区分不同的资源包
             int fileInfosLength = fileInfos.Length;
-            for (int i = 0; i < fileInfosLength - 1; i++) { // 遍历每个资源包(从程序资源包到材料资源包等)
+            for (int i = 0; i < fileInfosLength - 1; i++) { // 遍历每个资源包(从程序资源包到材料资源包等),为什么是 <　n-1 ? < n or <= n-1
                 string[] fileInfoParams = fileInfos[i].Split(','); // 每行每个资源包以,为单位区分不同列与属性
                 if (fileInfoParams.Length >= 2) {
                     if (!assetBundleSpecs.ContainsKey(fileInfoParams[0])) { // 某个层级某种类型的资源的名字,如果不存在,则添加
                         AssetBundleSpec asset = new AssetBundleSpec(fileInfoParams[0], fileInfoParams[1], int.Parse(fileInfoParams[2]), type);
                         assetBundleSpecs.Add(fileInfoParams[0], asset);
-                    } else { // 已经存在,则作MD5比对,作好相应的标记(是否需要热更新下载服务器资源包等)
+                    } else { // 已经存在,则作MD5比对,作好相应的标记(是否　需要热更新下载服务器资源包等？)
                         assetBundleSpecs[fileInfoParams[0]].Check(fileInfoParams[1], int.Parse(fileInfoParams[2]), type);
                     }
                 } else {

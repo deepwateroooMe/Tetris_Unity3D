@@ -13,7 +13,7 @@ using DeepwateroooWang;
 // using cn.sharesdk.unity3d;
 namespace Framework.Core {
     // 入口类
-    public class GameApplication : MonoBehaviour {
+    public class GameApplication : MonoBehaviour { // 
         private const string TAG = "GameApplication"; 
 
         private static GameApplication _instance;
@@ -37,9 +37,9 @@ namespace Framework.Core {
         // 强制登录
         public bool forceLogin = false;
 
-        private GameObject menu;
-        private Button settingBtn; // SettingsView toggle Button
-        private GameObject settingsView;
+        // private GameObject menu;
+        // private Button settingBtn; // SettingsView toggle Button
+        // private GameObject settingsView;
         
 // 手指的触屏系统相关的逻辑晚点儿再补: 当分处在两个不同的程序域，热更新程序域里是无法检测到用户的点击事件的，
 // 所以这个手势识别库包用来判定视图上点击触摸事件的程序包必须得包装给热更新程序域使用
@@ -58,21 +58,21 @@ namespace Framework.Core {
             Debug.Log(TAG + " Start()");
             _instance = this;
             
-            settingBtn = GameObject.Find("settingBtn").GetComponent<Button>();
-            settingBtn.onClick.AddListener(onSettingBtnClicked);
-            settingsView = GameObject.Find("SettingsView");
-            settingsView.SetActive(false);
+            // settingBtn = GameObject.Find("settingBtn").GetComponent<Button>();
+            // settingBtn.onClick.AddListener(onSettingBtnClicked);
+            // settingsView = GameObject.Find("SettingsView");
+            // settingsView.SetActive(false);
 
             // menu = GameObject.Find("menu");
-            menu = GameObject.Find("MenuViewPanel");
-            Debug.Log(TAG + " (menu != null): " + (menu != null));
+            // menu = GameObject.Find("MenuViewPanel");
+            // Debug.Log(TAG + " (menu != null): " + (menu != null));
 // 这里相当于是自己实现了射线检测，是否点击中某个UI上控件的按钮，比如最开始第一屏的“开始游戏”等。＝＝＞　去追到这个按钮的回调过程            
 // 这里有点儿没有弄明白，这个的启动过程和起作用的过程细节是什么样的？？？
             ScreenRaycaster = GameObject.Find("Gestures").GetComponent<ScreenRaycaster>();
             DontDestroyOnLoad(gameObject);
             // InitializeClientConfig();
             //InitializeSDKs(); // 可是这里仍然只是多一步登录的步骤,并不该影响热更新域的加载,这是可能会涉及到一点儿服务端的授权许可热更新域的加载?
-            menu.SetActive(false);
+            // menu.SetActive(false);
             CoroutineHelper.StartCoroutine(Initialize());
 #region TestSamples
             // FingerEventTemp.Instance.RegisterGestureEvents();
@@ -80,10 +80,10 @@ namespace Framework.Core {
             // GeometryManager.Instance.Test();
 #endregion
         }
-        void onSettingBtnClicked() {
-            Debug.Log(TAG + " onSettingBtnClicked()");
-            settingsView.SetActive(true);
-        }
+        // void onSettingBtnClicked() {
+        //     Debug.Log(TAG + " onSettingBtnClicked()");
+        //     settingsView.SetActive(true);
+        // }
          void InitializeClientConfig() {
             var str = FileHelp.ReadString("ClientConfig.txt"); // 这此是写在用户手机的配置文件里的
             if (!string.IsNullOrEmpty(str)) {
@@ -123,21 +123,21 @@ namespace Framework.Core {
         //}
 
         IEnumerator Initialize() {
-// 与安卓SDK桥接层的初始化
-            Deepwaterooo.instance.Initialize();
-            Deepwaterooo.instance.InitializeDW(); // 游戏加载的时候,就要调用加载游戏数据库.要求与安卓SDK桥接层也初始化好
+// // 与安卓SDK桥接层的初始化: Unity SDK 与 上层 游戏端的最底层【这一块儿的逻辑，我暂不考虑了】
+//             Deepwaterooo.instance.Initialize();
+//             Deepwaterooo.instance.InitializeDW(); // 游戏加载的时候,就要调用加载游戏数据库.要求与安卓SDK桥接层也初始化好
+
             ResourceMap resourceMap = gameObject.AddComponent<ResourceMap>();
-// 脚本添加过程，和程序资源的加载启动？过程，去看这个资源管理类的加载资源细节过程，什么时候结束的，结束了才调用热更新程序集的启动            
-            resourceMap.OnInitializeSuccess += StartHotFix;　
+// 这个脚本的添加过程，也是热更新资源的管理更新过程,和程序资源的加载启动？
+// 过程，去看这个资源管理类的加载资源细节过程，什么时候结束的，结束了才调用热更新程序集的启动            
+            resourceMap.OnInitializeSuccess += StartHotFix;
+
             ResourceConstant.Loader = resourceMap;
             yield return new WaitForEndOfFrame();
-
-            // ResourceMap resourceMap = gameObject.AddComponent<ResourceMap>();
-
         }
         public void StartHotFix() {
             Debug.Log(TAG + " StartHotFix()");
-            menu.SetActive(true); // 为了点一个按钮测试一下
+            // menu.SetActive(true); // 为了点一个按钮测试一下【把这个步骤跳过，直接进入热更新程序域里去】
             if (Application.platform == RuntimePlatform.IPhonePlayer) {
                 HotFix = HotFixILRunTime.Instance;
             } else {

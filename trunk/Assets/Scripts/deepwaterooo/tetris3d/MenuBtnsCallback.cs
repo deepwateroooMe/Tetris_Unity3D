@@ -5,10 +5,11 @@ using UnityEngine.UI;
 
 namespace deepwaterooo.tetris3d {
 
-// 因为这个控件只在游戏启动的时候使用一次,晚些时候如果优化,甚至可以去掉这部分
 // 因为除了那个settingsBtn按钮,其它是可以全部都放进热更新域中去的
 // settingBtn像是一个显示和调用安卓SDK的toggle按钮,需要常驻,放GameApplication中去
     
+// 这里弄明白：就是之前想要整合安卓 SDK 的时候，把三个按钮移出热更新程序域了，所以有三个入口方法。现想要把它还原回去：只要一个热更新程序域的入口
+// 那么，最简单的办法，这个类可以不再使用了
     public class MenuBtnsCallback : SingletonMono<MenuBtnsCallback> {
         private const string TAG = "MenuBtnsCallback";
 
@@ -63,7 +64,7 @@ namespace deepwaterooo.tetris3d {
         // }
 
         public int maxVol, curVol;
-        
+
 #region EDUCATIONAL CLASSIC CHALLENGE MODES
         void OnClickEduButton() { // EDUCATIONAL: it works!!!
             Debug.Log(TAG + " OnClickEduButton() func as getCurrentVolume()");
@@ -101,13 +102,13 @@ namespace deepwaterooo.tetris3d {
         }
         void OnClickClaButton() { // CLASSIC MODE
             Debug.Log(TAG + " OnClickClassicButton()");
-            ga.HotFix.startClassical();
+            // gameObject.HotFix.startClassical(); // <<<<<<<<<< ？
             gameObject.SetActive(false);
         }
 
         void OnClickChaButton() { // CHALLENGE MODE
             Debug.Log(TAG + " OnClickClallengeButton()");
-            ga.HotFix.startChallenging();
+            // ga.HotFix.startChallenging();
             gameObject.SetActive(false);
         }
 #endregion

@@ -7,6 +7,7 @@ using UnityEngine;
 
 namespace Assets.deepwaterooo.Scripts {
 
+    // 这个类，是通过Unity 端的代理适配，可以直接接收原生安卓 Broadcast 系统广播。但这块儿逻辑暂时不想要整合，先放一放
     public class UnityBroadcastReceiver {
         private const string TAG = "UnityBroadcastReceiver";
 
@@ -28,8 +29,9 @@ namespace Assets.deepwaterooo.Scripts {
             try {
                 AndroidJavaObject recevierFilter = new AndroidJavaObject("android.content.IntentFilter");
                 recevierFilter.Call("addAction", "android.media.VOLUME_CHANGED_ACTION"); // 监听手机硬件调控音量的变化
-                AndroidJavaObject _UnityActivity = new AndroidJavaClass("com.unity3d.player.UnityPlayer").GetStatic<AndroidJavaObject>("currentActivity");
-                _UnityActivity.Call<AndroidJavaObject>("registerReceiver", VolumeBroadcastReceiver, recevierFilter);
+                // // 下面这里：因为我并没有整合接入安卓 SDK, 这里就会为空。暂不处理                 
+                // AndroidJavaObject _UnityActivity = new AndroidJavaClass("com.unity3d.player.UnityPlayer").GetStatic<AndroidJavaObject>("currentActivity");
+                // _UnityActivity.Call<AndroidJavaObject>("registerReceiver", VolumeBroadcastReceiver, recevierFilter);
             }
             catch (Exception e) {
                 Debug.Log(TAG + " " + e.Message.ToString());

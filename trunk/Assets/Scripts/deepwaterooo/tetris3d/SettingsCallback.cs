@@ -53,9 +53,10 @@ public class SettingsCallback : MonoBehaviour {
         // // 这里的迫切需要是:　方便源码的统一化管理与移植,所以不要弄得太复杂        
         // // 对自己项目的需要,即便为源码的维护和移植方便,想在游戏端接收安卓广播,但是因为音量变化广播不带现音量数据,仍需要回安卓平台去读数据,效率太低,暂时还是用这个方法,把它完善一下
         // 下面的两种方式,都是可行行得通的,基本是属于换汤不换药,基本原理一致,实现上的小细节上的不同
-        VoiceVolumnWrapper.Instance.Init(SetVolumnListener); // <<<<<<<<<<<<<<<<<<<< 注册安卓广播回调接口 
-        // Deepwaterooo.Instance.curVol.OnValueChanged += SetVolumnListener;
-
+        // VoiceVolumnWrapper.Instance.Init(SetVolumnListener); // <<<<<<<<<<<<<<<<<<<< 注册安卓广播回调接口 
+        Deepwaterooo.Instance.curVol.OnValueChanged += SetVolumnListener;
+// 前两天不知道是不是热更新包裹的原理,没有注意到延迟,现在仍有从安卓平台读数据的延迟问题,再看一下
+        
         InitSlider();
     }
 // TODO: 哪里没有设置好,实时运行时,当用户触屏拖动slider,居然拖不动,需要可以从游戏直接从UI上设置音量
@@ -78,7 +79,7 @@ public class SettingsCallback : MonoBehaviour {
     void InitSlider() {
 #if UNITY_EDITOR
         // 设置最大值
-        sndSdr.maxValue = Random.Range(30,31);
+        sndSdr.maxValue = Random.Range(30, 31);
         // 设置最小值
         sndSdr.minValue = Random.Range(0, 1);
         // 设置整数变化
@@ -96,7 +97,9 @@ public class SettingsCallback : MonoBehaviour {
         sndSdr.maxValue = VoiceVolumnWrapper.Instance.GetMusicVoiceMax();
         // 设置最小值
         sndSdr.minValue = VoiceVolumnWrapper.Instance.GetMusicVoiceMin();
-        // 设置整数变化
+        Debug.Log(TAG + " InitSlider() sndSdr.minValue: " + sndSdr.minValue + " sndSdr.maxValue" + sndSdr.maxValue);
+        maxVol = (int)sndSdr.maxValue;
+        // // 设置整数变化
         sndSdr.wholeNumbers = true;
         // 设置当前值
         // sndSdr.value = VoiceVolumnWrapper.Instance.GetMusicVoiceCurrentValue();

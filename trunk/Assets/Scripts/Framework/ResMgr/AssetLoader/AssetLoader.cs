@@ -33,6 +33,7 @@ namespace Framework.ResMgr {
     }
 
     public class AssetLoader<T> : AssetLoader where T : UnityEngine.Object {
+
         AssetBundleRequest currentRequest;
         public Action<T> onLoadOver;
         public override void LoadAssetFromBundle(AssetBundle assetBundle) {

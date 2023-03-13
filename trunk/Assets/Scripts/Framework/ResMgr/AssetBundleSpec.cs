@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Framework.Util;
 using System.Collections.Generic;
 using System.IO;
@@ -14,47 +14,21 @@ namespace Framework.ResMgr {
     // 资源数据结构类
     public class AssetBundleSpec {
         // 资源名
-        public string Name {
-            get;
-            private set;
-        }
+        public string Name { get; private set; }
         // 资源文件MD5
-        public string MD5 {
-            get;
-            private set;
-        }
+        public string MD5 { get; private set; }
         // 文件长度
-        public int Length {
-            get;
-            private set;
-        }
+        public int Length { get; private set; }
         // 资源来源分类
-        public EAssetBunbleSourceType AssetBundleSourceType {
-            get;
-            private set;
-        }
+        public EAssetBunbleSourceType AssetBundleSourceType { get; private set; }
         // 是否被缓存
-        public bool IsCached {
-            get;
-            private set;
-        }
+        public bool IsCached { get; private set; }
         // 是否强行中断加载
-        public bool IsForceInterruptLoad {
-            get;
-            private set;
-        }
-        public EAssetBundleUnloadLevel UnloadLevel {
-            get;
-            private set;
-        }
-        public AssetBundle AssetBundle {
-            get;
-            private set;
-        }
-        public byte[] Data {
-            get;
-            private set;
-        }
+        public bool IsForceInterruptLoad { get; private set; }
+        public EAssetBundleUnloadLevel UnloadLevel { get; private set; }
+        public AssetBundle AssetBundle { get; private set; }
+        public byte[] Data { get; private set; } 
+ 
         bool isLoading = false;
         bool isDownloading = false;
         bool IsFileExist {
@@ -71,6 +45,7 @@ namespace Framework.ResMgr {
             Length = length;
             AssetBundleSourceType = sourceType;
         }
+        // 检查和更新　当前资源包的md5码，并标记　是否被缓存
         public void Check(string md5, int length, EAssetBunbleSourceType sourceType) {
             if (sourceType == EAssetBunbleSourceType.Server) {
                 if (md5 == MD5) {

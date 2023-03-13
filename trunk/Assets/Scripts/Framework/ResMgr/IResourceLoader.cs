@@ -89,13 +89,12 @@ namespace Framework.ResMgr {
         void LoadCloneAsyn(string bundleName, string assetName, Action<GameObject> onSuccess, 
                            EAssetBundleUnloadLevel unloadLevel = 
                            EAssetBundleUnloadLevel.ChangeSceneOver, bool isForceInterruptLoad = false);
+        void LoadTexture2DAsyn(string name, Action<Texture2D> onSuccess, Action onFail, bool needCache);
 #endregion
 
 #region Unload
         void Unload(string keyName, bool allObjects);
         void UnloadAll();
 #endregion
-
-        void LoadTexture2DAsyn(string name, Action<Texture2D> onSuccess, Action onFail, bool needCache);
     }
 }

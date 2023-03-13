@@ -103,7 +103,7 @@ namespace Framework.ResMgr {
         public static string RemoteAssetBundleUrl {
             get {
                 string path = ResourceWebRoot;
-#if UNITY_EDITOR
+#if UNITY_EDITOR 
                 if (!GameApplication.Instance.useLocal) {
                     if (UnityEditor.EditorUserBuildSettings.activeBuildTarget == UnityEditor.BuildTarget.Android) {
                         path += "Android/";
@@ -115,6 +115,7 @@ namespace Framework.ResMgr {
                 } else {
                     path = GetEditorAssetPath();
                 }
+// 服务器上的配置,是根据客户端的平台来的.我的项目只需要一个笼统的一个安卓就可以了
 #elif UNITY_STANDALONE_WIN
                 path += "Windows/";
 #elif UNITY_ANDROID

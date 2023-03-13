@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -32,7 +32,8 @@ public class HttpHelper : SingletonMono<HttpHelper> {
     public UnityWebRequest Get(string url) {
         return UnityWebRequest.Get(url);
     }
-    // GET请求
+// GET请求: 这里用的是游戏引擎里的网络调用，现在还不明白，游戏引擎游戏端调用，与安卓SDK端的封装调用，有什么区别？
+    // SDK可以封装更为高效的第三方库来进行网络调用，但通过SDK也会有一定的延迟，需要搜索一下
     IEnumerator _Get(string url, Action<UnityWebRequest> onSuccess, 
                      Action<UnityWebRequest> onFail, int retryTime = 1) {
         using (UnityWebRequest uwr = UnityWebRequest.Get(url)) {
