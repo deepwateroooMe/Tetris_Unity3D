@@ -36,7 +36,6 @@ namespace Framework.Core {
                 appDomain.LoadAssembly(msDll, null, new Mono.Cecil.Mdb.MdbReaderProvider());
                 StartApplication();
             }
-            // ILRuntime.Runtime.Generated.CLRBindings.Initialize(appDomain);
         }
         
         void InitializeILRunTimeHotFixSetting() {
@@ -53,7 +52,6 @@ namespace Framework.Core {
             appDomain.DelegateManager.RegisterMethodDelegate<int, int>();
 
 // 感觉这一步的加虽然消除了一个运行时错误,但内存的运行效率有可能是降低了: 还是必要的,至少是它不再报错了
-// 参照官方一点儿的例子,改成下面的相对高效的,原理在于不再频繁地GC Alloc
             appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Vector3, UnityEngine.Vector3>();
             appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Transform, UnityEngine.Transform>();
             appDomain.DelegateManager.RegisterMethodDelegate<UnityEngine.Quaternion, UnityEngine.Quaternion>();
@@ -153,14 +151,13 @@ namespace Framework.Core {
                 });
             });
         }
-
         unsafe void InitializeCLRBindSetting() {
             foreach (var i in typeof(System.Activator).GetMethods()) {
                 // 找到名字为CreateInstance，并且是泛型方法的方法定义
                 if (i.Name == "CreateInstance" && i.IsGenericMethodDefinition) 
                     appDomain.RegisterCLRMethodRedirection(i, CreateInstance); // 方法重定向,到下面的自定义的方法中来
             }
-// 这里只定义这一类的方法不够用,把AddComponent<>() GetComponent<>()也都加上                
+// 这里只定义这一类的方法不够用,把AddComponent<HotfixT>() GetComponent<HotfixT>()也都加上: 因为热更新程序域里的 HotfixT Type 类型是不被外 Unity 程序域所识别的，得重定位方法
             var arr = typeof(GameObject).GetMethods();
             foreach (var k in arr) {
                 if (k.Name == "AddComponent" && k.GetGenericArguments().Length == 1) 
@@ -170,7 +167,8 @@ namespace Framework.Core {
             }
         }
 
-        void InitializeAdapterSetting() {
+// 相比于ET 框架，这里的适配，写得比较多【ET 框架中只写了三类适配，但框架本身适配得多，比如生命周期回调】，主要是MVVM 设计，以及生命周期回调的MonoBehaviour 等都需要适配
+        void InitializeAdapterSetting() { 
             appDomain.RegisterCrossBindingAdaptor(new ViewModelBaseAdapter());
             appDomain.RegisterCrossBindingAdaptor(new UnityGuiViewAdapter());
             appDomain.RegisterCrossBindingAdaptor(new ModuleBaseAdapter());
@@ -179,8 +177,7 @@ namespace Framework.Core {
             appDomain.RegisterCrossBindingAdaptor(new InterfaceCrossBindingAdaptor());
             appDomain.RegisterCrossBindingAdaptor(new MonoBehaviourAdapter());
         }
-        
-        void InitializeValueTypeSetting() {
+        void InitializeValueTypeSetting() { // 感觉这里，我好像热更新程序域里没有使用对，程序域只是能够运行，可能因为写法不优化仍然产生了大量的GC
             appDomain.RegisterValueTypeBinder(typeof(Vector3), new Vector3Binder());
             appDomain.RegisterValueTypeBinder(typeof(Vector2), new Vector2Binder());
             appDomain.RegisterValueTypeBinder(typeof(Quaternion), new QuaternionBinder());
@@ -193,7 +190,7 @@ namespace Framework.Core {
         }
 		void StartApplication() {
             InitializeILRunTimeHotFixSetting();
-            DoStaticMethod("HotFix.HotFixMain", "Start");
+            DoStaticMethod("HotFix.HotFixMain", "Start"); // <<<<<<<<<< 热更新程序域的入口调用，进入
         }
 // IHotFixMain 里的两个方法的实现         
 #region Override
@@ -248,6 +245,7 @@ namespace Framework.Core {
             }
             return null;
         }
+        // 下面两个重定向方法：细节，没有看。只是参考网络上的例子，改装满足了自己热更新适配的需要
         public unsafe static StackObject* AddComponent(ILIntepreter __intp, StackObject* __esp, IList<object> __mStack, CLRMethod __method, bool isNewObj) {
             // CLR重定向的说明请看相关文档和教程，这里不多做解释
             ILRuntime.Runtime.Enviorment.AppDomain __domain = __intp.AppDomain;

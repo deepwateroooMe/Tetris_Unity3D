@@ -6,14 +6,11 @@ using System.Json;
 using deepwaterooo.tetris3d;
 using UnityEngine.UI;
 using DeepwateroooWang;
-//using cn.sharesdk.unity3d;
-//using cn.sharesdk.unity3d;
-//using cn.sharesdk.unity3d;
-
-// using cn.sharesdk.unity3d;
+//using cn.sharesdk.unity3d; // 这里没有使用 WeChat-ShareSDK
+//ShareSDK 是一个帮助接入第三方 wechat 登录的 SDK. 这里不同
 namespace Framework.Core {
     // 入口类
-    public class GameApplication : MonoBehaviour { // 
+    public class GameApplication : MonoBehaviour { 
         private const string TAG = "GameApplication"; 
 
         private static GameApplication _instance;
@@ -48,12 +45,10 @@ namespace Framework.Core {
             private set;
         }
         
-// google, hotmail, LinkedIn facebook etc        
         //public ShareSDK ShareSDK { // 这只是一个微信登录的 单微信 第三方接入的库
         //    get;
         //    private set; 
         //}
-        // void Awake() {
         void Start() {
             Debug.Log(TAG + " Start()");
             _instance = this;
@@ -65,14 +60,14 @@ namespace Framework.Core {
 
             // menu = GameObject.Find("menu");
             // menu = GameObject.Find("MenuViewPanel");
-            // Debug.Log(TAG + " (menu != null): " + (menu != null));
-// 这里相当于是自己实现了射线检测，是否点击中某个UI上控件的按钮，比如最开始第一屏的“开始游戏”等。＝＝＞　去追到这个按钮的回调过程            
-// 这里有点儿没有弄明白，这个的启动过程和起作用的过程细节是什么样的？？？
+// 这里相当于是自己实现了射线检测，是否点击中某个UI上控件的按钮，比如最开始第一屏的“开始游戏”等。＝＝＞ 去追到这个按钮的回调过程            
             ScreenRaycaster = GameObject.Find("Gestures").GetComponent<ScreenRaycaster>();
             DontDestroyOnLoad(gameObject);
+
             // InitializeClientConfig();
-            //InitializeSDKs(); // 可是这里仍然只是多一步登录的步骤,并不该影响热更新域的加载,这是可能会涉及到一点儿服务端的授权许可热更新域的加载?
+            // InitializeSDKs(); // 可是这里仍然只是多一步登录的步骤,并不该影响热更新域的加载, 影响更多的是从服务器端。比如如果用户不登录或是在黑名单，不允许下载任何的热更新资源包？
             // menu.SetActive(false);
+
             CoroutineHelper.StartCoroutine(Initialize());
 #region TestSamples
             // FingerEventTemp.Instance.RegisterGestureEvents();
@@ -84,7 +79,7 @@ namespace Framework.Core {
         //     Debug.Log(TAG + " onSettingBtnClicked()");
         //     settingsView.SetActive(true);
         // }
-         void InitializeClientConfig() {
+        void InitializeClientConfig() { // 从客户端的配置文件【存在客户端本地某个地方】，来加载客户端的配置。可以考虑云同步，但是会最后才考虑
             var str = FileHelp.ReadString("ClientConfig.txt"); // 这此是写在用户手机的配置文件里的
             if (!string.IsNullOrEmpty(str)) {
                 JsonObject jsonObject = JsonSerializer.Deserialize(str) as JsonObject;
@@ -102,17 +97,17 @@ namespace Framework.Core {
                 }
             }
         }
-        //void InitializeSDKs() {
+        // void InitializeSDKs() {
         //    if (Application.platform == RuntimePlatform.IPhonePlayer || Application.platform == RuntimePlatform.Android) 
-        //        InitializeShareSDK();
-        //}
-        //void InitializeShareSDK() {
+        //        InitializeShareSDK(); // <<<<<<<<<< 
+        // }
+        // void InitializeShareSDK() {
         //    ShareSDK = GetComponent<ShareSDK>();
         //    ShareSDK.authHandler = AuthResultHandler;
         //    ShareSDK.Authorize(PlatformType.WeChat);
-        //}
-        //// ShareSDK执行授权回调: 这里因为需要接入不同的SDK, 所以这里暂时再等一等再来实现
-        //void AuthResultHandler(int reqID, ResponseState state, PlatformType type, Hashtable result) {
+        // }
+        // // ShareSDK执行授权回调: 这里因为需要接入不同的SDK, 所以这里暂时再等一等再来实现
+        // void AuthResultHandler(int reqID, ResponseState state, PlatformType type, Hashtable result) {
         //    if (state == ResponseState.Success) {
         //        Debug.Log("ShareSDK authorize success!");
         //    } else if (state == ResponseState.Fail) {
@@ -120,16 +115,16 @@ namespace Framework.Core {
         //    } else if (state == ResponseState.Cancel) {
         //        Debug.Log("cancel!");
         //    }
-        //}
-
+        // }
         IEnumerator Initialize() {
 // // 与安卓SDK桥接层的初始化: Unity SDK 与 上层 游戏端的最底层【这一块儿的逻辑，我暂不考虑了】
 //             Deepwaterooo.instance.Initialize();
 //             Deepwaterooo.instance.InitializeDW(); // 游戏加载的时候,就要调用加载游戏数据库.要求与安卓SDK桥接层也初始化好
-
             ResourceMap resourceMap = gameObject.AddComponent<ResourceMap>();
 // 这个脚本的添加过程，也是热更新资源的管理更新过程,和程序资源的加载启动？
-// 过程，去看这个资源管理类的加载资源细节过程，什么时候结束的，结束了才调用热更新程序集的启动            
+// 过程，去看这个资源管理类的加载资源细节过程，什么时候结束的，结束了才调用热更新程序集的启动
+
+// 整合的过程：只在用户登录注册，与网关服建立起会话框，能够通信成功之后，才可以进入热更新程序域
             resourceMap.OnInitializeSuccess += StartHotFix;
 
             ResourceConstant.Loader = resourceMap;
