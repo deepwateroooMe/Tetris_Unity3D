@@ -4,7 +4,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
-using UnityEngine.Experimental.LowLevel;
+
+//using UnityEngine.Experimental.LowLevel;
 //using UnityEngine.LowLevel;
 namespace ET {
     public static class EventSystem {
@@ -13,7 +14,12 @@ namespace ET {
         private static readonly Dictionary<string, Type> allTypes = new Dictionary<string, Type>();
         private static readonly UnOrderMultiMap<Type, Type> types = new UnOrderMultiMap<Type, Type>();
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        // 很多插件以及工具类，都会有一个初始化函数，需要在项目启动时手动调用，比较麻烦也提高了代码耦合性，
+        // Unity5.0以上的版本，针对这种情况，提供了新的特性**RuntimeInitializeOnLoadMethodAttribute**帮助自动初始化。
+        // 全局：SubsystemRegistration >> AfterAssembliesLoaded >> BeforeSplashScreen >> BeforeSceneLoad >> Awake >> Enable >> AfterSceneLoad >> Start
+        
+        // 这个错，当Unity 所有的其它错误全部更正后，应该能够会自动消失，现在不用管它
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)] // 程序集加载之后，就会执行这个事件系统的注册  
         static void InitEnv() {
             var asm = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(v => v.FullName.StartsWith("com.network") || v.FullName.StartsWith("Assembly-CSharp"))
@@ -23,21 +29,21 @@ namespace ET {
             SessionStreamDispatcherManager.Init();
             MessageDispatcher.Init();
             TimerManager.Init();
-            SetPlayerLoop(); // 每桢的 Update() 循环系统: 这个是， unity 会自动更新的吧
+            // SetPlayerLoop(); // 每桢的 Update() 循环系统: 这个是， unity 会自动更新的吧【暂时去掉的，为了去掉编译错误】
         }
-        private static void SetPlayerLoop() {
-            var playerLoop = PlayerLoop.GetCurrentPlayerLoop();
-            var idx = Array.FindIndex(playerLoop.subSystemList, v => v.type == typeof(UnityEngine.PlayerLoop.Update));
-            var update = playerLoop.subSystemList[idx];
-            var updateSubSystems = update.subSystemList.ToList();
-            updateSubSystems.Add(new PlayerLoopSystem() {
-                    type = typeof(EventSystem),
-                        updateDelegate = Update
-                        });
-            update.subSystemList = updateSubSystems.ToArray();
-            playerLoop.subSystemList[idx] = update;
-            PlayerLoop.SetPlayerLoop(playerLoop);
-        }
+        // private static void SetPlayerLoop() {
+        //     var playerLoop = PlayerLoop.GetCurrentPlayerLoop();
+        //     var idx = Array.FindIndex(playerLoop.subSystemList, v => v.type == typeof(UnityEngine.PlayerLoop.Update));
+        //     var update = playerLoop.subSystemList[idx];
+        //     var updateSubSystems = update.subSystemList.ToList();
+        //     updateSubSystems.Add(new PlayerLoopSystem() {
+        //             type = typeof(EventSystem),
+        //                 updateDelegate = Update
+        //                 });
+        //     update.subSystemList = updateSubSystems.ToArray();
+        //     playerLoop.subSystemList[idx] = update;
+        //     PlayerLoop.SetPlayerLoop(playerLoop);
+        // }
         static void Update() { // <<<<<<<<<<<<<<<<<<<< 
             TimeInfo.Update();
             TimerManager.Update();

@@ -12,15 +12,39 @@
     - 有用户名密码匹配就登录成功，Realm 注册登录服为客户端申请分配到一个网关服，并把网关服的相关住处返回给当前客户端，当前客户端再向网关服建立连接。当收到网关服确证，就连接成功， *客户端【调用热更新程序域入口函数，进入游戏】* ；
     - 若数据库里没有当前用户名，就自动注册一个用户帐户，注册登录成功。接下来其它逻辑如上。
     - 若数据库里记有当前用户为黑名单，就返回错误，当前用户无法进入热更新程序域，就无法游戏玩耍了
-** 现在遇到的，目前项目存在的问题
+** 目前项目存在的问题：需要各种版本升级：LangVersion .Csharp 语言版本， .NETFramework 版本，第三方库版本【包括 ILRuntime UniRx 等等】
 - 感觉去年再次接触这个项目的时候，还比较弱小，很多地方，应该是一目了然，应该使用最新的Unity Visual studio 的新版本来实现和完成。但当时的自己相对来说，很多地方理解不够，觉得能够将将就就把项目运行起来就不错了。对自已的要求比较低，项目完成在相对陈旧版本的基本上，Visual Studio 用了 2019, Unity 2018.3.7 .NETFramework v3.5.
 - 现在因为要整合使用 ET 框架至少6.0 吧，就 *需要使用 LangVersion 8.0,.NET 6.0, 所以现在需要把客户端项目工程，热更新项目工程升给版本* ，必要的时候必要情况下，Unity 里某些场景或是预设等可能会有部分需要重做。这是去年使用相对古老一点儿版本开发项目遗留的问题，但这次需要解决。要不然，ET 框架 6.0 版本的服务器，与ET 框架网络通信的客户端 ET-Network-Module 网络模块，与客户端游戏项目工程，游戏项目热更新程序域整合不起来。但现在连接，就是需要，必须得使这几个模块能够链接整合。
-- 那么现在的整合步骤是：
-  - 使用与 ET-Network-Module 同样的Unity 版本【确保到时服务器与客户端是可以正常成功通信的】来先把项目能在新的 unity 版本下运行起来【现在仍处在这个步骤】
-  - trunk.sln 里主程序域里四个项目的整合完整
-  - Hotfix.sln 里一个热更新项目的构建
-  - 调试。就当今天暂时先写这么多。今天晚上剩余两三个小时，这个项目能够改多少就改多少。
-- 把 windows 下的 pyim:toggle-input-method 和光标给调出来【终于调出来了】再也不受这个困扰了。爱表哥，爱生活！！！活宝妹就是一定要嫁给亲爱的表哥！！！爱表哥，爱生活！！！
+- *把 windows 下的 pyim:toggle-input-method 和光标给调出来【终于调出来了】再也不受这个困扰了* 。爱表哥，爱生活！！！活宝妹就是一定要嫁给亲爱的表哥！！！爱表哥，爱生活！！！
+- 那么现在的整合步骤是：【 *今天下面的这个步骤，能够完成多少就完成多少，但是应该还是会有不错的进展的* 】如下章节
+** 版本升级步骤：第三方库的版本升级，更正一切相关语法编译错误；
+- ILRuntime 热更新库的版本升级：
+*** UniRx 第三方库：
+- UniRx 的版本升级：感觉这个库有点儿过时了，基本可以不用它了。人们现在似乎已经不再提它了。要不要把它直接去掉呢？
+  - UniRx 是 Unity Reactive Extensions 的缩写，意思是 Unity 的响应式扩展集。重写了.Net的响应式扩展。
+  - *.Net官方的Rx很棒，但是在Unity中无法使用，并且与IOS的IL2CPP有兼容性问题。这个库解决了这些问题并且添加了一些Unity专属的工具类* 。
+  - 支持的平台有：PC/Mac/Android/iOS/WP8/WindowsStore/等等，并且支持Unity4.6之后的所有版本。
+  - Reactive Extensions 指的就是： 观察者模式 + Linq。
+- 响应式
+  - 响应式是什么意思：一旦A做了事情，B就得到了通知。
+  - 为什么 *UniRx是响应式* ：因为UniRx通过观察者模式实现了这种响应。
+- 为什么使用Rx: 
+  - 拿网络操作进行举例：网络操作需要用到WWW和Coroutine。但是使用Coroutine会遇到下面列问题
+    - 1.协程不能有返回值，因为返回类型必须是IEnumerator
+    - 2.协程不能处理异常，因为 yield return 语句没办法被 try-catch
+    - 这样就会造成代码大面试的强耦合。
+  - 游戏循环 (every Update, OnCollisionEnter, etc), 传感器数据 (Kinect, Leap Motion, VR Input, etc.) 都是事件。 *Rx将事件转化为响应式的序列，通过LINQ操作可以很简单地组合起来，还支持时间操作。*
+  - Unity通常是单线程，但是UniRx可以让多线程更容易。
+  - UniRx 可以简化 uGUI 的编程，所有的UI事件 (clicked, valuechanged, etc) 可以转化为 UniRx 的事件流。
+- 当把 Assets/Plugins/ILRuntime/Generated 去掉之后，所有的错误消失了。再解决下一个项目中存在的编译问题。【亲爱的表哥，活宝妹一定要嫁的亲爱的表哥！！！活宝妹就是一定要嫁给亲爱的表哥！！！】
+*** FingerGestures 和其它
+    
+[[./pic/readme_20230314_121327.png]]
+- 这两个错误，是第三方库包 FingerGestures 里面的，可能与新版本Unity 之间的适配问题。下午来解决这些问题。【爱表哥，爱生活！！！活宝妹就是一定要嫁给亲爱的表哥！！！】
+- 使用与 ET-Network-Module 同样的Unity 版本【确保到时服务器与客户端是可以正常成功通信的】来先把项目能在新的 unity 版本下运行起来【现在仍处在这个步骤】
+- trunk.sln 里主程序域里四个项目的整合完整
+- Hotfix.sln 里一个热更新项目的构建
+- 调试。【我爱爱表哥，爱生活！！！活宝妹就是一定要嫁给亲爱的表哥！！爱表哥，爱生活！！】 
 * SDK flow的基本流程设计:
 - 在这里起参考作用的是这个链接:https://blog.csdn.net/u014361280/article/details/91888091
   - 把里面的几种方法想透,也有试过导出游戏工程在安卓中构建,但是因为一个自己还不是很能理解的bug (就是说运行时,它找不到AOT的相关编译码,有试用mono导和用il2cpp导,都出现同样的bug).后来把这里面的思路想透,直接实现在unity引擎中打.apk包,运行出上面的效果,实现运行出来,感觉很开心.
@@ -267,7 +291,7 @@ public class Enemy {
         IsDead = CurrentHp.Select(x => x <= 0).ToReactiveProperty();
     }
 }
-    #+END_SRC 
+    #+END_SRC
 - 视图层是一个场景scene，是Unity的hierachy定义的。展示层在Unity初始化时将视图层绑定。XxxAsObservable方法可以很容易的创建事件信号signals，没有任何开销。SubscribeToText and SubscribeToInteractable 都是简洁的类似绑定的辅助函数。虽然这些工具很简单，但是非常有用。在Unity中使用很平滑，性能很好，而且让你的代码更简洁。
   
 [[./pic/readme_20221012_085957.png]]
@@ -361,7 +385,7 @@ appDomain.DelegateManager.RegisterMethodDelegate<int, float>();
 //注册，带参数返回值，最后一个参数为返回值，最多支持四个参数传入
 delegate bool SomeFunction(int a, float b);
 Func<int, float, bool> act;
-#+END_SRC 
+#+END_SRC
 - *委托转换器RegisterDelegateConvertor* ：需要将一个不是Action或者Func类型的委托实例传到ILRuntime外部使用，需要写委托适配器和委托转换器。委托转换器将Action和Func转换成你真正需要的那个委托类型
 #+BEGIN_SRC csharp
 app.DelegateManager.RegisterDelegateConvertor<SomeFunction>((action) =>
@@ -371,7 +395,7 @@ app.DelegateManager.RegisterDelegateConvertor<SomeFunction>((action) =>
        return ((Func<int, float, bool>)action)(a, b);
     });
 });
-#+END_SRC 
+#+END_SRC
 - 为了避免不必要的麻烦，以及后期热更出现问题，建议： 1、尽量避免不必要的跨域委托调用 2、尽量使用Action以及Func委托类型
 - *CLR重定向:* ILRuntime为了解决外部调用内部接口的问题，引入了CLR重定向机制。 原理就是当IL解译器发现需要调用某个指定CLR方法时，将实际调用重定向到另外一个方法进行挟持，再在这个方法中对ILRuntime的反射的用法进行处理
 - 从代码中可以看出重定向的工作是把方法挟持下来后装到ILIntepreter的解释器里面实例化
@@ -399,7 +423,7 @@ foreach (var i in typeof(System.Activator).GetMethods()) {
         appdomain.RegisterCLRMethodRedirection(i, CreateInstance);
     }
 }
-#+END_SRC 
+#+END_SRC
 - 带返回值方法的重定向
 #+BEGIN_SRC csharp
 public unsafe static StackObject* DLog(ILIntepreter __intp, StackObject* __esp,
@@ -422,7 +446,7 @@ public unsafe static StackObject* DLog(ILIntepreter __intp, StackObject* __esp,
     Debug.Log(string.Format("{0}\n{1}", format, stackTrace));
     return __ret;
 }
-#+END_SRC 
+#+END_SRC
 - *LitJson集成*: Json序列化是开发中非常经常需要用到的功能，考虑到其通用性，因此ILRuntime对LitJson这个序列化库进行了集成
 #+BEGIN_SRC csharp
 //对LitJson进行注册，需要在注册CLR绑定之前
@@ -432,7 +456,7 @@ LitJson.JsonMapper.RegisterILRuntimeCLRRedirection(appdomain);
 string json = JsonMapper.ToJson(obj);
 //json字符串反序列化成对象
 JsonTestClass obj = JsonMapper.ToObject<JsonTestClass>(json);
-#+END_SRC 
+#+END_SRC
 - *ILRuntime的性能优化*
   - 值类型优化：使用ILRuntime外部定义的值类型（例如UnityEngine.Vector3）在默认情况下会造成额外的装箱拆箱开销。ILRuntime在1.3.0版中增加了值类型绑定（ValueTypeBinding）机制，通过对这些值类型添加绑定器，可以大幅增加值类型的执行效率，以及避免GC Alloc内存分配。
   - 大规模数值计算：如果在热更内需要进行大规模数值计算，则可以开启ILRuntime在2.0版中加入的寄存器模式来进行优化
@@ -457,7 +481,7 @@ JsonTestClass obj = JsonMapper.ToObject<JsonTestClass>(json);
 - ILRuntime建议全局只创建一个AppDomain，在函数入口添加代码启动调试服务
 #+BEGIN_SRC csharp
 appdomain.DebugService.StartDebugService(56000)
-#+END_SRC 
+#+END_SRC
 - 运行主工程(Unity工程)
 - 在热更的VS工程中 点击 - 调试 - 附加到ILRuntime调试，注意使用一样的端口
 - 如果使用VS2015的话需要Visual Studio 2015 Update3以上版本
@@ -499,7 +523,7 @@ public class HotFixILRunTime : SingletonMono<HotFixILRunTime>, IHotFixMain {
         }
     }
 }
-#+END_SRC 
+#+END_SRC
 - unity工程在执行的时候，会构建一个默认的appDomain，Assembly.Load，其实就是在这个程序域上加载Dll,所以相关的实质和前面一个部分相差不大，这就是c#热更新在unity中的应用(IOS不包括)。
 *** LoadAssembly(System.IO.Stream stream, System.IO.Stream symbol, ISymbolReaderProvider symbolReader)
 - 基于WWW的方式加载AssetBundle或者DLL/PDB后，接下来是将其封入到MemoryStream中，将dll和pdb的bytes都存入到内存流中后，执行其内部实现的LoadAssembly方法。
@@ -764,7 +788,7 @@ void ReadOptionalHeaders(out ushort subsystem, out ushort dll_characteristics) {
     // Reserved                8
     Advance(8);
 }
-#+END_SRC 
+#+END_SRC
 ****** 2）ReadSections(sections)
 - 读取分块数据
   #+BEGIN_SRC csharp
@@ -818,7 +842,7 @@ void ReadSectionData(Section section) {
 
     BaseStream.Position = position;
 }
-  #+END_SRC 
+  #+END_SRC
 ****** 3) ReadCLIHeader()：基本简单就读完了
 #+BEGIN_SRC csharp
 void ReadCLIHeader()　{
@@ -846,7 +870,7 @@ void ReadCLIHeader()　{
     // ExportAddressTableJumps    8
     // ManagedNativeHeader        8
 }
-#+END_SRC  
+#+END_SRC
 ****** 4）ReadMetadata()
 #+BEGIN_SRC csharp
 void ReadMetadata()　{
@@ -907,7 +931,7 @@ void ReadMetadataStream(Section section) {
             break;
     }
 }
-#+END_SRC  
+#+END_SRC
 - 核心是两个操作，一个是ReadMetadataStream，就是根据不同的标识符来新建不同的存储结构；一个是ReadTableHeap:
 ******* ReadTableHeap() 
 #+BEGIN_SRC csharp
@@ -946,7 +970,7 @@ void ReadTableHeap() {
 
     ComputeTableInformations();
 }
-#+END_SRC  
+#+END_SRC
  -初始化heap中的Table后，进行一次Compute，获取size:
 ******* ComputeTableInformations()
 #+BEGIN_SRC csharp
@@ -986,7 +1010,7 @@ void ComputeTableInformations() {
         offset += (uint)size * tables[i].Length;
     }
 }
-#+END_SRC  
+#+END_SRC
 - 基于这四步操作，我们可以将IL的汇编码存储到Image中，然后进一步执行后续的CreateModule操作:
 **** CreateModule操作:
 #+BEGIN_SRC csharp
@@ -999,7 +1023,7 @@ public static ModuleDefinition ReadModule(Stream stream, ReaderParameters parame
         ImageReader.ReadImageFrom(stream),
         parameters);
 }
-#+END_SRC  
+#+END_SRC
 ***** CreateModuleFrom(Image image, ReaderParameters parameters) 
 #+BEGIN_SRC csharp
 public static ModuleDefinition CreateModuleFrom(Image image, ReaderParameters parameters) {
@@ -1013,7 +1037,7 @@ public static ModuleDefinition CreateModuleFrom(Image image, ReaderParameters pa
         module.metadata_resolver = parameters.MetadataResolver;
     return module;
 }
-#+END_SRC  
+#+END_SRC
 - 具体过程步骤如下：
   #+BEGIN_SRC csharp
 public static ModuleDefinition CreateModuleFrom(Image image, ReaderParameters parameters) {
@@ -1041,7 +1065,7 @@ protected override void ReadModule() {
             return module;
         });
 }
-  #+END_SRC 
+  #+END_SRC
 *p* 基于LoadedTypes来实现反射方法的调用
 - 这些，方法学会了就自己去追一追源码，把它们看懂
 
@@ -1054,22 +1078,4 @@ hotfix.dll.ab,a0db62110d9bd581941b02f5f29d9859,24302
 hotfix.pdb.ab,cf5b2a1abd05b962cedf3a5081e0e1dc,11603
 scene/config/typeone.ab,ed121261eb85d9da9bc4f55e1a4f1180,1907
 // .....
-   #+END_SRC 
-
-
-亲爱的表哥
-你的活宝妹盼盼盼的雨
-今天晚上下了，
-衣服烘不成也被困在家里
-只好呆家里学习了
-
-亲爱的表哥
-任何时候，活宝妹都是就是一定要嫁给亲爱的表哥的
-活宝妹若是还没有能嫁给亲爱的表哥
-活宝妹就永远守候在亲爱的表哥的身边
-活宝妹会守候在亲爱的表哥的身边
-从此再也不离开亲爱的表哥所在的小镇半步
-
-爱表哥，爱生活！！！
-活宝妹就是一定要嫁给亲爱的表哥
-爱表哥，爱生活！！！
+   #+END_SRC
