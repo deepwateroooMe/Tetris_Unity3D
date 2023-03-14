@@ -1344,7 +1344,7 @@ GameObject:
   - component: {fileID: 738989452}
   - component: {fileID: 738989451}
   m_Layer: 5
-  m_Name: loginBtn
+  m_Name: loginBtnText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2613,7 +2613,7 @@ GameObject:
   - component: {fileID: 1740057354}
   - component: {fileID: 1740057353}
   m_Layer: 0
-  m_Name: Canvas
+  m_Name: LoginCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2972,7 +2972,7 @@ GameObject:
   - component: {fileID: 1949848573}
   - component: {fileID: 1949848572}
   m_Layer: 5
-  m_Name: Login
+  m_Name: loginBtn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

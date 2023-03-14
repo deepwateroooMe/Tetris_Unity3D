@@ -40,7 +40,8 @@ namespace zFramework.Misc {
             // 4. 已知：编辑器停止 Play 我们自己插入的 loop 依旧会触发，进入或退出Play 模式先清空 tasks
             EditorApplication.playModeStateChanged -= EditorApplication_playModeStateChanged; 
             EditorApplication.playModeStateChanged += EditorApplication_playModeStateChanged;
-            static void EditorApplication_playModeStateChanged(PlayModeStateChange obj) { 
+            void EditorApplication_playModeStateChanged(PlayModeStateChange obj) { 
+                            // static void EditorApplication_playModeStateChanged(PlayModeStateChange obj) { 
                 if (obj == PlayModeStateChange.ExitingEditMode ||
                     obj == PlayModeStateChange.ExitingPlayMode) {
                     // 清空任务列表

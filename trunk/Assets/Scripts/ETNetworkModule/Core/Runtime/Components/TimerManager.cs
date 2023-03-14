@@ -197,7 +197,8 @@ namespace ET {
         }
         private static TimerAction Allocate(TimerClass onceWaitTimer, long value, int v1, object tcs) {
             var timer = Pool.Get();
-            timer ??= new TimerAction();
+            if (timer == null) timer = new TimerAction();
+            // timer ??= new TimerAction();
             timer.Init(IdGenerater.Instance.GenerateId(), onceWaitTimer, value, v1, tcs);
             timers.Add(timer.Id, timer);
             return timer;

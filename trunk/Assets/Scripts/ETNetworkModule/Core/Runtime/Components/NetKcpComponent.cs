@@ -49,7 +49,7 @@ namespace ET {
                 return;
             }
             session.Error = error;
-            session.Dispose();
+            session.Dispose(); 
         }
         // 这个channelId是由CreateAcceptChannelId生成的
         public void OnAccept(long channelId, IPEndPoint ipEndPoint) {
@@ -62,7 +62,8 @@ namespace ET {
         }
 // 下面：原本封装在最底层的系统最基层方法，被抽出来放在每个模块下。为什么我还是觉得 ET 框架的封装更好呢？
         private Session AddChildWithId(long channelId, AService service) {
-            sessions ??= new Dictionary<long, Session>();
+            if (sessions == null) sessions = new Dictionary<long, Session>();
+            // sessions ??= new Dictionary<long, Session>(); // 它说，这个语法，它还不想认。。。。。活宝妹一定要嫁给亲爱的表哥！！！
             sessions.TryGetValue(channelId, out var session);
             if (session == null) {
                 session = new Session(channelId, service);
@@ -79,8 +80,9 @@ namespace ET {
             return session;
         }
         public Session GetSession(long id) {
-            sessions ??= new Dictionary<long, Session>();
-            sessions.TryGetValue(id, out var session);
+            if (sessions == null) sessions = new Dictionary<long, Session>();
+            // sessions ??= new Dictionary<long, Session>();
+            sessions.TryGetValue(id, out var session); 
             return session;
         }
     }

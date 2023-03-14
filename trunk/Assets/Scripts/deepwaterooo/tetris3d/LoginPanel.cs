@@ -18,7 +18,7 @@ namespace deepwaterooo.tetris3d {
         void Start() {
             Debug.Log(TAG + " Start()");
 
-            title = gameObject.FindChildByName("Text").GetComponent<Text>();
+            //title = gameObject.FindChildByName("Text").GetComponent<Text>();
             loginButton = gameObject.FindChildByName("loginBtn").GetComponent<Button>();
             loginButton.onClick.AddListener(OnClickLoginButton);
         }
@@ -28,6 +28,5 @@ namespace deepwaterooo.tetris3d {
 
             gameObject.SetActive(false);
         }
-#endregion
     }
 }
