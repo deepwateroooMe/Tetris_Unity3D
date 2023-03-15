@@ -1,4 +1,6 @@
 using ET;
+using Framework.Core;
+using Framework.Util;
 using System;
 using System.Data;
 using TMPro;
@@ -8,30 +10,35 @@ using UnityEngine.UI;
 public class Client : MonoBehaviour {
     private const string TAG = "Client";
     public string address = "127.0.0.1";
-    public const int port = 10002; // 这个端口：是用来作什么用的 ?
-    TextMeshProUGUI text;  // 给个提示信息：你没有帐房，请先注册；注册成功；登录失败等
+    public const int port = 10002; // 这个端口：是用来作什么用的 ? 作为一个客户端，要与服务器边撑，不仅需要服务器的IP 地址，也是需要相应端口的
+
+    // TextMeshProUGUI text;  // 给个提示信息：你没有帐房，请先注册；注册成功；登录失败等
     public Button button; // 这两个按钮，但是界面上实际上只有一个。 login Button
     // public Button signUpbutton; // 注册: 这个可以暂不要就可以了呀。界面上没有这个按钮，所以把它去掉了
     NetKcpComponent NetKcpComponent;
     Session session;
-    public TMP_InputField username;
-    public TMP_InputField password;
-    public TextMeshProUGUI ping;
+    public InputField username;
+    public InputField password;
+    // public TextMeshProUGUI ping;
+    public TMP_Text ping;
+
+    [SerializeField]
+    public GameApplication ga; // 为的是拿到它的脚本，调用进入热更新程序域里的入口方法 
 
     private void Awake() {
-        username.text = name;
-        text = button.GetComponentInChildren<TextMeshProUGUI>();
+        // username.text = name;
+        // text = button.GetComponentInChildren<TextMeshProUGUI>();
         NetKcpComponent = GetComponent<NetKcpComponent>(); // 它身上持了这个组件，是的，所以初始化也是从这里初始化的
     }
     private void Start() {
         button.onClick.AddListener(OnButtonClick);
         // signUpbutton.onClick.AddListener(OnSignUpButtonClick);
-        text.text = "Connect";
+        // text.text = "Connect";
     }
     bool isConnected => session != null && !session.IsDisposed; // 会话框建立起来了，并且还没有回收
     private async void OnButtonClick() { // 异步方法 
         if (isConnected) { // 如果是连接着的状态：就断开连接 
-            text.text = "Connect";
+            // text.text = "Connect";
             ping.text = "Ping: - ";
             session.Send(new C2M_Stop()); // 向服务器发消息: 停止消息 Client-to-Map 
             session.Dispose(); // 感觉这里就有点儿怪：不奇怪，连接好的状态，再点，就停止 
@@ -39,7 +46,7 @@ public class Client : MonoBehaviour {
         } else { // 如果是断开状态，就登录远程服务器
             var host = $"{address}:{port}"; // 远程服务器的地址：Realm 注册登录服的 IP 地址 
             var result = await LoginAsync(host); // 登录远程服务器：自己的逻辑，这里是 Realm 注册登录服，先注册才登录
-            text.text = result ? "Connected" : "Try again"; // Try.again: 这里就出错了
+            // text.text = result ? "Connected" : "Try again"; // Try.again: 这里就出错了
         }
     }
     // // 注册成功后：按钮失活。去ET 框架里找下，注册与登录所用的 Session 需要回收吗？注册登录过程应该很短，可以不缓存
@@ -65,17 +72,29 @@ public class Client : MonoBehaviour {
             Debug.Log(TAG + " r2CLogin.Address: " + r2CLogin.Address);
             // 创建一个gate Session,并且保存到SessionComponent中
             session = NetKcpComponent.Create(NetworkHelper.ToIPEndPoint(r2CLogin.Address)); // 这里拿到的地址，应该是网关服的地址
+            Debug.Log(TAG + " (session == null): " + (session == null));
+
+// 心跳消息：这个消息，自己的游戏里，暂时都不想再发了。因为目前处理的网络模块相关的逻辑极其简单。注册登录而已，游戏许可证
             session.ping = new ET.Ping(session); // 这是它的一个基本通信测试：测试这个消息与服务器的通信。可是现在，这个过程，TChannel 抛异常了
             session.ping.OnPingRecalculated += (delay) => { ping.text = $"Ping: {delay}"; };
             // 这里可能有两处从服务器返回消息的：一个是Ping, 一个是登录返回，两处要知道是哪处出错了？打几个日志，区分一下Ping 与登录消息，看是哪个出错的？
             G2C_LoginGate g2CLoginGate = (G2C_LoginGate)await session.Call(new C2G_LoginGate() { Key = r2CLogin.Key, GateId = r2CLogin.GateId });
             Debug.Log("登陆gate成功!"); // 这里没有问题。登录成功。
-            // 登录 map 服务器
-            // 进入地图
-            var request = new C2G_EnterMap() ; // 这里可以改成自己的：进入某个特定的游戏 
-            G2C_EnterMap map = await session.Call(request) as G2C_EnterMap;// 这里去看服务器端的逻辑
-            // 进入地图成功：  Net_id = 1732270104318435333 爱表哥，爱生活！！！
-            Debug.Log($"进入地图成功：  Net_id = {map.MyId}"); // 这里是客户端逻辑，客户端说消息发完就成功了，但是服务器可能还并没有处理这个消息？【总之，服务器端还有个小错】
+            
+// 能够连接网关服务器成功：目前游戏里，就直接进入热更新程序域里去
+            gameObject.SetActive(false);
+// 这里没有执行成功；现在是用的异步流式调用，然后你就偏偏又调用了协程。。。。。服务器端应该也是没有问题的
+            CoroutineHelper.StartCoroutine(ga.Initialize());
+            // ga.StartHotFix(); // <<<<<<<<<< ？
+            // ga.HotFix.StartHotFix(); // <<<<<<<<<< ？
+
+            Debug.Log($"进入ILRuntime 热更新程序域成功～～！！！"); // 这里是客户端逻辑，客户端说消息发完就成功了，但是服务器可能还并没有处理这个消息？【总之，服务器端还有个小错】
+            // // 登录 map 服务器
+            // // 进入地图
+            // var request = new C2G_EnterMap() ; // 这里可以改成自己的：进入某个特定的游戏 
+            // G2C_EnterMap map = await session.Call(request) as G2C_EnterMap;// 这里去看服务器端的逻辑
+            // // 进入地图成功：  Net_id = 1732270104318435333 爱表哥，爱生活！！！
+            // Debug.Log($"进入地图成功：  Net_id = {map.MyId}"); // 这里是客户端逻辑，客户端说消息发完就成功了，但是服务器可能还并没有处理这个消息？【总之，服务器端还有个小错】
         }
         catch (Exception e) {
             isconnected = false;

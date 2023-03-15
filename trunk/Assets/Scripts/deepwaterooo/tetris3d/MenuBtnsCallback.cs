@@ -102,7 +102,8 @@ namespace deepwaterooo.tetris3d {
         }
         void OnClickClaButton() { // CLASSIC MODE
             Debug.Log(TAG + " OnClickClassicButton()");
-            // gameObject.HotFix.startClassical(); // <<<<<<<<<< ？
+            // ga.HotFix.startClassical(); // <<<<<<<<<< ？
+            
             gameObject.SetActive(false);
         }
 

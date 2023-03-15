@@ -29,21 +29,21 @@ namespace ET {
             SessionStreamDispatcherManager.Init();
             MessageDispatcher.Init();
             TimerManager.Init();
-            // SetPlayerLoop(); // 每桢的 Update() 循环系统: 这个是， unity 会自动更新的吧【暂时去掉的，为了去掉编译错误】
+            SetPlayerLoop(); // 每桢的 Update() 循环系统: 这个是， unity 会自动更新的吧【暂时去掉的，为了去掉编译错误】
         }
-        // private static void SetPlayerLoop() {
-        //     var playerLoop = PlayerLoop.GetCurrentPlayerLoop();
-        //     var idx = Array.FindIndex(playerLoop.subSystemList, v => v.type == typeof(UnityEngine.PlayerLoop.Update));
-        //     var update = playerLoop.subSystemList[idx];
-        //     var updateSubSystems = update.subSystemList.ToList();
-        //     updateSubSystems.Add(new PlayerLoopSystem() {
-        //             type = typeof(EventSystem),
-        //                 updateDelegate = Update
-        //                 });
-        //     update.subSystemList = updateSubSystems.ToArray();
-        //     playerLoop.subSystemList[idx] = update;
-        //     PlayerLoop.SetPlayerLoop(playerLoop);
-        // }
+        private static void SetPlayerLoop() {
+            var playerLoop = UnityEngine.LowLevel.PlayerLoop.GetCurrentPlayerLoop();
+            var idx = Array.FindIndex(playerLoop.subSystemList, v => v.type == typeof(UnityEngine.PlayerLoop.Update));
+            var update = playerLoop.subSystemList[idx];
+            var updateSubSystems = update.subSystemList.ToList();
+            updateSubSystems.Add(new UnityEngine.LowLevel.PlayerLoopSystem() {
+                    type = typeof(EventSystem),
+                        updateDelegate = Update
+                        });
+            update.subSystemList = updateSubSystems.ToArray();
+            playerLoop.subSystemList[idx] = update;
+            UnityEngine.LowLevel.PlayerLoop.SetPlayerLoop(playerLoop);
+        }
         static void Update() { // <<<<<<<<<<<<<<<<<<<< 
             TimeInfo.Update();
             TimerManager.Update();

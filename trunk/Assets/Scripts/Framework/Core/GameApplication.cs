@@ -6,8 +6,9 @@ using System.Json;
 using deepwaterooo.tetris3d;
 using UnityEngine.UI;
 using DeepwateroooWang;
-//using cn.sharesdk.unity3d; // 这里没有使用 WeChat-ShareSDK
-//ShareSDK 是一个帮助接入第三方 wechat 登录的 SDK. 这里不同
+// using cn.sharesdk.unity3d; //  这里没有使用 WeChat-ShareSDK
+// ShareSDK 是一个帮助接入第三方 wechat 登录的 SDK. 这里不用
+
 namespace Framework.Core {
     // 入口类
     public class GameApplication : MonoBehaviour { 
@@ -23,6 +24,8 @@ namespace Framework.Core {
             get;
             set;
         }
+        public GameObject loginPanel;
+        
         // 是否使用PDB调试信息
         public bool usePDB = false;
         // 是否使用ILRuntime模式热更新
@@ -68,7 +71,7 @@ namespace Framework.Core {
             // InitializeSDKs(); // 可是这里仍然只是多一步登录的步骤,并不该影响热更新域的加载, 影响更多的是从服务器端。比如如果用户不登录或是在黑名单，不允许下载任何的热更新资源包？
             // menu.SetActive(false);
 
-            CoroutineHelper.StartCoroutine(Initialize());
+            // CoroutineHelper.StartCoroutine(Initialize()); // 转走，转入 Client 类中去
 #region TestSamples
             // FingerEventTemp.Instance.RegisterGestureEvents();
             // TestNTS.Instance.TestLinesAngle();
@@ -116,7 +119,7 @@ namespace Framework.Core {
         //        Debug.Log("cancel!");
         //    }
         // }
-        IEnumerator Initialize() {
+        public IEnumerator Initialize() {
 // // 与安卓SDK桥接层的初始化: Unity SDK 与 上层 游戏端的最底层【这一块儿的逻辑，我暂不考虑了】
 //             Deepwaterooo.instance.Initialize();
 //             Deepwaterooo.instance.InitializeDW(); // 游戏加载的时候,就要调用加载游戏数据库.要求与安卓SDK桥接层也初始化好
@@ -125,10 +128,13 @@ namespace Framework.Core {
 // 过程，去看这个资源管理类的加载资源细节过程，什么时候结束的，结束了才调用热更新程序集的启动
 
 // 整合的过程：只在用户登录注册，与网关服建立起会话框，能够通信成功之后，才可以进入热更新程序域
-            resourceMap.OnInitializeSuccess += StartHotFix;
+            resourceMap.OnInitializeSuccess += StartHotFix; // ori
 
             ResourceConstant.Loader = resourceMap;
             yield return new WaitForEndOfFrame();
+        }
+        public void showLoginPanel() {
+            loginPanel.SetActive(true);
         }
         public void StartHotFix() {
             Debug.Log(TAG + " StartHotFix()");
@@ -145,3 +151,13 @@ namespace Framework.Core {
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
