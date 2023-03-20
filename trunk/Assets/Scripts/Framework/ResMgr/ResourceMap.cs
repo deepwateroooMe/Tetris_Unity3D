@@ -13,10 +13,10 @@ using TMPro;
 namespace Framework.ResMgr {
 
     // 按需加载
-    public class ResourceMap : MonoBehaviour, IResourceLoader {
+    public class ResourceMap : MonoBehaviour, IResourceLoader { // 这里也有必要的初始化步骤 
         private const string TAG = "ResourceMap"; 
 
-        // 静态实例，在是游戏程序集，但是借助公用接口，这个实例用样作为引用借给热更新程序集调用相关函数获取资源等
+        // 静态实例，在是游戏程序集，但是借助公用接口，这个实例同样作为引用，借给热更新程序集调用相关函数获取资源等
         static ResourceMap _instance; 
         public static ResourceMap Instance {
             get {
@@ -66,7 +66,7 @@ namespace Framework.ResMgr {
             DownLoadServerResourceList();　// <<<<<<<<<<<<<<<<<<<< 这里负责从服务器下载热更新资源
         }
         // 校验
-        void CheckResourcePathExist() {
+        void CheckResourcePathExist() { // F:\tetris3D\trunk\TempStreamingAssets\Windows\HotFixList.txt
             if (!Directory.Exists(ResourceConstant.AssetBundleCacheRoot)) {
                 Directory.CreateDirectory(ResourceConstant.AssetBundleCacheRoot);
             }
@@ -79,11 +79,11 @@ namespace Framework.ResMgr {
         void FillResourceList() {
             Debug.Log(TAG + " FillResourceList()");
             string text = FileHelp.ReadString("AssetBundleList.txt");
-            Debug.Log("ResourceList:  " + text);
+            // Debug.Log("ResourceList:  " + text);
             if (!string.IsNullOrEmpty(text)) {
 // 把文件中的所有:一个一个的资源包都解析(若是最新资源包)或是作好需要下载更新的标记 ?               
                 AnalysisResourceList(text, EAssetBunbleSourceType.Primary);
-                Debug.Log(TAG + " FillResourceList() text: " + text);
+                // Debug.Log(TAG + " FillResourceList() text: " + text);
             }
         }
         // 分析可读写路径bundleList

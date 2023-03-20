@@ -2887,8 +2887,8 @@ MonoBehaviour:
   loginPanel: {fileID: 0}
   usePDB: 1
   useILRuntime: 1
-  useLocal: 1
-  webRoot: 
+  useLocal: 0
+  webRoot: http://127.0.0.1:8080
   forceLogin: 0
 --- !u!114 &1702088488
 MonoBehaviour:

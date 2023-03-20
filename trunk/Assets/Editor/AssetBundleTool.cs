@@ -22,12 +22,12 @@ public class AssetBundleTool : MonoBehaviour {
             Debug.Log("assetPath: " + assetPath);
         }
     }
-    // 增量打包
-    [MenuItem("Assets/BuildChangedBundle %m")]
+    // 增量打包：与下面的强制重新打包，打全部包相比，这里是说，没有变化的资源包，可以不用重新再打一遍了？这里【比较表层的地方，看不出处理上有什么不同 ]
+    [MenuItem("Assets/BuildChangedBundle %m")] // 只打包：更改过的资源包文件
     static void BuildChangedBundle() {
         BuildTarget buildTarget = GetBuildTarget();
         var root = GetBundleRoot(buildTarget);
-        BuildBundle(root, buildTarget, BuildAssetBundleOptions.StrictMode | BuildAssetBundleOptions.ChunkBasedCompression);
+        BuildBundle(root, buildTarget, BuildAssetBundleOptions.StrictMode | BuildAssetBundleOptions.ChunkBasedCompression); // <<<<<<<<<< 
     }
     // 强制重新打包
     [MenuItem("Assets/RebuildAllBundle")]
@@ -39,35 +39,37 @@ public class AssetBundleTool : MonoBehaviour {
 #endregion
     
 #region BuildDll
-    // [MenuItem("Assets/BuildHotFixDllBundle")]
-    [MenuItem("Assets/BuildHotFixDllBundle %j")]
+    // 在 Startup.cs 里面，有个自动检测脚本变化的：当它检测到.dll 文件有变动，就会自动调用这个方法，来打包热更新程序集包
+    [MenuItem("Assets/BuildHotFixDllBundle %j")] // 所以，这里打包，也就是把构建好的程序集打成资源包
+    // 能想明白：在 Hotfix.csproj 中的最后几行，是命令行将构建成功【编译成功编译之后，已经是字节码了】的程序集复制一份到如下两个目录文件。并且复制后的就成了编译后的字节码程序包，可以用来打资源包了
     public static void BuildHotFixDllBundle() {
         BuildTarget buildTarget = GetBuildTarget();
         AssetBundleBuild dll = new AssetBundleBuild() {
             assetBundleName = "hotfix.dll" + ResourceConstant.bundleExtension,
             assetBundleVariant = null,
-            assetNames = new string[] { "Assets/HotFix/HotFix.dll.bytes" }
+            assetNames = new string[] { "Assets/HotFix/HotFix.dll.bytes" } // 这里是字符串名字，实际对应的是这个目录文件，需要被打进这个资源包里。所以它打的就是热更新的程序集了
         };
         AssetBundleBuild pdb = new AssetBundleBuild() {
             assetBundleName = "hotfix.pdb" + ResourceConstant.bundleExtension,
             assetBundleVariant = null,
             assetNames = new string[] { "Assets/HotFix/HotFix.pdb.bytes" }
         };
-        var tempBundleRoot = GetTempBundleRoot(buildTarget);
+        var tempBundleRoot = GetTempBundleRoot(buildTarget); // 拿到热更新程序集资源包的临时的存放位置：F:\tetris3D\trunk\TempStreamingAssets\Temp\Windows
+// 调用的是：下面这个 API 来实现程序集的打包。可是原理在底层，找不出来，没有看懂
         var result = BuildPipeline.BuildAssetBundles(tempBundleRoot, new AssetBundleBuild[] { dll, pdb }, BuildAssetBundleOptions.ForceRebuildAssetBundle, buildTarget);
         if (result == null) {
             throw new System.Exception("build dll contains error, please check");
         }
         var bundleRoot = GetBundleRoot(buildTarget);
         CopyDirectory(tempBundleRoot, bundleRoot);
-        GenerateAssetBundleList(bundleRoot);
+        GenerateAssetBundleList(bundleRoot); // 这里也是说，生成新的码表文件 
     }
 #endregion
 
-    // 资源打包
+    // 资源打包：这个方法，更多的是去理解，Unity 游戏引擎内部打包过程、打包选项等基础原理
     static void BuildBundle(string root, BuildTarget buildTarget, BuildAssetBundleOptions options) {
-        AssetDatabase.RemoveUnusedAssetBundleNames();
-        string[] assetBundleNames = AssetDatabase.GetAllAssetBundleNames();
+        AssetDatabase.RemoveUnusedAssetBundleNames(); // 自动移除没有使用的资源包名
+        string[] assetBundleNames = AssetDatabase.GetAllAssetBundleNames(); // 系统资源数据库里注册过的：所有资源包的名字
         List<AssetBundleBuild> assetBuildBuilds = new List<AssetBundleBuild>();
         int namesLength = assetBundleNames.Length;
         for (int i = 0; i < namesLength; i++) {
@@ -107,7 +109,7 @@ public class AssetBundleTool : MonoBehaviour {
         return buildTarget;
     }
 
-    static string GetTempBundleRoot(BuildTarget buildTarget) {
+    static string GetTempBundleRoot(BuildTarget buildTarget) { // 这里的地址是：F:\tetris3D\trunk\TempStreamingAssets\Temp\Windows
         var path = Path.Combine(Application.dataPath, "../TempStreamingAssets/Temp/" + GetBundleFolderName(buildTarget));
         if (!Directory.Exists(path)) {
             Directory.CreateDirectory(path);
@@ -116,8 +118,8 @@ public class AssetBundleTool : MonoBehaviour {
     }
 
     // 获取相应平台AssetBundle存放路径
-    static string GetBundleRoot(BuildTarget buildTarget) {
-        var path = Path.Combine(Application.dataPath, "../TempStreamingAssets/" + GetBundleFolderName(buildTarget));
+    static string GetBundleRoot(BuildTarget buildTarget) { // 拿到的是：客户端本地的资源包相应平台的存储路径 F:\tetris3D\trunk\TempStreamingAssets\Windows
+        var path = Path.Combine(Application.dataPath, "../TempStreamingAssets/" + GetBundleFolderName(buildTarget)); // 这里客户端，仍让它继续保持使用 Windows, 服务器使用PC 名
         if (!Directory.Exists(path)) {
             Directory.CreateDirectory(path);
         }
@@ -140,7 +142,7 @@ public class AssetBundleTool : MonoBehaviour {
     static void CopyBundleToClient(string root, BuildTarget buildTarget) {
         string clientPath = Path.Combine(Application.dataPath, Path.Combine(tempStreamingAssetPath, GetBundleFolderName(buildTarget)));
         CopyDirectory(root, clientPath);
-        GenerateAssetBundleList(clientPath);
+        GenerateAssetBundleList(clientPath); // 这个步骤：永远会重新生成一个新的码表文件，并一一重新计算所有资源包的MD5 值
     }
 
     // 复制文件
@@ -177,13 +179,13 @@ public class AssetBundleTool : MonoBehaviour {
         }
     }
 
-    // 生成AssetBundle对应的MD5List
+    // 生成AssetBundle对应的MD5List: 生成码表文件
     static void GenerateAssetBundleList(string clientPath) {
         DirectoryInfo dir = new DirectoryInfo(clientPath);
         FileInfo[] files = dir.GetFiles("*", SearchOption.AllDirectories);
         string tempPath = dir.FullName.Replace("\\", "/");
         string path = string.Empty;
-        foreach (var file in files) {
+        foreach (var file in files) { // 这里是：每个资源包文件，作为一行，加到字符串的结尾
             if (file.FullName.EndsWith(bundleExtension)) {
                 using (var sr = new StreamReader(file.FullName)) {
                     var md5 = CryptoHelp.MD5(sr.BaseStream);
@@ -192,9 +194,9 @@ public class AssetBundleTool : MonoBehaviour {
                 }
             }
         }
-        string assetBundleListPath = Path.Combine(clientPath, "AssetBundleList.txt");
+        string assetBundleListPath = Path.Combine(clientPath, "AssetBundleList.txt"); // 码表文件路径
         if (assetBundleListPath.Length != 0) {
-            FileStream cache = new FileStream(assetBundleListPath, FileMode.Create);
+            FileStream cache = new FileStream(assetBundleListPath, FileMode.Create); // 创建并写入文件
             var encoding = new System.Text.UTF8Encoding();
             var bytes = encoding.GetBytes(path);
             cache.Write(bytes, 0, bytes.Length);
@@ -202,3 +204,5 @@ public class AssetBundleTool : MonoBehaviour {
         }
     }
 }
+
+

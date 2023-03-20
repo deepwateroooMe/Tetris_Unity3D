@@ -21,13 +21,15 @@ public enum EAssetBundleUnloadLevel {
 namespace Framework.ResMgr {
 
     public static class ResourceConstant {
+        private const string TAG = "ResourceConstant";
 // 这个跨程序域级别的公用接口可以连接两个不同程序域,方便热更新调用unity里的函数资源等        
         public static IResourceLoader Loader {
             get;
             set;
         }
         public static readonly string bundleExtension = ".ab";
-        static string _resourceWebRoot = "http://localhost/"; // 先暂时就只能手动复制粘贴或是本地服务器暂时用一下
+        // static string _resourceWebRoot = "http://localhost/"; // 本地资源复制资源包到特定目录下，没有问题。现测试，本地服务器
+        static string _resourceWebRoot = "http://127.0.0.1:8080/"; // 本地资源复制资源包到特定目录下，没有问题。现测试，本地服务器
         // 资源服务器路径
         public static string ResourceWebRoot {
             get { return _resourceWebRoot; }
@@ -65,7 +67,8 @@ namespace Framework.ResMgr {
                 path = Application.persistentDataPath;
 #elif UNITY_IPHONE
                 path = Application.persistentDataPath;
-#endif
+#endif  // 要把这个字符串打印一遍
+                Debug.Log(TAG + " AssetBundleCacheRoot() path: " + path);
                 return path;
             }
         }
@@ -99,25 +102,27 @@ namespace Framework.ResMgr {
                 return path;
             }
         }
-        // 资源服务器路径
-        public static string RemoteAssetBundleUrl {
+        // 资源文件服务器：资源包在服务器中的路径，分平台。【因为我参考斗地主游戏，所以服务器端也分平台来布置不同平台的热更新资源包】
+        public static string RemoteAssetBundleUrl { // 这里改成与斗地主游戏一样 PC
             get {
                 string path = ResourceWebRoot;
 #if UNITY_EDITOR 
-                if (!GameApplication.Instance.useLocal) {
+                if (!GameApplication.Instance.useLocal) { // 不用本地资源包
                     if (UnityEditor.EditorUserBuildSettings.activeBuildTarget == UnityEditor.BuildTarget.Android) {
                         path += "Android/";
                     } else if (UnityEditor.EditorUserBuildSettings.activeBuildTarget == UnityEditor.BuildTarget.iOS) {
                         path += "IOS/";
                     } else if (UnityEditor.EditorUserBuildSettings.activeBuildTarget == UnityEditor.BuildTarget.StandaloneWindows || UnityEditor.EditorUserBuildSettings.activeBuildTarget == UnityEditor.BuildTarget.StandaloneWindows64) {
-                        path += "Windows/";
+                        path += "PC/"; // 自已改的
+                        // path += "Windows/"; // 原始的
                     }
                 } else {
                     path = GetEditorAssetPath();
                 }
 // 服务器上的配置,是根据客户端的平台来的.我的项目只需要一个笼统的一个安卓就可以了
 #elif UNITY_STANDALONE_WIN
-                path += "Windows/";
+                path += "PC/";
+                // path += "Windows/"; //ori
 #elif UNITY_ANDROID
                 path += "Android/";
 #elif UNITY_IPHONE
