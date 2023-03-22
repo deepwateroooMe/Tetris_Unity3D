@@ -37,8 +37,7 @@ namespace Framework.ResMgr {
         }
         // 是否缓存AssetBundle
         public static bool CacheAssetBundle = true;
-
-        // 只读目录: 不同平台下的地址也略有不同
+// 只读目录: 不同平台下的地址也略有不同
         public static string AssetBundleReadOnlyRoot {
             get {
                 string path = string.Empty;
@@ -186,3 +185,4 @@ namespace Framework.ResMgr {
 #endregion
     }
 }
+
