@@ -71,9 +71,7 @@ public class Client : MonoBehaviour {
 
             Debug.Log(TAG + " r2CLogin.Address: " + r2CLogin.Address);
             // 创建一个gate Session,并且保存到SessionComponent中
-            session = NetKcpComponent.Create(NetworkHelper.ToIPEndPoint(r2CLogin.Address)); // 这里拿到的地址，应该是网关服的地址
-            Debug.Log(TAG + " (session == null): " + (session == null));
-
+            session = NetKcpComponent.Create(NetworkHelper.ToIPEndPoint(r2CLogin.Address)); // 这里拿到的地址，应该是网关服的地址。这个会话框是非空的
 // 心跳消息：这个消息，自己的游戏里，暂时都不想再发了。因为目前处理的网络模块相关的逻辑极其简单。注册登录而已，游戏许可证
             session.ping = new ET.Ping(session); // 这是它的一个基本通信测试：测试这个消息与服务器的通信。可是现在，这个过程，TChannel 抛异常了
             session.ping.OnPingRecalculated += (delay) => { ping.text = $"Ping: {delay}"; };
